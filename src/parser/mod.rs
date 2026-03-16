@@ -47,6 +47,9 @@ pub mod tree_sitter;
 // Regex-based parsers
 pub mod regex;
 
+// Type-specific regex parsers
+pub mod regex_parsers;
+
 // String literal extractor
 pub mod string_extractor;
 
@@ -65,9 +68,9 @@ pub use languages::RustParser;
 pub use queries::{CommentQueries, FunctionQueries, QueryBuilder, StringQueries};
 pub use r#trait::Parser;
 pub use regex::{
-    RegexParser, RegexParserConfig, RegexParserFactory, StateMachineBuilder, StateMachineMatch,
-    StateMachineMatcher,
+    RegexParser, RegexParserConfig, StateMachineBuilder, StateMachineMatch, StateMachineMatcher,
 };
+pub use regex_parsers::{FallbackParser, HtmlParser, ShellParser, SqlParser};
 pub use strategy::{
     default_strategy, ConfigBasedStrategy, ExtractionConfig, ExtractionContext, ExtractionStrategy,
     ExtractionStrategyImpl, StrategyNodeType,

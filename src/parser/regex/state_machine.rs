@@ -5,6 +5,7 @@
 
 use regex::Regex;
 use std::collections::HashMap;
+use tracing::{debug, info, trace, warn};
 
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::Position;
@@ -68,10 +69,24 @@ impl StateMachineMatcher {
         accepting_states: Vec<String>,
         state_configs: &[crate::config::project::PatternState],
     ) -> Result<Self> {
+        debug!(
+            name = %name,
+            initial_state = %initial_state,
+            accepting_states_count = accepting_states.len(),
+            states_count = state_configs.len(),
+            "Creating state machine matcher"
+        );
+
         let mut states = HashMap::new();
 
         for config in state_configs {
             let regex = Regex::new(&config.regex).map_err(|e| {
+                warn!(
+                    name = %name,
+                    state = %config.name,
+                    error = %e,
+                    "Failed to compile regex for state"
+                );
                 TranslateError::Config(format!("Invalid regex in state '{}': {}", config.name, e))
             })?;
 
@@ -100,6 +115,11 @@ impl StateMachineMatcher {
 
         // Validate initial state exists
         if !states.contains_key(&initial_state) {
+            warn!(
+                name = %name,
+                state = %initial_state,
+                "Initial state not found"
+            );
             return Err(TranslateError::Config(format!(
                 "Initial state '{}' not found",
                 initial_state
@@ -109,12 +129,23 @@ impl StateMachineMatcher {
         // Validate accepting states exist
         for state_name in &accepting_states {
             if !states.contains_key(state_name) {
+                warn!(
+                    name = %name,
+                    state = %state_name,
+                    "Accepting state not found"
+                );
                 return Err(TranslateError::Config(format!(
                     "Accepting state '{}' not found",
                     state_name
                 )));
             }
         }
+
+        info!(
+            name = %name,
+            states_count = states.len(),
+            "State machine matcher created successfully"
+        );
 
         Ok(Self {
             states,
@@ -126,6 +157,12 @@ impl StateMachineMatcher {
 
     /// Find all matches in the content
     pub fn find_matches(&self, content: &str) -> Result<Vec<StateMachineMatch>> {
+        debug!(
+            name = %self.name,
+            content_length = content.len(),
+            "Starting state machine matching"
+        );
+
         let mut matches = Vec::new();
         let mut current_pos = 0;
 
@@ -138,17 +175,34 @@ impl StateMachineMatcher {
             }
         }
 
+        debug!(
+            name = %self.name,
+            matches_count = matches.len(),
+            "State machine matching completed"
+        );
+
         Ok(matches)
     }
 
     /// Try to match starting at the given position
     fn try_match(&self, content: &str, start_pos: usize) -> Result<Option<StateMachineMatch>> {
+        trace!(
+            name = %self.name,
+            start_pos,
+            "Attempting to match at position"
+        );
+
         let mut current_state_name = self.initial_state.clone();
         let mut current_offset = start_pos;
         let mut last_accepting_match: Option<(String, usize, Vec<String>)> = None;
 
         loop {
             let state = self.states.get(&current_state_name).ok_or_else(|| {
+                warn!(
+                    name = %self.name,
+                    state = %current_state_name,
+                    "State not found during matching"
+                );
                 TranslateError::Parse(format!("State '{}' not found", current_state_name))
             })?;
 
@@ -157,6 +211,13 @@ impl StateMachineMatcher {
 
             if let Some(mat) = state.regex.find(remaining) {
                 let match_end = current_offset + mat.end();
+
+                trace!(
+                    name = %self.name,
+                    state = %current_state_name,
+                    matched_text = %mat.as_str(),
+                    "State matched"
+                );
 
                 // Extract captures if any
                 let captures: Vec<String> = if let Some(caps) = state.regex.captures(remaining) {
@@ -171,7 +232,11 @@ impl StateMachineMatcher {
 
                 // Get the content to extract
                 let extracted_content = if let Some(group) = state.capture_group {
-                    captures.get(group - 1).cloned().unwrap_or_default()
+                    if group > 0 {
+                        captures.get(group - 1).cloned().unwrap_or_default()
+                    } else {
+                        mat.as_str().to_string()
+                    }
                 } else {
                     mat.as_str().to_string()
                 };
@@ -179,6 +244,11 @@ impl StateMachineMatcher {
                 // If this is a final/accepting state, record the match
                 if state.is_final || self.accepting_states.contains(&current_state_name) {
                     last_accepting_match = Some((extracted_content, match_end, captures.clone()));
+                    trace!(
+                        name = %self.name,
+                        state = %current_state_name,
+                        "State is accepting, recording match"
+                    );
                 }
 
                 // Try to transition to next state
@@ -192,6 +262,12 @@ impl StateMachineMatcher {
                     };
 
                     if can_transition {
+                        trace!(
+                            name = %self.name,
+                            from_state = %current_state_name,
+                            to_state = %transition.target,
+                            "Transitioning to next state"
+                        );
                         current_state_name = transition.target.clone();
                         current_offset = match_end;
                         transitioned = true;
@@ -201,16 +277,31 @@ impl StateMachineMatcher {
 
                 if !transitioned {
                     // No transition possible, check if we have an accepting match
+                    trace!(
+                        name = %self.name,
+                        state = %current_state_name,
+                        "No transition possible, stopping"
+                    );
                     break;
                 }
             } else {
                 // Current state's regex doesn't match
+                trace!(
+                    name = %self.name,
+                    state = %current_state_name,
+                    "State regex did not match"
+                );
                 break;
             }
         }
 
         // Return the last accepting match if any
         if let Some((extracted_content, end_offset, captures)) = last_accepting_match {
+            trace!(
+                name = %self.name,
+                content_length = extracted_content.len(),
+                "Returning accepting match"
+            );
             let start_pos_obj = self.byte_to_position(content, start_pos);
             let end_pos_obj = self.byte_to_position(content, end_offset);
 

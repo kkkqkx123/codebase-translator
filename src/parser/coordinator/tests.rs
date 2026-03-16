@@ -3,8 +3,8 @@
 use std::path::PathBuf;
 
 use crate::core::models::File;
+use crate::parser::regex_parsers::FallbackParser;
 use crate::parser::tree_sitter::ParserConfig;
-use crate::parser::RegexParser;
 
 use super::{ParserCoordinator, ParserType};
 
@@ -87,9 +87,9 @@ fn test_parse_unsupported_file() {
 #[test]
 fn test_with_parsers() {
     let tree_sitter_parsers: Vec<crate::parser::tree_sitter::TreeSitterParser> = Vec::new();
-    let regex_parser = RegexParser::new(ParserConfig::default());
+    let fallback_parser = FallbackParser::new(ParserConfig::default());
 
-    let coordinator = ParserCoordinator::with_parsers(tree_sitter_parsers, regex_parser);
+    let coordinator = ParserCoordinator::with_parsers(tree_sitter_parsers, fallback_parser);
 
     assert_eq!(coordinator.tree_sitter_parser_count(), 0);
     assert!(coordinator.can_parse("test.md"));

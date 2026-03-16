@@ -5,7 +5,8 @@ use std::sync::Arc;
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, TranslationUnit};
 use crate::parser::filter::ContentFilter;
-use crate::parser::regex::{presets, RegexParser};
+
+use crate::parser::regex_parsers::FallbackParser;
 use crate::parser::strategy::ExtractionStrategyImpl;
 use crate::parser::tree_sitter::{ParserConfig, TreeSitterParser, TreeSitterParserFactory};
 use crate::parser::Parser as ParserTrait;
@@ -19,7 +20,7 @@ use super::ParserType;
 /// then falls back to regex-based parsers for unsupported file types.
 pub struct ParserCoordinator {
     tree_sitter_parsers: Vec<TreeSitterParser>,
-    regex_parser: RegexParser,
+    fallback_parser: FallbackParser,
 }
 
 impl ParserCoordinator {
@@ -53,22 +54,22 @@ impl ParserCoordinator {
             }
         }
 
-        let regex_parser = presets::create_fallback_parser(config);
+        let fallback_parser = FallbackParser::new(config);
 
         Ok(Self {
             tree_sitter_parsers,
-            regex_parser,
+            fallback_parser,
         })
     }
 
     /// Creates a coordinator with pre-built parsers.
     pub fn with_parsers(
         tree_sitter_parsers: Vec<TreeSitterParser>,
-        regex_parser: RegexParser,
+        fallback_parser: FallbackParser,
     ) -> Self {
         Self {
             tree_sitter_parsers,
-            regex_parser,
+            fallback_parser,
         }
     }
 
@@ -82,8 +83,8 @@ impl ParserCoordinator {
             }
         }
 
-        if self.regex_parser.supports(filename) {
-            return self.regex_parser.parse(file);
+        if self.fallback_parser.supports(filename) {
+            return self.fallback_parser.parse(file);
         }
 
         Err(TranslateError::Parse(format!(
@@ -105,7 +106,7 @@ impl ParserCoordinator {
             }
         }
 
-        if self.regex_parser.supports(filename) {
+        if self.fallback_parser.supports(filename) {
             return Some(ParserType::Regex);
         }
 
@@ -121,7 +122,7 @@ impl ParserCoordinator {
         }
 
         extensions.extend(
-            self.regex_parser
+            self.fallback_parser
                 .supported_extensions()
                 .iter()
                 .map(|s| s.to_string()),

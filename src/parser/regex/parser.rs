@@ -1,6 +1,7 @@
 //! Regex-based parser implementation
 
 use regex::Regex;
+use tracing::{debug, info, instrument, warn};
 
 use crate::core::error::Result;
 use crate::core::models::{File, NodeType, TranslationUnit};
@@ -30,6 +31,16 @@ impl RegexParser {
 
     /// Create a new regex parser with custom configuration
     pub fn with_config(config: ParserConfig, regex_config: RegexParserConfig) -> Self {
+        debug!(
+            extensions = ?regex_config.extensions,
+            has_line_comment = regex_config.line_comment_pattern.is_some(),
+            has_block_comment = regex_config.block_comment_pattern.is_some(),
+            has_doc_comment = regex_config.doc_comment_pattern.is_some(),
+            has_string_pattern = regex_config.string_pattern.is_some(),
+            state_machine_patterns_count = regex_config.state_machine_patterns.len(),
+            "Creating regex parser with configuration"
+        );
+
         let line_comment_regex = regex_config
             .line_comment_pattern
             .as_ref()
@@ -51,7 +62,7 @@ impl RegexParser {
             .and_then(|p| Regex::new(p).ok());
 
         // Build state machine matchers from config
-        let state_machine_matchers = regex_config
+        let state_machine_matchers: Vec<_> = regex_config
             .state_machine_patterns
             .iter()
             .filter_map(|pattern| {
@@ -65,6 +76,15 @@ impl RegexParser {
             })
             .collect();
 
+        debug!(
+            line_comment_regex_valid = line_comment_regex.is_some(),
+            block_comment_regex_valid = block_comment_regex.is_some(),
+            doc_comment_regex_valid = doc_comment_regex.is_some(),
+            string_regex_valid = string_regex.is_some(),
+            state_machine_matchers_count = state_machine_matchers.len(),
+            "Regex parser compilation completed"
+        );
+
         Self {
             config,
             regex_config,
@@ -77,7 +97,9 @@ impl RegexParser {
     }
 
     /// Parse content and extract translation units
+    #[instrument(skip(self, content), fields(file_path))]
     fn parse_content(&self, content: &str, file_path: &str) -> Result<Vec<TranslationUnit>> {
+        info!(content_length = content.len(), "Starting regex parsing");
         let mut units = Vec::new();
         let mut id_counter = 0;
 
@@ -117,10 +139,12 @@ impl RegexParser {
                     }
                 }
             }
+            debug!(count = units.len(), "Line comments extracted");
         }
 
         // Extract block comments
         if let Some(ref regex) = self.block_comment_regex {
+            let initial_count = units.len();
             for mat in regex.find_iter(content) {
                 if let Some(captured) = regex.captures(&content[mat.start()..mat.end()]) {
                     if let Some(group) = captured.get(1) {
@@ -155,10 +179,15 @@ impl RegexParser {
                     }
                 }
             }
+            debug!(
+                count = units.len() - initial_count,
+                "Block comments extracted"
+            );
         }
 
         // Extract doc comments
         if let Some(ref regex) = self.doc_comment_regex {
+            let initial_count = units.len();
             for mat in regex.find_iter(content) {
                 if let Some(captured) = regex.captures(&content[mat.start()..mat.end()]) {
                     if let Some(group) = captured.get(1) {
@@ -193,10 +222,15 @@ impl RegexParser {
                     }
                 }
             }
+            debug!(
+                count = units.len() - initial_count,
+                "Doc comments extracted"
+            );
         }
 
         // Extract strings
         if let Some(ref regex) = self.string_regex {
+            let initial_count = units.len();
             for mat in regex.find_iter(content) {
                 if let Some(captured) = regex.captures(&content[mat.start()..mat.end()]) {
                     if let Some(group) = captured.get(1) {
@@ -231,10 +265,12 @@ impl RegexParser {
                     }
                 }
             }
+            debug!(count = units.len() - initial_count, "Strings extracted");
         }
 
         // Apply state machine patterns
         for matcher in &self.state_machine_matchers {
+            let initial_count = units.len();
             let matches = matcher.find_matches(content)?;
             for m in matches {
                 if should_include(
@@ -255,11 +291,17 @@ impl RegexParser {
                     units.push(unit);
                 }
             }
+            debug!(
+                matcher_name = %matcher.name,
+                count = units.len() - initial_count,
+                "State machine matches extracted"
+            );
         }
 
         // Sort by position
         units.sort_by(|a, b| a.start_pos.offset.cmp(&b.start_pos.offset));
 
+        info!(total_units = units.len(), "Regex parsing completed");
         Ok(units)
     }
 
@@ -270,8 +312,10 @@ impl RegexParser {
 }
 
 impl ParserTrait for RegexParser {
+    #[instrument(skip(self, file), fields(file_path = %file.path.display()))]
     fn parse(&self, file: &File) -> Result<Vec<TranslationUnit>> {
         let content = file.content_string().map_err(|e| {
+            warn!(error = %e, "Failed to get content string from file");
             crate::core::error::TranslateError::Parse(format!("Invalid UTF-8 content: {}", e))
         })?;
 

@@ -447,7 +447,12 @@ impl StringExtractor {
                 "str" | "template" => {
                     if let Some(ref key) = current_key {
                         // Check if property name matches any pattern
-                        if self.config.property_patterns.iter().any(|p| key.contains(p)) {
+                        if self
+                            .config
+                            .property_patterns
+                            .iter()
+                            .any(|p| key.contains(p))
+                        {
                             let text = self.string_processor.clean_string_literal(m.text);
 
                             if let Some(unit) = self.create_unit(
