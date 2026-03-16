@@ -9,6 +9,17 @@ impl CppQueries {
         "(comment) @comment"
     }
 
+    /// Documentation comments query (Doxygen style: /// or /**)
+    pub fn doc_comments() -> &'static str {
+        r#"
+((comment) @docstring
+  (#match? @docstring "^//[/!]"))
+
+((comment) @docstring
+  (#match? @docstring "^/\\*[*!]"))
+"#
+    }
+
     /// String literal query
     pub fn string_literals() -> &'static str {
         "(string_literal) @string"

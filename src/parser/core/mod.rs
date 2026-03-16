@@ -4,11 +4,13 @@
 //! across different language parsers.
 
 pub mod extractor;
+pub mod language_parser;
 pub mod position_tracker;
 pub mod query_executor;
 pub mod string_processor;
 
 pub use extractor::{ExtractionCandidate, ExtractionType, Extractor};
+pub use language_parser::LanguageParser;
 pub use position_tracker::PositionTracker;
 pub use query_executor::{QueryExecutor, QueryMatch};
 pub use string_processor::StringProcessor;

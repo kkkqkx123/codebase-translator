@@ -107,10 +107,16 @@ impl StringExtractorConfig {
         let mut custom_regex_patterns = Vec::new();
         for pattern in &custom.regex_patterns {
             let category = match pattern.category {
-                crate::config::project::StringLiteralCategory::ErrorHandling => StringCategory::ErrorHandling,
+                crate::config::project::StringLiteralCategory::ErrorHandling => {
+                    StringCategory::ErrorHandling
+                }
                 crate::config::project::StringLiteralCategory::Output => StringCategory::Output,
-                crate::config::project::StringLiteralCategory::Variables => StringCategory::Variables,
-                crate::config::project::StringLiteralCategory::Properties => StringCategory::Properties,
+                crate::config::project::StringLiteralCategory::Variables => {
+                    StringCategory::Variables
+                }
+                crate::config::project::StringLiteralCategory::Properties => {
+                    StringCategory::Properties
+                }
                 crate::config::project::StringLiteralCategory::Other => StringCategory::Other,
             };
 
@@ -118,12 +124,7 @@ impl StringExtractorConfig {
                 TranslateError::Config(format!("Invalid regex pattern '{}': {}", pattern.name, e))
             })?;
 
-            custom_regex_patterns.push((
-                pattern.name.clone(),
-                regex,
-                pattern.group,
-                category,
-            ));
+            custom_regex_patterns.push((pattern.name.clone(), regex, pattern.group, category));
         }
 
         Ok(Self {
@@ -330,15 +331,23 @@ impl StringExtractor {
     /// Get category for a function name
     fn get_function_category(&self, func_name: &str) -> Option<StringCategory> {
         // Check each category
-        if self.config.patterns.error_handling.iter().any(|p| {
-            func_name == p || func_name.ends_with(&format!(".{}", p))
-        }) {
+        if self
+            .config
+            .patterns
+            .error_handling
+            .iter()
+            .any(|p| func_name == p || func_name.ends_with(&format!(".{}", p)))
+        {
             return Some(StringCategory::ErrorHandling);
         }
 
-        if self.config.patterns.output.iter().any(|p| {
-            func_name == p || func_name.ends_with(&format!(".{}", p))
-        }) {
+        if self
+            .config
+            .patterns
+            .output
+            .iter()
+            .any(|p| func_name == p || func_name.ends_with(&format!(".{}", p)))
+        {
             return Some(StringCategory::Output);
         }
 
@@ -549,11 +558,13 @@ mod tests {
     #[test]
     fn test_config_category_enabled() {
         let mut config = StringExtractorConfig::default();
-        config.enabled_categories.insert(StringCategory::ErrorHandling);
+        config
+            .enabled_categories
+            .insert(StringCategory::ErrorHandling);
         config.enabled_categories.insert(StringCategory::Output);
 
         assert!(config.is_category_enabled(StringCategory::ErrorHandling));
         assert!(config.is_category_enabled(StringCategory::Output));
-        assert!(!config.is_category_enabled(StringCategory::Ui));
+        assert!(!config.is_category_enabled(StringCategory::Other));
     }
 }

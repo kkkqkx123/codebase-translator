@@ -434,6 +434,7 @@ mod tests {
             error_messages: true,
             format_strings: false,
             log_messages: true,
+            string_literals: false,
             custom_patterns: Vec::new(),
         };
 

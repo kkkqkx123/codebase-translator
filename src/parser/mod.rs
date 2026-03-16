@@ -64,7 +64,10 @@ pub use language::{LanguageDetector, LanguageInfo};
 pub use languages::RustParser;
 pub use queries::{CommentQueries, FunctionQueries, QueryBuilder, StringQueries};
 pub use r#trait::Parser;
-pub use regex::{RegexParser, RegexParserConfig, RegexParserFactory, StateMachineMatcher, StateMachineBuilder, StateMachineMatch};
+pub use regex::{
+    RegexParser, RegexParserConfig, RegexParserFactory, StateMachineBuilder, StateMachineMatch,
+    StateMachineMatcher,
+};
 pub use strategy::{
     default_strategy, ConfigBasedStrategy, ExtractionConfig, ExtractionContext, ExtractionStrategy,
     ExtractionStrategyImpl, StrategyNodeType,

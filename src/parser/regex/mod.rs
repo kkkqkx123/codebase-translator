@@ -37,12 +37,13 @@ pub mod utils;
 pub use config::RegexParserConfig;
 pub use factory::RegexParserFactory;
 pub use parser::RegexParser;
-pub use state_machine::{StateMachineBuilder, StateMachineMatcher, StateMachineMatch};
+pub use state_machine::{StateMachineBuilder, StateMachineMatch, StateMachineMatcher};
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::core::models::File;
+    use crate::parser::Parser;
     use std::path::PathBuf;
 
     fn create_test_file(content: &str, path: &str) -> File {

@@ -243,6 +243,55 @@ impl TypeScriptParser {
         Ok(units)
     }
 
+    /// Extract template strings using the core framework
+    fn extract_template_strings(
+        &self,
+        root_node: &Node,
+        content: &str,
+        file_path: &str,
+    ) -> Result<Vec<TranslationUnit>> {
+        let executor = QueryExecutor::from_string(
+            &tree_sitter_typescript::LANGUAGE_TYPESCRIPT.into(),
+            TypeScriptQueries::template_strings(),
+        )?;
+
+        let matches = executor.execute(root_node, content)?;
+        let mut units = Vec::new();
+        let mut match_idx = 0usize;
+
+        for m in matches {
+            // Clean the template string (remove backticks)
+            let text = m
+                .text
+                .strip_prefix('`')
+                .and_then(|s| s.strip_suffix('`'))
+                .map(|s| s.to_string())
+                .unwrap_or_else(|| m.text.to_string());
+
+            // Apply filter
+            if !self.filter.should_translate(&text) {
+                continue;
+            }
+
+            // Template strings are treated as FormatString
+            let ctx = ExtractionContext::new(&text);
+            if !self
+                .strategy
+                .should_extract(StrategyNodeType::FormatString, &ctx)
+            {
+                continue;
+            }
+
+            let id = format!("{}_template_{}", file_path, match_idx);
+            let node_type = self.strategy.get_node_type(StrategyNodeType::FormatString);
+            let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
+            units.push(unit);
+            match_idx += 1;
+        }
+
+        Ok(units)
+    }
+
     /// Extract all translation units from the syntax tree
     fn extract_units(
         &self,
@@ -269,6 +318,10 @@ impl TypeScriptParser {
         if self.config.extract_strings {
             let call_units = self.extract_call_strings(&root_node, content, file_path)?;
             units.extend(call_units);
+
+            // Extract template strings
+            let template_units = self.extract_template_strings(&root_node, content, file_path)?;
+            units.extend(template_units);
         }
 
         // Sort by position for consistent ordering

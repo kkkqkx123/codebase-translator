@@ -92,7 +92,11 @@ impl RegexParser {
                             group.as_str()
                         };
 
-                        if should_include(text, self.config.min_content_length, self.config.max_content_length) {
+                        if should_include(
+                            text,
+                            self.config.min_content_length,
+                            self.config.max_content_length,
+                        ) {
                             let start_byte = mat.start() + group.start();
                             let end_byte = mat.start() + group.end();
                             let start_pos = byte_to_position(content, start_byte);
@@ -126,7 +130,11 @@ impl RegexParser {
                             group.as_str()
                         };
 
-                        if should_include(text, self.config.min_content_length, self.config.max_content_length) {
+                        if should_include(
+                            text,
+                            self.config.min_content_length,
+                            self.config.max_content_length,
+                        ) {
                             let start_byte = mat.start() + group.start();
                             let end_byte = mat.start() + group.end();
                             let start_pos = byte_to_position(content, start_byte);
@@ -160,7 +168,11 @@ impl RegexParser {
                             group.as_str()
                         };
 
-                        if should_include(text, self.config.min_content_length, self.config.max_content_length) {
+                        if should_include(
+                            text,
+                            self.config.min_content_length,
+                            self.config.max_content_length,
+                        ) {
                             let start_byte = mat.start() + group.start();
                             let end_byte = mat.start() + group.end();
                             let start_pos = byte_to_position(content, start_byte);
@@ -194,7 +206,11 @@ impl RegexParser {
                             group.as_str()
                         };
 
-                        if should_include(text, self.config.min_content_length, self.config.max_content_length) {
+                        if should_include(
+                            text,
+                            self.config.min_content_length,
+                            self.config.max_content_length,
+                        ) {
                             let start_byte = mat.start() + group.start();
                             let end_byte = mat.start() + group.end();
                             let start_pos = byte_to_position(content, start_byte);
@@ -221,7 +237,11 @@ impl RegexParser {
         for matcher in &self.state_machine_matchers {
             let matches = matcher.find_matches(content)?;
             for m in matches {
-                if should_include(&m.content, self.config.min_content_length, self.config.max_content_length) {
+                if should_include(
+                    &m.content,
+                    self.config.min_content_length,
+                    self.config.max_content_length,
+                ) {
                     let id = format!("{}_sm_{}_{}", file_path, matcher.name, id_counter);
                     id_counter += 1;
 
@@ -251,9 +271,9 @@ impl RegexParser {
 
 impl ParserTrait for RegexParser {
     fn parse(&self, file: &File) -> Result<Vec<TranslationUnit>> {
-        let content = file
-            .content_string()
-            .map_err(|e| crate::core::error::TranslateError::Parse(format!("Invalid UTF-8 content: {}", e)))?;
+        let content = file.content_string().map_err(|e| {
+            crate::core::error::TranslateError::Parse(format!("Invalid UTF-8 content: {}", e))
+        })?;
 
         let file_path = file.path.to_string_lossy();
         self.parse_content(&content, &file_path)

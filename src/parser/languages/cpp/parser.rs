@@ -115,6 +115,67 @@ impl CppParser {
         Ok(units)
     }
 
+    /// Extract documentation comments using the core framework
+    fn extract_docstrings(
+        &self,
+        root_node: &Node,
+        content: &str,
+        file_path: &str,
+    ) -> Result<Vec<TranslationUnit>> {
+        let executor = QueryExecutor::from_string(
+            &tree_sitter_cpp::LANGUAGE.into(),
+            CppQueries::doc_comments(),
+        )?;
+
+        let matches = executor.execute(root_node, content)?;
+        let mut units = Vec::new();
+        let mut match_idx = 0usize;
+
+        for m in matches {
+            let text = if self.config.trim_content {
+                m.text.trim()
+            } else {
+                m.text
+            };
+
+            // Apply length filters
+            if text.len() < self.config.min_content_length {
+                continue;
+            }
+            if text.len() > self.config.max_content_length {
+                continue;
+            }
+
+            // Skip if only symbols
+            if self.string_processor.is_only_symbols(text) {
+                continue;
+            }
+
+            // Apply content filter
+            if !self.filter.should_translate(text) {
+                continue;
+            }
+
+            // Apply strategy
+            let ctx = ExtractionContext::new(text);
+            if !self
+                .strategy
+                .should_extract(StrategyNodeType::DocString, &ctx)
+            {
+                continue;
+            }
+
+            let id = format!("{}_docstring_{}", file_path, match_idx);
+            let node_type = self.strategy.get_node_type(StrategyNodeType::DocString);
+            let unit =
+                TranslationUnit::new(id, node_type, text.to_string(), m.start_pos, m.end_pos);
+            units.push(unit);
+            match_idx += 1;
+        }
+
+        Ok(units)
+    }
+
     /// Extract string literals using the core framework
     fn extract_strings(
         &self,
@@ -290,6 +351,12 @@ impl CppParser {
         if self.config.extract_comments {
             let comment_units = self.extract_comments(&root_node, content, file_path)?;
             units.extend(comment_units);
+        }
+
+        // Extract doc comments
+        if self.config.extract_docstrings {
+            let doc_units = self.extract_docstrings(&root_node, content, file_path)?;
+            units.extend(doc_units);
         }
 
         // Extract string literals

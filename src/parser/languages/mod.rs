@@ -17,6 +17,9 @@ pub mod python;
 pub mod rust;
 pub mod typescript;
 
+#[cfg(test)]
+mod tests;
+
 // Re-export commonly used types
 pub use c::CParser;
 pub use cpp::CppParser;

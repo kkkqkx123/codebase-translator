@@ -5,7 +5,7 @@ use std::sync::Arc;
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, TranslationUnit};
 use crate::parser::filter::ContentFilter;
-use crate::parser::regex::{RegexParser, presets};
+use crate::parser::regex::{presets, RegexParser};
 use crate::parser::strategy::ExtractionStrategyImpl;
 use crate::parser::tree_sitter::{ParserConfig, TreeSitterParser, TreeSitterParserFactory};
 use crate::parser::Parser as ParserTrait;

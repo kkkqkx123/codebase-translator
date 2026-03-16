@@ -72,10 +72,7 @@ impl StateMachineMatcher {
 
         for config in state_configs {
             let regex = Regex::new(&config.regex).map_err(|e| {
-                TranslateError::Config(format!(
-                    "Invalid regex in state '{}': {}",
-                    config.name, e
-                ))
+                TranslateError::Config(format!("Invalid regex in state '{}': {}", config.name, e))
             })?;
 
             let transitions = config
@@ -151,10 +148,9 @@ impl StateMachineMatcher {
         let mut last_accepting_match: Option<(String, usize, Vec<String>)> = None;
 
         loop {
-            let state = self
-                .states
-                .get(&current_state_name)
-                .ok_or_else(|| TranslateError::Parse(format!("State '{}' not found", current_state_name)))?;
+            let state = self.states.get(&current_state_name).ok_or_else(|| {
+                TranslateError::Parse(format!("State '{}' not found", current_state_name))
+            })?;
 
             // Try to match the current state's regex at current position
             let remaining = &content[current_offset.min(content.len())..];
@@ -183,11 +179,7 @@ impl StateMachineMatcher {
 
                 // If this is a final/accepting state, record the match
                 if state.is_final || self.accepting_states.contains(&current_state_name) {
-                    last_accepting_match = Some((
-                        extracted_content,
-                        match_end,
-                        captures.clone(),
-                    ));
+                    last_accepting_match = Some((extracted_content, match_end, captures.clone()));
                 }
 
                 // Try to transition to next state
@@ -322,10 +314,12 @@ impl StateMachineBuilder {
     /// Add a transition to the last added state
     pub fn transition(mut self, target: impl Into<String>) -> Self {
         if let Some(last_state) = self.states.last_mut() {
-            last_state.transitions.push(crate::config::project::StateTransition {
-                target: target.into(),
-                condition: None,
-            });
+            last_state
+                .transitions
+                .push(crate::config::project::StateTransition {
+                    target: target.into(),
+                    condition: None,
+                });
         }
         self
     }
@@ -337,23 +331,25 @@ impl StateMachineBuilder {
         condition: impl Into<String>,
     ) -> Self {
         if let Some(last_state) = self.states.last_mut() {
-            last_state.transitions.push(crate::config::project::StateTransition {
-                target: target.into(),
-                condition: Some(condition.into()),
-            });
+            last_state
+                .transitions
+                .push(crate::config::project::StateTransition {
+                    target: target.into(),
+                    condition: Some(condition.into()),
+                });
         }
         self
     }
 
     /// Build the state machine matcher
     pub fn build(self) -> Result<StateMachineMatcher> {
-        let name = self.name.ok_or_else(|| {
-            TranslateError::Config("State machine name is required".to_string())
-        })?;
+        let name = self
+            .name
+            .ok_or_else(|| TranslateError::Config("State machine name is required".to_string()))?;
 
-        let initial_state = self.initial_state.ok_or_else(|| {
-            TranslateError::Config("Initial state is required".to_string())
-        })?;
+        let initial_state = self
+            .initial_state
+            .ok_or_else(|| TranslateError::Config("Initial state is required".to_string()))?;
 
         if self.accepting_states.is_empty() {
             return Err(TranslateError::Config(
@@ -361,12 +357,7 @@ impl StateMachineBuilder {
             ));
         }
 
-        StateMachineMatcher::from_config(
-            name,
-            initial_state,
-            self.accepting_states,
-            &self.states,
-        )
+        StateMachineMatcher::from_config(name, initial_state, self.accepting_states, &self.states)
     }
 }
 

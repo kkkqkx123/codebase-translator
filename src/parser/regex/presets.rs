@@ -88,7 +88,7 @@ pub fn create_all_parsers(config: ParserConfig) -> Vec<RegexParser> {
 /// Get all supported extensions from presets
 pub fn get_all_supported_extensions() -> Vec<&'static str> {
     vec![
-        "txt", "md", "markdown", "sh", "bash", "zsh", "fish", "html", "htm", "xml", "svg",
-        "sql", "mysql", "pgsql", "yml", "yaml", "toml",
+        "txt", "md", "markdown", "sh", "bash", "zsh", "fish", "html", "htm", "xml", "svg", "sql",
+        "mysql", "pgsql", "yml", "yaml", "toml",
     ]
 }

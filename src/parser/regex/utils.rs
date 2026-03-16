@@ -6,8 +6,7 @@ use crate::core::models::Position;
 pub fn is_punctuation(c: char) -> bool {
     matches!(
         c,
-        '!'
-            | '"'
+        '!' | '"'
             | '#'
             | '$'
             | '%'
