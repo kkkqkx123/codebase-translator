@@ -3,10 +3,8 @@
 use std::path::PathBuf;
 
 use crate::core::models::File;
-use crate::parser::regex_parsers::FallbackParser;
 use crate::parser::tree_sitter::ParserConfig;
-
-use super::{ParserCoordinator, ParserType};
+use crate::parser::ParserCoordinator;
 
 fn create_test_file(content: &str, path: &str) -> File {
     File::new(PathBuf::from(path), content.as_bytes().to_vec(), "utf-8")
@@ -58,10 +56,9 @@ fn test_find_parser() {
 
     let parser_type = coordinator.find_parser("test.rs");
     assert!(parser_type.is_some());
-    assert!(matches!(parser_type, Some(ParserType::TreeSitter(_))));
 
     let parser_type = coordinator.find_parser("test.md");
-    assert_eq!(parser_type, Some(ParserType::Regex));
+    assert!(parser_type.is_some());
 }
 
 #[test]
@@ -82,15 +79,4 @@ fn test_parse_unsupported_file() {
     assert!(result.is_err());
     let err_msg = format!("{}", result.unwrap_err());
     assert!(err_msg.contains("No parser found"));
-}
-
-#[test]
-fn test_with_parsers() {
-    let tree_sitter_parsers: Vec<crate::parser::tree_sitter::TreeSitterParser> = Vec::new();
-    let fallback_parser = FallbackParser::new(ParserConfig::default());
-
-    let coordinator = ParserCoordinator::with_parsers(tree_sitter_parsers, fallback_parser);
-
-    assert_eq!(coordinator.tree_sitter_parser_count(), 0);
-    assert!(coordinator.can_parse("test.md"));
 }

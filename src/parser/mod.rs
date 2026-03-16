@@ -51,7 +51,10 @@ pub mod regex;
 pub mod regex_parsers;
 
 // String literal extractor (deprecated - not currently used)
-#[deprecated(since = "0.1.0", note = "This module is not currently used and may be removed in a future version")]
+#[deprecated(
+    since = "0.1.0",
+    note = "This module is not currently used and may be removed in a future version"
+)]
 pub mod string_extractor;
 
 // Parser trait

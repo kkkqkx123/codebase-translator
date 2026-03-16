@@ -1,17 +1,17 @@
-//! File writer implementation
+//! Async file writer implementation
 //!
-//! This module provides a safe file writer with encoding conversion,
-//! preview mode, backup mechanism, and atomic file writing.
+//! This module provides async file writing capabilities using Tokio,
+//! with encoding conversion, preview mode, backup mechanism, and atomic file writing.
 
-use std::collections::HashMap;
-use std::fs;
-use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
+use tokio::sync::RwLock;
 use tracing::{debug, error, info, warn};
 
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, TranslationUnit};
+
+use super::core::TranslationApplier;
 
 /// Configuration for file writer
 #[derive(Debug, Clone)]
@@ -56,64 +56,57 @@ impl WriterConfig {
     }
 }
 
-/// File writer for writing translated content
+/// Async file writer for writing translated content
 #[derive(Debug, Clone)]
 pub struct FileWriter {
     config: Arc<RwLock<WriterConfig>>,
 }
 
 impl FileWriter {
-    /// Create a new file writer
+    /// Create a new async file writer
     pub fn new(config: WriterConfig) -> Self {
         Self {
             config: Arc::new(RwLock::new(config)),
         }
     }
 
-    /// Write translations to file
-    pub fn write(
-        &self,
-        file: &File,
-        units: &[TranslationUnit],
-        results: &HashMap<String, String>,
-    ) -> Result<()> {
+    /// Write translations to file asynchronously
+    ///
+    /// # Arguments
+    /// * `file` - The file to write to
+    /// * `units` - Translation units with translated content
+    pub async fn write(&self, file: &File, units: &[TranslationUnit]) -> Result<()> {
         info!(
             file = %file.path.display(),
             translation_units = units.len(),
-            "Starting file write"
+            "Starting async file write"
         );
 
-        let config = self.config.read().map_err(|_| {
-            TranslateError::Lock("Failed to acquire read lock on config".to_string())
-        })?;
+        let config = self.config.read().await;
 
         if config.preview_only {
-            return self.write_preview(file, units, results);
+            return self.write_preview(file, units);
         }
 
         let content = String::from_utf8_lossy(&file.content);
         let line_ending = detect_line_ending(&content);
 
-        let modified_content = self.apply_translations(&content, units, results);
+        let modified_content = TranslationApplier::apply_translations(&content, units)?;
         let modified_content = normalize_line_ending(&modified_content, line_ending);
 
-        self.write_file_atomically(file, &content, &modified_content)?;
+        self.write_file_atomically(file, &content, &modified_content)
+            .await?;
 
-        info!(file = %file.path.display(), "File write completed successfully");
+        info!(file = %file.path.display(), "Async file write completed successfully");
         Ok(())
     }
 
     /// Write preview of translations (without modifying file)
-    pub fn write_preview(
-        &self,
-        file: &File,
-        units: &[TranslationUnit],
-        results: &HashMap<String, String>,
-    ) -> Result<()> {
+    fn write_preview(&self, file: &File, units: &[TranslationUnit]) -> Result<()> {
         println!("\n=== File: {} ===", file.path.display());
 
         for unit in units {
-            if let Some(translated) = results.get(&unit.id) {
+            if let Some(translated) = &unit.translated {
                 println!("\n[{}] Line {}", unit.node_type, unit.start_pos.line);
                 println!("Original:   {}", unit.content);
                 println!("Translated: {}", translated);
@@ -123,237 +116,26 @@ impl FileWriter {
         Ok(())
     }
 
-    /// Apply translations to content
-    fn apply_translations(
-        &self,
-        content: &str,
-        units: &[TranslationUnit],
-        results: &HashMap<String, String>,
-    ) -> String {
-        if units.is_empty() {
-            return content.to_string();
-        }
-
-        if self.is_markdown_file(content) {
-            return self.apply_markdown_translations(content, units, results);
-        }
-
-        let mut unit_map: HashMap<usize, Vec<&TranslationUnit>> = HashMap::new();
-        for unit in units {
-            if unit.start_pos.line >= 1 {
-                unit_map.entry(unit.start_pos.line).or_default().push(unit);
-            }
-        }
-
-        let line_ending = detect_line_ending(content);
-        let lines: Vec<&str> = content.split('\n').collect();
-
-        let mut builder = String::with_capacity(content.len());
-
-        for (line_num, line) in lines.iter().enumerate() {
-            if let Some(line_units) = unit_map.get(&(line_num + 1)) {
-                builder.push_str(&self.apply_translations_to_line(line, line_units, results));
-            } else {
-                builder.push_str(line);
-            }
-            if line_num < lines.len() - 1 {
-                builder.push_str(line_ending);
-            }
-        }
-
-        builder
-    }
-
-    /// Apply translations to a single line
-    fn apply_translations_to_line(
-        &self,
-        line: &str,
-        units: &[&TranslationUnit],
-        results: &HashMap<String, String>,
-    ) -> String {
-        if units.is_empty() {
-            return line.to_string();
-        }
-
-        #[derive(Debug)]
-        struct Replacement {
-            start_char: usize,
-            end_char: usize,
-            text: String,
-        }
-
-        let mut replacements: Vec<Replacement> = units
-            .iter()
-            .filter_map(|unit| {
-                results.get(&unit.id).map(|translated| Replacement {
-                    start_char: unit.start_pos.column.saturating_sub(1),
-                    end_char: unit.end_pos.column.saturating_sub(1),
-                    text: translated.clone(),
-                })
-            })
-            .collect();
-
-        if replacements.is_empty() {
-            return line.to_string();
-        }
-
-        replacements.sort_by_key(|r| r.start_char);
-
-        let runes: Vec<char> = line.chars().collect();
-        let mut result = String::with_capacity(line.len());
-        let mut last_end = 0;
-
-        for repl in replacements {
-            let start_char = repl.start_char;
-            let end_char = if repl.end_char > runes.len() {
-                runes.len()
-            } else {
-                repl.end_char
-            };
-
-            if start_char >= end_char {
-                continue;
-            }
-
-            if start_char > last_end {
-                result.extend(&runes[last_end..start_char]);
-            }
-            result.push_str(&repl.text);
-            last_end = end_char;
-        }
-
-        if last_end < runes.len() {
-            result.extend(&runes[last_end..]);
-        }
-
-        result
-    }
-
-    /// Check if content appears to be markdown
-    fn is_markdown_file(&self, content: &str) -> bool {
-        content.contains("# ") || content.contains("## ") || content.contains("### ")
-    }
-
-    /// Apply translations for markdown files
-    fn apply_markdown_translations(
-        &self,
-        content: &str,
-        units: &[TranslationUnit],
-        results: &HashMap<String, String>,
-    ) -> String {
-        if units.is_empty() {
-            return content.to_string();
-        }
-
-        let mut unit_map: HashMap<usize, Vec<&TranslationUnit>> = HashMap::new();
-        for unit in units {
-            if unit.start_pos.line >= 1 {
-                unit_map.entry(unit.start_pos.line).or_default().push(unit);
-            }
-        }
-
-        let line_ending = detect_line_ending(content);
-        let lines: Vec<&str> = content.split('\n').collect();
-
-        let mut builder = String::with_capacity(content.len());
-
-        for (line_num, line) in lines.iter().enumerate() {
-            if let Some(line_units) = unit_map.get(&(line_num + 1)) {
-                builder
-                    .push_str(&self.apply_markdown_translations_to_line(line, line_units, results));
-            } else {
-                builder.push_str(line);
-            }
-            if line_num < lines.len() - 1 {
-                builder.push_str(line_ending);
-            }
-        }
-
-        builder
-    }
-
-    /// Apply translations to a markdown line
-    fn apply_markdown_translations_to_line(
-        &self,
-        line: &str,
-        units: &[&TranslationUnit],
-        results: &HashMap<String, String>,
-    ) -> String {
-        if units.is_empty() {
-            return line.to_string();
-        }
-
-        #[derive(Debug)]
-        struct Replacement {
-            start_char: usize,
-            end_char: usize,
-            text: String,
-        }
-
-        let mut replacements: Vec<Replacement> = units
-            .iter()
-            .filter_map(|unit| {
-                results.get(&unit.id).map(|translated| Replacement {
-                    start_char: unit.start_pos.column.saturating_sub(1),
-                    end_char: unit.end_pos.column.saturating_sub(1),
-                    text: translated.clone(),
-                })
-            })
-            .collect();
-
-        if replacements.is_empty() {
-            return line.to_string();
-        }
-
-        replacements.sort_by_key(|r| r.start_char);
-
-        let runes: Vec<char> = line.chars().collect();
-        let mut result = String::with_capacity(line.len());
-        let mut last_end = 0;
-
-        for repl in replacements {
-            let start_char = repl.start_char;
-            let end_char = if repl.end_char > runes.len() {
-                runes.len()
-            } else {
-                repl.end_char
-            };
-
-            if start_char >= end_char {
-                continue;
-            }
-
-            if start_char > last_end {
-                result.extend(&runes[last_end..start_char]);
-            }
-            result.push_str(&repl.text);
-            last_end = end_char;
-        }
-
-        if last_end < runes.len() {
-            result.extend(&runes[last_end..]);
-        }
-
-        result
-    }
-
-    /// Write file atomically with backup support
-    fn write_file_atomically(
+    /// Write file atomically with backup support (async version)
+    async fn write_file_atomically(
         &self,
         file: &File,
         original_content: &str,
         modified_content: &str,
     ) -> Result<()> {
         let file_path = &file.path;
-        debug!(file = %file_path.display(), "Starting atomic file write");
+        debug!(file = %file_path.display(), "Starting async atomic file write");
 
-        let config = self.config.read().map_err(|_| {
-            TranslateError::Lock("Failed to acquire read lock on config".to_string())
-        })?;
+        let config = self.config.read().await;
+
+        if original_content == modified_content {
+            debug!(file = %file_path.display(), "No changes detected, skipping write");
+            return Ok(());
+        }
 
         // Create backup if enabled
         if config.backup {
-            if let Err(e) = self.create_backup(file_path, original_content) {
+            if let Err(e) = self.create_backup(file_path, original_content).await {
                 warn!(
                     file = %file_path.display(),
                     error = %e,
@@ -366,77 +148,65 @@ impl FileWriter {
         let temp_path = file_path.with_extension("tmp");
 
         // Write to temporary file
-        let mut temp_file = fs::File::create(&temp_path).map_err(|e| {
+        if let Err(e) = tokio::fs::write(&temp_path, modified_content).await {
             error!(
                 file = %file_path.display(),
                 error = %e,
-                "Failed to create temporary file"
+                "Failed to write temporary file"
             );
-            TranslateError::Io(format!("Failed to create temporary file: {e}"))
-        })?;
-
-        temp_file
-            .write_all(modified_content.as_bytes())
-            .map_err(|e| {
-                error!(
-                    file = %file_path.display(),
-                    error = %e,
-                    "Failed to write temporary file"
-                );
-                let _ = fs::remove_file(&temp_path);
-                TranslateError::Io(format!("Failed to write temporary file: {e}"))
-            })?;
-
-        drop(temp_file);
+            let _ = tokio::fs::remove_file(&temp_path).await;
+            return Err(TranslateError::Io(format!(
+                "Failed to write temporary file: {e}"
+            )));
+        }
 
         // Preserve metadata
-        if let Err(e) = self.preserve_metadata(file_path, &temp_path) {
+        if let Err(e) = self.preserve_metadata(file_path, &temp_path).await {
             error!(
                 file = %file_path.display(),
                 error = %e,
                 "Failed to preserve file metadata"
             );
-            let _ = fs::remove_file(&temp_path);
+            let _ = tokio::fs::remove_file(&temp_path).await;
             return Err(TranslateError::Io(format!(
                 "Failed to preserve file metadata: {e}"
             )));
         }
 
         // Atomic rename
-        fs::rename(&temp_path, file_path).map_err(|e| {
+        if let Err(e) = tokio::fs::rename(&temp_path, file_path).await {
             error!(
                 file = %file_path.display(),
                 error = %e,
                 "Failed to replace original file"
             );
-            let _ = fs::remove_file(&temp_path);
-            TranslateError::Io(format!("Failed to replace original file: {e}"))
-        })?;
+            let _ = tokio::fs::remove_file(&temp_path).await;
+            return Err(TranslateError::Io(format!(
+                "Failed to replace original file: {e}"
+            )));
+        }
 
-        debug!(file = %file_path.display(), "Atomic file write completed");
+        debug!(file = %file_path.display(), "Async atomic file write completed");
         Ok(())
     }
 
     /// Preserve file metadata (permissions)
-    fn preserve_metadata(&self, src_path: &Path, dst_path: &Path) -> Result<()> {
-        let metadata = fs::metadata(src_path)
+    async fn preserve_metadata(&self, src_path: &Path, dst_path: &Path) -> Result<()> {
+        let metadata = tokio::fs::metadata(src_path)
+            .await
             .map_err(|e| TranslateError::Io(format!("Failed to get file metadata: {e}")))?;
 
         let permissions = metadata.permissions();
-        fs::set_permissions(dst_path, permissions)
+        tokio::fs::set_permissions(dst_path, permissions)
+            .await
             .map_err(|e| TranslateError::Io(format!("Failed to set file permissions: {e}")))?;
 
         Ok(())
     }
 
     /// Create backup of original file
-    pub fn create_backup(&self, file_path: &Path, original_content: &str) -> Result<PathBuf> {
-        use std::time::SystemTime;
-
-        let timestamp = SystemTime::now()
-            .duration_since(SystemTime::UNIX_EPOCH)
-            .map_err(|e| TranslateError::Io(format!("Failed to get timestamp: {e}")))?;
-        let timestamp_str = format!("{}", timestamp.as_secs());
+    async fn create_backup(&self, file_path: &Path, original_content: &str) -> Result<PathBuf> {
+        let timestamp = chrono::Utc::now().format("%Y%m%d_%H%M%S");
 
         let ext = file_path.extension().and_then(|e| e.to_str()).unwrap_or("");
         let base = file_path
@@ -444,14 +214,12 @@ impl FileWriter {
             .and_then(|s| s.to_str())
             .unwrap_or("backup");
 
-        let config = self.config.read().map_err(|_| {
-            TranslateError::Lock("Failed to acquire read lock on config".to_string())
-        })?;
+        let config = self.config.read().await;
 
         // Determine backup path
         let backup_path: PathBuf = if let Some(ref backup_dir) = config.backup_dir {
             // Create backup directory if needed
-            fs::create_dir_all::<&Path>(backup_dir).map_err(|e| {
+            tokio::fs::create_dir_all(backup_dir).await.map_err(|e| {
                 TranslateError::Io(format!("Failed to create backup directory: {e}"))
             })?;
 
@@ -466,31 +234,32 @@ impl FileWriter {
 
             if let Some(rel_dir) = rel_dir {
                 let target_dir = backup_dir.join(rel_dir);
-                fs::create_dir_all::<&Path>(&target_dir).map_err(|e| {
+                tokio::fs::create_dir_all(&target_dir).await.map_err(|e| {
                     TranslateError::Io(format!("Failed to create backup subdirectory: {e}"))
                 })?;
-                target_dir.join(format!("{}_{}.bak.{}", base, timestamp_str, ext))
+                target_dir.join(format!("{}_{}.bak.{}", base, timestamp, ext))
             } else {
-                backup_dir.join(format!("{}_{}.bak.{}", base, timestamp_str, ext))
+                backup_dir.join(format!("{}_{}.bak.{}", base, timestamp, ext))
             }
         } else {
             // Same directory as original file
             file_path
                 .parent()
-                .map(|p| p.join(format!("{}_{}.bak.{}", base, timestamp_str, ext)))
-                .unwrap_or_else(|| PathBuf::from(format!("{}_{}.bak.{}", base, timestamp_str, ext)))
+                .map(|p| p.join(format!("{}_{}.bak.{}", base, timestamp, ext)))
+                .unwrap_or_else(|| PathBuf::from(format!("{}_{}.bak.{}", base, timestamp, ext)))
         };
 
         // Get original file info for metadata
-        let src_info = fs::metadata(file_path).ok();
+        let src_info = tokio::fs::metadata(file_path).await.ok();
 
         // Write backup content with original permissions
         let perm = src_info.as_ref().map(|m| m.permissions());
-        fs::write(&backup_path, original_content)
+        tokio::fs::write(&backup_path, original_content)
+            .await
             .map_err(|e| TranslateError::Io(format!("Failed to write backup file: {e}")))?;
 
         if let Some(perm) = perm {
-            let _ = fs::set_permissions(&backup_path, perm);
+            let _ = tokio::fs::set_permissions(&backup_path, perm).await;
         }
 
         info!(
@@ -503,30 +272,26 @@ impl FileWriter {
     }
 
     /// Set preview mode
-    pub fn set_preview_mode(&self, preview: bool) {
-        if let Ok(mut config) = self.config.write() {
-            config.preview_only = preview;
-        }
+    pub async fn set_preview_mode(&self, preview: bool) {
+        let mut config = self.config.write().await;
+        config.preview_only = preview;
     }
 
     /// Set backup mode
-    pub fn set_backup_mode(&self, backup: bool) {
-        if let Ok(mut config) = self.config.write() {
-            config.backup = backup;
-        }
+    pub async fn set_backup_mode(&self, backup: bool) {
+        let mut config = self.config.write().await;
+        config.backup = backup;
     }
 
     /// Get current config
-    pub fn config(&self) -> Result<WriterConfig> {
-        self.config
-            .read()
-            .map(|c| c.clone())
-            .map_err(|_| TranslateError::Lock("Failed to acquire read lock on config".to_string()))
+    pub async fn config(&self) -> Result<WriterConfig> {
+        let config = self.config.read().await;
+        Ok(config.clone())
     }
 }
 
 /// Detect line ending style
-fn detect_line_ending(content: &str) -> &str {
+pub fn detect_line_ending(content: &str) -> &str {
     if content.contains("\r\n") {
         "\r\n"
     } else {
@@ -535,7 +300,7 @@ fn detect_line_ending(content: &str) -> &str {
 }
 
 /// Normalize line endings
-fn normalize_line_ending(content: &str, line_ending: &str) -> String {
+pub fn normalize_line_ending(content: &str, line_ending: &str) -> String {
     if line_ending == "\r\n" {
         content.replace("\r\n", "\n").replace("\n", "\r\n")
     } else {
@@ -546,7 +311,7 @@ fn normalize_line_ending(content: &str, line_ending: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::models::{NodeType, Position};
+    use crate::core::models::Position;
 
     #[test]
     fn test_detect_line_ending() {
@@ -567,15 +332,23 @@ mod tests {
         );
     }
 
-    #[test]
-    fn test_file_writer_apply_translations() {
+    #[tokio::test]
+    async fn test_file_writer_write() {
         let config = WriterConfig::default();
         let writer = FileWriter::new(config);
 
-        let content = "Hello world\nThis is a test";
-        let units = vec![TranslationUnit {
+        let temp_dir = std::env::temp_dir();
+        let file_path = temp_dir.join("test_writer.txt");
+        let content = b"Hello world";
+
+        // Create the file first
+        tokio::fs::write(&file_path, content).await.unwrap();
+
+        let file = File::new(file_path.clone(), content.to_vec(), "UTF-8");
+
+        let mut units = vec![TranslationUnit {
             id: "1".to_string(),
-            node_type: NodeType::Comment,
+            node_type: crate::core::models::NodeType::Comment,
             content: "Hello".to_string(),
             start_pos: Position::new(1, 1, 0),
             end_pos: Position::new(1, 6, 5),
@@ -584,16 +357,17 @@ mod tests {
             translated: None,
         }];
 
-        let mut results = HashMap::new();
-        results.insert("1".to_string(), "你好".to_string());
+        units[0].set_translated("你好");
 
-        let result = writer.apply_translations(content, &units, &results);
-        assert!(result.contains("你好"));
-        assert!(result.contains("world"));
+        let result = writer.write(&file, &units).await;
+        assert!(result.is_ok());
+
+        // Cleanup
+        let _ = tokio::fs::remove_file(&file_path).await;
     }
 
-    #[test]
-    fn test_file_writer_preview_mode() {
+    #[tokio::test]
+    async fn test_file_writer_preview_mode() {
         let config = WriterConfig {
             preview_only: true,
             ..Default::default()
@@ -602,9 +376,9 @@ mod tests {
 
         let file = File::new(PathBuf::from("test.txt"), b"Hello world".to_vec(), "UTF-8");
 
-        let units = vec![TranslationUnit {
+        let mut units = vec![TranslationUnit {
             id: "1".to_string(),
-            node_type: NodeType::Comment,
+            node_type: crate::core::models::NodeType::Comment,
             content: "Hello".to_string(),
             start_pos: Position::new(1, 1, 0),
             end_pos: Position::new(1, 6, 5),
@@ -613,11 +387,10 @@ mod tests {
             translated: None,
         }];
 
-        let mut results = HashMap::new();
-        results.insert("1".to_string(), "你好".to_string());
+        units[0].set_translated("你好");
 
         // Should not fail in preview mode
-        let result = writer.write(&file, &units, &results);
+        let result = writer.write(&file, &units).await;
         assert!(result.is_ok());
     }
 }

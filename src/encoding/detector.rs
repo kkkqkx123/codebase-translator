@@ -1,4 +1,5 @@
-use std::path::Path;
+use rayon::prelude::*;
+use std::path::{Path, PathBuf};
 use tracing::{debug, warn};
 
 use crate::encoding::error::Error;
@@ -37,6 +38,31 @@ impl Detector {
         let data = std::fs::read(path)
             .map_err(|e| Error::file_not_found(format!("{}: {}", path.display(), e)))?;
         self.detect_bytes_with_source(&data, path.display().to_string().as_str())
+    }
+
+    /// Detects encodings for multiple files in parallel using Rayon.
+    ///
+    /// This method is CPU-intensive and benefits from parallel processing.
+    /// Suitable for projects with many files.
+    ///
+    /// # Arguments
+    /// * `paths` - Slice of file paths to detect
+    ///
+    /// # Returns
+    /// Vector of tuples containing (Path, EncodingResult)
+    pub fn detect_files_parallel(
+        &self,
+        paths: &[PathBuf],
+    ) -> Result<Vec<(PathBuf, EncodingResult)>> {
+        let results: Result<Vec<_>> = paths
+            .par_iter()
+            .map(|path| {
+                let result = self.detect_file(path)?;
+                Ok((path.clone(), result))
+            })
+            .collect();
+
+        results
     }
 
     fn detect_bytes_with_source(&self, data: &[u8], source: &str) -> Result<EncodingResult> {

@@ -2,68 +2,18 @@
 //!
 //! This module provides functionality for writing translated content back to files.
 //! It supports atomic writes, backup creation, preview mode, and concurrent writing.
+//!
+//! Note: All file writing operations are asynchronous and use Tokio runtime.
 
 pub mod concurrent;
+pub mod core;
 pub mod file;
 pub mod r#trait;
 
-pub use concurrent::ConcurrentWriter;
+pub use concurrent::{ConcurrentWriteStats, ConcurrentWriter, WriteResult};
 pub use file::{FileWriter, WriterConfig};
-pub use r#trait::Writer;
 
-use std::collections::HashMap;
-use std::path::PathBuf;
-
-use crate::core::error::Result;
-use crate::core::models::{File, TranslationUnit};
-
-/// Default implementation of the Writer trait using FileWriter
-#[derive(Debug, Clone)]
-pub struct DefaultWriter {
-    inner: FileWriter,
-}
-
-impl DefaultWriter {
-    /// Create a new default writer
-    pub fn new(config: WriterConfig) -> Self {
-        Self {
-            inner: FileWriter::new(config),
-        }
-    }
-
-    /// Get the inner file writer
-    pub fn inner(&self) -> &FileWriter {
-        &self.inner
-    }
-}
-
-impl Writer for DefaultWriter {
-    fn write(&self, file: &File, units: &[TranslationUnit]) -> Result<()> {
-        // Build results map from translated units
-        let results: HashMap<String, String> = units
-            .iter()
-            .filter_map(|unit| {
-                unit.translated
-                    .clone()
-                    .map(|translated| (unit.id.clone(), translated))
-            })
-            .collect();
-
-        self.inner.write(file, units, &results)
-    }
-
-    fn backup(&self, file: &File) -> Result<PathBuf> {
-        // Create backup using the file writer's backup functionality
-        let content = String::from_utf8_lossy(&file.content);
-        self.inner.create_backup(&file.path, &content)
-    }
-
-    fn is_dry_run(&self) -> bool {
-        // This would need to be determined from config
-        // For now, return false as default
-        false
-    }
-}
+use crate::core::models::TranslationUnit;
 
 /// Factory for creating writers
 pub struct WriterFactory;
@@ -74,11 +24,6 @@ impl WriterFactory {
         FileWriter::new(config)
     }
 
-    /// Create a new default writer
-    pub fn create_default_writer(config: WriterConfig) -> DefaultWriter {
-        DefaultWriter::new(config)
-    }
-
     /// Create a new concurrent writer
     pub fn create_concurrent_writer(
         config: WriterConfig,
@@ -86,6 +31,16 @@ impl WriterFactory {
     ) -> ConcurrentWriter {
         ConcurrentWriter::new(config, max_concurrent)
     }
+}
+
+/// Helper function to apply translations to a file
+///
+/// This is a convenience function for simple use cases.
+pub fn apply_translations(
+    content: &str,
+    units: &[TranslationUnit],
+) -> crate::core::error::Result<String> {
+    core::TranslationApplier::apply_translations(content, units)
 }
 
 #[cfg(test)]
@@ -113,12 +68,5 @@ mod tests {
             ..Default::default()
         };
         assert!(config_with_backup.validate().is_ok());
-    }
-
-    #[tokio::test]
-    async fn test_default_writer_creation() {
-        let config = WriterConfig::default();
-        let writer = DefaultWriter::new(config);
-        assert!(!writer.is_dry_run());
     }
 }

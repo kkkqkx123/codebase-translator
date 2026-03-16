@@ -3,10 +3,9 @@
 //! This module provides concurrent file writing capabilities with
 //! rate limiting and error handling for batch processing.
 //!
-//! Note: This module uses spawn_blocking for file I/O operations
-//! to avoid blocking the async runtime threads.
+//! Note: This module uses async file I/O operations via FileWriter
+//! for better performance with concurrent writes.
 
-use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Arc;
 
@@ -16,7 +15,7 @@ use tracing::error;
 
 use crate::core::models::{File, TranslationUnit};
 
-use super::file::{FileWriter, WriterConfig};
+use super::{FileWriter, WriterConfig};
 
 /// A writer that handles concurrent file writes with rate limiting
 #[derive(Debug, Clone)]
@@ -49,17 +48,14 @@ impl ConcurrentWriter {
 
     /// Write multiple files concurrently
     ///
-    /// Note: This method uses spawn_blocking to perform file I/O operations
-    /// on a dedicated thread pool, preventing blocking of async runtime threads.
-    pub async fn write_files(
-        &self,
-        files: Vec<(File, Vec<TranslationUnit>, HashMap<String, String>)>,
-    ) -> Vec<WriteResult> {
+    /// Note: This method uses async file I/O operations via FileWriter
+    /// for better performance with concurrent writes.
+    pub async fn write_files(&self, files: Vec<(File, Vec<TranslationUnit>)>) -> Vec<WriteResult> {
         let semaphore = Arc::new(Semaphore::new(self.max_concurrent));
         let mut results = Vec::with_capacity(files.len());
         let mut join_set = JoinSet::new();
 
-        for (file, units, translations) in files {
+        for (file, units) in files {
             let permit = semaphore
                 .clone()
                 .acquire_owned()
@@ -67,14 +63,14 @@ impl ConcurrentWriter {
                 .expect("Semaphore should not be closed");
             let config = self.config.clone();
 
-            // Use spawn_blocking for file I/O to avoid blocking async runtime
-            join_set.spawn(tokio::task::spawn_blocking(move || {
+            // Use async file I/O via FileWriter
+            join_set.spawn(async move {
                 let _permit = permit;
                 let writer = FileWriter::new(config);
                 let path = file.path.clone();
                 let unit_count = units.len();
 
-                match writer.write(&file, &units, &translations) {
+                match writer.write(&file, &units).await {
                     Ok(()) => WriteResult {
                         path,
                         success: true,
@@ -88,21 +84,12 @@ impl ConcurrentWriter {
                         units_written: 0,
                     },
                 }
-            }));
+            });
         }
 
         while let Some(result) = join_set.join_next().await {
             match result {
-                Ok(Ok(write_result)) => results.push(write_result),
-                Ok(Err(e)) => {
-                    error!(error = %e, "Blocking task panicked during concurrent write");
-                    results.push(WriteResult {
-                        path: PathBuf::from("<unknown>"),
-                        success: false,
-                        error: Some(format!("Blocking task panicked: {e}")),
-                        units_written: 0,
-                    });
-                }
+                Ok(write_result) => results.push(write_result),
                 Err(e) => {
                     error!(error = %e, "Task panicked during concurrent write");
                     results.push(WriteResult {
@@ -120,18 +107,18 @@ impl ConcurrentWriter {
 
     /// Write files with a channel-based approach for backpressure
     ///
-    /// Note: This method uses spawn_blocking for file I/O operations
-    /// on a dedicated thread pool, preventing blocking of async runtime threads.
+    /// Note: This method uses async file I/O operations via FileWriter
+    /// for better performance with concurrent writes.
     pub async fn write_files_streaming(
         &self,
-        mut file_receiver: mpsc::Receiver<(File, Vec<TranslationUnit>, HashMap<String, String>)>,
+        mut file_receiver: mpsc::Receiver<(File, Vec<TranslationUnit>)>,
     ) -> mpsc::Receiver<WriteResult> {
         let (result_sender, result_receiver) = mpsc::channel(self.max_concurrent * 2);
         let semaphore = Arc::new(Semaphore::new(self.max_concurrent));
         let config = self.config.clone();
 
         tokio::spawn(async move {
-            while let Some((file, units, translations)) = file_receiver.recv().await {
+            while let Some((file, units)) = file_receiver.recv().await {
                 let permit = match semaphore.clone().acquire_owned().await {
                     Ok(p) => p,
                     Err(_) => break,
@@ -139,14 +126,14 @@ impl ConcurrentWriter {
                 let sender = result_sender.clone();
                 let writer_config = config.clone();
 
-                // Use spawn_blocking for file I/O
-                tokio::spawn(tokio::task::spawn_blocking(move || {
+                // Use async file I/O
+                tokio::spawn(async move {
                     let _permit = permit;
                     let writer = FileWriter::new(writer_config);
                     let path = file.path.clone();
                     let unit_count = units.len();
 
-                    let result = match writer.write(&file, &units, &translations) {
+                    let result = match writer.write(&file, &units).await {
                         Ok(()) => WriteResult {
                             path,
                             success: true,
@@ -161,9 +148,8 @@ impl ConcurrentWriter {
                         },
                     };
 
-                    // Use blocking_send since we're in a blocking context
-                    let _ = sender.blocking_send(result);
-                }));
+                    let _ = sender.send(result).await;
+                });
             }
         });
 
@@ -214,8 +200,48 @@ impl ConcurrentWriteStats {
         stats
     }
 
-    /// Check if all writes were successful
-    pub fn all_success(&self) -> bool {
-        self.failure_count == 0 && self.total_files > 0
+    /// Calculate success rate as percentage
+    pub fn success_rate(&self) -> f64 {
+        if self.total_files == 0 {
+            return 0.0;
+        }
+        (self.success_count as f64 / self.total_files as f64) * 100.0
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    // Tests only use WriteResult and ConcurrentWriteStats from this module
+
+    #[test]
+    fn test_concurrent_write_stats() {
+        let results = vec![
+            WriteResult {
+                path: PathBuf::from("file1.txt"),
+                success: true,
+                error: None,
+                units_written: 5,
+            },
+            WriteResult {
+                path: PathBuf::from("file2.txt"),
+                success: true,
+                error: None,
+                units_written: 3,
+            },
+            WriteResult {
+                path: PathBuf::from("file3.txt"),
+                success: false,
+                error: Some("error".to_string()),
+                units_written: 0,
+            },
+        ];
+
+        let stats = ConcurrentWriteStats::from_results(&results);
+        assert_eq!(stats.total_files, 3);
+        assert_eq!(stats.success_count, 2);
+        assert_eq!(stats.failure_count, 1);
+        assert_eq!(stats.total_units, 8);
+        assert_eq!(stats.success_rate(), 66.66666666666667);
     }
 }

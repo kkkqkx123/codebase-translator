@@ -1,5 +1,6 @@
 //! Parser coordinator implementation
 
+use rayon::prelude::*;
 use std::sync::Arc;
 
 use crate::core::error::{Result, TranslateError};
@@ -114,6 +115,31 @@ impl ParserCoordinator {
             "No parser found for file: {}",
             file.path.display()
         )))
+    }
+
+    /// Parses multiple files in parallel using Rayon.
+    ///
+    /// This method is CPU-intensive and benefits from parallel processing.
+    /// Suitable for projects with many files.
+    ///
+    /// # Arguments
+    /// * `files` - Slice of files to parse
+    ///
+    /// # Returns
+    /// Vector of tuples containing (File, TranslationUnits)
+    pub fn parse_files_parallel(
+        &self,
+        files: &[File],
+    ) -> Result<Vec<(File, Vec<TranslationUnit>)>> {
+        let results: Result<Vec<_>> = files
+            .par_iter()
+            .map(|file| {
+                let units = self.parse_file(file)?;
+                Ok((file.clone(), units))
+            })
+            .collect();
+
+        results
     }
 
     /// Checks if this coordinator can parse a given file.

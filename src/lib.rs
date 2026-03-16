@@ -25,7 +25,7 @@ pub use parser::Parser;
 pub use reporter::Reporter;
 pub use scanner::Scanner;
 pub use translator::{ProviderType, Translator};
-pub use writer::Writer;
+pub use writer::r#trait::{AsyncWriter, Writer};
 
 /// Version of the library
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
