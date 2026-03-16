@@ -20,9 +20,14 @@ impl ShellParser {
                 "bash".to_string(),
                 "zsh".to_string(),
                 "fish".to_string(),
+                "ps1".to_string(),
+                "psm1".to_string(),
+                "psd1".to_string(),
+                "bat".to_string(),
+                "cmd".to_string(),
             ],
-            line_comment_pattern: Some(r"(?m)^\s*#\s*(.+)$".to_string()),
-            block_comment_pattern: None,
+            line_comment_pattern: Some(r"(?m)^\s*(?:#|REM|::)\s*(.+)$".to_string()),
+            block_comment_pattern: Some(r"<#\s*([\s\S]*?)\s*#>".to_string()),
             doc_comment_pattern: None,
             string_pattern: Some(r#"["']([^"']{3,})["']"#.to_string()),
             min_content_length: config.min_content_length,
@@ -46,7 +51,9 @@ impl ParserTrait for ShellParser {
     }
 
     fn supported_extensions(&self) -> &[&str] {
-        &["sh", "bash", "zsh", "fish"]
+        &[
+            "sh", "bash", "zsh", "fish", "ps1", "psm1", "psd1", "bat", "cmd",
+        ]
     }
 }
 
@@ -67,6 +74,11 @@ mod tests {
         assert!(parser.supports("script.bash"));
         assert!(parser.supports("config.zsh"));
         assert!(parser.supports("script.fish"));
+        assert!(parser.supports("script.ps1"));
+        assert!(parser.supports("module.psm1"));
+        assert!(parser.supports("manifest.psd1"));
+        assert!(parser.supports("script.bat"));
+        assert!(parser.supports("script.cmd"));
         assert!(!parser.supports("test.rs"));
         assert!(!parser.supports("test.txt"));
     }
@@ -81,6 +93,70 @@ echo "hello world"  # inline comment
 "#;
 
         let file = create_test_file(content, "test.sh");
+        let units = parser.parse(&file).expect("Parsing should succeed");
+
+        assert!(!units.is_empty());
+    }
+
+    #[test]
+    fn test_powershell_single_line_comments() {
+        let parser = ShellParser::new(ParserConfig::default());
+
+        let content = r#"# PowerShell single line comment
+Write-Host "Hello"  # inline comment
+# Another comment
+"#;
+
+        let file = create_test_file(content, "test.ps1");
+        let units = parser.parse(&file).expect("Parsing should succeed");
+
+        assert!(!units.is_empty());
+    }
+
+    #[test]
+    fn test_powershell_block_comments() {
+        let parser = ShellParser::new(ParserConfig::default());
+
+        let content = r#"<#
+This is a multi-line
+PowerShell comment
+#>
+Write-Host "Hello"
+"#;
+
+        let file = create_test_file(content, "test.ps1");
+        let units = parser.parse(&file).expect("Parsing should succeed");
+
+        assert!(!units.is_empty());
+    }
+
+    #[test]
+    fn test_cmd_rem_comments() {
+        let parser = ShellParser::new(ParserConfig::default());
+
+        let content = r#"@echo off
+REM This is a REM comment
+echo Hello World
+REM Another comment
+"#;
+
+        let file = create_test_file(content, "test.bat");
+        let units = parser.parse(&file).expect("Parsing should succeed");
+
+        assert!(!units.is_empty());
+    }
+
+    #[test]
+    fn test_cmd_colon_comments() {
+        let parser = ShellParser::new(ParserConfig::default());
+
+        let content = r#"@echo off
+:: This is a colon comment
+echo Hello World
+:: Another comment
+"#;
+
+        let file = create_test_file(content, "test.cmd");
         let units = parser.parse(&file).expect("Parsing should succeed");
 
         assert!(!units.is_empty());
