@@ -8,6 +8,7 @@ use tree_sitter::{Node, Parser, Tree};
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, TranslationUnit};
 use crate::parser::core::query_executor::QueryExecutor;
+use crate::parser::core::string_processor::CommentType;
 use crate::parser::core::StringProcessor;
 use crate::parser::filter::ContentFilter;
 use crate::parser::languages::python::patterns::PythonPatterns;
@@ -43,6 +44,38 @@ impl PythonParser {
         })
     }
 
+    /// Clean comment text by removing Python comment markers
+    fn clean_comment_text(&self, text: &str) -> String {
+        self.string_processor.clean_comment(text, CommentType::Line)
+    }
+
+    /// Clean docstring by removing triple quotes
+    fn clean_docstring_text(&self, text: &str) -> String {
+        let trimmed = text.trim();
+
+        // Handle triple double quotes: """..."""
+        if trimmed.starts_with("\"\"\"") && trimmed.ends_with("\"\"\"") {
+            return trimmed[3..trimmed.len() - 3].trim().to_string();
+        }
+
+        // Handle triple single quotes: '''...'''
+        if trimmed.starts_with("'''") && trimmed.ends_with("'''") {
+            return trimmed[3..trimmed.len() - 3].trim().to_string();
+        }
+
+        // Handle single double quotes: "..."
+        if trimmed.starts_with('"') && trimmed.ends_with('"') && trimmed.len() > 1 {
+            return trimmed[1..trimmed.len() - 1].to_string();
+        }
+
+        // Handle single single quotes: '...'
+        if trimmed.starts_with('\'') && trimmed.ends_with('\'') && trimmed.len() > 1 {
+            return trimmed[1..trimmed.len() - 1].to_string();
+        }
+
+        trimmed.to_string()
+    }
+
     /// Parse file content into a syntax tree
     fn parse_tree(&self, content: &str) -> Result<Tree> {
         let mut parser = Parser::new();
@@ -71,10 +104,14 @@ impl PythonParser {
         let mut match_idx = 0usize;
 
         for m in matches {
+            // Clean comment marker (#)
+            let text = self.clean_comment_text(m.text);
+
+            // Apply trim if configured
             let text = if self.config.trim_content {
-                m.text.trim()
+                text.trim().to_string()
             } else {
-                m.text
+                text
             };
 
             // Apply length filters
@@ -86,17 +123,17 @@ impl PythonParser {
             }
 
             // Skip if only symbols
-            if self.string_processor.is_only_symbols(text) {
+            if self.string_processor.is_only_symbols(&text) {
                 continue;
             }
 
             // Apply content filter
-            if !self.filter.should_translate(text) {
+            if !self.filter.should_translate(&text) {
                 continue;
             }
 
             // Apply strategy
-            let ctx = ExtractionContext::new(text);
+            let ctx = ExtractionContext::new(&text);
             if !self
                 .strategy
                 .should_extract(StrategyNodeType::Comment, &ctx)
@@ -106,8 +143,7 @@ impl PythonParser {
 
             let id = format!("{}_comment_{}", file_path, match_idx);
             let node_type = self.strategy.get_node_type(StrategyNodeType::Comment);
-            let unit =
-                TranslationUnit::new(id, node_type, text.to_string(), m.start_pos, m.end_pos);
+            let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
             units.push(unit);
             match_idx += 1;
         }
@@ -133,10 +169,14 @@ impl PythonParser {
         let mut match_idx = 0usize;
 
         for m in matches {
+            // Clean docstring quotes ("""...""" or '''...''')
+            let text = self.clean_docstring_text(m.text);
+
+            // Apply trim if configured
             let text = if self.config.trim_content {
-                m.text.trim()
+                text.trim().to_string()
             } else {
-                m.text
+                text
             };
 
             // Apply length filters
@@ -148,17 +188,17 @@ impl PythonParser {
             }
 
             // Skip if only symbols
-            if self.string_processor.is_only_symbols(text) {
+            if self.string_processor.is_only_symbols(&text) {
                 continue;
             }
 
             // Apply content filter
-            if !self.filter.should_translate(text) {
+            if !self.filter.should_translate(&text) {
                 continue;
             }
 
             // Apply strategy
-            let ctx = ExtractionContext::new(text);
+            let ctx = ExtractionContext::new(&text);
             if !self
                 .strategy
                 .should_extract(StrategyNodeType::DocString, &ctx)
@@ -168,8 +208,7 @@ impl PythonParser {
 
             let id = format!("{}_docstring_{}", file_path, match_idx);
             let node_type = self.strategy.get_node_type(StrategyNodeType::DocString);
-            let unit =
-                TranslationUnit::new(id, node_type, text.to_string(), m.start_pos, m.end_pos);
+            let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
             units.push(unit);
             match_idx += 1;
         }

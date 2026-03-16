@@ -55,29 +55,26 @@ pub struct LLMProvider {
     current_key_index: Arc<AtomicU32>,
 }
 
+impl std::fmt::Debug for LLMProvider {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("LLMProvider")
+            .field("id", &self.id)
+            .field("weight", &self.weight)
+            .finish_non_exhaustive()
+    }
+}
+
 impl LLMProvider {
     /// Create a new LLM provider
     pub fn new(config: &LLMProviderConfig) -> Result<Self> {
         let translator_config = crate::translator::common::LLMConfig {
             base_url: config.base_url.clone(),
             api_key: config.api_keys.first().cloned().unwrap_or_default(),
-            model: config
-                .models
-                .first()
-                .map(|m| m.name.clone())
-                .unwrap_or_default(),
+            model: config.model.clone(),
             proxy_url: config.proxy_url.clone(),
             timeout: config.timeout,
-            max_tokens: config
-                .models
-                .first()
-                .and_then(|m| m.max_tokens)
-                .unwrap_or(4096) as i32,
-            temperature: config
-                .models
-                .first()
-                .and_then(|m| m.temperature)
-                .unwrap_or(0.3) as f64,
+            max_tokens: config.max_tokens as i32,
+            temperature: config.temperature as f64,
             top_p: None,
             extra_headers: if config.extra_headers.is_empty() {
                 None
@@ -279,12 +276,15 @@ pub trait Provider: Send + Sync {
 
     /// Close provider
     async fn close(&self) -> Result<()>;
+
+    /// Get underlying translator for capacity information
+    fn translator(&self) -> &Arc<LLMTranslator>;
 }
 
 /// Static dispatch provider implementation enum
 ///
 /// This enum provides static dispatch for all provider implementations,
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum ProviderImpl {
     LLM(LLMProvider),
 }
@@ -341,6 +341,12 @@ impl Provider for ProviderImpl {
     async fn close(&self) -> Result<()> {
         match self {
             Self::LLM(p) => p.close().await,
+        }
+    }
+
+    fn translator(&self) -> &Arc<LLMTranslator> {
+        match self {
+            Self::LLM(p) => p.translator(),
         }
     }
 }

@@ -27,7 +27,10 @@ max_retries = 3                      # 最大重试次数
 
 # LLM 配置
 [llm]
-rotation_strategy = "round_robin"  # 轮询策略: round_robin, weighted, 或 priority
+# 路由策略:
+# - 短文本(<阈值): 在所有供应商间按权重分配
+# - 长文本(>=阈值): 在能处理的供应商中按权重分配
+# 阈值 = 所有供应商中最小的 max_tokens
 
 [llm.health_check]
 enabled = true          # 是否启用健康检查
@@ -36,45 +39,36 @@ timeout = 5             # 健康检查超时（秒）
 failure_threshold = 3   # 连续失败次数标记为不可用
 recovery_interval = 300 # 恢复检查间隔（秒），仅检查不健康的供应商
 
-# 供应商 1: siliconflow (多模型、多key轮询)
+# 供应商 1: siliconflow (多模型轮询，相同容量)
 [[llm.providers]]
-id = "silcon"
+id = "silicon"
 name = "Siliconflow"
-weight = 50             # 权重（用于所有轮询策略）
-base_url = "https://api.siliconflow.cn/v1"
-# API 密钥列表（支持多个key轮询）
-api_keys = [
-    "${SILCON_API_KEY}"
-]
-# 多模型配置
+# 模型列表（多模型轮询，共享容量限制）
 models = [
-    { name = "tencent/Hunyuan-MT-7B", enabled = true, max_tokens = 4096, temperature = 0.3 },
-    { name = "THUDM/GLM-4-9B-0414", enabled = true, max_tokens = 4096, temperature = 0.3 },
-    { name = "Qwen/Qwen2.5-7B-Instruct", enabled = true, max_tokens = 4096, temperature = 0.3 }
+    "tencent/Hunyuan-MT-7B",
+    "THUDM/GLM-4-9B-0414",
+    "Qwen/Qwen2.5-7B-Instruct"
 ]
+max_tokens = 4096       # 容量限制（决定路由阈值）
+temperature = 0.3
+weight = 50             # 权重（短文本轮询 + 长文本分配）
+base_url = "https://api.siliconflow.cn/v1"
+api_keys = ["${SILCON_API_KEY}"]
 proxy_url = ""
 timeout = 20
 rate_limit = 40
-
-# 自定义 HTTP 头（可选）
-# extra_headers = { "X-Custom-Header" = "value" }
-
-# 额外的 API 参数（可选）
-# extra_params = { top_p = 0.9, presence_penalty = 0.1 }
 
 # 供应商 2: zhipu
 [[llm.providers]]
 id = "zhipu"
 name = "Zhipu"
+models = ["glm-4-flash"]
+max_tokens = 4096
+temperature = 0.3
 weight = 20
 base_url = "https://open.bigmodel.cn/api/paas/v4"
-api_keys = [
-    "${ZHIPU_API_KEY}"
-]
-# 模型配置
-models = [
-    { name = "glm-4.7-flash", enabled = true, max_tokens = 4096, temperature = 0.3 }
-]
+api_keys = ["${ZHIPU_API_KEY}"]
+proxy_url = ""
 timeout = 60
 rate_limit = 5
 

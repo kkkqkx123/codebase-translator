@@ -8,7 +8,7 @@ use tree_sitter::{Node, Parser, Tree};
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, TranslationUnit};
 use crate::parser::core::query_executor::QueryExecutor;
-use crate::parser::core::StringProcessor;
+use crate::parser::core::{CommentType, StringProcessor};
 use crate::parser::filter::ContentFilter;
 use crate::parser::languages::csharp::patterns::CSharpPatterns;
 use crate::parser::languages::csharp::queries::CSharpQueries;

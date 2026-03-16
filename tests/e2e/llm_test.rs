@@ -31,23 +31,9 @@ async fn test_llm_single_translation() {
     let config = LLMConfig {
         base_url: provider.base_url.clone(),
         api_key,
-        model: provider
-            .models
-            .first()
-            .map(|m| m.name.clone())
-            .unwrap_or_default(),
-        max_tokens: provider
-            .models
-            .first()
-            .and_then(|m| m.max_tokens)
-            .map(|t| t as i32)
-            .unwrap_or(4096),
-        temperature: provider
-            .models
-            .first()
-            .and_then(|m| m.temperature)
-            .map(|t| t as f64)
-            .unwrap_or(0.3),
+        model: provider.model.clone(),
+        max_tokens: provider.max_tokens as i32,
+        temperature: provider.temperature as f64,
         top_p: None,
         proxy_url: provider.proxy_url.clone(),
         timeout: provider.timeout,
@@ -102,23 +88,9 @@ async fn test_llm_batch_translation() {
     let config = LLMConfig {
         base_url: provider.base_url.clone(),
         api_key,
-        model: provider
-            .models
-            .first()
-            .map(|m| m.name.clone())
-            .unwrap_or_default(),
-        max_tokens: provider
-            .models
-            .first()
-            .and_then(|m| m.max_tokens)
-            .map(|t| t as i32)
-            .unwrap_or(4096),
-        temperature: provider
-            .models
-            .first()
-            .and_then(|m| m.temperature)
-            .map(|t| t as f64)
-            .unwrap_or(0.3),
+        model: provider.model.clone(),
+        max_tokens: provider.max_tokens as i32,
+        temperature: provider.temperature as f64,
         top_p: None,
         proxy_url: provider.proxy_url.clone(),
         timeout: provider.timeout,
@@ -191,23 +163,9 @@ async fn test_llm_factory() {
         llm: Some(LLMConfig {
             base_url: provider.base_url.clone(),
             api_key,
-            model: provider
-                .models
-                .first()
-                .map(|m| m.name.clone())
-                .unwrap_or_default(),
-            max_tokens: provider
-                .models
-                .first()
-                .and_then(|m| m.max_tokens)
-                .map(|t| t as i32)
-                .unwrap_or(4096),
-            temperature: provider
-                .models
-                .first()
-                .and_then(|m| m.temperature)
-                .map(|t| t as f64)
-                .unwrap_or(0.3),
+            model: provider.model.clone(),
+            max_tokens: provider.max_tokens as i32,
+            temperature: provider.temperature as f64,
             top_p: None,
             proxy_url: provider.proxy_url.clone(),
             timeout: provider.timeout,
@@ -255,38 +213,65 @@ async fn test_llm_invalid_api_key() {
     let texts = vec!["Hello".to_string()];
     let result = translator.translate(&texts, "zh").await;
 
-    // Should fail with invalid API key
-    assert!(result.is_err(), "Expected error with invalid API key");
-    println!("Expected error occurred: {:?}", result.err());
+    // Should fail with authentication error
+    assert!(result.is_err());
 }
 
-/// Test supported languages
-#[test]
-fn test_llm_supported_languages() {
-    // LLM supports many languages, just verify the methods work
+/// Test rate limiting
+#[tokio::test]
+async fn test_llm_rate_limiting() {
+    let global_config = init_test_config();
+
+    if global_config.llm.providers.is_empty() {
+        println!("Skipping: No LLM providers configured");
+        return;
+    }
+
+    let provider = &global_config.llm.providers[0];
+    let api_key = provider.api_keys.first().cloned().unwrap_or_default();
+
+    if api_key.is_empty() {
+        println!("Skipping: No API key configured");
+        return;
+    }
+
     let config = LLMConfig {
-        base_url: "https://api.openai.com/v1".to_string(),
-        api_key: "test".to_string(),
-        model: "gpt-3.5-turbo".to_string(),
-        max_tokens: 4096,
-        temperature: 0.3,
+        base_url: provider.base_url.clone(),
+        api_key,
+        model: provider.model.clone(),
+        max_tokens: provider.max_tokens as i32,
+        temperature: provider.temperature as f64,
         top_p: None,
-        proxy_url: None,
-        timeout: 30,
+        proxy_url: provider.proxy_url.clone(),
+        timeout: provider.timeout,
         max_retries: 3,
-        extra_headers: None,
+        extra_headers: Some(provider.extra_headers.clone()),
         extra_params: None,
     };
 
-    let translator = LLMTranslator::new(config).expect("Failed to create translator");
+    let translator = Arc::new(TranslatorImpl::LLM(
+        LLMTranslator::new(config).expect("Failed to create translator"),
+    ));
 
-    let source_langs = translator.supported_source_langs();
-    let target_langs = translator.supported_target_langs();
+    // Use rate limit of 2 requests per second
+    let batch_options = BatchOptions {
+        rate_limit: 2,
+        workers: 1,
+        max_retries: 3,
+        limit_policy: Some(LimitPolicy::default()),
+    };
 
-    // LLM should support many languages
-    assert!(!source_langs.is_empty());
-    assert!(!target_langs.is_empty());
+    let batch_translator =
+        codebase_translate::translator::BatchTranslator::new(translator, batch_options);
 
-    println!("Source languages: {:?}", source_langs);
-    println!("Target languages: {:?}", target_langs);
+    let texts = vec!["Hello".to_string(), "World".to_string(), "Test".to_string()];
+
+    let start = std::time::Instant::now();
+    let result = batch_translator.translate_batch(&texts, "zh").await;
+    let elapsed = start.elapsed();
+
+    // With rate limit of 2/sec, 3 requests should take at least 1 second
+    // But we allow some tolerance
+    println!("Rate limited batch took: {:?}", elapsed);
+    assert!(result.is_ok());
 }

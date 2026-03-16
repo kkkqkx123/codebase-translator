@@ -50,6 +50,16 @@ pub trait Translator: Send + Sync {
     /// Get target languages supported
     fn supported_target_langs(&self) -> Vec<&str>;
 
+    /// Get maximum input characters allowed for this translator
+    /// Returns 0 if no specific limit is enforced
+    fn max_input_chars(&self) -> usize;
+
+    /// Check if the translator can handle text of given length
+    fn can_handle(&self, text_len: usize) -> bool {
+        let max = self.max_input_chars();
+        max == 0 || text_len <= max
+    }
+
     /// Close and cleanup resources
     async fn close(&self) -> Result<()> {
         Ok(())
@@ -158,6 +168,14 @@ impl Translator for TranslatorImpl {
         }
     }
 
+    fn max_input_chars(&self) -> usize {
+        match self {
+            Self::DeepLX(t) => t.max_input_chars(),
+            Self::LLM(t) => t.max_input_chars(),
+            Self::Tencent(t) => t.max_input_chars(),
+        }
+    }
+
     async fn close(&self) -> Result<()> {
         match self {
             Self::DeepLX(t) => t.close().await,
@@ -195,5 +213,20 @@ impl TranslatorImpl {
                 Ok(Self::Tencent(translator))
             }
         }
+    }
+
+    /// Get maximum input characters for this translator implementation
+    pub fn max_input_chars(&self) -> usize {
+        match self {
+            Self::DeepLX(_) => 5000,
+            Self::LLM(t) => t.max_input_chars(),
+            Self::Tencent(_) => 6000,
+        }
+    }
+
+    /// Check if this translator can handle text of given length
+    pub fn can_handle(&self, text_len: usize) -> bool {
+        let max = self.max_input_chars();
+        max == 0 || text_len <= max
     }
 }

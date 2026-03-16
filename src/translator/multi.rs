@@ -327,6 +327,15 @@ impl Translator for MultiTranslator {
     fn supported_target_langs(&self) -> Vec<&str> {
         vec!["EN", "ZH", "JA", "KO", "FR", "DE", "ES", "RU"]
     }
+
+    fn max_input_chars(&self) -> usize {
+        // Return the maximum capacity among all translators
+        self.translators
+            .iter()
+            .map(|t| t.translator.max_input_chars())
+            .max()
+            .unwrap_or(0)
+    }
 }
 
 #[cfg(test)]

@@ -8,6 +8,7 @@ use tree_sitter::{Node, Parser, Tree};
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, TranslationUnit};
 use crate::parser::core::query_executor::QueryExecutor;
+use crate::parser::core::string_processor::CommentType;
 use crate::parser::core::StringProcessor;
 use crate::parser::filter::ContentFilter;
 use crate::parser::languages::rust::patterns::RustPatterns;
@@ -43,6 +44,49 @@ impl RustParser {
         })
     }
 
+    /// Clean comment text by removing Rust comment markers
+    fn clean_comment_text(&self, text: &str) -> String {
+        let trimmed = text.trim();
+
+        // Handle outer doc comments: ///
+        if trimmed.starts_with("///") {
+            return self
+                .string_processor
+                .clean_comment(trimmed, CommentType::Doc);
+        }
+
+        // Handle inner doc comments: //!
+        if trimmed.starts_with("//!") {
+            return self
+                .string_processor
+                .clean_comment(trimmed, CommentType::Doc);
+        }
+
+        // Handle block doc comments: /**
+        if trimmed.starts_with("/**") {
+            return self
+                .string_processor
+                .clean_comment(trimmed, CommentType::Doc);
+        }
+
+        // Handle regular line comments: //
+        if trimmed.starts_with("//") {
+            return self
+                .string_processor
+                .clean_comment(trimmed, CommentType::Line);
+        }
+
+        // Handle block comments: /* */
+        if trimmed.starts_with("/*") {
+            return self
+                .string_processor
+                .clean_comment(trimmed, CommentType::Block);
+        }
+
+        // Return as-is if no markers found
+        trimmed.to_string()
+    }
+
     /// Parse file content into a syntax tree
     fn parse_tree(&self, content: &str) -> Result<Tree> {
         let mut parser = Parser::new();
@@ -71,10 +115,14 @@ impl RustParser {
         let mut match_idx = 0usize;
 
         for m in matches {
+            // Clean comment markers (//, /* */, etc.)
+            let text = self.clean_comment_text(m.text);
+
+            // Apply trim if configured
             let text = if self.config.trim_content {
-                m.text.trim()
+                text.trim().to_string()
             } else {
-                m.text
+                text
             };
 
             // Apply length filters
@@ -86,17 +134,17 @@ impl RustParser {
             }
 
             // Skip if only symbols
-            if self.string_processor.is_only_symbols(text) {
+            if self.string_processor.is_only_symbols(&text) {
                 continue;
             }
 
             // Apply content filter
-            if !self.filter.should_translate(text) {
+            if !self.filter.should_translate(&text) {
                 continue;
             }
 
             // Apply strategy
-            let ctx = ExtractionContext::new(text);
+            let ctx = ExtractionContext::new(&text);
             if !self
                 .strategy
                 .should_extract(StrategyNodeType::Comment, &ctx)
@@ -106,8 +154,7 @@ impl RustParser {
 
             let id = format!("{}_comment_{}", file_path, match_idx);
             let node_type = self.strategy.get_node_type(StrategyNodeType::Comment);
-            let unit =
-                TranslationUnit::new(id, node_type, text.to_string(), m.start_pos, m.end_pos);
+            let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
             units.push(unit);
             match_idx += 1;
         }
@@ -132,10 +179,14 @@ impl RustParser {
         let mut match_idx = 0usize;
 
         for m in matches {
+            // Clean doc comment markers (///, //!, /** */
+            let text = self.clean_comment_text(m.text);
+
+            // Apply trim if configured
             let text = if self.config.trim_content {
-                m.text.trim()
+                text.trim().to_string()
             } else {
-                m.text
+                text
             };
 
             // Apply length filters
@@ -147,17 +198,17 @@ impl RustParser {
             }
 
             // Skip if only symbols
-            if self.string_processor.is_only_symbols(text) {
+            if self.string_processor.is_only_symbols(&text) {
                 continue;
             }
 
             // Apply content filter
-            if !self.filter.should_translate(text) {
+            if !self.filter.should_translate(&text) {
                 continue;
             }
 
             // Apply strategy
-            let ctx = ExtractionContext::new(text);
+            let ctx = ExtractionContext::new(&text);
             if !self
                 .strategy
                 .should_extract(StrategyNodeType::DocString, &ctx)
@@ -167,8 +218,7 @@ impl RustParser {
 
             let id = format!("{}_docstring_{}", file_path, match_idx);
             let node_type = self.strategy.get_node_type(StrategyNodeType::DocString);
-            let unit =
-                TranslationUnit::new(id, node_type, text.to_string(), m.start_pos, m.end_pos);
+            let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
             units.push(unit);
             match_idx += 1;
         }

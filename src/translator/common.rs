@@ -173,6 +173,18 @@ pub struct LLMConfig {
     pub extra_params: Option<serde_json::Value>,
 }
 
+impl LLMConfig {
+    /// Calculate maximum input characters based on max_tokens
+    /// Reserves 30% for prompt template and output
+    pub fn max_input_chars(&self) -> usize {
+        if self.max_tokens <= 0 {
+            return 4000;
+        }
+        let available_tokens = (self.max_tokens as f64 * 0.7) as usize;
+        tokens_to_chars(available_tokens)
+    }
+}
+
 /// Configuration for Tencent translator
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct TencentConfig {

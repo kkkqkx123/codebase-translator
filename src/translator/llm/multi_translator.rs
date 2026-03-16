@@ -1,25 +1,41 @@
 use async_trait::async_trait;
-use std::sync::Arc;
-use std::time::Duration;
 use tracing::{debug, error, info};
 
+use crate::config::LLMProviderConfig;
 use crate::core::error::{Result, TranslateError};
 use crate::translator::common::TranslateResponse;
-use crate::translator::llm::pool::ProviderPool;
 use crate::translator::llm::provider::Provider;
+use crate::translator::llm::routing::ProviderRouter;
 use crate::translator::Translator;
 
-/// Multi-provider LLM translator with automatic failover
+/// Multi-provider LLM translator with weighted capacity routing
+///
+/// Routing strategy:
+/// - Short texts (< threshold): Weighted distribution among all providers
+/// - Long texts (>= threshold): Weighted distribution among capable providers
+///
+/// Each provider represents a single model with a fixed max_tokens limit.
 pub struct MultiProviderTranslator {
-    pool: Arc<ProviderPool>,
+    router: ProviderRouter,
     max_retries: usize,
 }
 
 impl MultiProviderTranslator {
     /// Create a new multi-provider translator
-    pub async fn new(pool: Arc<ProviderPool>, max_retries: usize) -> Self {
+    pub fn new(configs: &[LLMProviderConfig], max_retries: usize) -> Result<Self> {
+        let router = ProviderRouter::new(configs)?;
         let max_retries = if max_retries == 0 { 3 } else { max_retries };
-        Self { pool, max_retries }
+
+        info!(
+            "Created MultiProviderTranslator with {} providers, max_retries: {}",
+            router.providers().len(),
+            max_retries
+        );
+
+        Ok(Self {
+            router,
+            max_retries,
+        })
     }
 
     /// Translate with automatic failover
@@ -29,64 +45,100 @@ impl MultiProviderTranslator {
         source_lang: &str,
         target_lang: &str,
     ) -> Result<TranslateResponse> {
-        let mut last_error = None;
-        let mut attempted_providers = std::collections::HashSet::new();
+        let text_len = text.len();
 
-        for attempt in 0..=self.max_retries {
-            let provider = match self.pool.get_provider().await {
-                Ok(p) => p,
-                Err(e) => {
-                    if attempted_providers.is_empty() {
-                        return Err(e);
-                    }
-                    break;
-                }
-            };
-
-            let provider_id = provider.id().to_string();
-
-            if attempted_providers.contains(&provider_id) {
-                if attempted_providers.len() >= self.pool.get_all_providers().await.len() {
-                    break;
-                }
-                continue;
+        // Select provider based on capacity
+        let provider = match self.router.select_provider(text_len) {
+            Some(p) => p.provider().clone(),
+            None => {
+                return Err(TranslateError::Translation(format!(
+                    "No provider can handle text of length {}. Maximum capacity: {}",
+                    text_len,
+                    self.router.max_capacity()
+                )));
             }
+        };
 
-            attempted_providers.insert(provider_id.clone());
+        let provider_id = provider.id().to_string();
+        debug!(
+            "Selected provider {} for text length {}",
+            provider_id, text_len
+        );
 
+        // Try translation with the selected provider
+        match provider.translate(text, source_lang, target_lang).await {
+            Ok(response) => {
+                info!("Translation succeeded with provider {}", provider_id);
+                Ok(response)
+            }
+            Err(e) => {
+                error!("Translation failed with provider {}: {}", provider_id, e);
+
+                // If retryable, try other providers that can handle this text
+                if Self::is_retryable_error(&e) {
+                    self.try_other_providers(text, source_lang, target_lang, &provider_id)
+                        .await
+                } else {
+                    Err(e)
+                }
+            }
+        }
+    }
+
+    /// Try other providers when the primary fails
+    async fn try_other_providers(
+        &self,
+        text: &str,
+        source_lang: &str,
+        target_lang: &str,
+        exclude_provider: &str,
+    ) -> Result<TranslateResponse> {
+        let text_len = text.len();
+
+        // Find other providers that can handle this text
+        let other_providers: Vec<_> = self
+            .router
+            .providers()
+            .iter()
+            .filter(|p| p.can_handle(text_len) && p.provider().id() != exclude_provider)
+            .collect();
+
+        if other_providers.is_empty() {
+            return Err(TranslateError::Translation(
+                "No alternative providers available".to_string(),
+            ));
+        }
+
+        // Try each alternative provider
+        for (idx, provider) in other_providers.iter().enumerate() {
+            let provider_id = provider.provider().id().to_string();
             debug!(
-                "Attempting translation with provider {} (attempt {}/{})",
+                "Trying alternative provider {} (attempt {})",
                 provider_id,
-                attempt + 1,
-                self.max_retries + 1
+                idx + 1
             );
 
-            match provider.translate(text, source_lang, target_lang).await {
+            match provider
+                .provider()
+                .translate(text, source_lang, target_lang)
+                .await
+            {
                 Ok(response) => {
-                    info!("Translation succeeded with provider {}", provider_id);
+                    info!(
+                        "Translation succeeded with alternative provider {}",
+                        provider_id
+                    );
                     return Ok(response);
                 }
                 Err(e) => {
-                    last_error = Some(e.clone());
-                    error!("Translation failed with provider {}: {}", provider_id, e);
-
-                    if !Self::is_retryable_error(&e) {
-                        return Err(e);
-                    }
-
-                    provider.mark_unhealthy().await;
-
-                    if attempt < self.max_retries {
-                        let delay = Self::calculate_backoff(attempt);
-                        debug!("Waiting {:?} before retry", delay);
-                        tokio::time::sleep(delay).await;
-                    }
+                    error!("Alternative provider {} failed: {}", provider_id, e);
                 }
             }
         }
 
-        Err(last_error
-            .unwrap_or_else(|| TranslateError::Translation("All providers failed".to_string())))
+        Err(TranslateError::Translation(
+            "All alternative providers failed".to_string(),
+        ))
     }
 
     /// Check if error is retryable
@@ -94,28 +146,19 @@ impl MultiProviderTranslator {
         error.is_retryable()
     }
 
-    /// Calculate exponential backoff delay
-    fn calculate_backoff(attempt: usize) -> Duration {
-        TranslateError::calculate_backoff(attempt)
-    }
-
-    /// Get pool statistics
-    pub async fn get_pool_stats(&self) -> std::collections::HashMap<String, serde_json::Value> {
-        self.pool.get_stats().await
-    }
-
-    /// Force health check on all providers
-    pub async fn force_health_check(&self) -> Result<()> {
-        let providers = self.pool.get_all_providers().await;
-
-        for provider in providers {
-            match provider.health_check().await {
-                Ok(_) => provider.mark_healthy().await,
-                Err(_) => provider.mark_unhealthy().await,
-            }
-        }
-
-        Ok(())
+    /// Get router statistics
+    pub fn get_router_stats(&self) -> serde_json::Value {
+        serde_json::json!({
+            "total_providers": self.router.providers().len(),
+            "max_capacity": self.router.max_capacity(),
+            "providers": self.router.providers().iter().map(|p| {
+                serde_json::json!({
+                    "id": p.provider().id(),
+                    "max_chars": p.max_chars(),
+                    "weight": p.weight(),
+                })
+            }).collect::<Vec<_>>(),
+        })
     }
 }
 
@@ -149,10 +192,8 @@ impl Translator for MultiProviderTranslator {
     }
 
     async fn is_available(&self) -> bool {
-        match self.pool.get_healthy_providers().await.len() {
-            0 => false,
-            _ => true,
-        }
+        // Check if any provider can handle at least some text
+        self.router.max_capacity() > 0
     }
 
     fn supported_source_langs(&self) -> Vec<&str> {
@@ -163,8 +204,13 @@ impl Translator for MultiProviderTranslator {
         vec!["EN", "ZH", "JA", "KO", "DE", "FR", "ES", "IT", "PT", "RU"]
     }
 
+    fn max_input_chars(&self) -> usize {
+        // Return the maximum capacity among all providers
+        self.router.max_capacity()
+    }
+
     async fn close(&self) -> Result<()> {
-        self.pool.stop().await;
+        // No async cleanup needed with the new router-based approach
         Ok(())
     }
 }

@@ -68,9 +68,12 @@ impl GlobalConfig {
                         if p.api_keys.is_empty() {
                             return Err(format!("LLM provider {}: api_keys is required", p.id));
                         }
-                        if p.models.is_empty() {
+                        if p.model.is_empty() {
+                            return Err(format!("LLM provider {}: model is required", p.id));
+                        }
+                        if p.max_tokens == 0 {
                             return Err(format!(
-                                "LLM provider {}: at least one model is required",
+                                "LLM provider {}: max_tokens must be positive",
                                 p.id
                             ));
                         }
@@ -79,14 +82,6 @@ impl GlobalConfig {
                                 "LLM provider {}: rate_limit must be positive",
                                 p.id
                             ));
-                        }
-                        for model in &p.models {
-                            if model.name.is_empty() {
-                                return Err(format!(
-                                    "LLM provider {}: model name is required",
-                                    p.id
-                                ));
-                            }
                         }
                     }
                 }
@@ -139,7 +134,7 @@ impl GlobalConfig {
     /// This method modifies `self.llm.providers` in place, removing invalid providers.
     /// A provider is considered invalid if:
     /// - It has no valid API keys
-    /// - It has no valid models
+    /// - Model name is empty or invalid
     pub fn filter_invalid_llm_providers(&mut self) {
         let mut valid_providers = Vec::new();
 
@@ -155,20 +150,13 @@ impl GlobalConfig {
                 continue;
             }
 
-            let mut provider = provider;
-            provider.api_keys = valid_api_keys;
-
-            let valid_models: Vec<LLMModelConfig> = provider
-                .models
-                .into_iter()
-                .filter(|m| m.enabled && !m.name.is_empty() && !m.name.starts_with("${"))
-                .collect();
-
-            provider.models = valid_models;
-
-            if provider.models.is_empty() {
+            // Check if model name is valid
+            if provider.model.is_empty() || provider.model.starts_with("${") {
                 continue;
             }
+
+            let mut provider = provider;
+            provider.api_keys = valid_api_keys;
 
             valid_providers.push(provider);
         }
@@ -251,6 +239,7 @@ impl GlobalConfig {
 
         for provider in &mut self.llm.providers {
             provider.base_url = expand_env_vars(&provider.base_url);
+            provider.model = expand_env_vars(&provider.model);
             for key in &mut provider.api_keys {
                 *key = expand_env_vars(key);
             }
@@ -259,9 +248,6 @@ impl GlobalConfig {
             }
             replace_env_vars_in_map(&mut provider.extra_headers);
             replace_env_vars_in_nested_map(&mut provider.extra_params);
-            for model in &mut provider.models {
-                model.name = expand_env_vars(&model.name);
-            }
         }
     }
 
@@ -289,9 +275,6 @@ impl GlobalConfig {
             self.deeplx.max_retries = other.deeplx.max_retries;
         }
 
-        if !other.llm.rotation_strategy.is_empty() {
-            self.llm.rotation_strategy = other.llm.rotation_strategy;
-        }
         if !other.llm.providers.is_empty() {
             self.llm.providers = other.llm.providers;
         }
@@ -382,9 +365,6 @@ fn default_deeplx_url() -> String {
 /// LLM global configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LLMGlobalConfig {
-    /// Provider rotation strategy: "round_robin", "random", "priority"
-    #[serde(default = "default_rotation_strategy")]
-    pub rotation_strategy: String,
     /// Health check configuration
     #[serde(default)]
     pub health_check: HealthCheckConfig,
@@ -396,7 +376,6 @@ pub struct LLMGlobalConfig {
 impl Default for LLMGlobalConfig {
     fn default() -> Self {
         Self {
-            rotation_strategy: default_rotation_strategy(),
             health_check: HealthCheckConfig::default(),
             providers: Vec::new(),
         }
@@ -451,26 +430,31 @@ fn default_health_check_recovery_interval() -> u64 {
     60
 }
 
-fn default_rotation_strategy() -> String {
-    "round_robin".to_string()
-}
-
 /// LLM provider configuration
+///
+/// Each provider represents a single model/endpoint combination.
+/// For models with different context lengths, configure them as separate providers.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LLMProviderConfig {
-    /// Provider ID
+    /// Provider ID (unique identifier)
     pub id: String,
-    /// Provider name
+    /// Provider name (human readable)
     pub name: String,
-    /// Weight for rotation strategies
+    /// Weight for capacity-based routing (higher = preferred for larger texts)
     #[serde(default)]
     pub weight: u32,
     /// Base URL for API
     pub base_url: String,
     /// API keys (for rotation)
     pub api_keys: Vec<String>,
-    /// Available models
-    pub models: Vec<LLMModelConfig>,
+    /// Model name
+    pub model: String,
+    /// Max tokens per request (determines capacity)
+    #[serde(default = "default_max_tokens")]
+    pub max_tokens: u32,
+    /// Temperature (0.0 - 2.0)
+    #[serde(default = "default_temperature")]
+    pub temperature: f32,
     /// Proxy URL
     #[serde(default)]
     pub proxy_url: Option<String>,
@@ -480,6 +464,9 @@ pub struct LLMProviderConfig {
     /// Rate limit (requests per second)
     #[serde(default = "default_rate_limit")]
     pub rate_limit: u32,
+    /// Priority for routing (lower = higher priority)
+    #[serde(default)]
+    pub priority: u32,
     /// Extra headers
     #[serde(default)]
     pub extra_headers: HashMap<String, String>,
@@ -488,20 +475,12 @@ pub struct LLMProviderConfig {
     pub extra_params: HashMap<String, serde_json::Value>,
 }
 
-/// LLM model configuration
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct LLMModelConfig {
-    /// Model name
-    pub name: String,
-    /// Whether this model is enabled
-    #[serde(default = "default_true")]
-    pub enabled: bool,
-    /// Max tokens per request
-    #[serde(default)]
-    pub max_tokens: Option<u32>,
-    /// Temperature (0.0 - 2.0)
-    #[serde(default)]
-    pub temperature: Option<f32>,
+fn default_max_tokens() -> u32 {
+    4096
+}
+
+fn default_temperature() -> f32 {
+    0.3
 }
 
 /// Tencent Cloud configuration
@@ -702,15 +681,13 @@ mod tests {
                 weight: 1,
                 base_url: "https://api.example.com".to_string(),
                 api_keys: vec!["valid-key".to_string(), "xxx".to_string()],
-                models: vec![LLMModelConfig {
-                    name: "model1".to_string(),
-                    enabled: true,
-                    max_tokens: Some(4096),
-                    temperature: Some(0.7),
-                }],
+                model: "model1".to_string(),
+                max_tokens: 4096,
+                temperature: 0.7,
                 proxy_url: None,
                 timeout: 30,
                 rate_limit: 10,
+                priority: 0,
                 extra_headers: std::collections::HashMap::new(),
                 extra_params: std::collections::HashMap::new(),
             },
@@ -720,10 +697,13 @@ mod tests {
                 weight: 1,
                 base_url: "https://api.example2.com".to_string(),
                 api_keys: vec!["xxx".to_string()],
-                models: vec![],
+                model: "".to_string(), // Invalid: empty model name
+                max_tokens: 4096,
+                temperature: 0.7,
                 proxy_url: None,
                 timeout: 30,
                 rate_limit: 10,
+                priority: 0,
                 extra_headers: std::collections::HashMap::new(),
                 extra_params: std::collections::HashMap::new(),
             },

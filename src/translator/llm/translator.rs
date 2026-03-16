@@ -55,6 +55,7 @@ struct ApiError {
 pub struct LLMTranslator {
     client: Client,
     config: LLMConfig,
+    max_input_chars: usize,
 }
 
 impl std::fmt::Debug for LLMTranslator {
@@ -105,12 +106,28 @@ impl LLMTranslator {
             .build()
             .map_err(|e| TranslateError::Http(e.to_string()))?;
 
+        let max_input_chars = config.max_input_chars();
+
         info!(
-            "LLM translator created with base_url: {}, model: {}",
-            config.base_url, config.model
+            "LLM translator created with base_url: {}, model: {}, max_input_chars: {}",
+            config.base_url, config.model, max_input_chars
         );
 
-        Ok(Self { client, config })
+        Ok(Self {
+            client,
+            config,
+            max_input_chars,
+        })
+    }
+
+    /// Get maximum input characters allowed for this translator
+    pub fn max_input_chars(&self) -> usize {
+        self.max_input_chars
+    }
+
+    /// Check if text exceeds the maximum input length
+    pub fn is_text_too_long(&self, text: &str) -> bool {
+        text.len() > self.max_input_chars
     }
 
     /// Sanitize error message to remove sensitive info
@@ -161,6 +178,15 @@ Text to translate:
                 target_lang: target_lang.to_string(),
                 ..Default::default()
             });
+        }
+
+        // Check if text exceeds maximum input length
+        if text.len() > self.max_input_chars {
+            return Err(TranslateError::Translation(format!(
+                "Text length {} exceeds maximum allowed {} characters for LLM translator",
+                text.len(),
+                self.max_input_chars
+            )));
         }
 
         let prompt = self.build_prompt(text, target_lang);
@@ -295,5 +321,9 @@ impl Translator for LLMTranslator {
 
     fn supported_target_langs(&self) -> Vec<&str> {
         vec!["EN", "ZH", "JA", "KO", "DE", "FR", "ES", "IT", "PT", "RU"]
+    }
+
+    fn max_input_chars(&self) -> usize {
+        self.max_input_chars
     }
 }

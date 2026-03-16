@@ -242,6 +242,8 @@ mod tests {
         assert_eq!(stats.success_count, 2);
         assert_eq!(stats.failure_count, 1);
         assert_eq!(stats.total_units, 8);
-        assert_eq!(stats.success_rate(), 66.66666666666667);
+        // Use assert! with epsilon comparison for floating point
+        let expected_rate = 2.0 / 3.0 * 100.0;
+        assert!((stats.success_rate() - expected_rate).abs() < f64::EPSILON);
     }
 }

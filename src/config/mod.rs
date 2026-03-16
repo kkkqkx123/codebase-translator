@@ -10,8 +10,7 @@ pub use env::{
     EnvLoader,
 };
 pub use global::{
-    DeepLXConfig, GlobalConfig, LLMGlobalConfig, LLMModelConfig, LLMProviderConfig, LoggingConfig,
-    TencentConfig,
+    DeepLXConfig, GlobalConfig, LLMGlobalConfig, LLMProviderConfig, LoggingConfig, TencentConfig,
 };
 pub use loader::ConfigLoader;
 pub use project::{

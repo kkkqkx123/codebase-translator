@@ -368,6 +368,10 @@ impl Translator for TencentTranslator {
     fn supported_target_langs(&self) -> Vec<&str> {
         vec!["zh", "en", "ja", "ko", "de", "fr", "es", "it", "pt", "ru"]
     }
+
+    fn max_input_chars(&self) -> usize {
+        6000
+    }
 }
 
 /// Get default limit policy for Tencent

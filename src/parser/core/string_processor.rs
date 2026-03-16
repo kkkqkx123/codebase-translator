@@ -1,5 +1,16 @@
 //! String processing utilities
 
+/// Type of comment
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CommentType {
+    /// Line comment: // or #
+    Line,
+    /// Block comment: /* */
+    Block,
+    /// Documentation comment: /// or //! or /**
+    Doc,
+}
+
 /// String processor for cleaning and transforming string literals
 pub struct StringProcessor;
 
@@ -7,6 +18,85 @@ impl StringProcessor {
     /// Create a new string processor
     pub fn new() -> Self {
         Self
+    }
+
+    /// Clean comment content by removing comment markers
+    ///
+    /// Supports:
+    /// - Line comments: //, #
+    /// - Block comments: /* */
+    /// - Doc comments: ///, //!, /**
+    pub fn clean_comment(&self, text: &str, comment_type: CommentType) -> String {
+        match comment_type {
+            CommentType::Line => self.clean_line_comment(text),
+            CommentType::Block => self.clean_block_comment(text),
+            CommentType::Doc => self.clean_doc_comment(text),
+        }
+    }
+
+    /// Clean line comment (// or #)
+    fn clean_line_comment(&self, text: &str) -> String {
+        let text = text.trim();
+
+        // Handle Python/Ruby/YAML style: #
+        if let Some(content) = text.strip_prefix('#') {
+            return content.trim_start().to_string();
+        }
+
+        // Handle C-style: //
+        if let Some(content) = text.strip_prefix("//") {
+            return content.trim_start().to_string();
+        }
+
+        text.to_string()
+    }
+
+    /// Clean block comment (/* */)
+    fn clean_block_comment(&self, text: &str) -> String {
+        let text = text.trim();
+
+        // Remove /* and */
+        let content = text
+            .strip_prefix("/*")
+            .and_then(|s| s.strip_suffix("*/"))
+            .unwrap_or(text);
+
+        content.trim().to_string()
+    }
+
+    /// Clean documentation comment (/// or //! or /**)
+    fn clean_doc_comment(&self, text: &str) -> String {
+        let text = text.trim();
+
+        // Handle Rust outer doc: ///
+        if let Some(content) = text.strip_prefix("///") {
+            return content.trim_start().to_string();
+        }
+
+        // Handle Rust inner doc: //!
+        if let Some(content) = text.strip_prefix("//!") {
+            return content.trim_start().to_string();
+        }
+
+        // Handle Javadoc/Rust block doc: /**
+        if text.starts_with("/**") {
+            let content = text
+                .strip_prefix("/**")
+                .and_then(|s| s.strip_suffix("*/"))
+                .unwrap_or(text);
+            return content.trim().to_string();
+        }
+
+        // Handle JavaScript JSDoc: /**
+        if text.starts_with("/**") {
+            let content = text
+                .strip_prefix("/**")
+                .and_then(|s| s.strip_suffix("*/"))
+                .unwrap_or(text);
+            return content.trim().to_string();
+        }
+
+        self.clean_line_comment(text)
     }
 
     /// Clean string literal by removing quotes and handling escape sequences

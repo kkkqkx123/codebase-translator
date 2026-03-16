@@ -217,6 +217,10 @@ impl Translator for DeepLXTranslator {
     fn supported_target_langs(&self) -> Vec<&str> {
         vec!["EN", "ZH", "JA", "KO", "DE", "FR", "ES", "IT", "PT", "RU"]
     }
+
+    fn max_input_chars(&self) -> usize {
+        5000
+    }
 }
 
 /// Get default limit policy for DeepLX
