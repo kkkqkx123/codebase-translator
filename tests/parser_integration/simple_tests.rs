@@ -25,7 +25,9 @@ fn create_test_file(content: &str, path: &str) -> File {
 }
 
 fn create_test_coordinator() -> ParserCoordinator {
-    ParserCoordinator::with_defaults(ParserConfig::default())
+    let mut config = ParserConfig::default();
+    config.extract_strings = true;  // Enable string extraction
+    ParserCoordinator::with_defaults(config)
         .expect("Failed to create coordinator")
 }
 

@@ -21,6 +21,8 @@ pub enum StrategyNodeType {
     FormatString,
     /// Log message
     LogMessage,
+    /// String literal
+    StringLiteral,
     /// Markdown paragraph
     MarkdownParagraph,
     /// Markdown heading
@@ -40,6 +42,7 @@ impl StrategyNodeType {
             Self::ErrorMessage => "error_message",
             Self::FormatString => "format_string",
             Self::LogMessage => "log_message",
+            Self::StringLiteral => "string_literal",
             Self::MarkdownParagraph => "markdown_paragraph",
             Self::MarkdownHeading => "markdown_heading",
             Self::MarkdownListItem => "markdown_list_item",
@@ -132,6 +135,10 @@ pub struct ExtractionConfig {
     #[serde(default = "default_true")]
     pub log_messages: bool,
 
+    /// Extract string literals
+    #[serde(default = "default_false")]
+    pub string_literals: bool,
+
     /// Custom extraction patterns
     #[serde(default)]
     pub custom_patterns: Vec<String>,
@@ -153,6 +160,7 @@ impl Default for ExtractionConfig {
             error_messages: true,
             format_strings: false,
             log_messages: true,
+            string_literals: false,
             custom_patterns: Vec::new(),
         }
     }
@@ -195,6 +203,7 @@ impl ExtractionStrategy for ConfigBasedStrategy {
             StrategyNodeType::ErrorMessage => self.config.error_messages,
             StrategyNodeType::FormatString => self.config.format_strings,
             StrategyNodeType::LogMessage => self.config.log_messages,
+            StrategyNodeType::StringLiteral => self.config.string_literals,
             StrategyNodeType::MarkdownParagraph
             | StrategyNodeType::MarkdownHeading
             | StrategyNodeType::MarkdownListItem
@@ -209,6 +218,7 @@ impl ExtractionStrategy for ConfigBasedStrategy {
             StrategyNodeType::ErrorMessage => NodeType::ErrorMessage,
             StrategyNodeType::FormatString => NodeType::FormatString,
             StrategyNodeType::LogMessage => NodeType::LogMessage,
+            StrategyNodeType::StringLiteral => NodeType::StringLiteral,
             StrategyNodeType::MarkdownParagraph => NodeType::Comment,
             StrategyNodeType::MarkdownHeading => NodeType::Comment,
             StrategyNodeType::MarkdownListItem => NodeType::Comment,

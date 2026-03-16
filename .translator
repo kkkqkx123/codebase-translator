@@ -130,6 +130,74 @@ preview_only = false         # 是否仅预览，不实际修改文件
 backup = false               # 是否在修改前创建备份文件
 backup_dir = ""              # 备份目录，为空则与原文件同目录
 
+# 字符串字面量提取配置
+# 控制是否从代码中提取字符串字面量进行翻译
+[parser.extraction.string_literals]
+enabled = false               # 是否启用字符串字面量提取（默认关闭）
+
+# 按类别启用/禁用字符串提取
+[parser.extraction.string_literals.categories]
+error_handling = true         # 错误处理相关：panic, Error, throw 等
+output = false                # 输出/日志：print, console, logging 等
+variables = false             # 变量赋值（匹配特定模式）
+properties = false            # 对象属性（匹配特定键名）
+
+# 自定义模式（可选）
+# 这些模式会添加到对应类别的默认模式中
+[parser.extraction.string_literals.custom_patterns]
+# 错误处理相关函数/类
+error_handling = [
+    # "MyCustomError",
+]
+# 输出/日志相关
+output = [
+    # "myLogger.log",
+]
+# 变量名正则模式（匹配变量赋值）
+variable_patterns = [
+    ".*Message$",           # 以 Message 结尾的变量
+    ".*Text$",              # 以 Text 结尾的变量
+    ".*Title$",             # 以 Title 结尾的变量
+    ".*Label$",             # 以 Label 结尾的变量
+]
+# 对象属性名模式（匹配属性值）
+property_patterns = [
+    "message",
+    "title",
+    "description",
+    "text",
+    "label",
+    "placeholder",
+    "tooltip",
+    "hint",
+]
+
+# 自定义正则模式（高级）
+# [[parser.extraction.string_literals.custom_patterns.regex_patterns]]
+# name = "custom_error"
+# category = "error_handling"  # error_handling, output, variables, properties, other
+# regex = 'throw new Error\("([^"]+)"\)'
+# group = 1  # 捕获组索引
+
+# 状态机模式（高级）
+# 用于匹配复杂的代码模式，支持多步骤匹配
+# [[parser.extraction.string_literals.custom_patterns.state_machine_patterns]]
+# name = "i18n_with_default"
+# category = "other"
+# initial_state = "start"
+# accepting_states = ["extract"]
+#
+# [[parser.extraction.string_literals.custom_patterns.state_machine_patterns.states]]
+# name = "start"
+# regex = 't\s*\(\s*["\'][^"\']+["\']\s*,\s*["\']'
+# transitions = [{ target = "extract" }]
+#
+# [[parser.extraction.string_literals.custom_patterns.state_machine_patterns.states]]
+# name = "extract"
+# regex = '([^"\']+)'
+# capture_group = 1
+# is_final = true
+
 # 编码检测配置
 [encoding]
 detect_encodings = ["UTF-8"]  # 要检测的编码列表

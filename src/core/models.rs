@@ -157,6 +157,8 @@ pub enum NodeType {
     FormatString,
     /// Log message
     LogMessage,
+    /// String literal
+    StringLiteral,
 }
 
 impl NodeType {
@@ -168,6 +170,7 @@ impl NodeType {
             NodeType::ErrorMessage => 3,
             NodeType::LogMessage => 4,
             NodeType::FormatString => 5,
+            NodeType::StringLiteral => 6,
         }
     }
 }
@@ -180,6 +183,7 @@ impl std::fmt::Display for NodeType {
             NodeType::ErrorMessage => write!(f, "error_message"),
             NodeType::FormatString => write!(f, "format_string"),
             NodeType::LogMessage => write!(f, "log_message"),
+            NodeType::StringLiteral => write!(f, "string_literal"),
         }
     }
 }

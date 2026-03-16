@@ -5,7 +5,7 @@ use std::sync::Arc;
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, TranslationUnit};
 use crate::parser::filter::ContentFilter;
-use crate::parser::regex::RegexParser;
+use crate::parser::regex::{RegexParser, presets};
 use crate::parser::strategy::ExtractionStrategyImpl;
 use crate::parser::tree_sitter::{ParserConfig, TreeSitterParser, TreeSitterParserFactory};
 use crate::parser::Parser as ParserTrait;
@@ -53,7 +53,7 @@ impl ParserCoordinator {
             }
         }
 
-        let regex_parser = RegexParser::create_fallback_parser(config);
+        let regex_parser = presets::create_fallback_parser(config);
 
         Ok(Self {
             tree_sitter_parsers,

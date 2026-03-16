@@ -331,6 +331,10 @@ fn default_true() -> bool {
     true
 }
 
+fn default_false() -> bool {
+    false
+}
+
 /// Include file patterns configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct IncludeConfig {
@@ -476,6 +480,9 @@ pub struct ExtractionConfig {
     /// Extract format strings
     #[serde(default = "default_true")]
     pub format_strings: bool,
+    /// Extract string literals
+    #[serde(default)]
+    pub string_literals: StringLiteralConfig,
     /// Custom regex patterns
     #[serde(default)]
     pub custom_patterns: Vec<String>,
@@ -488,9 +495,310 @@ impl Default for ExtractionConfig {
             doc_strings: true,
             error_messages: true,
             format_strings: true,
+            string_literals: StringLiteralConfig::default(),
             custom_patterns: Vec::new(),
         }
     }
+}
+
+/// String literal extraction configuration
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StringLiteralConfig {
+    /// Enable string literal extraction
+    #[serde(default)]
+    pub enabled: bool,
+    /// Categories to enable
+    #[serde(default = "default_categories")]
+    pub categories: StringLiteralCategories,
+    /// Custom patterns by category
+    #[serde(default)]
+    pub custom_patterns: CustomStringPatterns,
+}
+
+impl Default for StringLiteralConfig {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            categories: default_categories(),
+            custom_patterns: CustomStringPatterns::default(),
+        }
+    }
+}
+
+/// Categories of string literals that can be extracted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StringLiteralCategories {
+    /// Error handling: panic, Error, throw, etc.
+    #[serde(default = "default_true")]
+    pub error_handling: bool,
+    /// Output/logging: print, console, logging, etc.
+    #[serde(default = "default_false")]
+    pub output: bool,
+    /// Variable assignments matching specific patterns
+    #[serde(default = "default_false")]
+    pub variables: bool,
+    /// Object properties with specific keys
+    #[serde(default = "default_false")]
+    pub properties: bool,
+}
+
+impl Default for StringLiteralCategories {
+    fn default() -> Self {
+        Self {
+            error_handling: true,
+            output: false,
+            variables: false,
+            properties: false,
+        }
+    }
+}
+
+fn default_categories() -> StringLiteralCategories {
+    StringLiteralCategories::default()
+}
+
+/// Custom patterns for string extraction
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CustomStringPatterns {
+    /// Error handling patterns
+    #[serde(default)]
+    pub error_handling: Vec<String>,
+    /// Output patterns
+    #[serde(default)]
+    pub output: Vec<String>,
+    /// Variable name patterns (regex)
+    #[serde(default)]
+    pub variable_patterns: Vec<String>,
+    /// Object property patterns
+    #[serde(default)]
+    pub property_patterns: Vec<String>,
+    /// Custom regex patterns with names
+    #[serde(default)]
+    pub regex_patterns: Vec<CustomRegexPattern>,
+    /// Advanced state machine patterns
+    #[serde(default)]
+    pub state_machine_patterns: Vec<StateMachinePattern>,
+}
+
+impl Default for CustomStringPatterns {
+    fn default() -> Self {
+        Self {
+            error_handling: Vec::new(),
+            output: Vec::new(),
+            variable_patterns: Vec::new(),
+            property_patterns: Vec::new(),
+            regex_patterns: Vec::new(),
+            state_machine_patterns: Vec::new(),
+        }
+    }
+}
+
+/// Custom regex pattern configuration
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CustomRegexPattern {
+    /// Pattern name for identification
+    pub name: String,
+    /// Category this pattern belongs to
+    #[serde(default)]
+    pub category: StringLiteralCategory,
+    /// Regex pattern
+    pub regex: String,
+    /// Capture group index (0 = full match)
+    #[serde(default)]
+    pub group: usize,
+}
+
+/// State machine pattern for complex extraction
+/// Allows matching sequences of tokens with conditions
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StateMachinePattern {
+    /// Pattern name for identification
+    pub name: String,
+    /// Category this pattern belongs to
+    #[serde(default)]
+    pub category: StringLiteralCategory,
+    /// States and their transitions
+    pub states: Vec<PatternState>,
+    /// Initial state name
+    pub initial_state: String,
+    /// Accepting state names
+    pub accepting_states: Vec<String>,
+}
+
+/// A state in the pattern state machine
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PatternState {
+    /// State name
+    pub name: String,
+    /// Regex to match at this state
+    pub regex: String,
+    /// Capture group to extract (if any)
+    #[serde(default)]
+    pub capture_group: Option<usize>,
+    /// Transitions to other states
+    #[serde(default)]
+    pub transitions: Vec<StateTransition>,
+    /// Whether this state can be the final state
+    #[serde(default)]
+    pub is_final: bool,
+}
+
+/// Transition between states
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StateTransition {
+    /// Target state name
+    pub target: String,
+    /// Condition regex (if empty, always matches)
+    #[serde(default)]
+    pub condition: Option<String>,
+}
+
+/// Category for custom patterns
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum StringLiteralCategory {
+    #[default]
+    ErrorHandling,
+    Output,
+    Variables,
+    Properties,
+    Other,
+}
+
+/// Get default patterns for a category by language
+pub fn get_default_patterns_for_language(lang: &str, category: &str) -> Vec<String> {
+    match category {
+        "error_handling" => match lang {
+            "javascript" | "typescript" | "jsx" | "tsx" => vec![
+                "Error".to_string(),
+                "TypeError".to_string(),
+                "ReferenceError".to_string(),
+                "SyntaxError".to_string(),
+                "RangeError".to_string(),
+                "URIError".to_string(),
+                "EvalError".to_string(),
+                "AggregateError".to_string(),
+            ],
+            "python" => vec![
+                "Exception".to_string(),
+                "ValueError".to_string(),
+                "TypeError".to_string(),
+                "KeyError".to_string(),
+                "IndexError".to_string(),
+                "RuntimeError".to_string(),
+                "AssertionError".to_string(),
+                "NotImplementedError".to_string(),
+            ],
+            "rust" => vec![
+                "panic".to_string(),
+                "todo".to_string(),
+                "unimplemented".to_string(),
+                "unreachable".to_string(),
+                "assert".to_string(),
+                "assert_eq".to_string(),
+                "assert_ne".to_string(),
+            ],
+            "go" => vec![
+                "errors.New".to_string(),
+                "fmt.Errorf".to_string(),
+                "panic".to_string(),
+            ],
+            "java" => vec![
+                "IllegalArgumentException".to_string(),
+                "IllegalStateException".to_string(),
+                "NullPointerException".to_string(),
+                "RuntimeException".to_string(),
+                "Exception".to_string(),
+            ],
+            "csharp" => vec![
+                "ArgumentException".to_string(),
+                "InvalidOperationException".to_string(),
+                "NullReferenceException".to_string(),
+                "Exception".to_string(),
+            ],
+            _ => Vec::new(),
+        },
+        "output" => match lang {
+            "javascript" | "typescript" | "jsx" | "tsx" => vec![
+                "console.log".to_string(),
+                "console.error".to_string(),
+                "console.warn".to_string(),
+                "console.info".to_string(),
+                "console.debug".to_string(),
+                "console.trace".to_string(),
+                "console.dir".to_string(),
+            ],
+            "python" => vec![
+                "print".to_string(),
+                "logging.debug".to_string(),
+                "logging.info".to_string(),
+                "logging.warning".to_string(),
+                "logging.error".to_string(),
+                "logging.critical".to_string(),
+                "logging.exception".to_string(),
+            ],
+            "rust" => vec![
+                "println".to_string(),
+                "eprintln".to_string(),
+                "print".to_string(),
+                "eprint".to_string(),
+                "dbg".to_string(),
+            ],
+            "go" => vec![
+                "fmt.Println".to_string(),
+                "fmt.Printf".to_string(),
+                "fmt.Print".to_string(),
+                "fmt.Fprintf".to_string(),
+                "fmt.Fprintln".to_string(),
+                "log.Println".to_string(),
+                "log.Printf".to_string(),
+                "log.Print".to_string(),
+            ],
+            "java" => vec![
+                "System.out.println".to_string(),
+                "System.out.print".to_string(),
+                "System.err.println".to_string(),
+                "System.err.print".to_string(),
+                "Logger.getLogger".to_string(),
+            ],
+            "csharp" => vec![
+                "Console.WriteLine".to_string(),
+                "Console.Write".to_string(),
+                "Console.Error.WriteLine".to_string(),
+                "Console.Error.Write".to_string(),
+                "Debug.WriteLine".to_string(),
+            ],
+            _ => Vec::new(),
+        },
+        _ => Vec::new(),
+    }
+}
+
+/// Default variable name patterns
+pub fn default_variable_patterns() -> Vec<String> {
+    vec![
+        ".*Message$".to_string(),
+        ".*Text$".to_string(),
+        ".*Title$".to_string(),
+        ".*Label$".to_string(),
+        ".*Hint$".to_string(),
+        ".*Placeholder$".to_string(),
+    ]
+}
+
+/// Default property name patterns
+pub fn default_property_patterns() -> Vec<String> {
+    vec![
+        "message".to_string(),
+        "title".to_string(),
+        "description".to_string(),
+        "text".to_string(),
+        "content".to_string(),
+        "label".to_string(),
+        "placeholder".to_string(),
+        "tooltip".to_string(),
+        "hint".to_string(),
+    ]
 }
 
 #[cfg(test)]
