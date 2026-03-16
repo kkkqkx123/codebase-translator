@@ -1,0 +1,137 @@
+# Translator 项目配置文件示例
+#
+# 本配置文件用于指定目标代码库的翻译设置
+#
+# 重要说明：
+#   - "项目"指的是被翻译的外部代码库，不是 Codebase Translate 工具本身
+#   - 将此文件保存到目标代码库的根目录，命名为 `.translator`（隐藏文件）
+#   - 本工具会扫描目标代码库，根据此配置进行翻译
+#
+# 配置文件位置：
+#   - 目标代码库根目录: .translator
+#
+# 使用示例：
+#   1. 将此文件复制到目标项目根目录
+#   2. 重命名为 .translator
+#   3. 根据项目需求修改配置
+#   4. 运行 translator 工具指定目标项目路径
+
+# 翻译语言配置
+[translate]
+source_langs = ["AUTO"]       # 多源语言支持，可指定多个源语言，AUTO 表示自动检测
+target_lang = "EN"            # 目标语言代码
+
+# 包含文件模式
+# 指定需要翻译的文件模式（glob 语法）
+[include]
+patterns = [
+    "**/*.go",
+    "**/*.py",
+    "**/*.js",
+    "**/*.ts",
+    "**/*.jsx",
+    "**/*.tsx",
+    "**/*.java",
+    "**/*.cpp",
+    "**/*.cc",
+    "**/*.cxx",
+    "**/*.hpp",
+    "**/*.h",
+    "**/*.cs",
+    "**/*.rs",
+    "**/*.kt",
+    "**/*.swift",
+    "**/*.dart",
+    "**/*.lua",
+    "**/*.php",
+    "**/*.rb",
+    "**/*.scala",
+    "**/*.clj",
+]
+
+# 排除文件模式
+# 指定不需要翻译的文件或目录（glob 语法）
+[exclude]
+patterns = [
+    "vendor/**",
+    "node_modules/**",
+    "third_party/**",
+    "*.min.js",
+    "*.min.css",
+    "*_test.go",
+    "*.test.ts",
+    "*.test.tsx",
+    "*.spec.js",
+    "*.spec.ts",
+    ".git/**",
+    ".idea/**",
+    ".vscode/**",
+    "dist/**",
+    "build/**",
+    "out/**",
+    "*.pb.go",
+    "*.gen.go",
+    "*.pb.cc",
+    "*.pb.h",
+]
+# 是否遵循 .gitignore 文件（默认为 true）
+respect_gitignore = true
+# 额外的 gitignore 风格模式（gitignore 语法）
+gitignore_patterns = [
+    "*.log",
+    "*.tmp",
+    "*.bak",
+]
+
+# 过滤配置
+# 指定文本内容的过滤规则
+[filter]
+# 排除关键词：包含这些关键词的文本不会被翻译
+exclude_keywords = [
+    "TODO",
+    "FIXME",
+    "NOTE",
+    "XXX",
+    "HACK",
+    "Copyright",
+    "License",
+    "Author",
+    "Licensed",
+]
+
+# 排除模式：匹配这些正则表达式的文本不会被翻译
+exclude_patterns = [
+    'https?://[^\s]+',           # URL
+    '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}',  # Email
+]
+
+# 包含模式：只有匹配这些正则表达式的文本才会被翻译（优先级高于排除）
+# 如果为空，则不过滤
+include_patterns = []
+
+# 文本长度限制
+min_length = 0     # 最小文本长度，0 表示不限制
+max_length = 0     # 最大文本长度，0 表示不限制
+
+# 占位符处理
+allow_placeholders = false  # 是否允许包含占位符的文本（如 %s, ${var}）
+
+# 代码模式检测
+detect_code_patterns = true  # 是否检测并过滤代码模式（如 obj.method(), function()）
+
+# 缓存配置
+[cache]
+enabled = true                # 是否启用缓存
+directory = ".translator-cache"  # 缓存目录名（相对于项目根目录）
+
+# 写入配置
+[writer]
+preview_only = false         # 是否仅预览，不实际修改文件
+backup = false               # 是否在修改前创建备份文件
+backup_dir = ""              # 备份目录，为空则与原文件同目录
+
+# 编码检测配置
+[encoding]
+detect_encodings = ["UTF-8"]  # 要检测的编码列表
+min_confidence = 0.7          # 最小置信度阈值 (0-1)
+convert_to_utf8 = true        # 是否自动转换为 UTF-8 (翻译后不保留旧编码)

@@ -1,0 +1,7 @@
+**/*.zip
+**/*.exe
+go.sum
+.env
+tests/hurl
+target
+Cargo.lock
