@@ -1,100 +1,92 @@
 //! Rust-specific patterns for macro and function classification
 
-use crate::parser::function_patterns::{FunctionCategory, FunctionPatternRegistry};
+use crate::parser::function_patterns::{FunctionCategory, LanguageFunctionPatterns};
 
 /// Rust patterns for macro classification
 #[derive(Clone)]
 pub struct RustPatterns {
-    registry: FunctionPatternRegistry,
+    patterns: LanguageFunctionPatterns,
 }
 
 impl RustPatterns {
     /// Create a new Rust patterns instance
     pub fn new() -> Self {
-        let mut registry = FunctionPatternRegistry::new();
-        Self::register_patterns(&mut registry);
-        Self { registry }
+        Self {
+            patterns: Self::create_patterns(),
+        }
     }
 
-    /// Register default Rust patterns
-    fn register_patterns(registry: &mut FunctionPatternRegistry) {
+    /// Create Rust patterns
+    fn create_patterns() -> LanguageFunctionPatterns {
+        let mut patterns = LanguageFunctionPatterns::empty();
+
         // Error macros
-        registry.register_functions(
-            "rust",
-            FunctionCategory::Error,
-            &[
-                "panic!",
-                "assert!",
-                "assert_eq!",
-                "assert_ne!",
-                "debug_assert!",
-                "debug_assert_eq!",
-                "debug_assert_ne!",
-                "unreachable!",
-                "unimplemented!",
-                "todo!",
-            ],
-        );
+        patterns.error_functions.extend(vec![
+            "panic!".to_string(),
+            "assert!".to_string(),
+            "assert_eq!".to_string(),
+            "assert_ne!".to_string(),
+            "debug_assert!".to_string(),
+            "debug_assert_eq!".to_string(),
+            "debug_assert_ne!".to_string(),
+            "unreachable!".to_string(),
+            "unimplemented!".to_string(),
+            "todo!".to_string(),
+        ]);
 
         // Format macros
-        registry.register_functions(
-            "rust",
-            FunctionCategory::Format,
-            &[
-                "format!",
-                "format_args!",
-                "print!",
-                "println!",
-                "eprint!",
-                "eprintln!",
-                "write!",
-                "writeln!",
-            ],
-        );
+        patterns.format_functions.extend(vec![
+            "format!".to_string(),
+            "format_args!".to_string(),
+            "print!".to_string(),
+            "println!".to_string(),
+            "eprint!".to_string(),
+            "eprintln!".to_string(),
+            "write!".to_string(),
+            "writeln!".to_string(),
+        ]);
 
         // Log macros (note: println! is also in format)
-        registry.register_functions(
-            "rust",
-            FunctionCategory::Log,
-            &[
-                "println!",
-                "eprintln!",
-                "log!",
-                "trace!",
-                "debug!",
-                "info!",
-                "warn!",
-                "error!",
-            ],
-        );
+        patterns.log_functions.extend(vec![
+            "println!".to_string(),
+            "eprintln!".to_string(),
+            "log!".to_string(),
+            "trace!".to_string(),
+            "debug!".to_string(),
+            "info!".to_string(),
+            "warn!".to_string(),
+            "error!".to_string(),
+        ]);
 
         // Debug macros
-        registry.register_functions("rust", FunctionCategory::Debug, &["dbg!"]);
+        patterns.debug_functions.push("dbg!".to_string());
+
+        patterns
     }
 
     /// Classify a macro by name
     pub fn classify_macro(&self, macro_name: &str) -> Option<FunctionCategory> {
-        self.registry.classify("rust", macro_name)
+        self.patterns.classify(macro_name)
     }
 
     /// Check if macro is an error macro
     pub fn is_error_macro(&self, macro_name: &str) -> bool {
-        self.registry.is_error_function("rust", macro_name)
+        self.patterns.is_error_function(macro_name)
     }
 
     /// Check if macro is a format macro
     pub fn is_format_macro(&self, macro_name: &str) -> bool {
-        self.registry.is_format_function("rust", macro_name)
+        self.patterns.is_format_function(macro_name)
     }
 
     /// Check if macro is a log macro
     pub fn is_log_macro(&self, macro_name: &str) -> bool {
-        self.registry.is_log_function("rust", macro_name)
+        self.patterns.is_log_function(macro_name)
     }
 
     /// Check if macro is a debug macro
     pub fn is_debug_macro(&self, macro_name: &str) -> bool {
-        self.registry.is_debug_function("rust", macro_name)
+        self.patterns.is_debug_function(macro_name)
     }
 
     /// Get all error macros
@@ -131,6 +123,11 @@ impl RustPatterns {
     /// Get all debug macros
     pub fn debug_macros() -> &'static [&'static str] {
         &["dbg!"]
+    }
+
+    /// Get the underlying patterns
+    pub fn patterns(&self) -> &LanguageFunctionPatterns {
+        &self.patterns
     }
 }
 
@@ -182,5 +179,16 @@ mod tests {
         assert!(RustPatterns::format_macros().contains(&"format!"));
         assert!(RustPatterns::log_macros().contains(&"println!"));
         assert!(RustPatterns::debug_macros().contains(&"dbg!"));
+    }
+
+    #[test]
+    fn test_patterns() {
+        let patterns = RustPatterns::new();
+        let underlying = patterns.patterns();
+
+        assert!(underlying.is_error_function("panic!"));
+        assert!(underlying.is_format_function("format!"));
+        assert!(underlying.is_log_function("println!"));
+        assert!(underlying.is_debug_function("dbg!"));
     }
 }

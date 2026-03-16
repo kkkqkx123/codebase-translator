@@ -2,6 +2,11 @@
 //!
 //! Extracts string literals from code based on AST patterns and configurable rules.
 //! Uses a conservative approach: only extracts strings from explicitly defined contexts.
+//!
+//! # Deprecated
+//!
+//! This module is currently not used in the codebase and is marked as deprecated.
+//! It may be removed in a future version.
 
 use std::collections::HashSet;
 use std::sync::Arc;

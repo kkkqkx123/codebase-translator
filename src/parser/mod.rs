@@ -50,7 +50,8 @@ pub mod regex;
 // Type-specific regex parsers
 pub mod regex_parsers;
 
-// String literal extractor
+// String literal extractor (deprecated - not currently used)
+#[deprecated(since = "0.1.0", note = "This module is not currently used and may be removed in a future version")]
 pub mod string_extractor;
 
 // Parser trait
@@ -59,10 +60,7 @@ pub mod r#trait;
 // Re-export commonly used types
 pub use core::{ExtractionCandidate, ExtractionType, Extractor, QueryExecutor, StringProcessor};
 pub use filter::{ContentFilter, FilterConfig};
-pub use function_patterns::{
-    classify_function, is_error_function, is_format_function, is_log_function, FunctionCategory,
-    FunctionPatternRegistry, LanguageFunctionPatterns,
-};
+pub use function_patterns::{FunctionCategory, LanguageFunctionPatterns};
 pub use language::{LanguageDetector, LanguageInfo};
 pub use languages::RustParser;
 pub use queries::{CommentQueries, FunctionQueries, QueryBuilder, StringQueries};

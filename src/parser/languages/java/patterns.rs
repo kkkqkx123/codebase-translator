@@ -1,74 +1,82 @@
 //! Java-specific patterns for method and function classification
 
-use crate::parser::function_patterns::{FunctionCategory, FunctionPatternRegistry};
+use crate::parser::function_patterns::{FunctionCategory, LanguageFunctionPatterns};
 
 /// Java patterns for method classification
 #[derive(Clone)]
 pub struct JavaPatterns {
-    registry: FunctionPatternRegistry,
+    patterns: LanguageFunctionPatterns,
 }
 
 impl JavaPatterns {
     /// Create a new Java patterns instance
     pub fn new() -> Self {
-        let mut registry = FunctionPatternRegistry::new();
-        Self::register_patterns(&mut registry);
-        Self { registry }
+        Self {
+            patterns: Self::create_patterns(),
+        }
     }
 
-    /// Register default Java patterns
-    fn register_patterns(registry: &mut FunctionPatternRegistry) {
+    /// Create Java patterns
+    fn create_patterns() -> LanguageFunctionPatterns {
+        let mut patterns = LanguageFunctionPatterns::empty();
+
         // Error/exception methods
-        registry.register_functions("java", FunctionCategory::Error, &["throw", "throws"]);
+        patterns
+            .error_functions
+            .extend(vec!["throw".to_string(), "throws".to_string()]);
 
         // Format methods
-        registry.register_functions(
-            "java",
-            FunctionCategory::Format,
-            &["format", "printf", "sprintf"],
-        );
+        patterns.format_functions.extend(vec![
+            "format".to_string(),
+            "printf".to_string(),
+            "sprintf".to_string(),
+        ]);
 
         // Log methods
-        registry.register_functions(
-            "java",
-            FunctionCategory::Log,
-            &["log", "trace", "debug", "info", "warn", "error", "fatal"],
-        );
-
-        // Print methods (System.out.println, etc.)
-        registry.register_functions(
-            "java",
-            FunctionCategory::Log,
-            &["print", "println", "write"],
-        );
+        patterns.log_functions.extend(vec![
+            "log".to_string(),
+            "trace".to_string(),
+            "debug".to_string(),
+            "info".to_string(),
+            "warn".to_string(),
+            "error".to_string(),
+            "fatal".to_string(),
+            "print".to_string(),
+            "println".to_string(),
+            "write".to_string(),
+        ]);
 
         // Debug methods
-        registry.register_functions("java", FunctionCategory::Debug, &["toString", "dump"]);
+        patterns
+            .debug_functions
+            .extend(vec!["toString".to_string(), "dump".to_string()]);
+
+        patterns
     }
 
     /// Classify a method by name
     pub fn classify_method(&self, method_name: &str) -> Option<FunctionCategory> {
-        self.registry.classify("java", method_name)
+        self.patterns.classify(method_name)
     }
 
     /// Check if method is an error-related method
     pub fn is_error_method(&self, method_name: &str) -> bool {
-        self.registry.is_error_function("java", method_name)
+        self.patterns.is_error_function(method_name)
     }
 
     /// Check if method is a format method
     pub fn is_format_method(&self, method_name: &str) -> bool {
-        self.registry.is_format_function("java", method_name)
+        self.patterns.is_format_function(method_name)
     }
 
     /// Check if method is a log method
     pub fn is_log_method(&self, method_name: &str) -> bool {
-        self.registry.is_log_function("java", method_name)
+        self.patterns.is_log_function(method_name)
     }
 
     /// Check if method is a debug method
     pub fn is_debug_method(&self, method_name: &str) -> bool {
-        self.registry.is_debug_function("java", method_name)
+        self.patterns.is_debug_function(method_name)
     }
 
     /// Get all error methods
@@ -91,6 +99,11 @@ impl JavaPatterns {
     /// Get all debug methods
     pub fn debug_methods() -> &'static [&'static str] {
         &["toString", "dump"]
+    }
+
+    /// Get the underlying patterns
+    pub fn patterns(&self) -> &LanguageFunctionPatterns {
+        &self.patterns
     }
 }
 
@@ -146,5 +159,16 @@ mod tests {
         assert!(JavaPatterns::format_methods().contains(&"format"));
         assert!(JavaPatterns::log_methods().contains(&"println"));
         assert!(JavaPatterns::debug_methods().contains(&"toString"));
+    }
+
+    #[test]
+    fn test_patterns() {
+        let patterns = JavaPatterns::new();
+        let underlying = patterns.patterns();
+
+        assert!(underlying.is_error_function("throw"));
+        assert!(underlying.is_format_function("format"));
+        assert!(underlying.is_log_function("println"));
+        assert!(underlying.is_debug_function("toString"));
     }
 }

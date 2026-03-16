@@ -1,80 +1,72 @@
 //! TypeScript-specific patterns for function and method classification
 
-use crate::parser::function_patterns::{FunctionCategory, FunctionPatternRegistry};
+use crate::parser::function_patterns::{FunctionCategory, LanguageFunctionPatterns};
 
 /// TypeScript patterns for function classification
 #[derive(Clone)]
 pub struct TypeScriptPatterns {
-    registry: FunctionPatternRegistry,
+    patterns: LanguageFunctionPatterns,
 }
 
 impl TypeScriptPatterns {
     /// Create a new TypeScript patterns instance
     pub fn new() -> Self {
-        let mut registry = FunctionPatternRegistry::empty();
-        Self::register_patterns(&mut registry);
-        Self { registry }
+        Self {
+            patterns: Self::create_patterns(),
+        }
     }
 
-    /// Register default TypeScript patterns
-    fn register_patterns(registry: &mut FunctionPatternRegistry) {
+    /// Create TypeScript patterns
+    fn create_patterns() -> LanguageFunctionPatterns {
+        let mut patterns = LanguageFunctionPatterns::empty();
+
         // Console methods
-        registry.register_functions(
-            "typescript",
-            FunctionCategory::Log,
-            &[
-                "console.log",
-                "console.error",
-                "console.warn",
-                "console.info",
-                "console.debug",
-                "console.trace",
-                "log",
-                "error",
-                "warn",
-                "info",
-                "debug",
-                "trace",
-            ],
-        );
+        patterns.log_functions.extend(vec![
+            "console.log".to_string(),
+            "console.error".to_string(),
+            "console.warn".to_string(),
+            "console.info".to_string(),
+            "console.debug".to_string(),
+            "console.trace".to_string(),
+            "log".to_string(),
+            "error".to_string(),
+            "warn".to_string(),
+            "info".to_string(),
+            "debug".to_string(),
+            "trace".to_string(),
+            "alert".to_string(),
+            "confirm".to_string(),
+            "prompt".to_string(),
+        ]);
 
         // Error methods
-        registry.register_functions(
-            "typescript",
-            FunctionCategory::Error,
-            &[
-                "throw",
-                "Error",
-                "TypeError",
-                "ReferenceError",
-                "SyntaxError",
-                "RangeError",
-                "URIError",
-                "EvalError",
-            ],
-        );
+        patterns.error_functions.extend(vec![
+            "throw".to_string(),
+            "Error".to_string(),
+            "TypeError".to_string(),
+            "ReferenceError".to_string(),
+            "SyntaxError".to_string(),
+            "RangeError".to_string(),
+            "URIError".to_string(),
+            "EvalError".to_string(),
+        ]);
 
-        // Alert/confirm/prompt
-        registry.register_functions(
-            "typescript",
-            FunctionCategory::Log,
-            &["alert", "confirm", "prompt"],
-        );
+        patterns
     }
 
     /// Classify a function by name
     pub fn classify_function(&self, func_name: &str) -> Option<FunctionCategory> {
-        self.registry.classify("typescript", func_name)
+        self.patterns.classify(func_name)
     }
 
     /// Check if function is a console/log method
     pub fn is_log_function(&self, func_name: &str) -> bool {
-        self.registry.is_log_function("typescript", func_name)
+        self.patterns.is_log_function(func_name)
     }
 
     /// Check if function is an error-related method
     pub fn is_error_function(&self, func_name: &str) -> bool {
-        self.registry.is_error_function("typescript", func_name)
+        self.patterns.is_error_function(func_name)
     }
 
     /// Get all console/log methods
@@ -110,6 +102,11 @@ impl TypeScriptPatterns {
             "URIError",
             "EvalError",
         ]
+    }
+
+    /// Get the underlying patterns
+    pub fn patterns(&self) -> &LanguageFunctionPatterns {
+        &self.patterns
     }
 }
 

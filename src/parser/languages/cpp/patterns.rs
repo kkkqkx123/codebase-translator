@@ -1,87 +1,97 @@
 //! C++-specific patterns for function classification
 
-use crate::parser::function_patterns::{FunctionCategory, FunctionPatternRegistry};
+use crate::parser::function_patterns::{FunctionCategory, LanguageFunctionPatterns};
 
 /// C++ patterns for function classification
 #[derive(Clone)]
 pub struct CppPatterns {
-    registry: FunctionPatternRegistry,
+    patterns: LanguageFunctionPatterns,
 }
 
 impl CppPatterns {
     /// Create a new C++ patterns instance
     pub fn new() -> Self {
-        let mut registry = FunctionPatternRegistry::new();
-        Self::register_patterns(&mut registry);
-        Self { registry }
+        Self {
+            patterns: Self::create_patterns(),
+        }
     }
 
-    /// Register default C++ patterns
-    fn register_patterns(registry: &mut FunctionPatternRegistry) {
+    /// Create C++ patterns
+    fn create_patterns() -> LanguageFunctionPatterns {
+        let mut patterns = LanguageFunctionPatterns::empty();
+
         // Error functions
-        registry.register_functions(
-            "cpp",
-            FunctionCategory::Error,
-            &["perror", "strerror", "assert", "static_assert", "throw"],
-        );
+        patterns.error_functions.extend(vec![
+            "perror".to_string(),
+            "strerror".to_string(),
+            "assert".to_string(),
+            "static_assert".to_string(),
+            "throw".to_string(),
+        ]);
 
         // Format functions
-        registry.register_functions(
-            "cpp",
-            FunctionCategory::Format,
-            &[
-                "printf",
-                "fprintf",
-                "sprintf",
-                "snprintf",
-                "vprintf",
-                "vfprintf",
-                "vsprintf",
-                "vsnprintf",
-                "scanf",
-                "fscanf",
-                "sscanf",
-                "std::format",
-                "std::vformat",
-                "std::sprintf",
-                "std::snprintf",
-            ],
-        );
+        patterns.format_functions.extend(vec![
+            "printf".to_string(),
+            "fprintf".to_string(),
+            "sprintf".to_string(),
+            "snprintf".to_string(),
+            "vprintf".to_string(),
+            "vfprintf".to_string(),
+            "vsprintf".to_string(),
+            "vsnprintf".to_string(),
+            "scanf".to_string(),
+            "fscanf".to_string(),
+            "sscanf".to_string(),
+            "std::format".to_string(),
+            "std::vformat".to_string(),
+            "std::sprintf".to_string(),
+            "std::snprintf".to_string(),
+        ]);
 
         // Log functions
-        registry.register_functions(
-            "cpp",
-            FunctionCategory::Log,
-            &["std::cout", "std::cerr", "std::clog", "syslog"],
-        );
+        patterns.log_functions.extend(vec![
+            "std::cout".to_string(),
+            "std::cerr".to_string(),
+            "std::clog".to_string(),
+            "syslog".to_string(),
+        ]);
 
         // Debug functions
-        registry.register_functions("cpp", FunctionCategory::Debug, &["std::cout", "std::cerr"]);
+        patterns
+            .debug_functions
+            .extend(vec!["std::cout".to_string(), "std::cerr".to_string()]);
+
+        patterns
     }
 
     /// Classify a function by name
     pub fn classify_function(&self, func_name: &str) -> Option<FunctionCategory> {
-        self.registry.classify("cpp", func_name)
+        self.patterns.classify(func_name)
     }
 
     /// Check if function is an error function
     pub fn is_error_function(&self, func_name: &str) -> bool {
-        self.registry.is_error_function("cpp", func_name)
+        self.patterns.is_error_function(func_name)
     }
 
     /// Check if function is a format function
     pub fn is_format_function(&self, func_name: &str) -> bool {
-        self.registry.is_format_function("cpp", func_name)
+        self.patterns.is_format_function(func_name)
     }
 
     /// Check if function is a log function
     pub fn is_log_function(&self, func_name: &str) -> bool {
-        self.registry.is_log_function("cpp", func_name)
+        self.patterns.is_log_function(func_name)
     }
 
     /// Check if function is a debug function
     pub fn is_debug_function(&self, func_name: &str) -> bool {
-        self.registry.is_debug_function("cpp", func_name)
+        self.patterns.is_debug_function(func_name)
+    }
+
+    /// Get the underlying patterns
+    pub fn patterns(&self) -> &LanguageFunctionPatterns {
+        &self.patterns
     }
 }
 

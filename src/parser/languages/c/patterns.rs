@@ -1,81 +1,82 @@
 //! C-specific patterns for function classification
 
-use crate::parser::function_patterns::{FunctionCategory, FunctionPatternRegistry};
+use crate::parser::function_patterns::{FunctionCategory, LanguageFunctionPatterns};
 
 /// C patterns for function classification
 #[derive(Clone)]
 pub struct CPatterns {
-    registry: FunctionPatternRegistry,
+    patterns: LanguageFunctionPatterns,
 }
 
 impl CPatterns {
     /// Create a new C patterns instance
     pub fn new() -> Self {
-        let mut registry = FunctionPatternRegistry::new();
-        Self::register_patterns(&mut registry);
-        Self { registry }
+        Self {
+            patterns: Self::create_patterns(),
+        }
     }
 
-    /// Register default C patterns
-    fn register_patterns(registry: &mut FunctionPatternRegistry) {
+    /// Create C patterns
+    fn create_patterns() -> LanguageFunctionPatterns {
+        let mut patterns = LanguageFunctionPatterns::empty();
+
         // Error functions
-        registry.register_functions(
-            "c",
-            FunctionCategory::Error,
-            &[
-                "perror",
-                "strerror",
-                "assert",
-                "assert_fail",
-                "__assert_fail",
-            ],
-        );
+        patterns.error_functions.extend(vec![
+            "perror".to_string(),
+            "strerror".to_string(),
+            "assert".to_string(),
+            "assert_fail".to_string(),
+            "__assert_fail".to_string(),
+        ]);
 
         // Format functions
-        registry.register_functions(
-            "c",
-            FunctionCategory::Format,
-            &[
-                "printf",
-                "fprintf",
-                "sprintf",
-                "snprintf",
-                "vprintf",
-                "vfprintf",
-                "vsprintf",
-                "vsnprintf",
-                "scanf",
-                "fscanf",
-                "sscanf",
-            ],
-        );
+        patterns.format_functions.extend(vec![
+            "printf".to_string(),
+            "fprintf".to_string(),
+            "sprintf".to_string(),
+            "snprintf".to_string(),
+            "vprintf".to_string(),
+            "vfprintf".to_string(),
+            "vsprintf".to_string(),
+            "vsnprintf".to_string(),
+            "scanf".to_string(),
+            "fscanf".to_string(),
+            "sscanf".to_string(),
+        ]);
 
         // Log functions
-        registry.register_functions(
-            "c",
-            FunctionCategory::Log,
-            &["syslog", "openlog", "closelog"],
-        );
+        patterns.log_functions.extend(vec![
+            "syslog".to_string(),
+            "openlog".to_string(),
+            "closelog".to_string(),
+        ]);
+
+        patterns
     }
 
     /// Classify a function by name
     pub fn classify_function(&self, func_name: &str) -> Option<FunctionCategory> {
-        self.registry.classify("c", func_name)
+        self.patterns.classify(func_name)
     }
 
     /// Check if function is an error function
     pub fn is_error_function(&self, func_name: &str) -> bool {
-        self.registry.is_error_function("c", func_name)
+        self.patterns.is_error_function(func_name)
     }
 
     /// Check if function is a format function
     pub fn is_format_function(&self, func_name: &str) -> bool {
-        self.registry.is_format_function("c", func_name)
+        self.patterns.is_format_function(func_name)
     }
 
     /// Check if function is a log function
     pub fn is_log_function(&self, func_name: &str) -> bool {
-        self.registry.is_log_function("c", func_name)
+        self.patterns.is_log_function(func_name)
+    }
+
+    /// Get the underlying patterns
+    pub fn patterns(&self) -> &LanguageFunctionPatterns {
+        &self.patterns
     }
 }
 

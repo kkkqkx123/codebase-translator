@@ -1,111 +1,95 @@
 //! Python-specific patterns for function classification
 
-use crate::parser::function_patterns::{FunctionCategory, FunctionPatternRegistry};
+use crate::parser::function_patterns::{FunctionCategory, LanguageFunctionPatterns};
 
 /// Python patterns for function classification
 #[derive(Clone)]
 pub struct PythonPatterns {
-    registry: FunctionPatternRegistry,
+    patterns: LanguageFunctionPatterns,
 }
 
 impl PythonPatterns {
     /// Create a new Python patterns instance
     pub fn new() -> Self {
-        let mut registry = FunctionPatternRegistry::new();
-        Self::register_patterns(&mut registry);
-        Self { registry }
+        Self {
+            patterns: Self::create_patterns(),
+        }
     }
 
-    /// Register default Python patterns
-    fn register_patterns(registry: &mut FunctionPatternRegistry) {
+    /// Create Python patterns
+    fn create_patterns() -> LanguageFunctionPatterns {
+        let mut patterns = LanguageFunctionPatterns::empty();
+
         // Error functions
-        registry.register_functions(
-            "python",
-            FunctionCategory::Error,
-            &[
-                "raise",
-                "raise Exception",
-                "raise ValueError",
-                "raise TypeError",
-                "raise RuntimeError",
-                "raise AssertionError",
-                "sys.exit",
-                "exit",
-                "quit",
-            ],
-        );
+        patterns.error_functions.extend(vec![
+            "raise".to_string(),
+            "raise Exception".to_string(),
+            "raise ValueError".to_string(),
+            "raise TypeError".to_string(),
+            "raise RuntimeError".to_string(),
+            "raise AssertionError".to_string(),
+            "sys.exit".to_string(),
+            "exit".to_string(),
+            "quit".to_string(),
+            "assert".to_string(),
+            "assertEqual".to_string(),
+            "assertTrue".to_string(),
+            "assertFalse".to_string(),
+            "assertRaises".to_string(),
+        ]);
 
         // Format functions
-        registry.register_functions(
-            "python",
-            FunctionCategory::Format,
-            &[
-                "print",
-                "format",
-                "str.format",
-                "f-string",
-                "logging.Formatter",
-                "logging.basicConfig",
-            ],
-        );
+        patterns.format_functions.extend(vec![
+            "print".to_string(),
+            "format".to_string(),
+            "str.format".to_string(),
+            "f-string".to_string(),
+            "logging.Formatter".to_string(),
+            "logging.basicConfig".to_string(),
+        ]);
 
         // Log functions
-        registry.register_functions(
-            "python",
-            FunctionCategory::Log,
-            &[
-                "logging.info",
-                "logging.debug",
-                "logging.warning",
-                "logging.error",
-                "logging.critical",
-                "logging.exception",
-                "logger.info",
-                "logger.debug",
-                "logger.warning",
-                "logger.error",
-                "logger.critical",
-                "logger.exception",
-                "log.info",
-                "log.debug",
-                "log.warning",
-                "log.error",
-                "log.critical",
-            ],
-        );
+        patterns.log_functions.extend(vec![
+            "logging.info".to_string(),
+            "logging.debug".to_string(),
+            "logging.warning".to_string(),
+            "logging.error".to_string(),
+            "logging.critical".to_string(),
+            "logging.exception".to_string(),
+            "logger.info".to_string(),
+            "logger.debug".to_string(),
+            "logger.warning".to_string(),
+            "logger.error".to_string(),
+            "logger.critical".to_string(),
+            "logger.exception".to_string(),
+            "log.info".to_string(),
+            "log.debug".to_string(),
+            "log.warning".to_string(),
+            "log.error".to_string(),
+            "log.critical".to_string(),
+        ]);
 
-        // Exception handling
-        registry.register_functions(
-            "python",
-            FunctionCategory::Error,
-            &[
-                "assert",
-                "assertEqual",
-                "assertTrue",
-                "assertFalse",
-                "assertRaises",
-            ],
-        );
+        patterns
     }
 
     /// Classify a function by name
     pub fn classify_function(&self, func_name: &str) -> Option<FunctionCategory> {
-        self.registry.classify("python", func_name)
+        self.patterns.classify(func_name)
     }
 
     /// Check if function is an error function
     pub fn is_error_function(&self, func_name: &str) -> bool {
-        self.registry.is_error_function("python", func_name)
+        self.patterns.is_error_function(func_name)
     }
 
     /// Check if function is a format function
     pub fn is_format_function(&self, func_name: &str) -> bool {
-        self.registry.is_format_function("python", func_name)
+        self.patterns.is_format_function(func_name)
     }
 
     /// Check if function is a log function
     pub fn is_log_function(&self, func_name: &str) -> bool {
-        self.registry.is_log_function("python", func_name)
+        self.patterns.is_log_function(func_name)
     }
 
     /// Get all error functions
@@ -162,6 +146,11 @@ impl PythonPatterns {
             "log.critical",
         ]
     }
+
+    /// Get the underlying patterns
+    pub fn patterns(&self) -> &LanguageFunctionPatterns {
+        &self.patterns
+    }
 }
 
 impl Default for PythonPatterns {
@@ -210,5 +199,15 @@ mod tests {
         assert!(PythonPatterns::error_functions().contains(&"raise"));
         assert!(PythonPatterns::format_functions().contains(&"print"));
         assert!(PythonPatterns::log_functions().contains(&"logging.info"));
+    }
+
+    #[test]
+    fn test_patterns() {
+        let patterns = PythonPatterns::new();
+        let underlying = patterns.patterns();
+
+        assert!(underlying.is_error_function("raise"));
+        assert!(underlying.is_format_function("print"));
+        assert!(underlying.is_log_function("logging.info"));
     }
 }

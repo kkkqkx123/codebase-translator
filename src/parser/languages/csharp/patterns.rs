@@ -1,140 +1,132 @@
 //! C#-specific patterns for method classification
 
-use crate::parser::function_patterns::{FunctionCategory, FunctionPatternRegistry};
+use crate::parser::function_patterns::{FunctionCategory, LanguageFunctionPatterns};
 
 /// C# patterns for method classification
 #[derive(Clone)]
 pub struct CSharpPatterns {
-    registry: FunctionPatternRegistry,
+    patterns: LanguageFunctionPatterns,
 }
 
 impl CSharpPatterns {
     /// Create a new C# patterns instance
     pub fn new() -> Self {
-        let mut registry = FunctionPatternRegistry::new();
-        Self::register_patterns(&mut registry);
-        Self { registry }
+        Self {
+            patterns: Self::create_patterns(),
+        }
     }
 
-    /// Register default C# patterns
-    fn register_patterns(registry: &mut FunctionPatternRegistry) {
+    /// Create C# patterns
+    fn create_patterns() -> LanguageFunctionPatterns {
+        let mut patterns = LanguageFunctionPatterns::empty();
+
         // Error methods
-        registry.register_functions(
-            "csharp",
-            FunctionCategory::Error,
-            &[
-                "throw",
-                "Exception",
-                "ArgumentException",
-                "InvalidOperationException",
-                "NotImplementedException",
-                "NotSupportedException",
-                "NullReferenceException",
-                "ArgumentNullException",
-                "ArgumentOutOfRangeException",
-                "InvalidCastException",
-                "InvalidDataException",
-                "IOException",
-                "FileNotFoundException",
-                "DirectoryNotFoundException",
-                "TimeoutException",
-            ],
-        );
+        patterns.error_functions.extend(vec![
+            "throw".to_string(),
+            "Exception".to_string(),
+            "ArgumentException".to_string(),
+            "InvalidOperationException".to_string(),
+            "NotImplementedException".to_string(),
+            "NotSupportedException".to_string(),
+            "NullReferenceException".to_string(),
+            "ArgumentNullException".to_string(),
+            "ArgumentOutOfRangeException".to_string(),
+            "InvalidCastException".to_string(),
+            "InvalidDataException".to_string(),
+            "IOException".to_string(),
+            "FileNotFoundException".to_string(),
+            "DirectoryNotFoundException".to_string(),
+            "TimeoutException".to_string(),
+        ]);
 
         // Format methods
-        registry.register_functions(
-            "csharp",
-            FunctionCategory::Format,
-            &[
-                "string.Format",
-                "Format",
-                "string.Join",
-                "Join",
-                "string.Concat",
-                "Concat",
-                "StringBuilder.AppendFormat",
-                "AppendFormat",
-            ],
-        );
+        patterns.format_functions.extend(vec![
+            "string.Format".to_string(),
+            "Format".to_string(),
+            "string.Join".to_string(),
+            "Join".to_string(),
+            "string.Concat".to_string(),
+            "Concat".to_string(),
+            "StringBuilder.AppendFormat".to_string(),
+            "AppendFormat".to_string(),
+        ]);
 
         // Log methods
-        registry.register_functions(
-            "csharp",
-            FunctionCategory::Log,
-            &[
-                "Console.WriteLine",
-                "Console.Write",
-                "Console.Error.WriteLine",
-                "Console.Error.Write",
-                "Debug.WriteLine",
-                "Debug.Write",
-                "Debug.Log",
-                "Debug.LogError",
-                "Debug.LogWarning",
-                "Trace.WriteLine",
-                "Trace.Write",
-                "Trace.TraceError",
-                "Trace.TraceWarning",
-                "Trace.TraceInformation",
-                "ILogger.Log",
-                // Simple method names (for member access expressions)
-                "WriteLine",
-                "Write",
-                "Log",
-                "LogError",
-                "LogWarning",
-                "LogInformation",
-                "LogDebug",
-                "LogTrace",
-                "ILogger.LogInformation",
-                "ILogger.LogWarning",
-                "ILogger.LogError",
-                "ILogger.LogDebug",
-                "ILogger.LogTrace",
-                "Logger.LogInformation",
-                "Logger.LogWarning",
-                "Logger.LogError",
-                "Logger.LogDebug",
-            ],
-        );
+        patterns.log_functions.extend(vec![
+            "Console.WriteLine".to_string(),
+            "Console.Write".to_string(),
+            "Console.Error.WriteLine".to_string(),
+            "Console.Error.Write".to_string(),
+            "Debug.WriteLine".to_string(),
+            "Debug.Write".to_string(),
+            "Debug.Log".to_string(),
+            "Debug.LogError".to_string(),
+            "Debug.LogWarning".to_string(),
+            "Trace.WriteLine".to_string(),
+            "Trace.Write".to_string(),
+            "Trace.TraceError".to_string(),
+            "Trace.TraceWarning".to_string(),
+            "Trace.TraceInformation".to_string(),
+            "ILogger.Log".to_string(),
+            "WriteLine".to_string(),
+            "Write".to_string(),
+            "Log".to_string(),
+            "LogError".to_string(),
+            "LogWarning".to_string(),
+            "LogInformation".to_string(),
+            "LogDebug".to_string(),
+            "LogTrace".to_string(),
+            "ILogger.LogInformation".to_string(),
+            "ILogger.LogWarning".to_string(),
+            "ILogger.LogError".to_string(),
+            "ILogger.LogDebug".to_string(),
+            "ILogger.LogTrace".to_string(),
+            "Logger.LogInformation".to_string(),
+            "Logger.LogWarning".to_string(),
+            "Logger.LogError".to_string(),
+            "Logger.LogDebug".to_string(),
+        ]);
 
         // Debug methods
-        registry.register_functions(
-            "csharp",
-            FunctionCategory::Debug,
-            &[
-                "Debug.WriteLine",
-                "Debug.Write",
-                "Debug.Log",
-                "Debug.Assert",
-                "Debugger.Log",
-            ],
-        );
+        patterns.debug_functions.extend(vec![
+            "Debug.WriteLine".to_string(),
+            "Debug.Write".to_string(),
+            "Debug.Log".to_string(),
+            "Debug.Assert".to_string(),
+            "Debugger.Log".to_string(),
+        ]);
+
+        patterns
     }
 
     /// Classify a method by name
     pub fn classify_method(&self, method_name: &str) -> Option<FunctionCategory> {
-        self.registry.classify("csharp", method_name)
+        self.patterns.classify(method_name)
     }
 
     /// Check if method is an error method
     pub fn is_error_method(&self, method_name: &str) -> bool {
-        self.registry.is_error_function("csharp", method_name)
+        self.patterns.is_error_function(method_name)
     }
 
     /// Check if method is a format method
     pub fn is_format_method(&self, method_name: &str) -> bool {
-        self.registry.is_format_function("csharp", method_name)
+        self.patterns.is_format_function(method_name)
     }
 
     /// Check if method is a log method
     pub fn is_log_method(&self, method_name: &str) -> bool {
-        self.registry.is_log_function("csharp", method_name)
+        self.patterns.is_log_function(method_name)
     }
 
     /// Check if method is a debug method
     pub fn is_debug_method(&self, method_name: &str) -> bool {
-        self.registry.is_debug_function("csharp", method_name)
+        self.patterns.is_debug_function(method_name)
+    }
+
+    /// Get the underlying patterns
+    pub fn patterns(&self) -> &LanguageFunctionPatterns {
+        &self.patterns
     }
 }
 
