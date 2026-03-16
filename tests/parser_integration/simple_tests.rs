@@ -28,7 +28,9 @@ fn create_test_file(content: &str, path: &str) -> File {
 fn create_test_coordinator() -> ParserCoordinator {
     let mut config = ParserConfig::default();
     config.extract_strings = true; // Enable string extraction
-    ParserCoordinator::with_defaults(config).expect("Failed to create coordinator")
+
+    // Use unified config to ensure consistency between parser and strategy layers
+    ParserCoordinator::with_unified_config(config).expect("Failed to create coordinator")
 }
 
 fn write_units_to_file(filename: &str, units: &[TranslationUnit]) {

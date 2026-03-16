@@ -1,4 +1,4 @@
-Extracted 15 translation units from rust_string_literals
+Extracted 47 translation units from rust_string_literals
 ==================================================
 
 --- Unit 1 ---
@@ -23,86 +23,310 @@ Content:
 // Error message strings
 
 --- Unit 4 ---
+ID: test.rs_string_literal_0
+Type: string_literal
+Position: Line 9, Column 12 (Offset: 184)
+Content:
+"系统遇到致命错误，无法继续执行"
+
+--- Unit 5 ---
+ID: test.rs_string_literal_1
+Type: string_literal
+Position: Line 10, Column 12 (Offset: 245)
+Content:
+"Memory allocation failed"
+
+--- Unit 6 ---
+ID: test.rs_string_literal_2
+Type: string_literal
+Position: Line 12, Column 20 (Offset: 298)
+Content:
+"断言失败：数值不匹配"
+
+--- Unit 7 ---
+ID: test.rs_string_literal_3
+Type: string_literal
+Position: Line 13, Column 22 (Offset: 354)
+Content:
+"Expected 1, got 2"
+
+--- Unit 8 ---
+ID: test.rs_string_literal_4
+Type: string_literal
+Position: Line 15, Column 11 (Offset: 391)
+Content:
+"实现用户认证功能"
+
+--- Unit 9 ---
+ID: test.rs_string_literal_5
+Type: string_literal
+Position: Line 16, Column 20 (Offset: 439)
+Content:
+"Database connection not yet implemented"
+
+--- Unit 10 ---
+ID: test.rs_string_literal_6
+Type: string_literal
+Position: Line 17, Column 18 (Offset: 500)
+Content:
+"This code should never be reached"
+
+--- Unit 11 ---
 ID: test.rs_comment_4
 Type: comment
 Position: Line 20, Column 1 (Offset: 541)
 Content:
 // Console/log output strings
 
---- Unit 5 ---
+--- Unit 12 ---
+ID: test.rs_string_literal_7
+Type: string_literal
+Position: Line 22, Column 14 (Offset: 604)
+Content:
+"应用程序启动成功"
+
+--- Unit 13 ---
+ID: test.rs_string_literal_8
+Type: string_literal
+Position: Line 23, Column 14 (Offset: 646)
+Content:
+"Application started successfully"
+
+--- Unit 14 ---
+ID: test.rs_string_literal_9
+Type: string_literal
+Position: Line 25, Column 15 (Offset: 702)
+Content:
+"错误：无法打开文件"
+
+--- Unit 15 ---
+ID: test.rs_string_literal_10
+Type: string_literal
+Position: Line 26, Column 15 (Offset: 748)
+Content:
+"Error: Failed to open configuration file"
+
+--- Unit 16 ---
+ID: test.rs_string_literal_11
+Type: string_literal
+Position: Line 28, Column 12 (Offset: 809)
+Content:
+"Loading data... "
+
+--- Unit 17 ---
+ID: test.rs_string_literal_12
+Type: string_literal
+Position: Line 29, Column 14 (Offset: 843)
+Content:
+"完成"
+
+--- Unit 18 ---
 ID: test.rs_comment_5
 Type: comment
 Position: Line 32, Column 1 (Offset: 857)
 Content:
 // Format strings
 
---- Unit 6 ---
+--- Unit 19 ---
+ID: test.rs_string_literal_13
+Type: string_literal
+Position: Line 34, Column 16 (Offset: 913)
+Content:
+"张三"
+
+--- Unit 20 ---
 ID: test.rs_comment_6
 Type: comment
 Position: Line 41, Column 5 (Offset: 1142)
 Content:
 // Mixed language format strings
 
---- Unit 7 ---
+--- Unit 21 ---
 ID: test.rs_comment_7
 Type: comment
 Position: Line 45, Column 1 (Offset: 1240)
 Content:
 // String variable definitions
 
---- Unit 8 ---
+--- Unit 22 ---
+ID: test.rs_string_literal_18
+Type: string_literal
+Position: Line 47, Column 23 (Offset: 1319)
+Content:
+"这是一个中文消息"
+
+--- Unit 23 ---
+ID: test.rs_string_literal_19
+Type: string_literal
+Position: Line 48, Column 23 (Offset: 1369)
+Content:
+"This is an English message"
+
+--- Unit 24 ---
+ID: test.rs_string_literal_20
+Type: string_literal
+Position: Line 49, Column 21 (Offset: 1419)
+Content:
+"Hello 世界"
+
+--- Unit 25 ---
+ID: test.rs_string_literal_21
+Type: string_literal
+Position: Line 51, Column 22 (Offset: 1461)
+Content:
+r"Raw string with \n no escapes"
+
+--- Unit 26 ---
+ID: test.rs_string_literal_22
+Type: string_literal
+Position: Line 52, Column 23 (Offset: 1517)
+Content:
+r"原始字符串：无转义"
+
+--- Unit 27 ---
+ID: test.rs_string_literal_23
+Type: string_literal
+Position: Line 54, Column 29 (Offset: 1582)
+Content:
+"配置错误"
+
+--- Unit 28 ---
+ID: test.rs_string_literal_24
+Type: string_literal
+Position: Line 55, Column 31 (Offset: 1628)
+Content:
+"Operation completed"
+
+--- Unit 29 ---
 ID: test.rs_comment_8
 Type: comment
 Position: Line 58, Column 1 (Offset: 1654)
 Content:
 // UI/Display strings
 
---- Unit 9 ---
+--- Unit 30 ---
 ID: test.rs_comment_9
 Type: comment
 Position: Line 69, Column 1 (Offset: 1855)
 Content:
 // Error types with messages
 
---- Unit 10 ---
+--- Unit 31 ---
+ID: test.rs_string_literal_26
+Type: string_literal
+Position: Line 79, Column 45 (Offset: 2113)
+Content:
+"找不到请求的资源"
+
+--- Unit 32 ---
+ID: test.rs_string_literal_27
+Type: string_literal
+Position: Line 80, Column 49 (Offset: 2190)
+Content:
+"输入参数无效"
+
+--- Unit 33 ---
 ID: test.rs_comment_10
 Type: comment
 Position: Line 85, Column 1 (Offset: 2232)
 Content:
 // HTTP/API related strings
 
---- Unit 11 ---
+--- Unit 34 ---
 ID: test.rs_comment_11
 Type: comment
 Position: Line 92, Column 1 (Offset: 2509)
 Content:
 // SQL query strings
 
---- Unit 12 ---
+--- Unit 35 ---
+ID: test.rs_string_literal_31
+Type: string_literal
+Position: Line 94, Column 18 (Offset: 2566)
+Content:
+"SELECT * FROM users WHERE name = '张三'"
+
+--- Unit 36 ---
+ID: test.rs_string_literal_32
+Type: string_literal
+Position: Line 95, Column 18 (Offset: 2628)
+Content:
+"INSERT INTO logs (message) VALUES ('User login')"
+
+--- Unit 37 ---
+ID: test.rs_string_literal_33
+Type: string_literal
+Position: Line 96, Column 18 (Offset: 2697)
+Content:
+"UPDATE settings SET value = '中文配置'"
+
+--- Unit 38 ---
 ID: test.rs_comment_12
 Type: comment
 Position: Line 99, Column 1 (Offset: 2746)
 Content:
 // Regex patterns as strings
 
---- Unit 13 ---
+--- Unit 39 ---
 ID: test.rs_comment_13
 Type: comment
 Position: Line 102, Column 42 (Offset: 2879)
 Content:
 // Chinese characters
 
---- Unit 14 ---
+--- Unit 40 ---
+ID: test.rs_string_literal_36
+Type: string_literal
+Position: Line 103, Column 20 (Offset: 2920)
+Content:
+r"^\w+@\w+\.\w+$"
+
+--- Unit 41 ---
 ID: test.rs_comment_14
 Type: comment
 Position: Line 106, Column 1 (Offset: 2942)
 Content:
 // File path strings
 
---- Unit 15 ---
+--- Unit 42 ---
 ID: test.rs_comment_15
 Type: comment
 Position: Line 113, Column 1 (Offset: 3127)
 Content:
 // Configuration strings
+
+--- Unit 43 ---
+ID: test.rs_string_literal_40
+Type: string_literal
+Position: Line 115, Column 19 (Offset: 3192)
+Content:
+"localhost"
+
+--- Unit 44 ---
+ID: test.rs_string_literal_41
+Type: string_literal
+Position: Line 116, Column 19 (Offset: 3223)
+Content:
+"生产数据库"
+
+--- Unit 45 ---
+ID: test.rs_string_literal_42
+Type: string_literal
+Position: Line 117, Column 20 (Offset: 3261)
+Content:
+"MyApplication"
+
+--- Unit 46 ---
+ID: test.rs_string_literal_44
+Type: string_literal
+Position: Line 122, Column 14 (Offset: 3333)
+Content:
+"程序启动"
+
+--- Unit 47 ---
+ID: test.rs_string_literal_45
+Type: string_literal
+Position: Line 123, Column 14 (Offset: 3363)
+Content:
+"Program started"
 

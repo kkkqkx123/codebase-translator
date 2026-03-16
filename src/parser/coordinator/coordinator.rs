@@ -7,7 +7,7 @@ use crate::core::models::{File, TranslationUnit};
 use crate::parser::filter::ContentFilter;
 
 use crate::parser::regex_parsers::FallbackParser;
-use crate::parser::strategy::ExtractionStrategyImpl;
+use crate::parser::strategy::{ExtractionConfig, ExtractionStrategyImpl};
 use crate::parser::tree_sitter::{ParserConfig, TreeSitterParser, TreeSitterParserFactory};
 use crate::parser::Parser as ParserTrait;
 
@@ -30,6 +30,29 @@ impl ParserCoordinator {
         use crate::parser::strategy::default_strategy;
 
         let strategy = Arc::new(default_strategy());
+        let filter = Arc::new(default_filter()?);
+
+        Self::new(config, strategy, filter)
+    }
+
+    /// Creates a new parser coordinator with unified configuration.
+    ///
+    /// This method ensures consistency between ParserConfig and ExtractionConfig
+    /// by deriving the strategy configuration from the parser configuration.
+    pub fn with_unified_config(config: ParserConfig) -> Result<Self> {
+        use crate::parser::filter::default_filter;
+
+        // Derive ExtractionConfig from ParserConfig to ensure consistency
+        let extraction_config = ExtractionConfig {
+            comments: config.extract_comments,
+            docstrings: config.extract_docstrings,
+            string_literals: config.extract_strings,
+            ..Default::default()
+        };
+
+        let strategy = Arc::new(ExtractionStrategyImpl::ConfigBased(
+            crate::parser::strategy::ConfigBasedStrategy::new(extraction_config),
+        ));
         let filter = Arc::new(default_filter()?);
 
         Self::new(config, strategy, filter)

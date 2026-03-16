@@ -159,7 +159,7 @@ impl TreeSitterParser {
                     &root_node,
                     content,
                     query,
-                    StrategyNodeType::FormatString,
+                    StrategyNodeType::StringLiteral,
                     file_path,
                 )?;
                 units.extend(string_units);
