@@ -1,0 +1,187 @@
+Extracted 23 translation units from python_comments
+==================================================
+
+--- Unit 1 ---
+ID: test.py_doc_string_0
+Type: doc_string
+Position: Line 1, Column 1 (Offset: 0)
+Content:
+"""Python comments fixture for testing.
+
+This module contains various Python comments and docstrings for testing extraction.
+"""
+
+--- Unit 2 ---
+ID: test.py_doc_string_1
+Type: doc_string
+Position: Line 1, Column 1 (Offset: 0)
+Content:
+"""Python comments fixture for testing.
+
+This module contains various Python comments and docstrings for testing extraction.
+"""
+
+--- Unit 3 ---
+ID: test.py_comment_0
+Type: comment
+Position: Line 6, Column 1 (Offset: 135)
+Content:
+# Module level comment
+
+--- Unit 4 ---
+ID: test.py_comment_1
+Type: comment
+Position: Line 11, Column 1 (Offset: 176)
+Content:
+# Function with regular comments
+
+--- Unit 5 ---
+ID: test.py_comment_2
+Type: comment
+Position: Line 13, Column 5 (Offset: 230)
+Content:
+# Add two numbers
+
+--- Unit 6 ---
+ID: test.py_doc_string_2
+Type: doc_string
+Position: Line 18, Column 5 (Offset: 307)
+Content:
+"""Function with simple docstring."""
+
+--- Unit 7 ---
+ID: test.py_doc_string_4
+Type: doc_string
+Position: Line 45, Column 5 (Offset: 913)
+Content:
+"""Class docstring.
+    
+    This class demonstrates class-level documentation.
+    
+    Attributes:
+        name: The name attribute
+        value: The value attribute
+    """
+
+--- Unit 8 ---
+ID: test.py_doc_string_5
+Type: doc_string
+Position: Line 55, Column 9 (Offset: 1143)
+Content:
+"""Initialize the class.
+        
+        Args:
+            name: The name to use
+        """
+
+--- Unit 9 ---
+ID: test.py_comment_3
+Type: comment
+Position: Line 60, Column 27 (Offset: 1268)
+Content:
+# Instance variable
+
+--- Unit 10 ---
+ID: test.py_comment_4
+Type: comment
+Position: Line 61, Column 25 (Offset: 1313)
+Content:
+# Another instance variable
+
+--- Unit 11 ---
+ID: test.py_doc_string_6
+Type: doc_string
+Position: Line 64, Column 9 (Offset: 1379)
+Content:
+"""Method docstring."""
+
+--- Unit 12 ---
+ID: test.py_comment_5
+Type: comment
+Position: Line 65, Column 9 (Offset: 1412)
+Content:
+# Method comment
+
+--- Unit 13 ---
+ID: test.py_comment_10
+Type: comment
+Position: Line 74, Column 1 (Offset: 1552)
+Content:
+# Normal comment that should be translated
+
+--- Unit 14 ---
+ID: test.py_comment_11
+Type: comment
+Position: Line 75, Column 1 (Offset: 1596)
+Content:
+# This is a regular comment
+
+--- Unit 15 ---
+ID: test.py_comment_12
+Type: comment
+Position: Line 77, Column 1 (Offset: 1627)
+Content:
+# Inline comment after code
+
+--- Unit 16 ---
+ID: test.py_comment_13
+Type: comment
+Position: Line 78, Column 8 (Offset: 1663)
+Content:
+# Set x to 5
+
+--- Unit 17 ---
+ID: test.py_comment_14
+Type: comment
+Position: Line 80, Column 1 (Offset: 1679)
+Content:
+# Multi-line comment using multiple single-line comments
+
+--- Unit 18 ---
+ID: test.py_comment_15
+Type: comment
+Position: Line 81, Column 1 (Offset: 1737)
+Content:
+# Line 1 of comment
+
+--- Unit 19 ---
+ID: test.py_comment_16
+Type: comment
+Position: Line 82, Column 1 (Offset: 1758)
+Content:
+# Line 2 of comment
+
+--- Unit 20 ---
+ID: test.py_comment_17
+Type: comment
+Position: Line 83, Column 1 (Offset: 1779)
+Content:
+# Line 3 of comment
+
+--- Unit 21 ---
+ID: test.py_doc_string_7
+Type: doc_string
+Position: Line 85, Column 1 (Offset: 1802)
+Content:
+"""
+This is a module-level string literal.
+It might be used as documentation.
+"""
+
+--- Unit 22 ---
+ID: test.py_doc_string_8
+Type: doc_string
+Position: Line 85, Column 1 (Offset: 1802)
+Content:
+"""
+This is a module-level string literal.
+It might be used as documentation.
+"""
+
+--- Unit 23 ---
+ID: test.py_comment_18
+Type: comment
+Position: Line 90, Column 1 (Offset: 1890)
+Content:
+# f-strings with various formats
+

@@ -36,6 +36,15 @@ pub struct DeepLXTranslator {
     api_url: String,
 }
 
+impl std::fmt::Debug for DeepLXTranslator {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("DeepLXTranslator")
+            .field("config", &self.config)
+            .field("api_url", &self.api_url)
+            .finish_non_exhaustive()
+    }
+}
+
 impl DeepLXTranslator {
     /// Create a new DeepLX translator
     pub fn new(config: DeepLXConfig) -> Result<Self> {

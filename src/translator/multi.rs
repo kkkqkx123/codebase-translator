@@ -43,6 +43,17 @@ struct TranslatorWrapper {
     failure_count: Arc<AtomicU32>,
 }
 
+impl std::fmt::Debug for TranslatorWrapper {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("TranslatorWrapper")
+            .field("translator", &self.translator)
+            .field("weight", &self.weight)
+            .field("healthy", &self.healthy.load(Ordering::Relaxed))
+            .field("failure_count", &self.failure_count.load(Ordering::Relaxed))
+            .finish()
+    }
+}
+
 impl TranslatorWrapper {
     fn new(translator: Arc<TranslatorImpl>, weight: u32) -> Self {
         Self {
@@ -81,6 +92,7 @@ impl TranslatorWrapper {
 
 /// Multi-translator with load balancing and failover
 /// Uses static dispatch via TranslatorImpl for better performance.
+#[derive(Debug)]
 pub struct MultiTranslator {
     translators: Vec<TranslatorWrapper>,
     strategy: SelectionStrategy,

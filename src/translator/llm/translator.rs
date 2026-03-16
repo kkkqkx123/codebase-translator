@@ -57,6 +57,14 @@ pub struct LLMTranslator {
     config: LLMConfig,
 }
 
+impl std::fmt::Debug for LLMTranslator {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("LLMTranslator")
+            .field("config", &self.config)
+            .finish_non_exhaustive()
+    }
+}
+
 impl LLMTranslator {
     /// Create a new LLM translator
     pub fn new(config: LLMConfig) -> Result<Self> {

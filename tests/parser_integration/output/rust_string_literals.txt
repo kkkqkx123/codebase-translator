@@ -1,0 +1,108 @@
+Extracted 15 translation units from rust_string_literals
+==================================================
+
+--- Unit 1 ---
+ID: test.rs_comment_0
+Type: comment
+Position: Line 1, Column 1 (Offset: 0)
+Content:
+//! Rust String Literals Fixture
+
+--- Unit 2 ---
+ID: test.rs_comment_2
+Type: comment
+Position: Line 3, Column 1 (Offset: 37)
+Content:
+//! Tests extraction of string literals from various Rust code patterns.
+
+--- Unit 3 ---
+ID: test.rs_comment_3
+Type: comment
+Position: Line 7, Column 1 (Offset: 126)
+Content:
+// Error message strings
+
+--- Unit 4 ---
+ID: test.rs_comment_4
+Type: comment
+Position: Line 20, Column 1 (Offset: 541)
+Content:
+// Console/log output strings
+
+--- Unit 5 ---
+ID: test.rs_comment_5
+Type: comment
+Position: Line 32, Column 1 (Offset: 857)
+Content:
+// Format strings
+
+--- Unit 6 ---
+ID: test.rs_comment_6
+Type: comment
+Position: Line 41, Column 5 (Offset: 1142)
+Content:
+// Mixed language format strings
+
+--- Unit 7 ---
+ID: test.rs_comment_7
+Type: comment
+Position: Line 45, Column 1 (Offset: 1240)
+Content:
+// String variable definitions
+
+--- Unit 8 ---
+ID: test.rs_comment_8
+Type: comment
+Position: Line 58, Column 1 (Offset: 1654)
+Content:
+// UI/Display strings
+
+--- Unit 9 ---
+ID: test.rs_comment_9
+Type: comment
+Position: Line 69, Column 1 (Offset: 1855)
+Content:
+// Error types with messages
+
+--- Unit 10 ---
+ID: test.rs_comment_10
+Type: comment
+Position: Line 85, Column 1 (Offset: 2232)
+Content:
+// HTTP/API related strings
+
+--- Unit 11 ---
+ID: test.rs_comment_11
+Type: comment
+Position: Line 92, Column 1 (Offset: 2509)
+Content:
+// SQL query strings
+
+--- Unit 12 ---
+ID: test.rs_comment_12
+Type: comment
+Position: Line 99, Column 1 (Offset: 2746)
+Content:
+// Regex patterns as strings
+
+--- Unit 13 ---
+ID: test.rs_comment_13
+Type: comment
+Position: Line 102, Column 42 (Offset: 2879)
+Content:
+// Chinese characters
+
+--- Unit 14 ---
+ID: test.rs_comment_14
+Type: comment
+Position: Line 106, Column 1 (Offset: 2942)
+Content:
+// File path strings
+
+--- Unit 15 ---
+ID: test.rs_comment_15
+Type: comment
+Position: Line 113, Column 1 (Offset: 3127)
+Content:
+// Configuration strings
+

@@ -75,6 +75,14 @@ pub struct TencentTranslator {
     config: TencentConfig,
 }
 
+impl std::fmt::Debug for TencentTranslator {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("TencentTranslator")
+            .field("config", &self.config)
+            .finish_non_exhaustive()
+    }
+}
+
 impl TencentTranslator {
     /// Create a new Tencent translator
     pub fn new(config: TencentConfig) -> Result<Self> {

@@ -1,0 +1,34 @@
+Chinese-only content (to be translated zh->en):
+================================================
+
+1: [comment] /// 这是一个纯中文的文档注释
+2: [doc_string] /// 这是一个纯中文的文档注释
+3: [comment] /// 当源语言为zh，目标语言为en时，应该被提取
+4: [doc_string] /// 当源语言为zh，目标语言为en时，应该被提取
+5: [comment] /// Mixed content: 你好 World
+6: [doc_string] /// Mixed content: 你好 World
+7: [comment] /// 包含两种语言的内容
+8: [doc_string] /// 包含两种语言的内容
+9: [comment] // 纯中文注释
+
+
+English-only content (skip translation):
+=========================================
+
+1: [comment] //! Mixed Language Content Fixture
+2: [comment] //! Contains both Chinese and English content to test language filtering.
+3: [comment] /// This is an English-only doc comment
+4: [doc_string] /// This is an English-only doc comment
+5: [comment] /// It should NOT be extracted when source is zh and target is en
+6: [doc_string] /// It should NOT be extracted when source is zh and target is en
+7: [comment] /// This function has both languages
+8: [doc_string] /// This function has both languages
+9: [comment] // Pure English comment
+10: [comment] // English errors - should NOT be extracted
+11: [comment] // Chinese errors - should be extracted
+12: [comment] // Mixed errors - should be extracted (contains Chinese)
+13: [comment] // English logs - should NOT be extracted
+14: [comment] // Chinese logs - should be extracted
+15: [comment] // Mixed logs - should be extracted
+16: [comment] // English - should NOT be extracted
+17: [comment] // Chinese - should be extracted

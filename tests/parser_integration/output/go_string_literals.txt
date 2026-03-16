@@ -1,0 +1,122 @@
+Extracted 17 translation units from go_string_literals
+==================================================
+
+--- Unit 1 ---
+ID: test.go_comment_0
+Type: comment
+Position: Line 1, Column 1 (Offset: 0)
+Content:
+// Go String Literals Fixture
+
+--- Unit 2 ---
+ID: test.go_comment_2
+Type: comment
+Position: Line 3, Column 1 (Offset: 33)
+Content:
+// Tests extraction of string literals from various Go code patterns.
+
+--- Unit 3 ---
+ID: test.go_comment_3
+Type: comment
+Position: Line 13, Column 1 (Offset: 154)
+Content:
+// Error message strings
+
+--- Unit 4 ---
+ID: test.go_comment_4
+Type: comment
+Position: Line 25, Column 1 (Offset: 481)
+Content:
+// Console/log output strings
+
+--- Unit 5 ---
+ID: test.go_comment_5
+Type: comment
+Position: Line 37, Column 1 (Offset: 787)
+Content:
+// Format strings
+
+--- Unit 6 ---
+ID: test.go_comment_6
+Type: comment
+Position: Line 46, Column 2 (Offset: 1032)
+Content:
+// Mixed language
+
+--- Unit 7 ---
+ID: test.go_comment_7
+Type: comment
+Position: Line 50, Column 1 (Offset: 1106)
+Content:
+// String variable definitions
+
+--- Unit 8 ---
+ID: test.go_comment_8
+Type: comment
+Position: Line 64, Column 1 (Offset: 1462)
+Content:
+// UI/Display strings
+
+--- Unit 9 ---
+ID: test.go_comment_9
+Type: comment
+Position: Line 72, Column 1 (Offset: 1628)
+Content:
+// Error types with messages
+
+--- Unit 10 ---
+ID: test.go_comment_10
+Type: comment
+Position: Line 87, Column 1 (Offset: 1951)
+Content:
+// HTTP/API related strings
+
+--- Unit 11 ---
+ID: test.go_comment_11
+Type: comment
+Position: Line 94, Column 1 (Offset: 2189)
+Content:
+// SQL query strings
+
+--- Unit 12 ---
+ID: test.go_comment_12
+Type: comment
+Position: Line 101, Column 1 (Offset: 2406)
+Content:
+// Regex patterns as strings
+
+--- Unit 13 ---
+ID: test.go_comment_13
+Type: comment
+Position: Line 104, Column 37 (Offset: 2527)
+Content:
+// Chinese characters
+
+--- Unit 14 ---
+ID: test.go_comment_14
+Type: comment
+Position: Line 108, Column 1 (Offset: 2582)
+Content:
+// File path strings
+
+--- Unit 15 ---
+ID: test.go_comment_15
+Type: comment
+Position: Line 115, Column 1 (Offset: 2747)
+Content:
+// Configuration strings
+
+--- Unit 16 ---
+ID: test.go_comment_16
+Type: comment
+Position: Line 123, Column 1 (Offset: 2898)
+Content:
+// i18n strings
+
+--- Unit 17 ---
+ID: test.go_comment_17
+Type: comment
+Position: Line 134, Column 1 (Offset: 3137)
+Content:
+// HTTP status messages
+

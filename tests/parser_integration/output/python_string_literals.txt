@@ -1,0 +1,176 @@
+Extracted 23 translation units from python_string_literals
+==================================================
+
+--- Unit 1 ---
+ID: test.py_doc_string_0
+Type: doc_string
+Position: Line 1, Column 1 (Offset: 0)
+Content:
+"""Python String Literals Fixture
+
+Tests extraction of string literals from various Python code patterns.
+"""
+
+--- Unit 2 ---
+ID: test.py_doc_string_1
+Type: doc_string
+Position: Line 1, Column 1 (Offset: 0)
+Content:
+"""Python String Literals Fixture
+
+Tests extraction of string literals from various Python code patterns.
+"""
+
+--- Unit 3 ---
+ID: test.py_comment_0
+Type: comment
+Position: Line 8, Column 1 (Offset: 127)
+Content:
+# Error message strings
+
+--- Unit 4 ---
+ID: test.py_comment_1
+Type: comment
+Position: Line 16, Column 1 (Offset: 365)
+Content:
+# Console/log output strings
+
+--- Unit 5 ---
+ID: test.py_comment_2
+Type: comment
+Position: Line 30, Column 1 (Offset: 736)
+Content:
+# Format strings
+
+--- Unit 6 ---
+ID: test.py_comment_3
+Type: comment
+Position: Line 35, Column 5 (Offset: 818)
+Content:
+# f-strings
+
+--- Unit 7 ---
+ID: test.py_comment_4
+Type: comment
+Position: Line 40, Column 5 (Offset: 966)
+Content:
+# Mixed language
+
+--- Unit 8 ---
+ID: test.py_comment_6
+Type: comment
+Position: Line 48, Column 5 (Offset: 1245)
+Content:
+# % formatting
+
+--- Unit 9 ---
+ID: test.py_comment_7
+Type: comment
+Position: Line 52, Column 1 (Offset: 1365)
+Content:
+# String variable definitions
+
+--- Unit 10 ---
+ID: test.py_comment_8
+Type: comment
+Position: Line 70, Column 1 (Offset: 1819)
+Content:
+# UI/Display strings
+
+--- Unit 11 ---
+ID: test.py_comment_9
+Type: comment
+Position: Line 77, Column 1 (Offset: 1991)
+Content:
+# Error types with messages
+
+--- Unit 12 ---
+ID: test.py_doc_string_2
+Type: doc_string
+Position: Line 79, Column 5 (Offset: 2050)
+Content:
+"""Application error with message."""
+
+--- Unit 13 ---
+ID: test.py_doc_string_3
+Type: doc_string
+Position: Line 83, Column 5 (Offset: 2135)
+Content:
+"""Validation failed."""
+
+--- Unit 14 ---
+ID: test.py_doc_string_4
+Type: doc_string
+Position: Line 88, Column 5 (Offset: 2273)
+Content:
+"""Resource not found."""
+
+--- Unit 15 ---
+ID: test.py_comment_10
+Type: comment
+Position: Line 92, Column 1 (Offset: 2377)
+Content:
+# HTTP/API related strings
+
+--- Unit 16 ---
+ID: test.py_comment_11
+Type: comment
+Position: Line 98, Column 1 (Offset: 2618)
+Content:
+# SQL query strings
+
+--- Unit 17 ---
+ID: test.py_comment_12
+Type: comment
+Position: Line 104, Column 1 (Offset: 2837)
+Content:
+# Regex patterns as strings
+
+--- Unit 18 ---
+ID: test.py_comment_13
+Type: comment
+Position: Line 107, Column 37 (Offset: 2959)
+Content:
+# Chinese characters
+
+--- Unit 19 ---
+ID: test.py_comment_14
+Type: comment
+Position: Line 110, Column 1 (Offset: 3014)
+Content:
+# File path strings
+
+--- Unit 20 ---
+ID: test.py_comment_15
+Type: comment
+Position: Line 116, Column 1 (Offset: 3181)
+Content:
+# Configuration strings
+
+--- Unit 21 ---
+ID: test.py_comment_16
+Type: comment
+Position: Line 123, Column 1 (Offset: 3339)
+Content:
+# Docstrings with different languages
+
+--- Unit 22 ---
+ID: test.py_doc_string_5
+Type: doc_string
+Position: Line 125, Column 5 (Offset: 3408)
+Content:
+"""这是一个中文文档字符串。
+    
+    详细描述函数的功能。
+    """
+
+--- Unit 23 ---
+ID: test.py_doc_string_6
+Type: doc_string
+Position: Line 132, Column 5 (Offset: 3545)
+Content:
+"""This is an English docstring.
+    
+    Detailed description of the function.
+    """
+

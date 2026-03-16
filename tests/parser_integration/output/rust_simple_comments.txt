@@ -1,0 +1,139 @@
+Extracted 19 translation units from rust_simple_comments
+==================================================
+
+--- Unit 1 ---
+ID: test.rs_comment_0
+Type: comment
+Position: Line 1, Column 1 (Offset: 0)
+Content:
+//! Simple comments fixture for testing
+
+--- Unit 2 ---
+ID: test.rs_comment_2
+Type: comment
+Position: Line 3, Column 1 (Offset: 44)
+Content:
+//! This file contains various types of Rust comments for testing extraction.
+
+--- Unit 3 ---
+ID: test.rs_comment_3
+Type: comment
+Position: Line 5, Column 1 (Offset: 123)
+Content:
+/// This is an outer doc comment for the module
+
+--- Unit 4 ---
+ID: test.rs_doc_string_0
+Type: doc_string
+Position: Line 5, Column 1 (Offset: 123)
+Content:
+/// This is an outer doc comment for the module
+
+--- Unit 5 ---
+ID: test.rs_comment_4
+Type: comment
+Position: Line 6, Column 1 (Offset: 171)
+Content:
+/// It spans multiple lines
+
+--- Unit 6 ---
+ID: test.rs_doc_string_1
+Type: doc_string
+Position: Line 6, Column 1 (Offset: 171)
+Content:
+/// It spans multiple lines
+
+--- Unit 7 ---
+ID: test.rs_comment_5
+Type: comment
+Position: Line 8, Column 1 (Offset: 200)
+Content:
+/// Function with documentation
+
+--- Unit 8 ---
+ID: test.rs_doc_string_2
+Type: doc_string
+Position: Line 8, Column 1 (Offset: 200)
+Content:
+/// Function with documentation
+
+--- Unit 9 ---
+ID: test.rs_comment_6
+Type: comment
+Position: Line 9, Column 1 (Offset: 232)
+Content:
+/// # Examples
+
+--- Unit 10 ---
+ID: test.rs_doc_string_3
+Type: doc_string
+Position: Line 9, Column 1 (Offset: 232)
+Content:
+/// # Examples
+
+--- Unit 11 ---
+ID: test.rs_comment_9
+Type: comment
+Position: Line 12, Column 1 (Offset: 283)
+Content:
+/// assert_eq!(result, 3);
+
+--- Unit 12 ---
+ID: test.rs_doc_string_6
+Type: doc_string
+Position: Line 12, Column 1 (Offset: 283)
+Content:
+/// assert_eq!(result, 3);
+
+--- Unit 13 ---
+ID: test.rs_comment_11
+Type: comment
+Position: Line 15, Column 5 (Offset: 358)
+Content:
+// This is a line comment
+
+--- Unit 14 ---
+ID: test.rs_comment_12
+Type: comment
+Position: Line 19, Column 1 (Offset: 397)
+Content:
+// Standalone line comment
+
+--- Unit 15 ---
+ID: test.rs_comment_13
+Type: comment
+Position: Line 21, Column 1 (Offset: 425)
+Content:
+/* Block comment
+   spanning multiple
+   lines */
+
+--- Unit 16 ---
+ID: test.rs_comment_14
+Type: comment
+Position: Line 26, Column 5 (Offset: 492)
+Content:
+// Comment inside function
+
+--- Unit 17 ---
+ID: test.rs_comment_15
+Type: comment
+Position: Line 27, Column 16 (Offset: 534)
+Content:
+// Inline comment
+
+--- Unit 18 ---
+ID: test.rs_comment_16
+Type: comment
+Position: Line 29, Column 5 (Offset: 561)
+Content:
+/* Another block
+       comment */
+
+--- Unit 19 ---
+ID: test.rs_comment_22
+Type: comment
+Position: Line 41, Column 1 (Offset: 746)
+Content:
+// Normal comment that should be translated
+

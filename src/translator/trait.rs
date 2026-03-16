@@ -96,6 +96,7 @@ impl std::str::FromStr for ProviderType {
 /// Static dispatch translator implementation enum
 ///
 /// This enum provides static dispatch for all translator implementations,
+#[derive(Debug)]
 pub enum TranslatorImpl {
     DeepLX(DeepLXTranslator),
     LLM(LLMTranslator),
