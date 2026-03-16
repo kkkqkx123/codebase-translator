@@ -156,7 +156,6 @@ impl StateMachineMatcher {
             let remaining = &content[current_offset.min(content.len())..];
 
             if let Some(mat) = state.regex.find(remaining) {
-                let match_start = current_offset + mat.start();
                 let match_end = current_offset + mat.end();
 
                 // Extract captures if any

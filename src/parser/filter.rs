@@ -357,7 +357,7 @@ impl LanguageDetector {
 
     /// Detect language of text
     pub fn detect(&self, text: &str) -> LanguageInfo {
-        use whatlang::{detect_script, Lang, Script as WhatlangScript};
+        use whatlang::{detect_script, Script as WhatlangScript};
 
         let script = detect_script(text).map_or(Script::Unknown, |s| match s {
             WhatlangScript::Latin => Script::Latin,

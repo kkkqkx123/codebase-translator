@@ -35,10 +35,6 @@ fn create_strategy_with_config(config: ExtractionConfig) -> Arc<ExtractionStrate
     ))
 }
 
-fn create_default_strategy() -> Arc<ExtractionStrategyImpl> {
-    create_strategy_with_config(ExtractionConfig::default())
-}
-
 fn create_filter() -> Arc<ContentFilter> {
     Arc::new(ContentFilter::new(FilterConfig::default()).unwrap())
 }

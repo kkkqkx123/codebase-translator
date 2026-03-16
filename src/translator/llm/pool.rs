@@ -340,11 +340,18 @@ impl Drop for ProviderPool {
     fn drop(&mut self) {
         let stop_signal = self.stop_signal.clone();
         let health_check_handle = self.health_check_handle.clone();
+        let providers = self.providers.clone();
 
         tokio::spawn(async move {
             stop_signal.notify_waiters();
             if let Some(handle) = health_check_handle.write().await.take() {
                 handle.abort();
+            }
+
+            // Close all providers to cleanup resources
+            let providers_snapshot = providers.read().await;
+            for provider in providers_snapshot.iter() {
+                let _ = provider.close().await;
             }
         });
     }

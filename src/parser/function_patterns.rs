@@ -424,20 +424,13 @@ impl Default for FunctionPatternRegistry {
     }
 }
 
-/// Global function pattern registry
-pub struct GlobalFunctionPatterns {
-    registry: Arc<FunctionPatternRegistry>,
-}
-
-impl GlobalFunctionPatterns {
-    /// Get the global instance
-    pub fn instance() -> Arc<FunctionPatternRegistry> {
-        use std::sync::OnceLock;
-        static INSTANCE: OnceLock<Arc<FunctionPatternRegistry>> = OnceLock::new();
-        INSTANCE
-            .get_or_init(|| Arc::new(FunctionPatternRegistry::new()))
-            .clone()
-    }
+/// Get the global function pattern registry instance
+pub fn get_global_registry() -> Arc<FunctionPatternRegistry> {
+    use std::sync::OnceLock;
+    static INSTANCE: OnceLock<Arc<FunctionPatternRegistry>> = OnceLock::new();
+    INSTANCE
+        .get_or_init(|| Arc::new(FunctionPatternRegistry::new()))
+        .clone()
 }
 
 /// Create a new function pattern registry
@@ -447,22 +440,22 @@ pub fn create_registry() -> FunctionPatternRegistry {
 
 /// Classify a function using the global registry
 pub fn classify_function(language: &str, func_name: &str) -> Option<FunctionCategory> {
-    GlobalFunctionPatterns::instance().classify(language, func_name)
+    get_global_registry().classify(language, func_name)
 }
 
 /// Check if function is an error function using the global registry
 pub fn is_error_function(language: &str, func_name: &str) -> bool {
-    GlobalFunctionPatterns::instance().is_error_function(language, func_name)
+    get_global_registry().is_error_function(language, func_name)
 }
 
 /// Check if function is a format function using the global registry
 pub fn is_format_function(language: &str, func_name: &str) -> bool {
-    GlobalFunctionPatterns::instance().is_format_function(language, func_name)
+    get_global_registry().is_format_function(language, func_name)
 }
 
 /// Check if function is a log function using the global registry
 pub fn is_log_function(language: &str, func_name: &str) -> bool {
-    GlobalFunctionPatterns::instance().is_log_function(language, func_name)
+    get_global_registry().is_log_function(language, func_name)
 }
 
 #[cfg(test)]
@@ -584,8 +577,8 @@ mod tests {
 
     #[test]
     fn test_global_registry() {
-        let registry1 = GlobalFunctionPatterns::instance();
-        let registry2 = GlobalFunctionPatterns::instance();
+        let registry1 = get_global_registry();
+        let registry2 = get_global_registry();
 
         // Should be the same instance
         assert!(Arc::ptr_eq(&registry1, &registry2));

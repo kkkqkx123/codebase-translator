@@ -188,9 +188,6 @@ impl BatchTranslationService {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::translator::{DeepLXConfig, ProviderType};
-
     #[test]
     fn test_translation_service_creation() {
         // This test would require a valid DeepLX endpoint

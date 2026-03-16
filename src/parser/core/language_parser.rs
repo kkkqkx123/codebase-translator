@@ -7,15 +7,14 @@ use std::sync::Arc;
 use tree_sitter::{Language, Node, Tree};
 
 use crate::core::error::{Result, TranslateError};
-use crate::core::models::{File, Position, TranslationUnit};
-use crate::parser::core::query_executor::{QueryExecutor, QueryMatch};
+use crate::core::models::TranslationUnit;
+use crate::parser::core::query_executor::QueryExecutor;
 use crate::parser::core::StringProcessor;
 use crate::parser::filter::ContentFilter;
 use crate::parser::strategy::{
     ExtractionContext, ExtractionStrategy, ExtractionStrategyImpl, StrategyNodeType,
 };
 use crate::parser::tree_sitter::ParserConfig;
-use crate::parser::Parser as ParserTrait;
 
 /// Generic language parser trait
 ///
@@ -296,37 +295,4 @@ pub trait LanguageParser: Send + Sync {
 
         Ok(units)
     }
-}
-
-/// Helper function to implement the Parser trait for LanguageParser
-pub fn parse_with_language_parser<P: LanguageParser>(
-    parser: &P,
-    file: &File,
-) -> Result<Vec<TranslationUnit>> {
-    let content = file
-        .content_string()
-        .map_err(|e| TranslateError::Parse(format!("Invalid UTF-8 content: {}", e)))?;
-
-    let tree = parser.parse_tree(&content)?;
-    let file_path = file.path.to_string_lossy().to_string();
-
-    extract_units(parser, &tree, &content, &file_path)
-}
-
-/// Extract units using a language parser
-pub fn extract_units<P: LanguageParser>(
-    parser: &P,
-    tree: &Tree,
-    content: &str,
-    file_path: &str,
-) -> Result<Vec<TranslationUnit>> {
-    // This is a placeholder - each parser should implement its own extraction logic
-    // by calling the helper methods from LanguageParser trait
-    let mut units = Vec::new();
-    let _root_node = tree.root_node();
-
-    // Sort by position for consistent ordering
-    units.sort_by(|a: &TranslationUnit, b| a.start_pos.offset.cmp(&b.start_pos.offset));
-
-    Ok(units)
 }

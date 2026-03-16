@@ -436,10 +436,36 @@ impl StringExtractor {
         let executor = QueryExecutor::from_string(&tree_sitter_javascript::LANGUAGE.into(), query)?;
         let matches = executor.execute(root, content)?;
 
-        let units = Vec::new();
+        let mut units = Vec::new();
+        let mut current_key: Option<String> = None;
 
-        // TODO: Implement property extraction with proper key-value pairing
-        // This requires more sophisticated query result processing
+        for m in matches {
+            match m.capture_name.as_str() {
+                "key" => {
+                    current_key = Some(m.text.to_string());
+                }
+                "str" | "template" => {
+                    if let Some(ref key) = current_key {
+                        // Check if property name matches any pattern
+                        if self.config.property_patterns.iter().any(|p| key.contains(p)) {
+                            let text = self.string_processor.clean_string_literal(m.text);
+
+                            if let Some(unit) = self.create_unit(
+                                &text,
+                                m.start_pos,
+                                m.end_pos,
+                                file_path,
+                                StrategyNodeType::StringLiteral,
+                                StringCategory::Properties,
+                            )? {
+                                units.push(unit);
+                            }
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
 
         Ok(units)
     }
@@ -452,7 +478,7 @@ impl StringExtractor {
     ) -> Result<Vec<TranslationUnit>> {
         let mut units = Vec::new();
 
-        for (name, regex, group, category) in &self.config.custom_regex_patterns {
+        for (_name, regex, group, category) in &self.config.custom_regex_patterns {
             // Check if this category is enabled
             if !self.config.is_category_enabled(*category) {
                 continue;

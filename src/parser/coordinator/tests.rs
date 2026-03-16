@@ -4,10 +4,9 @@ use std::path::PathBuf;
 
 use crate::core::models::File;
 use crate::parser::tree_sitter::ParserConfig;
-use crate::parser::Parser;
+use crate::parser::RegexParser;
 
 use super::{ParserCoordinator, ParserType};
-use crate::parser::RegexParser;
 
 fn create_test_file(content: &str, path: &str) -> File {
     File::new(PathBuf::from(path), content.as_bytes().to_vec(), "utf-8")
