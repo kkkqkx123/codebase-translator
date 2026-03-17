@@ -176,30 +176,36 @@ impl BinaryCache {
 
         let index_data = &data[index_start..index_end];
         let mut new_index = HashMap::new();
+        let mut offset = 0;
 
-        for i in (0..index_data.len()).step_by(INDEX_ENTRY_SIZE) {
-            if i + INDEX_ENTRY_SIZE > index_data.len() {
-                break;
-            }
-
-            let hash_bytes = &index_data[i..i + 32];
-            let offset = u32::from_le_bytes([
-                index_data[i + 32],
-                index_data[i + 33],
-                index_data[i + 34],
-                index_data[i + 35],
+        while offset + 40 <= index_data.len() {
+            let hash_bytes = &index_data[offset..offset + 32];
+            let entry_offset = u32::from_le_bytes([
+                index_data[offset + 32],
+                index_data[offset + 33],
+                index_data[offset + 34],
+                index_data[offset + 35],
             ]);
             let size = u32::from_le_bytes([
-                index_data[i + 36],
-                index_data[i + 37],
-                index_data[i + 38],
-                index_data[i + 39],
+                index_data[offset + 36],
+                index_data[offset + 37],
+                index_data[offset + 38],
+                index_data[offset + 39],
             ]);
 
             let hash = String::from_utf8(hash_bytes.to_vec())
-                .map_err(|e| TranslateError::Cache(format!("Invalid hash: {}", e)))?;
+                .map_err(|e| TranslateError::Cache(format!("Invalid hash: {}", e)))?
+                .trim_end_matches('\0')
+                .to_string();
 
-            new_index.insert(hash, IndexEntry { offset, size });
+            new_index.insert(
+                hash,
+                IndexEntry {
+                    offset: entry_offset,
+                    size,
+                },
+            );
+            offset += 40;
         }
 
         let mut index_lock = self.index.write().map_err(|_| {
@@ -292,9 +298,19 @@ impl BinaryCache {
             }
         }
 
+        tracing::debug!("save() new_index size: {}", new_index.len());
+
+        if new_index.is_empty() {
+            return Ok(());
+        }
+
         let mut index_buf = Vec::new();
         for (hash, entry) in new_index.iter() {
-            index_buf.extend_from_slice(hash.as_bytes());
+            let hash_bytes = hash.as_bytes();
+            index_buf.extend_from_slice(hash_bytes);
+            if hash_bytes.len() < 32 {
+                index_buf.extend_from_slice(&vec![0u8; 32 - hash_bytes.len()]);
+            }
             index_buf.extend_from_slice(&entry.offset.to_le_bytes());
             index_buf.extend_from_slice(&entry.size.to_le_bytes());
         }
@@ -319,7 +335,14 @@ impl BinaryCache {
         file_buf.extend_from_slice(&data_buf);
         file_buf.extend_from_slice(&index_buf);
 
-        let temp_file = format!("{}.tmp", self.cache_file_path.display());
+        let temp_file = format!(
+            "{}.tmp.{}",
+            self.cache_file_path.display(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        );
         std::fs::write(&temp_file, file_buf)
             .map_err(|e| TranslateError::Cache(format!("Failed to write temp file: {}", e)))?;
         std::fs::rename(&temp_file, &self.cache_file_path)
@@ -329,14 +352,16 @@ impl BinaryCache {
             let mut index_lock = self.index.write().map_err(|_| {
                 TranslateError::Lock("Failed to acquire write lock on index".to_string())
             })?;
-            *index_lock = new_index;
+            *index_lock = new_index.clone();
         }
 
         {
             let mut pending_lock = self.pending_entries.write().map_err(|_| {
                 TranslateError::Lock("Failed to acquire write lock on pending_entries".to_string())
             })?;
-            pending_lock.clear();
+            for hash in new_index.keys() {
+                pending_lock.remove(hash);
+            }
         }
 
         {
@@ -436,8 +461,20 @@ impl Cache for BinaryCache {
         }
 
         match std::fs::remove_file(&self.cache_file_path) {
-            Ok(_) => Ok(()),
-            Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
+            Ok(_) => {
+                let mut index_lock = self.index.write().map_err(|_| {
+                    TranslateError::Lock("Failed to acquire write lock on index".to_string())
+                })?;
+                index_lock.clear();
+                Ok(())
+            }
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                let mut index_lock = self.index.write().map_err(|_| {
+                    TranslateError::Lock("Failed to acquire write lock on index".to_string())
+                })?;
+                index_lock.clear();
+                Ok(())
+            }
             Err(e) => Err(TranslateError::Cache(format!(
                 "Failed to remove cache file: {}",
                 e

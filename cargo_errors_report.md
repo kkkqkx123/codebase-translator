@@ -3,11 +3,11 @@
 ## Summary
 
 - **Total Errors**: 0
-- **Total Warnings**: 8
-- **Total Issues**: 8
+- **Total Warnings**: 4
+- **Total Issues**: 4
 - **Unique Error Patterns**: 0
-- **Unique Warning Patterns**: 8
-- **Files with Issues**: 7
+- **Unique Warning Patterns**: 4
+- **Files with Issues**: 3
 
 ## Error Statistics
 
@@ -15,53 +15,33 @@
 
 ## Warning Statistics
 
-**Total Warnings**: 8
+**Total Warnings**: 4
 
 ### Warning Type Breakdown
 
-- **warning**: 8 warnings
+- **warning**: 4 warnings
 
 ### Files with Warnings (Top 10)
 
 - `src\parser\string_extractor.rs`: 2 warnings
-- `src\translator\routing.rs`: 1 warnings
+- `src\cache\binary.rs`: 1 warnings
 - `src\parser\tree_sitter.rs`: 1 warnings
-- `src\parser\coordinator\coordinator.rs`: 1 warnings
-- `src\parser\languages\c\parser.rs`: 1 warnings
-- `src\translator\llm\multi_translator.rs`: 1 warnings
-- `src\translator\llm\routing.rs`: 1 warnings
 
 ## Detailed Warning Categorization
 
-### warning: unused import: `super::*`
+### warning: constant `INDEX_ENTRY_SIZE` is never used
 
-**Total Occurrences**: 8  
-**Unique Files**: 7
+**Total Occurrences**: 4  
+**Unique Files**: 3
 
 #### `src\parser\string_extractor.rs`: 2 occurrences
 
 - Line 559: use of deprecated constant `parser::string_extractor::tests::test_category_as_str`: This module is not currently used and may be removed in a future version
 - Line 568: use of deprecated constant `parser::string_extractor::tests::test_config_category_enabled`: This module is not currently used and may be removed in a future version
 
-#### `src\translator\routing.rs`: 1 occurrences
+#### `src\cache\binary.rs`: 1 occurrences
 
-- Line 167: unused import: `super::*`
-
-#### `src\translator\llm\routing.rs`: 1 occurrences
-
-- Line 76: field `total_weight` is never read
-
-#### `src\parser\coordinator\coordinator.rs`: 1 occurrences
-
-- Line 165: unused variable: `filename`: help: if this is intentional, prefix it with an underscore: `_filename`
-
-#### `src\parser\languages\c\parser.rs`: 1 occurrences
-
-- Line 47: method `clean_comment_text` is never used
-
-#### `src\translator\llm\multi_translator.rs`: 1 occurrences
-
-- Line 20: field `max_retries` is never read
+- Line 20: constant `INDEX_ENTRY_SIZE` is never used
 
 #### `src\parser\tree_sitter.rs`: 1 occurrences
 
