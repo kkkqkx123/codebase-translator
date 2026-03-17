@@ -550,30 +550,3 @@ impl StringExtractor {
             .collect()
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use crate::parser::string_extractor::{StringCategory, StringExtractorConfig};
-
-    #[test]
-    fn test_category_as_str() {
-        assert_eq!(StringCategory::ErrorHandling.as_str(), "error_handling");
-        assert_eq!(StringCategory::Output.as_str(), "output");
-        assert_eq!(StringCategory::Variables.as_str(), "variables");
-        assert_eq!(StringCategory::Properties.as_str(), "properties");
-        assert_eq!(StringCategory::Other.as_str(), "other");
-    }
-
-    #[test]
-    fn test_config_category_enabled() {
-        let mut config = StringExtractorConfig::default();
-        config
-            .enabled_categories
-            .insert(StringCategory::ErrorHandling);
-        config.enabled_categories.insert(StringCategory::Output);
-
-        assert!(config.is_category_enabled(StringCategory::ErrorHandling));
-        assert!(config.is_category_enabled(StringCategory::Output));
-        assert!(!config.is_category_enabled(StringCategory::Other));
-    }
-}

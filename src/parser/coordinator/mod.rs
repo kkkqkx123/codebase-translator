@@ -4,6 +4,7 @@
 //! parsers and routing files to the appropriate parser based on file extension.
 
 mod coordinator;
+#[cfg(test)]
 mod tests;
 mod types;
 

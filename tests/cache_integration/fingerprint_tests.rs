@@ -5,6 +5,7 @@
 use codebase_translate::cache::{binary::BinaryCache, file::FileCache};
 use codebase_translate::core::models::{CacheConfig, CacheMode};
 use codebase_translate::Cache;
+use crate::test_utils::hash_utils;
 
 #[test]
 fn test_file_cache_fingerprint_validation() {
@@ -45,8 +46,9 @@ fn test_binary_cache_fingerprint_validation() {
     let cache = BinaryCache::new(config, temp_dir.path()).unwrap();
     let fingerprint = cache.project_fingerprint().to_string();
 
+    let hash1 = hash_utils::generate_test_hash("file1");
     let entry = codebase_translate::core::models::CacheEntry::new(
-        "hash1_123456789012345678",
+        &hash1,
         "/path/to/file1.txt",
         123456i64,
         "local",
@@ -54,7 +56,7 @@ fn test_binary_cache_fingerprint_validation() {
     );
     cache.set(&entry).unwrap();
 
-    let retrieved = cache.get("hash1_123456789012345678").unwrap();
+    let retrieved = cache.get(&hash1).unwrap();
     assert!(retrieved.is_some());
 }
 
@@ -105,8 +107,9 @@ fn test_binary_cache_fingerprint_mismatch() {
     let cache = BinaryCache::new(config, temp_dir.path()).unwrap();
     let fingerprint = cache.project_fingerprint().to_string();
 
+    let hash1 = hash_utils::generate_test_hash("file1");
     let entry = codebase_translate::core::models::CacheEntry::new(
-        "hash1_123456789012345678",
+        &hash1,
         "/path/to/file1.txt",
         123456i64,
         "local",
@@ -114,7 +117,7 @@ fn test_binary_cache_fingerprint_mismatch() {
     );
     cache.set(&entry).unwrap();
 
-    let retrieved = cache.get("hash1_123456789012345678").unwrap();
+    let retrieved = cache.get(&hash1).unwrap();
     assert!(retrieved.is_some());
 
     let cache_path = temp_dir.path().join(".cache").join("cache.bin");
@@ -133,7 +136,7 @@ fn test_binary_cache_fingerprint_mismatch() {
     }
     std::fs::write(&cache_path, cache_data).unwrap();
 
-    let retrieved = cache.get("hash1_123456789012345678").unwrap();
+    let retrieved = cache.get(&hash1).unwrap();
     assert!(retrieved.is_none());
 }
 
@@ -181,8 +184,9 @@ fn test_binary_cache_fingerprint_consistency() {
     let cache1 = BinaryCache::new(config.clone(), temp_dir.path()).unwrap();
     let fingerprint1 = cache1.project_fingerprint().to_string();
 
+    let hash1 = hash_utils::generate_test_hash("file1");
     let entry = codebase_translate::core::models::CacheEntry::new(
-        "hash1_123456789012345678",
+        &hash1,
         "/path/to/file1.txt",
         123456i64,
         "local",
@@ -196,7 +200,7 @@ fn test_binary_cache_fingerprint_consistency() {
 
     assert_eq!(fingerprint1, fingerprint2);
 
-    let retrieved = cache2.get("hash1_123456789012345678").unwrap();
+    let retrieved = cache2.get(&hash1).unwrap();
     assert!(retrieved.is_some());
 }
 
@@ -279,8 +283,9 @@ fn test_binary_cache_fingerprint_different_projects() {
 
     assert_ne!(fingerprint1, fingerprint2);
 
+    let hash1 = hash_utils::generate_test_hash("file1");
     let entry1 = codebase_translate::core::models::CacheEntry::new(
-        "hash1_123456789012345678",
+        &hash1,
         "/path/to/file1.txt",
         123456i64,
         "local",
@@ -289,7 +294,7 @@ fn test_binary_cache_fingerprint_different_projects() {
     cache1.set(&entry1).unwrap();
 
     let entry2 = codebase_translate::core::models::CacheEntry::new(
-        "hash1_123456789012345678",
+        &hash1,
         "/path/to/file1.txt",
         123456i64,
         "local",
@@ -297,10 +302,10 @@ fn test_binary_cache_fingerprint_different_projects() {
     );
     cache2.set(&entry2).unwrap();
 
-    let retrieved1 = cache1.get("hash1_123456789012345678").unwrap();
+    let retrieved1 = cache1.get(&hash1).unwrap();
     assert!(retrieved1.is_some());
 
-    let retrieved2 = cache2.get("hash1_123456789012345678").unwrap();
+    let retrieved2 = cache2.get(&hash1).unwrap();
     assert!(retrieved2.is_some());
 }
 

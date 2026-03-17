@@ -7,6 +7,7 @@ use codebase_translate::core::models::{CacheConfig, CacheMode};
 use codebase_translate::Cache;
 use std::sync::Arc;
 use std::thread;
+use crate::test_utils::hash_utils;
 
 #[test]
 fn test_file_cache_concurrent_reads() {
@@ -61,8 +62,9 @@ fn test_binary_cache_concurrent_reads() {
     let cache = Arc::new(BinaryCache::new(config, temp_dir.path()).unwrap());
     let fingerprint = cache.project_fingerprint().to_string();
 
+    let hash1 = hash_utils::generate_test_hash("file1");
     let entry = codebase_translate::core::models::CacheEntry::new(
-        "hash1_123456789012345678",
+        &hash1,
         "/path/to/file1.txt",
         123456,
         "local",
@@ -74,8 +76,9 @@ fn test_binary_cache_concurrent_reads() {
 
     for _ in 0..10 {
         let cache_clone = Arc::clone(&cache);
+        let hash1_clone = hash1.clone();
         let handle = thread::spawn(move || {
-            let retrieved = cache_clone.get("hash1_123456789012345678").unwrap();
+            let retrieved = cache_clone.get(&hash1_clone).unwrap();
             assert!(retrieved.is_some());
             retrieved.unwrap().file_hash
         });
@@ -84,7 +87,7 @@ fn test_binary_cache_concurrent_reads() {
 
     for handle in handles {
         let result = handle.join().unwrap();
-        assert_eq!(result, "hash1_123456789012345678");
+        assert_eq!(result, hash1);
     }
 }
 
@@ -156,7 +159,7 @@ fn test_binary_cache_concurrent_writes() {
         let cache_clone = Arc::clone(&cache);
         let fingerprint_clone = fingerprint.clone();
         let handle = thread::spawn(move || {
-            let hash = format!("hash{:02}_123456789012345678", i);
+            let hash = hash_utils::generate_test_hash(&format!("file{}", i));
             let path = format!("/path/to/file{}.txt", i);
             let entry = codebase_translate::core::models::CacheEntry::new(
                 &hash,

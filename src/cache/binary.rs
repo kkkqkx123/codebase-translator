@@ -10,6 +10,7 @@ use crate::core::error::{Result, TranslateError};
 use crate::core::models::{CacheConfig, CacheEntry, CacheEntryInfo, CacheStats};
 
 use crc32fast::Hasher as Crc32Hasher;
+use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, RwLock};
@@ -17,7 +18,7 @@ use std::sync::{Arc, RwLock};
 const CACHE_MAGIC: &[u8; 8] = b"CBCACHE\x00";
 const CACHE_VERSION: u32 = 1;
 const HEADER_SIZE: usize = 32;
-const INDEX_ENTRY_SIZE: usize = 40;
+const INDEX_ENTRY_SIZE: usize = 72;
 
 #[derive(Debug, Clone)]
 struct FileHeader {
@@ -178,25 +179,23 @@ impl BinaryCache {
         let mut new_index = HashMap::new();
         let mut offset = 0;
 
-        while offset + 40 <= index_data.len() {
-            let hash_bytes = &index_data[offset..offset + 32];
+        while offset + INDEX_ENTRY_SIZE <= index_data.len() {
+            let hash_bytes = &index_data[offset..offset + 64];
             let entry_offset = u32::from_le_bytes([
-                index_data[offset + 32],
-                index_data[offset + 33],
-                index_data[offset + 34],
-                index_data[offset + 35],
+                index_data[offset + 64],
+                index_data[offset + 65],
+                index_data[offset + 66],
+                index_data[offset + 67],
             ]);
             let size = u32::from_le_bytes([
-                index_data[offset + 36],
-                index_data[offset + 37],
-                index_data[offset + 38],
-                index_data[offset + 39],
+                index_data[offset + 68],
+                index_data[offset + 69],
+                index_data[offset + 70],
+                index_data[offset + 71],
             ]);
 
             let hash = String::from_utf8(hash_bytes.to_vec())
-                .map_err(|e| TranslateError::Cache(format!("Invalid hash: {}", e)))?
-                .trim_end_matches('\0')
-                .to_string();
+                .map_err(|e| TranslateError::Cache(format!("Invalid hash: {}", e)))?;
 
             new_index.insert(
                 hash,
@@ -205,7 +204,7 @@ impl BinaryCache {
                     size,
                 },
             );
-            offset += 40;
+            offset += INDEX_ENTRY_SIZE;
         }
 
         let mut index_lock = self.index.write().map_err(|_| {
@@ -307,10 +306,13 @@ impl BinaryCache {
         let mut index_buf = Vec::new();
         for (hash, entry) in new_index.iter() {
             let hash_bytes = hash.as_bytes();
-            index_buf.extend_from_slice(hash_bytes);
-            if hash_bytes.len() < 32 {
-                index_buf.extend_from_slice(&vec![0u8; 32 - hash_bytes.len()]);
+            if hash_bytes.len() != 64 {
+                return Err(TranslateError::Cache(format!(
+                    "Hash must be exactly 64 bytes, got {}",
+                    hash_bytes.len()
+                )));
             }
+            index_buf.extend_from_slice(hash_bytes);
             index_buf.extend_from_slice(&entry.offset.to_le_bytes());
             index_buf.extend_from_slice(&entry.size.to_le_bytes());
         }
@@ -591,6 +593,13 @@ mod tests {
     use super::*;
     use tempfile::TempDir;
 
+    fn generate_test_hash(seed: &str) -> String {
+        let mut hasher = Sha256::new();
+        hasher.update(seed.as_bytes());
+        let hash = hasher.finalize();
+        hex::encode(hash)
+    }
+
     #[test]
     fn test_binary_cache_basic() {
         let temp_dir = TempDir::new().unwrap();
@@ -602,23 +611,24 @@ mod tests {
         };
 
         let cache = BinaryCache::new(config, temp_dir.path()).unwrap();
-        let fingerprint = cache.project_fingerprint.clone();
+        let fingerprint = cache.project_fingerprint().clone();
 
         // Test set and get
+        let hash1 = generate_test_hash("test_file");
         let entry = CacheEntry::new(
-            "test_hash_123456789012345678",
+            &hash1,
             "/path/to/file.txt",
             123456,
             "local",
-            &fingerprint,
+            fingerprint.clone(),
         );
 
         cache.set(&entry).unwrap();
 
-        let retrieved = cache.get("test_hash_123456789012345678").unwrap();
+        let retrieved = cache.get(&hash1).unwrap();
         assert!(retrieved.is_some());
         let retrieved = retrieved.unwrap();
-        assert_eq!(retrieved.file_hash, "test_hash_123456789012345678");
+        assert_eq!(retrieved.file_hash, hash1);
         assert_eq!(retrieved.file_path, "/path/to/file.txt");
 
         // Test stats
@@ -626,9 +636,9 @@ mod tests {
         assert_eq!(stats.entry_count, 1);
 
         // Test invalidate
-        cache.invalidate("test_hash_123456789012345678").unwrap();
+        cache.invalidate(&hash1).unwrap();
 
-        let retrieved = cache.get("test_hash_123456789012345678").unwrap();
+        let retrieved = cache.get(&hash1).unwrap();
         assert!(retrieved.is_none());
 
         // Test close
@@ -646,21 +656,23 @@ mod tests {
         };
 
         let cache = BinaryCache::new(config, temp_dir.path()).unwrap();
-        let fingerprint = cache.project_fingerprint.clone();
+        let fingerprint = cache.project_fingerprint().clone();
 
+        let hash1 = generate_test_hash("file1");
+        let hash2 = generate_test_hash("file2");
         let entry1 = CacheEntry::new(
-            "hash1_123456789012345678",
+            &hash1,
             "/path/to/file1.txt",
             123456,
             "local",
-            &fingerprint,
+            fingerprint.clone(),
         );
         let entry2 = CacheEntry::new(
-            "hash2_123456789012345678",
+            &hash2,
             "/path/to/file2.txt",
             123456,
             "local",
-            &fingerprint,
+            fingerprint.clone(),
         );
 
         cache.set(&entry1).unwrap();
@@ -681,34 +693,36 @@ mod tests {
         };
 
         let cache = BinaryCache::new(config, temp_dir.path()).unwrap();
-        let fingerprint = cache.project_fingerprint.clone();
+        let fingerprint = cache.project_fingerprint().clone();
 
+        let hash1 = generate_test_hash("file1");
+        let hash2 = generate_test_hash("file2");
         let entry1 = CacheEntry::new(
-            "hash1_123456789012345678",
+            &hash1,
             "/path/to/file1.txt",
             123456,
             "local",
-            &fingerprint,
+            fingerprint.clone(),
         );
         let entry2 = CacheEntry::new(
-            "hash2_123456789012345678",
+            &hash2,
             "/path/to/file2.txt",
             123456,
             "local",
-            &fingerprint,
+            fingerprint.clone(),
         );
 
         cache.set(&entry1).unwrap();
         cache.set(&entry2).unwrap();
 
         let mut existing_hashes = HashMap::new();
-        existing_hashes.insert("hash1_123456789012345678".to_string(), true);
+        existing_hashes.insert(hash1.clone(), true);
 
         let cleaned = cache.cleanup_orphaned(existing_hashes).unwrap();
         assert_eq!(cleaned, 1);
 
         let entries = cache.list_entries().unwrap();
         assert_eq!(entries.len(), 1);
-        assert_eq!(entries[0].file_hash, "hash1_123456789012345678");
+        assert_eq!(entries[0].file_hash, hash1);
     }
 }

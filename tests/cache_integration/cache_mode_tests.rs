@@ -7,6 +7,7 @@ use codebase_translate::cache::{binary::BinaryCache, file::FileCache};
 use codebase_translate::core::models::{CacheConfig, CacheMode};
 use codebase_translate::Cache;
 use std::path::PathBuf;
+use crate::test_utils::hash_utils;
 
 #[test]
 fn test_file_cache_local_mode() {
@@ -53,8 +54,9 @@ fn test_binary_cache_local_mode() {
     let cache = BinaryCache::new(config, temp_dir.path()).unwrap();
     let fingerprint = cache.project_fingerprint().to_string();
 
+    let hash1 = hash_utils::generate_test_hash("file1");
     let entry = codebase_translate::core::models::CacheEntry::new(
-        "hash1_123456789012345678",
+        &hash1,
         "/path/to/file1.txt",
         123456i64,
         "local",
@@ -68,7 +70,7 @@ fn test_binary_cache_local_mode() {
     let cache_file = cache_dir.join("cache.bin");
     assert!(cache_file.exists());
 
-    let retrieved = cache.get("hash1_123456789012345678").unwrap();
+    let retrieved = cache.get(&hash1).unwrap();
     assert!(retrieved.is_some());
 }
 
@@ -125,8 +127,9 @@ fn test_binary_cache_global_mode() {
     let cache = BinaryCache::new(config, temp_dir.path()).unwrap();
     let fingerprint = cache.project_fingerprint().to_string();
 
+    let hash1 = hash_utils::generate_test_hash("file1");
     let entry = codebase_translate::core::models::CacheEntry::new(
-        "hash1_123456789012345678",
+        &hash1,
         "/path/to/file1.txt",
         123456i64,
         "global",
@@ -143,7 +146,7 @@ fn test_binary_cache_global_mode() {
     let cache_file = cache_dir.join("cache.bin");
     assert!(cache_file.exists());
 
-    let retrieved = cache.get("hash1_123456789012345678").unwrap();
+    let retrieved = cache.get(&hash1).unwrap();
     assert!(retrieved.is_some());
 }
 
@@ -224,8 +227,9 @@ fn test_binary_cache_local_mode_isolation() {
     let cache2 = BinaryCache::new(config2, temp_dir2.path()).unwrap();
     let fingerprint2 = cache2.project_fingerprint().to_string();
 
+    let hash1 = hash_utils::generate_test_hash("file1");
     let entry1 = codebase_translate::core::models::CacheEntry::new(
-        "hash1_123456789012345678",
+        &hash1,
         "/path/to/file1.txt",
         123456i64,
         "local",
@@ -234,7 +238,7 @@ fn test_binary_cache_local_mode_isolation() {
     cache1.set(&entry1).unwrap();
 
     let entry2 = codebase_translate::core::models::CacheEntry::new(
-        "hash1_123456789012345678",
+        &hash1,
         "/path/to/file2.txt",
         123457i64,
         "local",
@@ -242,11 +246,11 @@ fn test_binary_cache_local_mode_isolation() {
     );
     cache2.set(&entry2).unwrap();
 
-    let retrieved1 = cache1.get("hash1_123456789012345678").unwrap();
+    let retrieved1 = cache1.get(&hash1).unwrap();
     assert!(retrieved1.is_some());
     assert_eq!(retrieved1.unwrap().file_path, "/path/to/file1.txt");
 
-    let retrieved2 = cache2.get("hash1_123456789012345678").unwrap();
+    let retrieved2 = cache2.get(&hash1).unwrap();
     assert!(retrieved2.is_some());
     assert_eq!(retrieved2.unwrap().file_path, "/path/to/file2.txt");
 }
@@ -328,8 +332,9 @@ fn test_binary_cache_global_mode_isolation() {
     let cache2 = BinaryCache::new(config2, temp_dir2.path()).unwrap();
     let fingerprint2 = cache2.project_fingerprint().to_string();
 
+    let hash1 = hash_utils::generate_test_hash("file1");
     let entry1 = codebase_translate::core::models::CacheEntry::new(
-        "hash1_123456789012345678",
+        &hash1,
         "/path/to/file1.txt",
         123456i64,
         "global",
@@ -338,7 +343,7 @@ fn test_binary_cache_global_mode_isolation() {
     cache1.set(&entry1).unwrap();
 
     let entry2 = codebase_translate::core::models::CacheEntry::new(
-        "hash1_123456789012345678",
+        &hash1,
         "/path/to/file2.txt",
         123457i64,
         "global",
@@ -346,11 +351,11 @@ fn test_binary_cache_global_mode_isolation() {
     );
     cache2.set(&entry2).unwrap();
 
-    let retrieved1 = cache1.get("hash1_123456789012345678").unwrap();
+    let retrieved1 = cache1.get(&hash1).unwrap();
     assert!(retrieved1.is_some());
     assert_eq!(retrieved1.unwrap().file_path, "/path/to/file1.txt");
 
-    let retrieved2 = cache2.get("hash1_123456789012345678").unwrap();
+    let retrieved2 = cache2.get(&hash1).unwrap();
     assert!(retrieved2.is_some());
     assert_eq!(retrieved2.unwrap().file_path, "/path/to/file2.txt");
 }
@@ -397,8 +402,9 @@ fn test_binary_cache_mode_persistence() {
     let cache1 = BinaryCache::new(config.clone(), temp_dir.path()).unwrap();
     let fingerprint1 = cache1.project_fingerprint().to_string();
 
+    let hash1 = hash_utils::generate_test_hash("file1");
     let entry = codebase_translate::core::models::CacheEntry::new(
-        "hash1_123456789012345678",
+        &hash1,
         "/path/to/file1.txt",
         123456i64,
         "local",
@@ -413,7 +419,7 @@ fn test_binary_cache_mode_persistence() {
 
     let cache2 = BinaryCache::new(config, temp_dir.path()).unwrap();
 
-    let retrieved = cache2.get("hash1_123456789012345678").unwrap();
+    let retrieved = cache2.get(&hash1).unwrap();
     assert!(retrieved.is_some());
 }
 
@@ -459,8 +465,9 @@ fn test_binary_cache_custom_directory() {
     let cache = BinaryCache::new(config, temp_dir.path()).unwrap();
     let fingerprint = cache.project_fingerprint().to_string();
 
+    let hash1 = hash_utils::generate_test_hash("file1");
     let entry = codebase_translate::core::models::CacheEntry::new(
-        "hash1_123456789012345678",
+        &hash1,
         "/path/to/file1.txt",
         123456i64,
         "local",
