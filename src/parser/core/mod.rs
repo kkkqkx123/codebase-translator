@@ -13,4 +13,4 @@ pub use extractor::{ExtractionCandidate, ExtractionType, Extractor};
 pub use language_parser::LanguageParser;
 pub use position_tracker::PositionTracker;
 pub use query_executor::{QueryExecutor, QueryMatch};
-pub use string_processor::StringProcessor;
+pub use string_processor::{CommentType, StringProcessor};

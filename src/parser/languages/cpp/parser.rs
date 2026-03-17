@@ -43,6 +43,23 @@ impl CppParser {
         })
     }
 
+    /// Clean comment text by removing C++ comment markers
+    fn clean_comment_text(&self, text: &str) -> String {
+        let trimmed = text.trim();
+
+        // Handle block comments: /*
+        if trimmed.starts_with("/*") {
+            return self.string_processor.clean_comment(trimmed, CommentType::Block);
+        }
+
+        // Handle line comments: //
+        if trimmed.starts_with("//") {
+            return self.string_processor.clean_comment(trimmed, CommentType::Line);
+        }
+
+        trimmed.to_string()
+    }
+
     /// Parse file content into a syntax tree
     fn parse_tree(&self, content: &str) -> Result<Tree> {
         let mut parser = Parser::new();
@@ -71,10 +88,14 @@ impl CppParser {
         let mut match_idx = 0usize;
 
         for m in matches {
+            // Clean comment markers (//, /* */)
+            let text = self.clean_comment_text(m.text);
+
+            // Apply trim if configured
             let text = if self.config.trim_content {
-                m.text.trim()
+                text.trim().to_string()
             } else {
-                m.text
+                text
             };
 
             // Apply length filters
@@ -86,17 +107,17 @@ impl CppParser {
             }
 
             // Skip if only symbols
-            if self.string_processor.is_only_symbols(text) {
+            if self.string_processor.is_only_symbols(&text) {
                 continue;
             }
 
             // Apply content filter
-            if !self.filter.should_translate(text) {
+            if !self.filter.should_translate(&text) {
                 continue;
             }
 
             // Apply strategy
-            let ctx = ExtractionContext::new(text);
+            let ctx = ExtractionContext::new(&text);
             if !self
                 .strategy
                 .should_extract(StrategyNodeType::Comment, &ctx)
@@ -107,7 +128,7 @@ impl CppParser {
             let id = format!("{}_comment_{}", file_path, match_idx);
             let node_type = self.strategy.get_node_type(StrategyNodeType::Comment);
             let unit =
-                TranslationUnit::new(id, node_type, text.to_string(), m.start_pos, m.end_pos);
+                TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
             units.push(unit);
             match_idx += 1;
         }
@@ -132,10 +153,14 @@ impl CppParser {
         let mut match_idx = 0usize;
 
         for m in matches {
+            // Clean comment markers (//, /* */)
+            let text = self.clean_comment_text(m.text);
+
+            // Apply trim if configured
             let text = if self.config.trim_content {
-                m.text.trim()
+                text.trim().to_string()
             } else {
-                m.text
+                text
             };
 
             // Apply length filters
@@ -147,17 +172,17 @@ impl CppParser {
             }
 
             // Skip if only symbols
-            if self.string_processor.is_only_symbols(text) {
+            if self.string_processor.is_only_symbols(&text) {
                 continue;
             }
 
             // Apply content filter
-            if !self.filter.should_translate(text) {
+            if !self.filter.should_translate(&text) {
                 continue;
             }
 
             // Apply strategy
-            let ctx = ExtractionContext::new(text);
+            let ctx = ExtractionContext::new(&text);
             if !self
                 .strategy
                 .should_extract(StrategyNodeType::DocString, &ctx)
@@ -168,7 +193,7 @@ impl CppParser {
             let id = format!("{}_docstring_{}", file_path, match_idx);
             let node_type = self.strategy.get_node_type(StrategyNodeType::DocString);
             let unit =
-                TranslationUnit::new(id, node_type, text.to_string(), m.start_pos, m.end_pos);
+                TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
             units.push(unit);
             match_idx += 1;
         }
