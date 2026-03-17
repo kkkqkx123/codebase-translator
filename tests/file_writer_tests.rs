@@ -147,6 +147,7 @@ async fn test_file_writer_with_line_comment_format() {
         base_indent: "    ".to_string(),
         line_prefix: Some("// ".to_string()),
         ends_with_newline: false,
+        is_multiline: false,
     };
 
     let mut units = vec![create_translation_unit_with_format(
@@ -191,6 +192,7 @@ async fn test_file_writer_with_block_comment_format() {
         base_indent: "".to_string(),
         line_prefix: None,
         ends_with_newline: false,
+        is_multiline: false,
     };
 
     let mut units = vec![create_translation_unit_with_format(
@@ -226,6 +228,7 @@ async fn test_file_writer_with_multiline_block_comment() {
         base_indent: "".to_string(),
         line_prefix: Some(" * ".to_string()),
         ends_with_newline: true,
+        is_multiline: false,
     };
 
     let mut units = vec![create_translation_unit_with_format(

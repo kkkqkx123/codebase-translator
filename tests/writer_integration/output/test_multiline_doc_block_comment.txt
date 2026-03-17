@@ -4,21 +4,9 @@ Test: test_multiline_doc_block_comment
 --- Translation Units ---
 Unit 1:
   ID: 1
-  Content: "This is a doc block comment"
-  Position: Line 2, Col 4-31
-  Translated: "这是一个文档块注释"
-
-Unit 2:
-  ID: 2
-  Content: "with multiple lines"
-  Position: Line 3, Col 4-24
-  Translated: "多行"
-
-Unit 3:
-  ID: 3
-  Content: "and detailed information"
-  Position: Line 4, Col 4-29
-  Translated: "详细信息"
+  Content: "This is a doc block comment\nwith multiple lines\nand detailed information"
+  Position: Line 1, Col 1-4
+  Translated: "这是一个文档块注释\n多行\n详细信息"
 
 --- Original Content ---
 /**

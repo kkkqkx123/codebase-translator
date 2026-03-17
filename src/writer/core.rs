@@ -69,15 +69,15 @@ impl TranslationApplier {
                         // Calculate how many lines this multiline comment spans
                         let line_count = unit.end_pos.line - unit.start_pos.line + 1;
 
-                        // Replace the first line's content
-                        let line = lines[line_idx];
-                        let start_char = unit.start_pos.column.saturating_sub(1);
-                        let chars: Vec<char> = line.chars().collect();
-
-                        if start_char < chars.len() {
-                            builder.push_str(&chars[..start_char].iter().collect::<String>());
-                        }
+                        // For multiline comments, the formatted text already includes all necessary prefixes
+                        // So we should replace the entire comment content, not preserve any prefix
+                        // The formatted text includes the full comment with all prefixes
                         builder.push_str(&formatted);
+
+                        // Add line ending after the multiline comment
+                        if line_idx + line_count < lines.len() {
+                            builder.push_str(line_ending);
+                        }
 
                         // Skip the remaining lines of this multiline comment
                         line_idx += line_count;
@@ -239,9 +239,12 @@ impl TranslationApplier {
 
         match format.style {
             CommentStyle::DocOuter | CommentStyle::DocInner => {
-                // For doc comments, add prefix to each line
+                // For doc comments, add prefix to each line including the first
                 let prefix = format.line_prefix.as_deref().unwrap_or("");
-                lines.join(&format!("\n{}", prefix))
+                lines.iter()
+                    .map(|line| format!("{}{}", prefix, line))
+                    .collect::<Vec<_>>()
+                    .join("\n")
             }
             CommentStyle::BlockMulti | CommentStyle::DocBlock => {
                 // For block comments, use the existing multiline block comment formatter
@@ -260,11 +263,14 @@ impl TranslationApplier {
 
         if lines.len() == 1 {
             // Single line - use simple format
-            return format!("/* {} */", translated);
+            let start_marker = if format.style == CommentStyle::DocBlock { "/**" } else { "/*" };
+            return format!("{} {} */", start_marker, translated);
         }
 
         let mut result = String::new();
-        result.push_str("/*\n");
+        let start_marker = if format.style == CommentStyle::DocBlock { "/**" } else { "/*" };
+        result.push_str(start_marker);
+        result.push('\n');
 
         for (i, line) in lines.iter().enumerate() {
             result.push_str(&format.base_indent);
@@ -272,11 +278,16 @@ impl TranslationApplier {
                 result.push_str(prefix);
             }
             result.push_str(line);
+            
+            // Add newline after each line's content
+            // If ends_with_newline is true, add newline after last line's content
+            // If ends_with_newline is false, don't add newline after last line's content
             if i < lines.len() - 1 || format.ends_with_newline {
                 result.push('\n');
             }
         }
 
+        // Always put the closing marker on a new line
         result.push_str(&format.base_indent);
         result.push_str(" */");
 

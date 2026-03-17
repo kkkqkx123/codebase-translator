@@ -225,6 +225,7 @@ async fn test_concurrent_writer_with_format_info() {
         base_indent: "    ".to_string(),
         line_prefix: Some("// ".to_string()),
         ends_with_newline: false,
+        is_multiline: false,
     };
 
     let mut units = vec![create_translation_unit_with_format(

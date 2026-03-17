@@ -8,7 +8,7 @@ use streaming_iterator::StreamingIterator;
 use tree_sitter::{Language as TSLanguage, Node, Parser, Query, QueryCursor, Tree};
 
 use crate::core::error::{Result, TranslateError};
-use crate::core::models::{File, Position, TranslationUnit};
+use crate::core::models::{CommentStyle, File, FormatInfo, Position, TranslationUnit};
 use crate::parser::filter::ContentFilter;
 use crate::parser::strategy::{
     ExtractionContext, ExtractionStrategy, ExtractionStrategyImpl, StrategyNodeType,

@@ -304,6 +304,7 @@ impl StringProcessor {
                     base_indent,
                     line_prefix: Some("/// ".to_string()),
                     ends_with_newline: false,
+                    is_multiline: false,
                 },
             };
         }
@@ -329,6 +330,7 @@ impl StringProcessor {
                     base_indent,
                     line_prefix: Some("//! ".to_string()),
                     ends_with_newline: false,
+                    is_multiline: false,
                 },
             };
         }
@@ -382,6 +384,7 @@ impl StringProcessor {
                     base_indent,
                     line_prefix,
                     ends_with_newline: false,
+                    is_multiline: false,
                 }
             } else {
                 FormatInfo {
@@ -389,6 +392,7 @@ impl StringProcessor {
                     base_indent,
                     line_prefix: None,
                     ends_with_newline: false,
+                    is_multiline: false,
                 }
             };
 

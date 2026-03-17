@@ -25,6 +25,7 @@ async fn test_complex_nested_block_comment() {
         base_indent: "    ".to_string(),
         line_prefix: Some(" * ".to_string()),
         ends_with_newline: true,
+        is_multiline: false,
     };
 
     let mut units = vec![create_translation_unit_with_format(
@@ -133,6 +134,7 @@ fn main() {
         base_indent: "    ".to_string(),
         line_prefix: Some(" * ".to_string()),
         ends_with_newline: true,
+        is_multiline: false,
     };
 
     let mut units = vec![
@@ -195,6 +197,7 @@ async fn test_indented_block_comment_preservation() {
         base_indent: "        ".to_string(),
         line_prefix: Some(" * ".to_string()),
         ends_with_newline: true,
+        is_multiline: false,
     };
 
     let mut units = vec![create_translation_unit_with_format(
@@ -247,24 +250,37 @@ fn another() -> i32 {
         base_indent: "".to_string(),
         line_prefix: Some("/// ".to_string()),
         ends_with_newline: false,
+        is_multiline: true,
     };
 
-    let mut units = vec![
-        create_translation_unit_with_format("1", "This is a doc comment", 1, 5, 26, format_info.clone()),
-        create_translation_unit_with_format("2", "with multiple lines", 2, 5, 24, format_info.clone()),
-        create_translation_unit_with_format("3", "Another doc comment", 7, 5, 24, format_info.clone()),
-        create_translation_unit_with_format("4", "for another function", 8, 5, 25, format_info),
-    ];
+    let mut unit = create_translation_unit_with_format(
+        "1",
+        "This is a doc comment\nwith multiple lines",
+        1,
+        1,
+        24,
+        format_info.clone(),
+    );
+    unit.end_pos.line = 2;
+    unit.end_pos.column = 24;
+    unit.set_translated("这是一个文档注释\n多行");
 
-    units[0].set_translated("这是一个文档注释");
-    units[1].set_translated("多行");
-    units[2].set_translated("另一个文档注释");
-    units[3].set_translated("用于另一个函数");
+    let mut unit2 = create_translation_unit_with_format(
+        "2",
+        "Another doc comment\nfor another function",
+        7,
+        1,
+        25,
+        format_info,
+    );
+    unit2.end_pos.line = 8;
+    unit2.end_pos.column = 25;
+    unit2.set_translated("另一个文档注释\n用于另一个函数");
 
     let config = WriterConfig::default();
     let writer = FileWriter::new(config);
 
-    let result = writer.write(&file, &units).await;
+    let result = writer.write(&file, &[unit.clone(), unit2.clone()]).await;
     assert!(result.is_ok());
 
     let written_content: String = read_file_content(&file.path).await;
@@ -274,14 +290,16 @@ fn another() -> i32 {
         "test_doc_comment_preservation",
         content,
         &written_content,
-        &units
+        &[unit, unit2]
     );
 
     assert!(written_content.contains("fn example()"), "Function example should be preserved");
     assert!(written_content.contains("fn another()"), "Function another should be preserved");
     assert!(written_content.contains("-> i32"), "Return types should be preserved");
-    assert!(written_content.contains("这是一个文档注释"), "Doc comment should be translated");
-    assert!(written_content.contains("多行"), "Doc comment line 2 should be translated");
+    assert!(written_content.contains("/// 这是一个文档注释"), "Doc comment line 1 should be translated");
+    assert!(written_content.contains("/// 多行"), "Doc comment line 2 should be translated");
+    assert!(written_content.contains("/// 另一个文档注释"), "Second doc comment line 1 should be translated");
+    assert!(written_content.contains("/// 用于另一个函数"), "Second doc comment line 2 should be translated");
 }
 
 #[tokio::test]
@@ -355,6 +373,7 @@ mod example {
         base_indent: "        ".to_string(),
         line_prefix: Some("/// ".to_string()),
         ends_with_newline: false,
+        is_multiline: false,
     };
 
     let mut units = vec![
@@ -411,28 +430,32 @@ fn example() -> i32 {
 
     let file = create_test_file(&temp_path, "doc_block.rs", content).await;
 
-    // For multi-line block comments, we need to create separate translation units for each line
-    // Use Line style since we're replacing text within the block comment, not the whole block
-    let format_info_line = FormatInfo {
-        style: CommentStyle::Line,
+    let format_info = FormatInfo {
+        style: CommentStyle::DocBlock,
         base_indent: "".to_string(),
         line_prefix: Some(" * ".to_string()),
-        ends_with_newline: false,
+        ends_with_newline: true,
+        is_multiline: true,
     };
 
-    let mut units = vec![
-        create_translation_unit_with_format("1", "This is a doc block comment", 2, 4, 31, format_info_line.clone()),
-        create_translation_unit_with_format("2", "with multiple lines", 3, 4, 24, format_info_line.clone()),
-        create_translation_unit_with_format("3", "and detailed information", 4, 4, 29, format_info_line),
-    ];
-    units[0].set_translated("这是一个文档块注释");
-    units[1].set_translated("多行");
-    units[2].set_translated("详细信息");
+    let mut unit = create_translation_unit_with_format(
+        "1",
+        "This is a doc block comment\nwith multiple lines\nand detailed information",
+        1,
+        1,
+        4,
+        format_info,
+    );
+    unit.start_pos.line = 1;
+    unit.start_pos.column = 1;
+    unit.end_pos.line = 5;
+    unit.end_pos.column = 4;
+    unit.set_translated("这是一个文档块注释\n多行\n详细信息");
 
     let config = WriterConfig::default();
     let writer = FileWriter::new(config);
 
-    let result = writer.write(&file, &units).await;
+    let result = writer.write(&file, &[unit.clone()]).await;
     assert!(result.is_ok());
 
     let written_content: String = read_file_content(&file.path).await;
@@ -442,13 +465,15 @@ fn example() -> i32 {
         "test_multiline_doc_block_comment",
         content,
         &written_content,
-        &units
+        &[unit]
     );
 
     assert!(written_content.contains("fn example()"), "Function should be preserved");
     assert!(written_content.contains("/**"), "Doc block start should be preserved");
     assert!(written_content.contains("*/"), "Doc block end should be preserved");
     assert!(written_content.contains("这是一个文档块注释"), "Comment should be translated");
+    assert!(written_content.contains("多行"), "Second line should be translated");
+    assert!(written_content.contains("详细信息"), "Third line should be translated");
 }
 
 #[tokio::test]
@@ -504,4 +529,60 @@ fn main() {
 
     let lines: Vec<&str> = written_content.lines().collect();
     assert_eq!(lines.len(), 12, "Empty lines should be preserved");
+}
+
+#[tokio::test]
+async fn test_multiline_comment_merged() {
+    let temp_dir = create_temp_dir();
+    let temp_path = temp_dir.path().to_path_buf();
+
+    let content = r##"/// This is a doc comment
+/// with multiple lines
+/// that should be merged
+fn example() -> i32 {
+    42
+}"##;
+
+    let file = create_test_file(&temp_path, "multiline_merged.rs", content).await;
+
+    let format_info = FormatInfo {
+        style: CommentStyle::DocOuter,
+        base_indent: "".to_string(),
+        line_prefix: Some("/// ".to_string()),
+        ends_with_newline: false,
+        is_multiline: true,
+    };
+
+    let mut unit = create_translation_unit_with_format(
+        "1",
+        "This is a doc comment\nwith multiple lines\nthat should be merged",
+        1,
+        1,
+        24,
+        format_info,
+    );
+    unit.end_pos.line = 3;
+    unit.end_pos.column = 24;
+    unit.set_translated("这是一个文档注释\n多行\n应该被合并");
+
+    let config = WriterConfig::default();
+    let writer = FileWriter::new(config);
+
+    let result = writer.write(&file, &[unit.clone()]).await;
+    assert!(result.is_ok());
+
+    let written_content: String = read_file_content(&file.path).await;
+
+    // Write output for comparison
+    crate::writer_common::write_test_result(
+        "test_multiline_comment_merged",
+        content,
+        &written_content,
+        &[unit]
+    );
+
+    assert!(written_content.contains("fn example()"), "Function should be preserved");
+    assert!(written_content.contains("/// 这是一个文档注释"), "First line should be translated with prefix");
+    assert!(written_content.contains("/// 多行"), "Second line should be translated with prefix");
+    assert!(written_content.contains("/// 应该被合并"), "Third line should be translated with prefix");
 }
