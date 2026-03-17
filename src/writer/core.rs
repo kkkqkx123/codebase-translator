@@ -36,7 +36,12 @@ impl TranslationApplier {
 
         for unit in units {
             if unit.start_pos.line >= 1 {
-                if unit.format_info.as_ref().map(|f| f.is_multiline).unwrap_or(false) {
+                if unit
+                    .format_info
+                    .as_ref()
+                    .map(|f| f.is_multiline)
+                    .unwrap_or(false)
+                {
                     multiline_units.push(unit);
                 } else {
                     unit_map.entry(unit.start_pos.line).or_default().push(unit);
@@ -92,7 +97,10 @@ impl TranslationApplier {
 
             // Regular single-line processing
             if let Some(line_units) = unit_map.get(&line_num) {
-                builder.push_str(&Self::apply_translations_to_line(lines[line_idx], line_units));
+                builder.push_str(&Self::apply_translations_to_line(
+                    lines[line_idx],
+                    line_units,
+                ));
             } else {
                 builder.push_str(lines[line_idx]);
             }
@@ -241,7 +249,8 @@ impl TranslationApplier {
             CommentStyle::DocOuter | CommentStyle::DocInner => {
                 // For doc comments, add prefix to each line including the first
                 let prefix = format.line_prefix.as_deref().unwrap_or("");
-                lines.iter()
+                lines
+                    .iter()
                     .map(|line| format!("{}{}", prefix, line))
                     .collect::<Vec<_>>()
                     .join("\n")
@@ -263,12 +272,20 @@ impl TranslationApplier {
 
         if lines.len() == 1 {
             // Single line - use simple format
-            let start_marker = if format.style == CommentStyle::DocBlock { "/**" } else { "/*" };
+            let start_marker = if format.style == CommentStyle::DocBlock {
+                "/**"
+            } else {
+                "/*"
+            };
             return format!("{} {} */", start_marker, translated);
         }
 
         let mut result = String::new();
-        let start_marker = if format.style == CommentStyle::DocBlock { "/**" } else { "/*" };
+        let start_marker = if format.style == CommentStyle::DocBlock {
+            "/**"
+        } else {
+            "/*"
+        };
         result.push_str(start_marker);
         result.push('\n');
 
@@ -278,7 +295,7 @@ impl TranslationApplier {
                 result.push_str(prefix);
             }
             result.push_str(line);
-            
+
             // Add newline after each line's content
             // If ends_with_newline is true, add newline after last line's content
             // If ends_with_newline is false, don't add newline after last line's content
@@ -379,6 +396,7 @@ mod tests {
                 base_indent: "    ".to_string(),
                 line_prefix: Some("// ".to_string()),
                 ends_with_newline: false,
+                is_multiline: false,
             }),
         }];
 
@@ -406,6 +424,7 @@ mod tests {
                 base_indent: "".to_string(),
                 line_prefix: None,
                 ends_with_newline: false,
+                is_multiline: false,
             }),
         }];
 
@@ -432,6 +451,7 @@ mod tests {
                 base_indent: "".to_string(),
                 line_prefix: Some(" * ".to_string()),
                 ends_with_newline: true,
+                is_multiline: false,
             }),
         }];
 
@@ -459,6 +479,7 @@ mod tests {
                 base_indent: "    ".to_string(),
                 line_prefix: Some(" * ".to_string()),
                 ends_with_newline: true,
+                is_multiline: false,
             }),
         }];
 
@@ -486,6 +507,7 @@ mod tests {
                 base_indent: "".to_string(),
                 line_prefix: Some("/// ".to_string()),
                 ends_with_newline: false,
+                is_multiline: false,
             }),
         }];
 
@@ -512,6 +534,7 @@ mod tests {
                 base_indent: "".to_string(),
                 line_prefix: Some(" * ".to_string()),
                 ends_with_newline: true,
+                is_multiline: false,
             }),
         }];
 
@@ -539,6 +562,7 @@ mod tests {
                 base_indent: "".to_string(),
                 line_prefix: Some(" * ".to_string()),
                 ends_with_newline: true,
+                is_multiline: false,
             }),
         }];
 
@@ -588,6 +612,7 @@ mod tests {
                     base_indent: "    ".to_string(),
                     line_prefix: None,
                     ends_with_newline: false,
+                    is_multiline: false,
                 }),
             },
             TranslationUnit {
@@ -604,6 +629,7 @@ mod tests {
                     base_indent: "    ".to_string(),
                     line_prefix: None,
                     ends_with_newline: false,
+                    is_multiline: false,
                 }),
             },
         ];

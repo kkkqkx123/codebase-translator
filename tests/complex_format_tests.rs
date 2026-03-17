@@ -1,7 +1,7 @@
 //! Complex format preservation tests for writer integration
 
-use codebase_translate::writer::{FileWriter, WriterConfig};
 use codebase_translate::core::models::{CommentStyle, FormatInfo, NodeType, Position};
+use codebase_translate::writer::{FileWriter, WriterConfig};
 
 use crate::writer_common::*;
 
@@ -46,10 +46,22 @@ async fn test_complex_nested_block_comment() {
 
     let written_content: String = read_file_content(&file.path).await;
 
-    assert!(written_content.contains("fn main()"), "Function declaration should be preserved");
-    assert!(written_content.contains("println!(\"Hello\")"), "Code should be preserved");
-    assert!(written_content.contains("/*"), "Comment start should be preserved");
-    assert!(written_content.contains("*/"), "Comment end should be preserved");
+    assert!(
+        written_content.contains("fn main()"),
+        "Function declaration should be preserved"
+    );
+    assert!(
+        written_content.contains("println!(\"Hello\")"),
+        "Code should be preserved"
+    );
+    assert!(
+        written_content.contains("/*"),
+        "Comment start should be preserved"
+    );
+    assert!(
+        written_content.contains("*/"),
+        "Comment end should be preserved"
+    );
 }
 
 #[tokio::test]
@@ -75,10 +87,22 @@ async fn test_string_literal_preservation() {
 
     let written_content: String = read_file_content(&file.path).await;
 
-    assert!(written_content.contains("fn main()"), "Function declaration should be preserved");
-    assert!(written_content.contains("let message ="), "Variable declaration should be preserved");
-    assert!(written_content.contains("println!"), "Macro call should be preserved");
-    assert!(written_content.contains("\"你好世界\""), "String literal should be translated");
+    assert!(
+        written_content.contains("fn main()"),
+        "Function declaration should be preserved"
+    );
+    assert!(
+        written_content.contains("let message ="),
+        "Variable declaration should be preserved"
+    );
+    assert!(
+        written_content.contains("println!"),
+        "Macro call should be preserved"
+    );
+    assert!(
+        written_content.contains("\"你好世界\""),
+        "String literal should be translated"
+    );
 }
 
 #[tokio::test]
@@ -106,9 +130,18 @@ string literal"#;
 
     let written_content: String = read_file_content(&file.path).await;
 
-    assert!(written_content.contains("r#"), "Raw string prefix should be preserved");
-    assert!(written_content.contains("#;"), "Raw string suffix should be preserved");
-    assert!(written_content.contains("multiline"), "Other lines should be preserved");
+    assert!(
+        written_content.contains("r#"),
+        "Raw string prefix should be preserved"
+    );
+    assert!(
+        written_content.contains("#;"),
+        "Raw string suffix should be preserved"
+    );
+    assert!(
+        written_content.contains("multiline"),
+        "Other lines should be preserved"
+    );
 }
 
 #[tokio::test]
@@ -166,13 +199,34 @@ fn main() {
 
     let written_content: String = read_file_content(&file.path).await;
 
-    assert!(written_content.contains("fn main()"), "Function should be preserved");
-    assert!(written_content.contains("let x = 5;"), "Variable x should be preserved");
-    assert!(written_content.contains("let y = 10;"), "Variable y should be preserved");
-    assert!(written_content.contains("顶部注释"), "Top comment should be translated");
-    assert!(written_content.contains("函数注释"), "Function comment should be translated");
-    assert!(written_content.contains("行内注释"), "Inline comment should be translated");
-    assert!(written_content.contains("底部注释"), "Bottom comment should be translated");
+    assert!(
+        written_content.contains("fn main()"),
+        "Function should be preserved"
+    );
+    assert!(
+        written_content.contains("let x = 5;"),
+        "Variable x should be preserved"
+    );
+    assert!(
+        written_content.contains("let y = 10;"),
+        "Variable y should be preserved"
+    );
+    assert!(
+        written_content.contains("顶部注释"),
+        "Top comment should be translated"
+    );
+    assert!(
+        written_content.contains("函数注释"),
+        "Function comment should be translated"
+    );
+    assert!(
+        written_content.contains("行内注释"),
+        "Inline comment should be translated"
+    );
+    assert!(
+        written_content.contains("底部注释"),
+        "Bottom comment should be translated"
+    );
 }
 
 #[tokio::test]
@@ -218,12 +272,30 @@ async fn test_indented_block_comment_preservation() {
 
     let written_content: String = read_file_content(&file.path).await;
 
-    assert!(written_content.contains("fn main()"), "Function should be preserved");
-    assert!(written_content.contains("if true"), "If statement should be preserved");
-    assert!(written_content.contains("let x = 5;"), "Variable should be preserved");
-    assert!(written_content.contains("/*"), "Comment start should be preserved");
-    assert!(written_content.contains("*/"), "Comment end should be preserved");
-    assert!(written_content.contains("缩进块注释"), "Comment should be translated");
+    assert!(
+        written_content.contains("fn main()"),
+        "Function should be preserved"
+    );
+    assert!(
+        written_content.contains("if true"),
+        "If statement should be preserved"
+    );
+    assert!(
+        written_content.contains("let x = 5;"),
+        "Variable should be preserved"
+    );
+    assert!(
+        written_content.contains("/*"),
+        "Comment start should be preserved"
+    );
+    assert!(
+        written_content.contains("*/"),
+        "Comment end should be preserved"
+    );
+    assert!(
+        written_content.contains("缩进块注释"),
+        "Comment should be translated"
+    );
 }
 
 #[tokio::test]
@@ -290,16 +362,37 @@ fn another() -> i32 {
         "test_doc_comment_preservation",
         content,
         &written_content,
-        &[unit, unit2]
+        &[unit, unit2],
     );
 
-    assert!(written_content.contains("fn example()"), "Function example should be preserved");
-    assert!(written_content.contains("fn another()"), "Function another should be preserved");
-    assert!(written_content.contains("-> i32"), "Return types should be preserved");
-    assert!(written_content.contains("/// 这是一个文档注释"), "Doc comment line 1 should be translated");
-    assert!(written_content.contains("/// 多行"), "Doc comment line 2 should be translated");
-    assert!(written_content.contains("/// 另一个文档注释"), "Second doc comment line 1 should be translated");
-    assert!(written_content.contains("/// 用于另一个函数"), "Second doc comment line 2 should be translated");
+    assert!(
+        written_content.contains("fn example()"),
+        "Function example should be preserved"
+    );
+    assert!(
+        written_content.contains("fn another()"),
+        "Function another should be preserved"
+    );
+    assert!(
+        written_content.contains("-> i32"),
+        "Return types should be preserved"
+    );
+    assert!(
+        written_content.contains("/// 这是一个文档注释"),
+        "Doc comment line 1 should be translated"
+    );
+    assert!(
+        written_content.contains("/// 多行"),
+        "Doc comment line 2 should be translated"
+    );
+    assert!(
+        written_content.contains("/// 另一个文档注释"),
+        "Second doc comment line 1 should be translated"
+    );
+    assert!(
+        written_content.contains("/// 用于另一个函数"),
+        "Second doc comment line 2 should be translated"
+    );
 }
 
 #[tokio::test]
@@ -336,13 +429,25 @@ async fn test_string_with_special_characters() {
         "test_string_with_special_characters",
         content,
         &written_content,
-        &units
+        &units,
     );
 
-    assert!(written_content.contains("let path ="), "Path variable should be preserved");
-    assert!(written_content.contains("let quote ="), "Quote variable should be preserved");
-    assert!(written_content.contains("他说你好"), "Quote string should be translated");
-    assert!(written_content.contains("第一行文本"), "Line 1 text should be translated");
+    assert!(
+        written_content.contains("let path ="),
+        "Path variable should be preserved"
+    );
+    assert!(
+        written_content.contains("let quote ="),
+        "Quote variable should be preserved"
+    );
+    assert!(
+        written_content.contains("他说你好"),
+        "Quote string should be translated"
+    );
+    assert!(
+        written_content.contains("第一行文本"),
+        "Line 1 text should be translated"
+    );
 }
 
 #[tokio::test]
@@ -379,7 +484,14 @@ mod example {
     let mut units = vec![
         create_translation_unit("1", "Module comment", 1, 4, 18),
         create_translation_unit("2", "Nested module comment", 3, 8, 29),
-        create_translation_unit_with_format("3", "Field doc comment", 5, 13, 30, format_info.clone()),
+        create_translation_unit_with_format(
+            "3",
+            "Field doc comment",
+            5,
+            13,
+            30,
+            format_info.clone(),
+        ),
         create_translation_unit("4", "Method comment", 10, 9, 26),
     ];
 
@@ -401,17 +513,41 @@ mod example {
         "test_complex_code_structure_preservation",
         content,
         &written_content,
-        &units
+        &units,
     );
 
-    assert!(written_content.contains("mod example"), "Module should be preserved");
-    assert!(written_content.contains("pub struct Example"), "Struct should be preserved");
-    assert!(written_content.contains("pub field: i32"), "Field should be preserved");
-    assert!(written_content.contains("impl Example"), "Impl block should be preserved");
-    assert!(written_content.contains("pub fn new()"), "Method should be preserved");
-    assert!(written_content.contains("Self { field: 0 }"), "Method body should be preserved");
-    assert!(written_content.contains("模块注释"), "Module comment should be translated");
-    assert!(written_content.contains("嵌套模块注释"), "Nested comment should be translated");
+    assert!(
+        written_content.contains("mod example"),
+        "Module should be preserved"
+    );
+    assert!(
+        written_content.contains("pub struct Example"),
+        "Struct should be preserved"
+    );
+    assert!(
+        written_content.contains("pub field: i32"),
+        "Field should be preserved"
+    );
+    assert!(
+        written_content.contains("impl Example"),
+        "Impl block should be preserved"
+    );
+    assert!(
+        written_content.contains("pub fn new()"),
+        "Method should be preserved"
+    );
+    assert!(
+        written_content.contains("Self { field: 0 }"),
+        "Method body should be preserved"
+    );
+    assert!(
+        written_content.contains("模块注释"),
+        "Module comment should be translated"
+    );
+    assert!(
+        written_content.contains("嵌套模块注释"),
+        "Nested comment should be translated"
+    );
 }
 
 #[tokio::test]
@@ -465,15 +601,33 @@ fn example() -> i32 {
         "test_multiline_doc_block_comment",
         content,
         &written_content,
-        &[unit]
+        &[unit],
     );
 
-    assert!(written_content.contains("fn example()"), "Function should be preserved");
-    assert!(written_content.contains("/**"), "Doc block start should be preserved");
-    assert!(written_content.contains("*/"), "Doc block end should be preserved");
-    assert!(written_content.contains("这是一个文档块注释"), "Comment should be translated");
-    assert!(written_content.contains("多行"), "Second line should be translated");
-    assert!(written_content.contains("详细信息"), "Third line should be translated");
+    assert!(
+        written_content.contains("fn example()"),
+        "Function should be preserved"
+    );
+    assert!(
+        written_content.contains("/**"),
+        "Doc block start should be preserved"
+    );
+    assert!(
+        written_content.contains("*/"),
+        "Doc block end should be preserved"
+    );
+    assert!(
+        written_content.contains("这是一个文档块注释"),
+        "Comment should be translated"
+    );
+    assert!(
+        written_content.contains("多行"),
+        "Second line should be translated"
+    );
+    assert!(
+        written_content.contains("详细信息"),
+        "Third line should be translated"
+    );
 }
 
 #[tokio::test]
@@ -519,13 +673,25 @@ fn main() {
         "test_empty_lines_preservation",
         content,
         &written_content,
-        &units
+        &units,
     );
 
-    assert!(written_content.contains("fn main()"), "Function should be preserved");
-    assert!(written_content.contains("第一个注释"), "First comment should be translated");
-    assert!(written_content.contains("嵌套注释"), "Nested comment should be translated");
-    assert!(written_content.contains("最后一个注释"), "Last comment should be translated");
+    assert!(
+        written_content.contains("fn main()"),
+        "Function should be preserved"
+    );
+    assert!(
+        written_content.contains("第一个注释"),
+        "First comment should be translated"
+    );
+    assert!(
+        written_content.contains("嵌套注释"),
+        "Nested comment should be translated"
+    );
+    assert!(
+        written_content.contains("最后一个注释"),
+        "Last comment should be translated"
+    );
 
     let lines: Vec<&str> = written_content.lines().collect();
     assert_eq!(lines.len(), 12, "Empty lines should be preserved");
@@ -578,11 +744,23 @@ fn example() -> i32 {
         "test_multiline_comment_merged",
         content,
         &written_content,
-        &[unit]
+        &[unit],
     );
 
-    assert!(written_content.contains("fn example()"), "Function should be preserved");
-    assert!(written_content.contains("/// 这是一个文档注释"), "First line should be translated with prefix");
-    assert!(written_content.contains("/// 多行"), "Second line should be translated with prefix");
-    assert!(written_content.contains("/// 应该被合并"), "Third line should be translated with prefix");
+    assert!(
+        written_content.contains("fn example()"),
+        "Function should be preserved"
+    );
+    assert!(
+        written_content.contains("/// 这是一个文档注释"),
+        "First line should be translated with prefix"
+    );
+    assert!(
+        written_content.contains("/// 多行"),
+        "Second line should be translated with prefix"
+    );
+    assert!(
+        written_content.contains("/// 应该被合并"),
+        "Third line should be translated with prefix"
+    );
 }

@@ -5,6 +5,7 @@ use tracing::{debug, info, instrument, warn};
 
 use crate::core::error::Result;
 use crate::core::models::{File, NodeType, TranslationUnit};
+use crate::parser::core::StringProcessor;
 use crate::parser::r#trait::Parser as ParserTrait;
 use crate::parser::tree_sitter::ParserConfig;
 
@@ -21,6 +22,7 @@ pub struct RegexParser {
     doc_comment_regex: Option<Regex>,
     string_regex: Option<Regex>,
     state_machine_matchers: Vec<StateMachineMatcher>,
+    string_processor: StringProcessor,
 }
 
 impl RegexParser {
@@ -93,6 +95,7 @@ impl RegexParser {
             doc_comment_regex,
             string_regex,
             state_machine_matchers,
+            string_processor: StringProcessor::new(),
         }
     }
 
@@ -108,14 +111,13 @@ impl RegexParser {
             for mat in regex.find_iter(content) {
                 if let Some(captured) = regex.captures(&content[mat.start()..mat.end()]) {
                     if let Some(group) = captured.get(1) {
-                        let text = if self.config.trim_content {
-                            group.as_str().trim()
-                        } else {
-                            group.as_str()
-                        };
+                        let raw_text = group.as_str();
+                        let text = self
+                            .string_processor
+                            .clean_comment(raw_text, crate::parser::core::CommentType::Line);
 
                         if should_include(
-                            text,
+                            &text,
                             self.config.min_content_length,
                             self.config.max_content_length,
                         ) {
@@ -130,7 +132,7 @@ impl RegexParser {
                             let unit = TranslationUnit::new(
                                 id,
                                 NodeType::Comment,
-                                text.to_string(),
+                                text,
                                 start_pos,
                                 end_pos,
                             );
@@ -148,14 +150,13 @@ impl RegexParser {
             for mat in regex.find_iter(content) {
                 if let Some(captured) = regex.captures(&content[mat.start()..mat.end()]) {
                     if let Some(group) = captured.get(1) {
-                        let text = if self.config.trim_content {
-                            group.as_str().trim()
-                        } else {
-                            group.as_str()
-                        };
+                        let raw_text = group.as_str();
+                        let text = self
+                            .string_processor
+                            .clean_comment(raw_text, crate::parser::core::CommentType::Block);
 
                         if should_include(
-                            text,
+                            &text,
                             self.config.min_content_length,
                             self.config.max_content_length,
                         ) {
@@ -170,7 +171,7 @@ impl RegexParser {
                             let unit = TranslationUnit::new(
                                 id,
                                 NodeType::Comment,
-                                text.to_string(),
+                                text,
                                 start_pos,
                                 end_pos,
                             );
@@ -191,14 +192,13 @@ impl RegexParser {
             for mat in regex.find_iter(content) {
                 if let Some(captured) = regex.captures(&content[mat.start()..mat.end()]) {
                     if let Some(group) = captured.get(1) {
-                        let text = if self.config.trim_content {
-                            group.as_str().trim()
-                        } else {
-                            group.as_str()
-                        };
+                        let raw_text = group.as_str();
+                        let text = self
+                            .string_processor
+                            .clean_comment(raw_text, crate::parser::core::CommentType::Doc);
 
                         if should_include(
-                            text,
+                            &text,
                             self.config.min_content_length,
                             self.config.max_content_length,
                         ) {
@@ -213,7 +213,7 @@ impl RegexParser {
                             let unit = TranslationUnit::new(
                                 id,
                                 NodeType::DocString,
-                                text.to_string(),
+                                text,
                                 start_pos,
                                 end_pos,
                             );
@@ -234,14 +234,11 @@ impl RegexParser {
             for mat in regex.find_iter(content) {
                 if let Some(captured) = regex.captures(&content[mat.start()..mat.end()]) {
                     if let Some(group) = captured.get(1) {
-                        let text = if self.config.trim_content {
-                            group.as_str().trim()
-                        } else {
-                            group.as_str()
-                        };
+                        let raw_text = group.as_str();
+                        let text = self.string_processor.clean_string_literal(raw_text);
 
                         if should_include(
-                            text,
+                            &text,
                             self.config.min_content_length,
                             self.config.max_content_length,
                         ) {
@@ -256,7 +253,7 @@ impl RegexParser {
                             let unit = TranslationUnit::new(
                                 id,
                                 NodeType::FormatString,
-                                text.to_string(),
+                                text,
                                 start_pos,
                                 end_pos,
                             );

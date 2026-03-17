@@ -26,8 +26,10 @@ pub fn write_test_result(test_name: &str, original: &str, result: &str, units: &
         output.push_str(&format!("Unit {}:\n", i + 1));
         output.push_str(&format!("  ID: {}\n", unit.id));
         output.push_str(&format!("  Content: {:?}\n", unit.content));
-        output.push_str(&format!("  Position: Line {}, Col {}-{}\n",
-            unit.start_pos.line, unit.start_pos.column, unit.end_pos.column));
+        output.push_str(&format!(
+            "  Position: Line {}, Col {}-{}\n",
+            unit.start_pos.line, unit.start_pos.column, unit.end_pos.column
+        ));
         if let Some(translated) = &unit.translated {
             output.push_str(&format!("  Translated: {:?}\n", translated));
         }

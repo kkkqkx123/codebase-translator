@@ -1,7 +1,7 @@
 //! ConcurrentWriter integration tests
 
+use codebase_translate::core::models::{CommentStyle, File, FormatInfo, Position};
 use codebase_translate::writer::{ConcurrentWriter, WriterConfig};
-use codebase_translate::core::models::{CommentStyle, FormatInfo, Position, File};
 
 use crate::writer_common::*;
 
@@ -20,7 +20,13 @@ async fn test_concurrent_writer_basic() {
 
     let mut file_units = Vec::new();
     for (i, file) in files.iter().enumerate() {
-        let mut units = vec![create_translation_unit(&format!("unit_{}", i), "File", 1, 1, 5)];
+        let mut units = vec![create_translation_unit(
+            &format!("unit_{}", i),
+            "File",
+            1,
+            1,
+            5,
+        )];
         units[0].set_translated(format!("文件{}", i));
         file_units.push((file.clone(), units));
     }
@@ -32,13 +38,20 @@ async fn test_concurrent_writer_basic() {
 
     assert_eq!(results.len(), 3);
     for result in &results {
-        assert!(result.success, "All writes should succeed: {:?}", result.error);
+        assert!(
+            result.success,
+            "All writes should succeed: {:?}",
+            result.error
+        );
         assert_eq!(result.units_written, 1);
     }
 
     for file in &files {
         let content: String = read_file_content(&file.path).await;
-        assert!(content.contains("文件"), "File should contain translated text");
+        assert!(
+            content.contains("文件"),
+            "File should contain translated text"
+        );
     }
 }
 
@@ -52,13 +65,20 @@ async fn test_concurrent_writer_with_different_concurrency() {
 
     for i in 0..file_count {
         let content = format!("Content {}\nLine 2", i);
-        let file: File = create_test_file(&temp_path, &format!("concurrent_{}.txt", i), &content).await;
+        let file: File =
+            create_test_file(&temp_path, &format!("concurrent_{}.txt", i), &content).await;
         files.push(file);
     }
 
     let mut file_units = Vec::new();
     for (i, file) in files.iter().enumerate() {
-        let mut units = vec![create_translation_unit(&format!("unit_{}", i), "Content", 1, 1, 8)];
+        let mut units = vec![create_translation_unit(
+            &format!("unit_{}", i),
+            "Content",
+            1,
+            1,
+            8,
+        )];
         units[0].set_translated(format!("内容{}", i));
         file_units.push((file.clone(), units));
     }
@@ -136,7 +156,10 @@ async fn test_concurrent_writer_preview_mode() {
     assert!(results[0].success);
 
     let written_content: String = read_file_content(&file.path).await;
-    assert_eq!(written_content, content, "File should not be modified in preview mode");
+    assert_eq!(
+        written_content, content,
+        "File should not be modified in preview mode"
+    );
 }
 
 #[tokio::test]
@@ -158,11 +181,9 @@ async fn test_concurrent_writer_mixed_success_failure() {
     let config = WriterConfig::default();
     let writer = ConcurrentWriter::new(config, 2);
 
-    let results = writer.write_files(vec![
-        (file1.clone(), units1),
-        (file2.clone(), units2),
-    ])
-    .await;
+    let results = writer
+        .write_files(vec![(file1.clone(), units1), (file2.clone(), units2)])
+        .await;
 
     assert_eq!(results.len(), 2);
 
@@ -186,9 +207,16 @@ async fn test_concurrent_writer_streaming() {
     tokio::spawn(async move {
         for i in 0..3 {
             let content = format!("Stream content {}\nLine 2", i);
-            let file: File = create_test_file(&temp_path, &format!("stream_{}.txt", i), &content).await;
+            let file: File =
+                create_test_file(&temp_path, &format!("stream_{}.txt", i), &content).await;
 
-            let mut units = vec![create_translation_unit(&format!("unit_{}", i), "Stream", 1, 1, 7)];
+            let mut units = vec![create_translation_unit(
+                &format!("unit_{}", i),
+                "Stream",
+                1,
+                1,
+                7,
+            )];
             units[0].set_translated(format!("流{}", i));
 
             sender
@@ -241,7 +269,9 @@ async fn test_concurrent_writer_with_format_info() {
     let config = WriterConfig::default();
     let writer = ConcurrentWriter::new(config, 1);
 
-    let results = writer.write_files(vec![(file.clone(), units.clone())]).await;
+    let results = writer
+        .write_files(vec![(file.clone(), units.clone())])
+        .await;
 
     assert_eq!(results.len(), 1);
     assert!(results[0].success);
@@ -253,7 +283,7 @@ async fn test_concurrent_writer_with_format_info() {
         "test_concurrent_writer_with_format_info",
         content,
         &written_content,
-        &units
+        &units,
     );
 
     assert!(written_content.contains("    // 这是一个注释"));
@@ -287,7 +317,13 @@ async fn test_concurrent_writer_large_batch() {
         let file: File = create_test_file(&temp_path, &format!("batch_{}.txt", i), &content).await;
         files.push(file.clone());
 
-        let mut units = vec![create_translation_unit(&format!("unit_{}", i), "Batch", 1, 1, 6)];
+        let mut units = vec![create_translation_unit(
+            &format!("unit_{}", i),
+            "Batch",
+            1,
+            1,
+            6,
+        )];
         units[0].set_translated(format!("批次{}", i));
         file_units.push((file, units));
     }
@@ -300,7 +336,10 @@ async fn test_concurrent_writer_large_batch() {
     assert_eq!(results.len(), file_count);
 
     let success_count = results.iter().filter(|r| r.success).count();
-    assert_eq!(success_count, file_count, "All files should be written successfully");
+    assert_eq!(
+        success_count, file_count,
+        "All files should be written successfully"
+    );
 }
 
 #[tokio::test]
@@ -333,6 +372,9 @@ async fn test_concurrent_writer_with_crlf() {
     assert!(results[0].success);
 
     let written_content: String = read_file_content(&file.path).await;
-    assert!(written_content.contains("\r\n"), "CRLF line endings should be preserved");
+    assert!(
+        written_content.contains("\r\n"),
+        "CRLF line endings should be preserved"
+    );
     assert!(written_content.contains("第一行"));
 }

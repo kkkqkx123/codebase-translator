@@ -1,7 +1,7 @@
 //! FileWriter integration tests
 
-use codebase_translate::writer::{FileWriter, WriterConfig};
 use codebase_translate::core::models::{CommentStyle, FormatInfo, NodeType, Position};
+use codebase_translate::writer::{FileWriter, WriterConfig};
 
 use crate::writer_common::*;
 
@@ -85,7 +85,10 @@ async fn test_file_writer_preview_mode() {
     assert!(result.is_ok());
 
     let written_content: String = read_file_content(&file.path).await;
-    assert_eq!(written_content, content, "File should not be modified in preview mode");
+    assert_eq!(
+        written_content, content,
+        "File should not be modified in preview mode"
+    );
 }
 
 #[tokio::test]
@@ -102,7 +105,10 @@ async fn test_file_writer_no_changes() {
     let writer = FileWriter::new(config);
 
     let result = writer.write(&file, &units).await;
-    assert!(result.is_err(), "Should fail when translation is missing but should_translate is true");
+    assert!(
+        result.is_err(),
+        "Should fail when translation is missing but should_translate is true"
+    );
 }
 
 #[tokio::test]
@@ -173,7 +179,7 @@ async fn test_file_writer_with_line_comment_format() {
         "test_file_writer_with_line_comment_format",
         content,
         &written_content,
-        &units
+        &units,
     );
 
     assert!(written_content.contains("    // 这是一个注释"));
@@ -269,7 +275,10 @@ async fn test_file_writer_crlf_preservation() {
     assert!(result.is_ok());
 
     let written_content: String = read_file_content(&file.path).await;
-    assert!(written_content.contains("\r\n"), "CRLF line endings should be preserved");
+    assert!(
+        written_content.contains("\r\n"),
+        "CRLF line endings should be preserved"
+    );
     assert!(written_content.contains("第一行"));
 }
 

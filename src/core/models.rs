@@ -215,10 +215,7 @@ impl FormatInfo {
     }
 
     /// Create new format info for a multi-line comment (merged from multiple lines)
-    pub fn multiline_block(
-        indent: impl Into<String>,
-        line_prefix: impl Into<String>,
-    ) -> Self {
+    pub fn multiline_block(indent: impl Into<String>, line_prefix: impl Into<String>) -> Self {
         Self {
             style: CommentStyle::BlockMulti,
             base_indent: indent.into(),
@@ -229,10 +226,7 @@ impl FormatInfo {
     }
 
     /// Create new format info for a multi-line doc comment
-    pub fn multiline_doc_block(
-        indent: impl Into<String>,
-        line_prefix: impl Into<String>,
-    ) -> Self {
+    pub fn multiline_doc_block(indent: impl Into<String>, line_prefix: impl Into<String>) -> Self {
         Self {
             style: CommentStyle::DocBlock,
             base_indent: indent.into(),
