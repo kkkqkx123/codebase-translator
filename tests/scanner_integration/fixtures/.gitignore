@@ -1,0 +1,20 @@
+# Ignore log files
+*.log
+
+# Ignore temporary files
+*.tmp
+
+# Ignore custom files
+*.custom
+
+# But keep important log files
+!important.log
+
+# Ignore directory
+ignored_dir/
+
+# Ignore cache files recursively
+**/*.cache
+
+# Ignore temp files
+temp_*

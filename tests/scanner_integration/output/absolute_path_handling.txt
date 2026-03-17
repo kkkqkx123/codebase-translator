@@ -1,0 +1,71 @@
+Found 17 files
+==================================================
+
+--- File 1 ---
+Path: .gitignore
+Size: 242 bytes
+
+--- File 2 ---
+Path: .hidden_file
+Size: 14 bytes
+
+--- File 3 ---
+Path: custom.gitignore
+Size: 33 bytes
+
+--- File 4 ---
+Path: file with spaces.txt
+Size: 25 bytes
+
+--- File 5 ---
+Path: File-with-dashes.txt
+Size: 21 bytes
+
+--- File 6 ---
+Path: file.custom
+Size: 22 bytes
+
+--- File 7 ---
+Path: File_with_underscores.txt
+Size: 26 bytes
+
+--- File 8 ---
+Path: ignored.log
+Size: 36 bytes
+
+--- File 9 ---
+Path: ignored_dir\file.txt
+Size: 28 bytes
+
+--- File 10 ---
+Path: important.log
+Size: 52 bytes
+
+--- File 11 ---
+Path: nested_dir\nested.rs
+Size: 71 bytes
+
+--- File 12 ---
+Path: nested_dir\subdir.cache
+Size: 21 bytes
+
+--- File 13 ---
+Path: root.cache
+Size: 21 bytes
+
+--- File 14 ---
+Path: simple_javascript.js
+Size: 110 bytes
+
+--- File 15 ---
+Path: simple_python.py
+Size: 122 bytes
+
+--- File 16 ---
+Path: simple_rust.rs
+Size: 87 bytes
+
+--- File 17 ---
+Path: temp_file.tmp
+Size: 25 bytes
+

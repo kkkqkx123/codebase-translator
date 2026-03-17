@@ -1,0 +1,15 @@
+Found 3 files
+==================================================
+
+--- File 1 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\nested_dir\nested.rs
+Size: 71 bytes
+
+--- File 2 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\simple_python.py
+Size: 122 bytes
+
+--- File 3 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\simple_rust.rs
+Size: 87 bytes
+

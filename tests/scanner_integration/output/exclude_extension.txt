@@ -1,0 +1,63 @@
+Found 15 files
+==================================================
+
+--- File 1 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\.gitignore
+Size: 242 bytes
+
+--- File 2 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\.hidden_file
+Size: 14 bytes
+
+--- File 3 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\custom.gitignore
+Size: 33 bytes
+
+--- File 4 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\file with spaces.txt
+Size: 25 bytes
+
+--- File 5 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\File-with-dashes.txt
+Size: 21 bytes
+
+--- File 6 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\file.custom
+Size: 22 bytes
+
+--- File 7 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\File_with_underscores.txt
+Size: 26 bytes
+
+--- File 8 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\ignored_dir\file.txt
+Size: 28 bytes
+
+--- File 9 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\nested_dir\nested.rs
+Size: 71 bytes
+
+--- File 10 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\nested_dir\subdir.cache
+Size: 21 bytes
+
+--- File 11 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\root.cache
+Size: 21 bytes
+
+--- File 12 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\simple_javascript.js
+Size: 110 bytes
+
+--- File 13 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\simple_python.py
+Size: 122 bytes
+
+--- File 14 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\simple_rust.rs
+Size: 87 bytes
+
+--- File 15 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\temp_file.tmp
+Size: 25 bytes
+

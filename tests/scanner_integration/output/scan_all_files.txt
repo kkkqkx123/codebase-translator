@@ -1,0 +1,105 @@
+Found 17 files
+==================================================
+
+--- File 1 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\.gitignore
+Relative: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\.gitignore
+Size: 242 bytes
+Modified: SystemTime { intervals: 134182358448669518 }
+
+--- File 2 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\.hidden_file
+Relative: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\.hidden_file
+Size: 14 bytes
+Modified: SystemTime { intervals: 134182358476183838 }
+
+--- File 3 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\custom.gitignore
+Relative: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\custom.gitignore
+Size: 33 bytes
+Modified: SystemTime { intervals: 134182358453679873 }
+
+--- File 4 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\file with spaces.txt
+Relative: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\file with spaces.txt
+Size: 25 bytes
+Modified: SystemTime { intervals: 134182358480241635 }
+
+--- File 5 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\File-with-dashes.txt
+Relative: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\File-with-dashes.txt
+Size: 21 bytes
+Modified: SystemTime { intervals: 134182358483353447 }
+
+--- File 6 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\file.custom
+Relative: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\file.custom
+Size: 22 bytes
+Modified: SystemTime { intervals: 134182358438139471 }
+
+--- File 7 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\File_with_underscores.txt
+Relative: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\File_with_underscores.txt
+Size: 26 bytes
+Modified: SystemTime { intervals: 134182358495625946 }
+
+--- File 8 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\ignored.log
+Relative: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\ignored.log
+Size: 36 bytes
+Modified: SystemTime { intervals: 134182358429334150 }
+
+--- File 9 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\ignored_dir\file.txt
+Relative: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\ignored_dir\file.txt
+Size: 28 bytes
+Modified: SystemTime { intervals: 134182358472730207 }
+
+--- File 10 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\important.log
+Relative: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\important.log
+Size: 52 bytes
+Modified: SystemTime { intervals: 134182358430714563 }
+
+--- File 11 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\nested_dir\nested.rs
+Relative: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\nested_dir\nested.rs
+Size: 71 bytes
+Modified: SystemTime { intervals: 134182358471640338 }
+
+--- File 12 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\nested_dir\subdir.cache
+Relative: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\nested_dir\subdir.cache
+Size: 21 bytes
+Modified: SystemTime { intervals: 134182358459334655 }
+
+--- File 13 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\root.cache
+Relative: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\root.cache
+Size: 21 bytes
+Modified: SystemTime { intervals: 134182360958143142 }
+
+--- File 14 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\simple_javascript.js
+Relative: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\simple_javascript.js
+Size: 110 bytes
+Modified: SystemTime { intervals: 134182358414502369 }
+
+--- File 15 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\simple_python.py
+Relative: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\simple_python.py
+Size: 122 bytes
+Modified: SystemTime { intervals: 134182358408395075 }
+
+--- File 16 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\simple_rust.rs
+Relative: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\simple_rust.rs
+Size: 87 bytes
+Modified: SystemTime { intervals: 134182358404152602 }
+
+--- File 17 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\temp_file.tmp
+Relative: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\temp_file.tmp
+Size: 25 bytes
+Modified: SystemTime { intervals: 134182358432668434 }
+

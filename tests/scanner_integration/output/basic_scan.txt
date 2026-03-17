@@ -1,0 +1,15 @@
+Found 2 files
+==================================================
+
+--- File 1 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\nested_dir\nested.rs
+Relative: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\nested_dir\nested.rs
+Size: 71 bytes
+Modified: SystemTime { intervals: 134182358471640338 }
+
+--- File 2 ---
+Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\simple_rust.rs
+Relative: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\simple_rust.rs
+Size: 87 bytes
+Modified: SystemTime { intervals: 134182358404152602 }
+
