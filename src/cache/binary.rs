@@ -110,6 +110,11 @@ impl BinaryCache {
         Ok(cache)
     }
 
+    /// Get the project fingerprint for this cache
+    pub fn project_fingerprint(&self) -> &str {
+        &self.project_fingerprint
+    }
+
     fn ensure_cache_dir(&self) -> Result<()> {
         let cache_dir = self
             .cache_file_path

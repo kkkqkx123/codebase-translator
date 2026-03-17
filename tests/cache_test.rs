@@ -15,6 +15,7 @@ fn test_binary_cache_basic() {
     };
 
     let cache = BinaryCache::new(config, temp_dir.path()).unwrap();
+    let fingerprint = cache.project_fingerprint().to_string();
 
     // Test set and get
     let entry = CacheEntry::new(
@@ -22,7 +23,7 @@ fn test_binary_cache_basic() {
         "/path/to/file.txt",
         123456,
         "local",
-        "fingerprint123",
+        fingerprint,
     );
 
     cache.set(&entry).unwrap();
@@ -58,6 +59,7 @@ fn test_file_cache_basic() {
     };
 
     let cache = FileCache::new(config, temp_dir.path()).unwrap();
+    let fingerprint = cache.project_fingerprint().to_string();
 
     // Test set and get
     let entry = CacheEntry::new(
@@ -65,7 +67,7 @@ fn test_file_cache_basic() {
         "/path/to/file.txt",
         123456,
         "local",
-        "fingerprint123",
+        fingerprint,
     );
 
     cache.set(&entry).unwrap();

@@ -154,24 +154,32 @@ impl ConfigLoader {
 
         // 1. Directory specified by TRANSLATOR_CONFIG_HOME environment variable
         if let Ok(config_home) = std::env::var("TRANSLATOR_CONFIG_HOME") {
-            paths.push(PathBuf::from(config_home).join("config.toml"));
+            paths.push(PathBuf::from(config_home.clone()).join("config.toml"));
+            paths.push(PathBuf::from(config_home).join("translator.toml"));
         }
 
         // 2. Executable directory
         if let Ok(exe_path) = std::env::current_exe() {
             if let Some(exe_dir) = exe_path.parent() {
                 paths.push(exe_dir.join("config.toml"));
+                paths.push(exe_dir.join("translator.toml"));
             }
         }
 
         // 3. Current working directory
         if let Ok(cwd) = std::env::current_dir() {
             paths.push(cwd.join("config.toml"));
+            paths.push(cwd.join("translator.toml"));
         }
 
         // 4. User config directory
         if let Some(config_dir) = dirs::config_dir() {
-            paths.push(config_dir.join("codebase-translate").join("config.toml"));
+            paths.push(config_dir.join("codebase-translator").join("config.toml"));
+            paths.push(
+                config_dir
+                    .join("codebase-translator")
+                    .join("translator.toml"),
+            );
         }
 
         paths

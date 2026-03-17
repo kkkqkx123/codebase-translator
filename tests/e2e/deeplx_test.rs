@@ -15,7 +15,7 @@ async fn test_deeplx_single_translation() {
     let global_config = init_test_config();
 
     // Skip if no DeepLX URL configured
-    if global_config.deeplx.api_url.is_empty() {
+    if !super::is_configured(&global_config.deeplx.api_url) {
         println!("Skipping: No DeepLX URL configured");
         return;
     }
@@ -57,7 +57,7 @@ async fn test_deeplx_single_translation() {
 async fn test_deeplx_batch_translation() {
     let global_config = init_test_config();
 
-    if global_config.deeplx.api_url.is_empty() {
+    if !super::is_configured(&global_config.deeplx.api_url) {
         println!("Skipping: No DeepLX URL configured");
         return;
     }
@@ -121,7 +121,7 @@ async fn test_deeplx_batch_translation() {
 async fn test_deeplx_factory() {
     let global_config = init_test_config();
 
-    if global_config.deeplx.api_url.is_empty() {
+    if !super::is_configured(&global_config.deeplx.api_url) {
         println!("Skipping: No DeepLX URL configured");
         return;
     }
@@ -158,7 +158,7 @@ async fn test_deeplx_factory() {
 async fn test_deeplx_empty_text() {
     let global_config = init_test_config();
 
-    if global_config.deeplx.api_url.is_empty() {
+    if !super::is_configured(&global_config.deeplx.api_url) {
         println!("Skipping: No DeepLX URL configured");
         return;
     }

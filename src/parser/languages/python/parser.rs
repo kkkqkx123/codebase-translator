@@ -50,30 +50,51 @@ impl PythonParser {
     }
 
     /// Clean docstring by removing triple quotes
+    ///
+    /// Preserves newlines and removes common leading indentation from all lines.
     fn clean_docstring_text(&self, text: &str) -> String {
-        let trimmed = text.trim();
+        // Only trim leading/trailing whitespace on the outer edges, not internal newlines
+        let trimmed = text
+            .trim_start()
+            .trim_end_matches(|c: char| c.is_whitespace() && c != '\n');
 
-        // Handle triple double quotes: """..."""
-        if trimmed.starts_with("\"\"\"") && trimmed.ends_with("\"\"\"") {
-            return trimmed[3..trimmed.len() - 3].trim().to_string();
-        }
-
-        // Handle triple single quotes: '''...'''
-        if trimmed.starts_with("'''") && trimmed.ends_with("'''") {
-            return trimmed[3..trimmed.len() - 3].trim().to_string();
-        }
-
-        // Handle single double quotes: "..."
-        if trimmed.starts_with('"') && trimmed.ends_with('"') && trimmed.len() > 1 {
+        let content = if trimmed.starts_with("\"\"\"") && trimmed.ends_with("\"\"\"") {
+            &trimmed[3..trimmed.len() - 3]
+        } else if trimmed.starts_with("'''") && trimmed.ends_with("'''") {
+            &trimmed[3..trimmed.len() - 3]
+        } else if trimmed.starts_with('"') && trimmed.ends_with('"') && trimmed.len() > 1 {
             return trimmed[1..trimmed.len() - 1].to_string();
-        }
-
-        // Handle single single quotes: '...'
-        if trimmed.starts_with('\'') && trimmed.ends_with('\'') && trimmed.len() > 1 {
+        } else if trimmed.starts_with('\'') && trimmed.ends_with('\'') && trimmed.len() > 1 {
             return trimmed[1..trimmed.len() - 1].to_string();
-        }
+        } else {
+            return trimmed.to_string();
+        };
 
-        trimmed.to_string()
+        // Process lines to remove common leading indentation
+        let lines: Vec<&str> = content.lines().collect();
+
+        // Find the minimum indentation (excluding empty lines)
+        let min_indent = lines
+            .iter()
+            .filter(|line| !line.trim().is_empty())
+            .map(|line| line.chars().take_while(|c| c.is_whitespace()).count())
+            .min()
+            .unwrap_or(0);
+
+        // Remove common indentation from each line
+        let processed_lines: Vec<String> = lines
+            .iter()
+            .map(|line| {
+                if line.trim().is_empty() {
+                    String::new()
+                } else {
+                    line.chars().skip(min_indent).collect()
+                }
+            })
+            .collect();
+
+        // Join lines and trim trailing whitespace
+        processed_lines.join("\n").trim_end().to_string()
     }
 
     /// Parse file content into a syntax tree

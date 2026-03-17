@@ -355,6 +355,7 @@ mod tests {
             language: None,
             should_translate: true,
             translated: None,
+            format_info: None,
         }];
 
         units[0].set_translated("你好");
@@ -385,6 +386,7 @@ mod tests {
             language: None,
             should_translate: true,
             translated: None,
+            format_info: None,
         }];
 
         units[0].set_translated("你好");

@@ -33,6 +33,11 @@ impl FileCache {
         })
     }
 
+    /// Get the project fingerprint for this cache
+    pub fn project_fingerprint(&self) -> &str {
+        &self.project_fingerprint
+    }
+
     /// Get current cache directory
     fn get_cache_dir(&self) -> PathBuf {
         util::resolve_cache_dir(&self.config.mode, &self.config.directory, &self.project_dir)

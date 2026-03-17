@@ -49,12 +49,16 @@ impl GoParser {
 
         // Handle block comments: /*
         if trimmed.starts_with("/*") {
-            return self.string_processor.clean_comment(trimmed, CommentType::Block);
+            return self
+                .string_processor
+                .clean_comment(trimmed, CommentType::Block);
         }
 
         // Handle line comments: //
         if trimmed.starts_with("//") {
-            return self.string_processor.clean_comment(trimmed, CommentType::Line);
+            return self
+                .string_processor
+                .clean_comment(trimmed, CommentType::Line);
         }
 
         trimmed.to_string()
@@ -127,8 +131,7 @@ impl GoParser {
 
             let id = format!("{}_comment_{}", file_path, match_idx);
             let node_type = self.strategy.get_node_type(StrategyNodeType::Comment);
-            let unit =
-                TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
+            let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
             units.push(unit);
             match_idx += 1;
         }
@@ -193,8 +196,7 @@ impl GoParser {
 
             let id = format!("{}_docstring_{}", file_path, match_idx);
             let node_type = self.strategy.get_node_type(StrategyNodeType::DocString);
-            let unit =
-                TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
+            let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
             units.push(unit);
             match_idx += 1;
         }

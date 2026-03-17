@@ -4,7 +4,7 @@
 //! with support for different file types (generic and markdown).
 
 use crate::core::error::{Result, TranslateError};
-use crate::core::models::TranslationUnit;
+use crate::core::models::{CommentStyle, FormatInfo, TranslationUnit};
 
 /// Applies translations to file content
 pub struct TranslationApplier;
@@ -88,10 +88,19 @@ impl TranslationApplier {
             .iter()
             .filter(|unit| unit.should_translate)
             .filter_map(|unit| {
-                unit.translated.as_ref().map(|translated| Replacement {
-                    start_char: unit.start_pos.column.saturating_sub(1),
-                    end_char: unit.end_pos.column.saturating_sub(1),
-                    text: translated.clone(),
+                unit.translated.as_ref().map(|translated| {
+                    // Format the translated text if format_info is available
+                    let formatted_text = if let Some(format) = &unit.format_info {
+                        Self::format_translated_text(translated, format)
+                    } else {
+                        translated.clone()
+                    };
+
+                    Replacement {
+                        start_char: unit.start_pos.column.saturating_sub(1),
+                        end_char: unit.end_pos.column.saturating_sub(1),
+                        text: formatted_text,
+                    }
                 })
             })
             .collect();
@@ -127,6 +136,82 @@ impl TranslationApplier {
 
         result
     }
+
+    /// Format translated text according to the original format
+    fn format_translated_text(translated: &str, format: &FormatInfo) -> String {
+        match format.style {
+            CommentStyle::Line => {
+                // For line comments, just return the text as-is
+                // The comment prefix is preserved in the original line
+                translated.to_string()
+            }
+            CommentStyle::BlockSingle => {
+                // Single-line block comment: /* text */
+                format!("/* {} */", translated)
+            }
+            CommentStyle::BlockMulti => {
+                // Multi-line block comment with preserved formatting
+                Self::format_multiline_block_comment(translated, format)
+            }
+            CommentStyle::DocOuter => {
+                // Outer doc comment: /// text
+                if let Some(prefix) = &format.line_prefix {
+                    translated
+                        .lines()
+                        .map(|line| format!("{}{}", prefix, line))
+                        .collect::<Vec<_>>()
+                        .join("\n")
+                } else {
+                    translated.to_string()
+                }
+            }
+            CommentStyle::DocInner => {
+                // Inner doc comment: //! text
+                if let Some(prefix) = &format.line_prefix {
+                    translated
+                        .lines()
+                        .map(|line| format!("{}{}", prefix, line))
+                        .collect::<Vec<_>>()
+                        .join("\n")
+                } else {
+                    translated.to_string()
+                }
+            }
+            CommentStyle::DocBlock => {
+                // Block doc comment: /** ... */
+                Self::format_multiline_block_comment(translated, format)
+            }
+        }
+    }
+
+    /// Format a multi-line block comment with proper indentation and prefixes
+    fn format_multiline_block_comment(translated: &str, format: &FormatInfo) -> String {
+        let lines: Vec<&str> = translated.lines().collect();
+
+        if lines.len() == 1 {
+            // Single line - use simple format
+            return format!("/* {} */", translated);
+        }
+
+        let mut result = String::new();
+        result.push_str("/*\n");
+
+        for (i, line) in lines.iter().enumerate() {
+            result.push_str(&format.base_indent);
+            if let Some(prefix) = &format.line_prefix {
+                result.push_str(prefix);
+            }
+            result.push_str(line);
+            if i < lines.len() - 1 || format.ends_with_newline {
+                result.push('\n');
+            }
+        }
+
+        result.push_str(&format.base_indent);
+        result.push_str(" */");
+
+        result
+    }
 }
 
 #[cfg(test)]
@@ -146,6 +231,7 @@ mod tests {
             language: None,
             should_translate: true,
             translated: None,
+            format_info: None,
         }];
 
         units[0].set_translated("你好");
@@ -167,6 +253,7 @@ mod tests {
             language: None,
             should_translate: true,
             translated: None,
+            format_info: None,
         }];
 
         units[0].set_translated("你好");
@@ -187,9 +274,264 @@ mod tests {
             language: None,
             should_translate: true,
             translated: None,
+            format_info: None,
         }];
 
         let result = TranslationApplier::apply_translations("content", &units);
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_format_line_comment() {
+        let content = "    // This is a comment\nint x = 5;";
+        let mut units = vec![TranslationUnit {
+            id: "1".to_string(),
+            node_type: NodeType::Comment,
+            content: "This is a comment".to_string(),
+            start_pos: Position::new(1, 8, 7),
+            end_pos: Position::new(1, 25, 24),
+            language: None,
+            should_translate: true,
+            translated: None,
+            format_info: Some(FormatInfo {
+                style: CommentStyle::Line,
+                base_indent: "    ".to_string(),
+                line_prefix: Some("// ".to_string()),
+                ends_with_newline: false,
+            }),
+        }];
+
+        units[0].set_translated("这是一个注释");
+
+        let result = TranslationApplier::apply_translations(content, &units).unwrap();
+        println!("Result: {:?}", result);
+        assert!(result.contains("    // 这是一个注释"));
+    }
+
+    #[test]
+    fn test_format_single_line_block_comment() {
+        let content = "/* This is a comment */\nint x = 5;";
+        let mut units = vec![TranslationUnit {
+            id: "1".to_string(),
+            node_type: NodeType::Comment,
+            content: "/* This is a comment */".to_string(),
+            start_pos: Position::new(1, 1, 0),
+            end_pos: Position::new(1, 22, 21),
+            language: None,
+            should_translate: true,
+            translated: None,
+            format_info: Some(FormatInfo {
+                style: CommentStyle::BlockSingle,
+                base_indent: "".to_string(),
+                line_prefix: None,
+                ends_with_newline: false,
+            }),
+        }];
+
+        units[0].set_translated("这是一个注释");
+
+        let result = TranslationApplier::apply_translations(content, &units).unwrap();
+        assert!(result.contains("/* 这是一个注释 */"));
+    }
+
+    #[test]
+    fn test_format_multiline_block_comment() {
+        let content = "/*\n * This is a\n * multi-line comment\n */\nint x = 5;";
+        let mut units = vec![TranslationUnit {
+            id: "1".to_string(),
+            node_type: NodeType::Comment,
+            content: "/*\n * This is a\n * multi-line comment\n */".to_string(),
+            start_pos: Position::new(1, 1, 0),
+            end_pos: Position::new(4, 5, 37),
+            language: None,
+            should_translate: true,
+            translated: None,
+            format_info: Some(FormatInfo {
+                style: CommentStyle::BlockMulti,
+                base_indent: "".to_string(),
+                line_prefix: Some(" * ".to_string()),
+                ends_with_newline: true,
+            }),
+        }];
+
+        units[0].set_translated("这是一个\n多行注释");
+
+        let result = TranslationApplier::apply_translations(content, &units).unwrap();
+        assert!(result.contains("/*\n * 这是一个\n * 多行注释\n */"));
+    }
+
+    #[test]
+    fn test_format_multiline_block_comment_with_indent() {
+        let content =
+            "    /*\n     * This is a\n     * multi-line comment\n     */\n    int x = 5;";
+        let mut units = vec![TranslationUnit {
+            id: "1".to_string(),
+            node_type: NodeType::Comment,
+            content: "    /*\n     * This is a\n     * multi-line comment\n     */".to_string(),
+            start_pos: Position::new(1, 1, 0),
+            end_pos: Position::new(4, 5, 37),
+            language: None,
+            should_translate: true,
+            translated: None,
+            format_info: Some(FormatInfo {
+                style: CommentStyle::BlockMulti,
+                base_indent: "    ".to_string(),
+                line_prefix: Some(" * ".to_string()),
+                ends_with_newline: true,
+            }),
+        }];
+
+        units[0].set_translated("这是一个\n多行注释");
+
+        let result = TranslationApplier::apply_translations(content, &units).unwrap();
+        println!("Result: {:?}", result);
+        assert!(result.contains("/*\n     * 这是一个\n     * 多行注释\n     */"));
+    }
+
+    #[test]
+    fn test_format_doc_outer_comment() {
+        let content = "/// This is a doc comment\npub fn foo() {}";
+        let mut units = vec![TranslationUnit {
+            id: "1".to_string(),
+            node_type: NodeType::DocString,
+            content: "/// This is a doc comment".to_string(),
+            start_pos: Position::new(1, 1, 0),
+            end_pos: Position::new(1, 24, 23),
+            language: None,
+            should_translate: true,
+            translated: None,
+            format_info: Some(FormatInfo {
+                style: CommentStyle::DocOuter,
+                base_indent: "".to_string(),
+                line_prefix: Some("/// ".to_string()),
+                ends_with_newline: false,
+            }),
+        }];
+
+        units[0].set_translated("/// 这是一个文档注释");
+
+        let result = TranslationApplier::apply_translations(content, &units).unwrap();
+        assert!(result.contains("/// 这是一个文档注释"));
+    }
+
+    #[test]
+    fn test_format_doc_block_comment() {
+        let content = "/**\n * This is a doc comment\n */\npub fn foo() {}";
+        let mut units = vec![TranslationUnit {
+            id: "1".to_string(),
+            node_type: NodeType::DocString,
+            content: "/**\n * This is a doc comment\n */".to_string(),
+            start_pos: Position::new(1, 1, 0),
+            end_pos: Position::new(4, 5, 37),
+            language: None,
+            should_translate: true,
+            translated: None,
+            format_info: Some(FormatInfo {
+                style: CommentStyle::DocBlock,
+                base_indent: "".to_string(),
+                line_prefix: Some(" * ".to_string()),
+                ends_with_newline: true,
+            }),
+        }];
+
+        units[0].set_translated("这是一个\n文档注释");
+
+        let result = TranslationApplier::apply_translations(content, &units).unwrap();
+        println!("Result: {:?}", result);
+        assert!(result.contains("/*\n * 这是一个\n * 文档注释\n */"));
+    }
+
+    #[test]
+    fn test_format_multiline_translated_text() {
+        let content = "/*\n * Line 1\n * Line 2\n */\nint x = 5;";
+        let mut units = vec![TranslationUnit {
+            id: "1".to_string(),
+            node_type: NodeType::Comment,
+            content: "/*\n * Line 1\n * Line 2\n */".to_string(),
+            start_pos: Position::new(1, 1, 0),
+            end_pos: Position::new(4, 5, 22),
+            language: None,
+            should_translate: true,
+            translated: None,
+            format_info: Some(FormatInfo {
+                style: CommentStyle::BlockMulti,
+                base_indent: "".to_string(),
+                line_prefix: Some(" * ".to_string()),
+                ends_with_newline: true,
+            }),
+        }];
+
+        units[0].set_translated("第一行\n第二行");
+
+        let result = TranslationApplier::apply_translations(content, &units).unwrap();
+        assert!(result.contains("/*\n * 第一行\n * 第二行\n */"));
+    }
+
+    #[test]
+    fn test_format_without_format_info() {
+        let content = "Hello world\nThis is a test";
+        let mut units = vec![TranslationUnit {
+            id: "1".to_string(),
+            node_type: NodeType::Comment,
+            content: "Hello".to_string(),
+            start_pos: Position::new(1, 1, 0),
+            end_pos: Position::new(1, 6, 5),
+            language: None,
+            should_translate: true,
+            translated: None,
+            format_info: None,
+        }];
+
+        units[0].set_translated("你好");
+
+        let result = TranslationApplier::apply_translations(content, &units).unwrap();
+        assert!(result.contains("你好"));
+        assert!(result.contains("world"));
+    }
+
+    #[test]
+    fn test_multiple_translations_with_formats() {
+        let content = "    // First comment\n    // Second comment\nint x = 5;";
+        let mut units = vec![
+            TranslationUnit {
+                id: "1".to_string(),
+                node_type: NodeType::Comment,
+                content: "// First comment".to_string(),
+                start_pos: Position::new(1, 5, 4),
+                end_pos: Position::new(1, 21, 20),
+                language: None,
+                should_translate: true,
+                translated: None,
+                format_info: Some(FormatInfo {
+                    style: CommentStyle::Line,
+                    base_indent: "    ".to_string(),
+                    line_prefix: None,
+                    ends_with_newline: false,
+                }),
+            },
+            TranslationUnit {
+                id: "2".to_string(),
+                node_type: NodeType::Comment,
+                content: "// Second comment".to_string(),
+                start_pos: Position::new(2, 5, 25),
+                end_pos: Position::new(2, 22, 42),
+                language: None,
+                should_translate: true,
+                translated: None,
+                format_info: Some(FormatInfo {
+                    style: CommentStyle::Line,
+                    base_indent: "    ".to_string(),
+                    line_prefix: None,
+                    ends_with_newline: false,
+                }),
+            },
+        ];
+
+        units[0].set_translated("// 第一个注释");
+        units[1].set_translated("// 第二个注释");
+
+        let result = TranslationApplier::apply_translations(content, &units).unwrap();
+        assert!(result.contains("// 第一个注释"));
+        assert!(result.contains("// 第二个注释"));
     }
 }

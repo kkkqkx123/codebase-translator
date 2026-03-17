@@ -203,7 +203,13 @@ Text to translate:
             stream: Some(false),
         };
 
-        let url = format!("{}/v1/chat/completions", self.config.base_url);
+        // Construct URL, handling base_url that may or may not end with /v1
+        let base = self.config.base_url.trim_end_matches('/');
+        let url = if base.ends_with("/v1") {
+            format!("{}/chat/completions", base)
+        } else {
+            format!("{}/v1/chat/completions", base)
+        };
 
         debug!("LLM request: url={}, model={}", url, self.config.model);
 

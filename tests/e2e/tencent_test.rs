@@ -18,7 +18,7 @@ async fn test_tencent_single_translation() {
     let secret_id = global_config.tencent.secret_id.clone().unwrap_or_default();
     let secret_key = global_config.tencent.secret_key.clone().unwrap_or_default();
 
-    if secret_id.is_empty() || secret_key.is_empty() {
+    if !super::is_configured(&secret_id) || !super::is_configured(&secret_key) {
         println!("Skipping: No Tencent Cloud credentials configured");
         return;
     }
@@ -69,7 +69,7 @@ async fn test_tencent_batch_translation() {
     let secret_id = global_config.tencent.secret_id.clone().unwrap_or_default();
     let secret_key = global_config.tencent.secret_key.clone().unwrap_or_default();
 
-    if secret_id.is_empty() || secret_key.is_empty() {
+    if !super::is_configured(&secret_id) || !super::is_configured(&secret_key) {
         println!("Skipping: No Tencent Cloud credentials configured");
         return;
     }
@@ -142,7 +142,7 @@ async fn test_tencent_factory() {
     let secret_id = global_config.tencent.secret_id.clone().unwrap_or_default();
     let secret_key = global_config.tencent.secret_key.clone().unwrap_or_default();
 
-    if secret_id.is_empty() || secret_key.is_empty() {
+    if !super::is_configured(&secret_id) || !super::is_configured(&secret_key) {
         println!("Skipping: No Tencent Cloud credentials configured");
         return;
     }
@@ -188,7 +188,7 @@ async fn test_tencent_empty_text() {
     let secret_id = global_config.tencent.secret_id.clone().unwrap_or_default();
     let secret_key = global_config.tencent.secret_key.clone().unwrap_or_default();
 
-    if secret_id.is_empty() || secret_key.is_empty() {
+    if !super::is_configured(&secret_id) || !super::is_configured(&secret_key) {
         println!("Skipping: No Tencent Cloud credentials configured");
         return;
     }

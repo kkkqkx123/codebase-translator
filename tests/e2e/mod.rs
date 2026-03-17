@@ -24,6 +24,9 @@ fn get_project_root() -> PathBuf {
 }
 
 /// Initialize test configuration
+///
+/// If no global config file exists, returns a default config.
+/// Tests will skip actual API calls when credentials are not configured.
 pub fn init_test_config() -> &'static GlobalConfig {
     unsafe {
         INIT.call_once(|| {
@@ -31,7 +34,11 @@ pub fn init_test_config() -> &'static GlobalConfig {
             std::env::set_current_dir(&project_root).ok();
 
             let loader = ConfigLoader::new();
-            let config = loader.load_global().expect("Failed to load global config");
+            let config = loader.load_global().unwrap_or_else(|_| {
+                // No global config file found, use default config
+                // Tests will skip when credentials are not configured
+                GlobalConfig::default()
+            });
             GLOBAL_CONFIG = Some(config);
         });
         GLOBAL_CONFIG
@@ -50,6 +57,11 @@ pub fn skip_if_no_credentials(configured: bool) {
     if !configured && is_ci() {
         panic!("Test requires API credentials but none configured in CI");
     }
+}
+
+/// Check if a configuration value is actually configured (not empty and not a placeholder)
+pub fn is_configured(value: &str) -> bool {
+    !value.is_empty() && !value.starts_with("${")
 }
 
 pub mod deeplx_test;

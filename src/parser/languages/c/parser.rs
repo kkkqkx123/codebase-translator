@@ -6,7 +6,7 @@ use std::sync::Arc;
 use tree_sitter::{Node, Parser, Tree};
 
 use crate::core::error::{Result, TranslateError};
-use crate::core::models::{File, TranslationUnit};
+use crate::core::models::{File, FormatInfo, TranslationUnit};
 use crate::parser::core::query_executor::QueryExecutor;
 use crate::parser::core::{CommentType, StringProcessor};
 use crate::parser::filter::ContentFilter;
@@ -49,15 +49,42 @@ impl CParser {
 
         // Handle block comments: /*
         if trimmed.starts_with("/*") {
-            return self.string_processor.clean_comment(trimmed, CommentType::Block);
+            return self
+                .string_processor
+                .clean_comment(trimmed, CommentType::Block);
         }
 
         // Handle line comments: //
         if trimmed.starts_with("//") {
-            return self.string_processor.clean_comment(trimmed, CommentType::Line);
+            return self
+                .string_processor
+                .clean_comment(trimmed, CommentType::Line);
         }
 
         trimmed.to_string()
+    }
+
+    /// Clean comment text and extract format information
+    fn clean_comment_with_format(&self, text: &str) -> (String, Option<FormatInfo>) {
+        let trimmed = text.trim_start();
+
+        // Handle block comments: /*
+        if trimmed.starts_with("/*") {
+            let cleaned = self
+                .string_processor
+                .clean_comment_with_format(trimmed, CommentType::Block);
+            return (cleaned.text, Some(cleaned.format_info));
+        }
+
+        // Handle line comments: //
+        if trimmed.starts_with("//") {
+            let cleaned = self
+                .string_processor
+                .clean_comment_with_format(trimmed, CommentType::Line);
+            return (cleaned.text, Some(cleaned.format_info));
+        }
+
+        (trimmed.to_string(), None)
     }
 
     /// Parse file content into a syntax tree
@@ -86,8 +113,8 @@ impl CParser {
         let mut match_idx = 0usize;
 
         for m in matches {
-            // Clean comment markers (//, /* */)
-            let text = self.clean_comment_text(m.text);
+            // Clean comment markers (//, /* */) and extract format info
+            let (text, format_info) = self.clean_comment_with_format(m.text);
 
             // Apply trim if configured
             let text = if self.config.trim_content {
@@ -125,8 +152,18 @@ impl CParser {
 
             let id = format!("{}_comment_{}", file_path, match_idx);
             let node_type = self.strategy.get_node_type(StrategyNodeType::Comment);
-            let unit =
-                TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
+            let unit = if let Some(format) = format_info {
+                TranslationUnit::new_with_format(
+                    id,
+                    node_type,
+                    text,
+                    m.start_pos,
+                    m.end_pos,
+                    format,
+                )
+            } else {
+                TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos)
+            };
             units.push(unit);
             match_idx += 1;
         }
@@ -149,8 +186,8 @@ impl CParser {
         let mut match_idx = 0usize;
 
         for m in matches {
-            // Clean comment markers (//, /* */)
-            let text = self.clean_comment_text(m.text);
+            // Clean comment markers (//, /* */) and extract format info
+            let (text, format_info) = self.clean_comment_with_format(m.text);
 
             // Apply trim if configured
             let text = if self.config.trim_content {
@@ -188,8 +225,18 @@ impl CParser {
 
             let id = format!("{}_docstring_{}", file_path, match_idx);
             let node_type = self.strategy.get_node_type(StrategyNodeType::DocString);
-            let unit =
-                TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
+            let unit = if let Some(format) = format_info {
+                TranslationUnit::new_with_format(
+                    id,
+                    node_type,
+                    text,
+                    m.start_pos,
+                    m.end_pos,
+                    format,
+                )
+            } else {
+                TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos)
+            };
             units.push(unit);
             match_idx += 1;
         }

@@ -240,6 +240,14 @@ impl GlobalConfig {
         for provider in &mut self.llm.providers {
             provider.base_url = expand_env_vars(&provider.base_url);
             provider.model = expand_env_vars(&provider.model);
+            // If model is empty but model_list has values, use the first model
+            if provider.model.is_empty() && !provider.model_list.is_empty() {
+                provider.model = provider.model_list[0].clone();
+            }
+            // Expand env vars in model_list
+            for model in &mut provider.model_list {
+                *model = expand_env_vars(model);
+            }
             for key in &mut provider.api_keys {
                 *key = expand_env_vars(key);
             }
@@ -447,8 +455,12 @@ pub struct LLMProviderConfig {
     pub base_url: String,
     /// API keys (for rotation)
     pub api_keys: Vec<String>,
-    /// Model name
+    /// Model name (single model, preferred)
+    #[serde(default)]
     pub model: String,
+    /// Model list (for multi-model rotation, uses first model if model is empty)
+    #[serde(default, alias = "models")]
+    pub model_list: Vec<String>,
     /// Max tokens per request (determines capacity)
     #[serde(default = "default_max_tokens")]
     pub max_tokens: u32,
@@ -682,6 +694,7 @@ mod tests {
                 base_url: "https://api.example.com".to_string(),
                 api_keys: vec!["valid-key".to_string(), "xxx".to_string()],
                 model: "model1".to_string(),
+                model_list: vec![],
                 max_tokens: 4096,
                 temperature: 0.7,
                 proxy_url: None,
@@ -698,6 +711,7 @@ mod tests {
                 base_url: "https://api.example2.com".to_string(),
                 api_keys: vec!["xxx".to_string()],
                 model: "".to_string(), // Invalid: empty model name
+                model_list: vec![],
                 max_tokens: 4096,
                 temperature: 0.7,
                 proxy_url: None,

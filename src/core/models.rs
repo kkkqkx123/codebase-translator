@@ -144,6 +144,71 @@ impl Default for Position {
     }
 }
 
+/// Comment style for format preservation
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum CommentStyle {
+    /// Line comment: // or #
+    Line,
+    /// Single-line block comment: /* ... */
+    BlockSingle,
+    /// Multi-line block comment:
+    /// /*
+    ///  * ...
+    ///  */
+    BlockMulti,
+    /// Outer doc comment: ///
+    DocOuter,
+    /// Inner doc comment: //!
+    DocInner,
+    /// Block doc comment: /** ... */
+    DocBlock,
+}
+
+/// Format information for preserving comment formatting
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FormatInfo {
+    /// The comment style
+    pub style: CommentStyle,
+    /// Base indentation (spaces/tabs before comment start)
+    pub base_indent: String,
+    /// Line prefix within the comment (e.g., " * " for Javadoc)
+    pub line_prefix: Option<String>,
+    /// Whether the comment ends with a newline
+    pub ends_with_newline: bool,
+}
+
+impl FormatInfo {
+    /// Create new format info for a line comment
+    pub fn line_comment(indent: impl Into<String>) -> Self {
+        Self {
+            style: CommentStyle::Line,
+            base_indent: indent.into(),
+            line_prefix: None,
+            ends_with_newline: false,
+        }
+    }
+
+    /// Create new format info for a multi-line block comment
+    pub fn block_multi(indent: impl Into<String>, line_prefix: impl Into<String>) -> Self {
+        Self {
+            style: CommentStyle::BlockMulti,
+            base_indent: indent.into(),
+            line_prefix: Some(line_prefix.into()),
+            ends_with_newline: false,
+        }
+    }
+
+    /// Create new format info for a single-line block comment
+    pub fn block_single(indent: impl Into<String>) -> Self {
+        Self {
+            style: CommentStyle::BlockSingle,
+            base_indent: indent.into(),
+            line_prefix: None,
+            ends_with_newline: false,
+        }
+    }
+}
+
 /// Type of node that can be translated
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum NodeType {
@@ -195,7 +260,7 @@ pub struct TranslationUnit {
     pub id: String,
     /// Type of node
     pub node_type: NodeType,
-    /// Original text content
+    /// Original text content (cleaned for translation)
     pub content: String,
     /// Start position in source
     pub start_pos: Position,
@@ -208,6 +273,9 @@ pub struct TranslationUnit {
     /// Translated content (filled after translation)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub translated: Option<String>,
+    /// Format information for preserving comment formatting
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub format_info: Option<FormatInfo>,
 }
 
 impl TranslationUnit {
@@ -228,6 +296,29 @@ impl TranslationUnit {
             language: None,
             should_translate: true,
             translated: None,
+            format_info: None,
+        }
+    }
+
+    /// Create a new translation unit with format info
+    pub fn new_with_format(
+        id: impl Into<String>,
+        node_type: NodeType,
+        content: impl Into<String>,
+        start_pos: Position,
+        end_pos: Position,
+        format_info: FormatInfo,
+    ) -> Self {
+        Self {
+            id: id.into(),
+            node_type,
+            content: content.into(),
+            start_pos,
+            end_pos,
+            language: None,
+            should_translate: true,
+            translated: None,
+            format_info: Some(format_info),
         }
     }
 

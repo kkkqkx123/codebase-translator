@@ -1,5 +1,7 @@
 //! String processing utilities
 
+use crate::core::models::{CommentStyle, FormatInfo};
+
 /// Type of comment
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CommentType {
@@ -11,6 +13,15 @@ pub enum CommentType {
     Doc,
 }
 
+/// Result of cleaning a comment, including the cleaned text and format info
+#[derive(Debug, Clone)]
+pub struct CleanedComment {
+    /// The cleaned text content (without comment markers)
+    pub text: String,
+    /// Format information for preserving the original formatting
+    pub format_info: FormatInfo,
+}
+
 /// String processor for cleaning and transforming string literals
 pub struct StringProcessor;
 
@@ -20,7 +31,7 @@ impl StringProcessor {
         Self
     }
 
-    /// Clean comment content by removing comment markers
+    /// Clean comment content by removing comment markers (legacy method)
     ///
     /// Supports:
     /// - Line comments: //, #
@@ -31,6 +42,22 @@ impl StringProcessor {
             CommentType::Line => self.clean_line_comment(text),
             CommentType::Block => self.clean_block_comment(text),
             CommentType::Doc => self.clean_doc_comment(text),
+        }
+    }
+
+    /// Clean comment and extract format information
+    ///
+    /// This method returns both the cleaned text and format information
+    /// needed to reconstruct the comment with proper formatting.
+    pub fn clean_comment_with_format(
+        &self,
+        text: &str,
+        comment_type: CommentType,
+    ) -> CleanedComment {
+        match comment_type {
+            CommentType::Line => self.clean_line_comment_with_format(text),
+            CommentType::Block => self.clean_block_comment_with_format(text),
+            CommentType::Doc => self.clean_doc_comment_with_format(text),
         }
     }
 
@@ -51,9 +78,43 @@ impl StringProcessor {
         text.to_string()
     }
 
+    /// Clean line comment and extract format information
+    fn clean_line_comment_with_format(&self, text: &str) -> CleanedComment {
+        // Extract base indentation
+        let base_indent: String = text.chars().take_while(|c| c.is_whitespace()).collect();
+        let trimmed = text.trim_start();
+
+        // Handle Python/Ruby/YAML style: #
+        if let Some(content) = trimmed.strip_prefix('#') {
+            return CleanedComment {
+                text: content.trim_start().to_string(),
+                format_info: FormatInfo::line_comment(base_indent),
+            };
+        }
+
+        // Handle C-style: //
+        if let Some(content) = trimmed.strip_prefix("//") {
+            return CleanedComment {
+                text: content.trim_start().to_string(),
+                format_info: FormatInfo::line_comment(base_indent),
+            };
+        }
+
+        CleanedComment {
+            text: trimmed.to_string(),
+            format_info: FormatInfo::line_comment(base_indent),
+        }
+    }
+
     /// Clean block comment (/* */)
+    ///
+    /// Preserves newlines and removes leading '*' characters from each line
+    /// (commonly used in Javadoc-style comments).
     fn clean_block_comment(&self, text: &str) -> String {
-        let text = text.trim();
+        // Only trim leading/trailing whitespace on the outer edges, not internal newlines
+        let text = text
+            .trim_start()
+            .trim_end_matches(|c: char| c.is_whitespace() && c != '\n');
 
         // Remove /* and */
         let content = text
@@ -61,42 +122,284 @@ impl StringProcessor {
             .and_then(|s| s.strip_suffix("*/"))
             .unwrap_or(text);
 
-        content.trim().to_string()
+        // Process each line: trim whitespace and remove leading '*' if present
+        let lines: Vec<&str> = content.lines().collect();
+        let processed_lines: Vec<String> = lines
+            .iter()
+            .map(|line| {
+                let trimmed = line.trim_start();
+                if trimmed.starts_with('*') {
+                    trimmed[1..].trim_start().to_string()
+                } else {
+                    trimmed.to_string()
+                }
+            })
+            .collect();
+
+        // Join lines back together, preserving newlines
+        processed_lines.join("\n").trim_end().to_string()
+    }
+
+    /// Clean block comment and extract format information
+    fn clean_block_comment_with_format(&self, text: &str) -> CleanedComment {
+        // Extract base indentation from the first line
+        let base_indent: String = text.chars().take_while(|c| c.is_whitespace()).collect();
+
+        // Only trim leading/trailing whitespace on the outer edges, not internal newlines
+        let trimmed = text
+            .trim_start()
+            .trim_end_matches(|c: char| c.is_whitespace() && c != '\n');
+
+        // Remove /* and */
+        let content = trimmed
+            .strip_prefix("/*")
+            .and_then(|s| s.strip_suffix("*/"))
+            .unwrap_or(trimmed);
+
+        // Check if this is a multi-line comment with asterisk prefixes
+        let lines: Vec<&str> = content.lines().collect();
+        let is_multiline = lines.len() > 1;
+
+        // Detect line prefix pattern (e.g., " * " in Javadoc)
+        let line_prefix = if is_multiline {
+            lines
+                .iter()
+                .skip(1) // Skip first line (after /*)
+                .filter(|line| !line.trim().is_empty())
+                .find_map(|line| {
+                    let trimmed_line = line.trim_start();
+                    if trimmed_line.starts_with('*') {
+                        // Calculate the prefix: indentation + " * "
+                        let indent = line.len() - trimmed_line.len();
+                        Some(line[..indent + 1].to_string()) // include the '*'
+                    } else {
+                        None
+                    }
+                })
+        } else {
+            None
+        };
+
+        // Process each line: trim whitespace and remove leading '*' if present
+        let processed_lines: Vec<String> = lines
+            .iter()
+            .map(|line| {
+                let trimmed_line = line.trim_start();
+                if trimmed_line.starts_with('*') {
+                    trimmed_line[1..].trim_start().to_string()
+                } else {
+                    trimmed_line.to_string()
+                }
+            })
+            .collect();
+
+        let cleaned_text = processed_lines.join("\n").trim_end().to_string();
+
+        let format_info = if is_multiline && line_prefix.is_some() {
+            FormatInfo::block_multi(base_indent, line_prefix.unwrap())
+        } else {
+            FormatInfo::block_single(base_indent)
+        };
+
+        CleanedComment {
+            text: cleaned_text,
+            format_info,
+        }
     }
 
     /// Clean documentation comment (/// or //! or /**)
+    ///
+    /// For line-based doc comments (/// and //!), processes each line separately
+    /// to preserve newlines while removing the doc comment markers.
+    /// For block doc comments (/**), delegates to block comment cleaning.
     fn clean_doc_comment(&self, text: &str) -> String {
-        let text = text.trim();
+        let text = text
+            .trim_start()
+            .trim_end_matches(|c: char| c.is_whitespace() && c != '\n');
 
         // Handle Rust outer doc: ///
-        if let Some(content) = text.strip_prefix("///") {
-            return content.trim_start().to_string();
+        if text.starts_with("///") {
+            return text
+                .lines()
+                .map(|line| {
+                    let trimmed = line.trim_start();
+                    trimmed
+                        .strip_prefix("///")
+                        .map(|s| s.trim_start())
+                        .unwrap_or(trimmed)
+                })
+                .collect::<Vec<_>>()
+                .join("\n");
         }
 
         // Handle Rust inner doc: //!
-        if let Some(content) = text.strip_prefix("//!") {
-            return content.trim_start().to_string();
+        if text.starts_with("//!") {
+            return text
+                .lines()
+                .map(|line| {
+                    let trimmed = line.trim_start();
+                    trimmed
+                        .strip_prefix("//!")
+                        .map(|s| s.trim_start())
+                        .unwrap_or(trimmed)
+                })
+                .collect::<Vec<_>>()
+                .join("\n");
         }
 
-        // Handle Javadoc/Rust block doc: /**
+        // Handle block doc comments: /** */ (same as block comments but with extra leading '*')
         if text.starts_with("/**") {
             let content = text
                 .strip_prefix("/**")
                 .and_then(|s| s.strip_suffix("*/"))
                 .unwrap_or(text);
-            return content.trim().to_string();
-        }
 
-        // Handle JavaScript JSDoc: /**
-        if text.starts_with("/**") {
-            let content = text
-                .strip_prefix("/**")
-                .and_then(|s| s.strip_suffix("*/"))
-                .unwrap_or(text);
-            return content.trim().to_string();
+            // Process each line: trim whitespace and remove leading '*' if present
+            let lines: Vec<&str> = content.lines().collect();
+            let processed_lines: Vec<String> = lines
+                .iter()
+                .map(|line| {
+                    let trimmed = line.trim_start();
+                    if trimmed.starts_with('*') {
+                        trimmed[1..].trim_start().to_string()
+                    } else {
+                        trimmed.to_string()
+                    }
+                })
+                .collect();
+
+            return processed_lines.join("\n").trim_end().to_string();
         }
 
         self.clean_line_comment(text)
+    }
+
+    /// Clean doc comment and extract format information
+    fn clean_doc_comment_with_format(&self, text: &str) -> CleanedComment {
+        // Extract base indentation
+        let base_indent: String = text.chars().take_while(|c| c.is_whitespace()).collect();
+
+        let trimmed = text
+            .trim_start()
+            .trim_end_matches(|c: char| c.is_whitespace() && c != '\n');
+
+        // Handle Rust outer doc: ///
+        if trimmed.starts_with("///") {
+            let cleaned = trimmed
+                .lines()
+                .map(|line| {
+                    let line_trimmed = line.trim_start();
+                    line_trimmed
+                        .strip_prefix("///")
+                        .map(|s| s.trim_start())
+                        .unwrap_or(line_trimmed)
+                })
+                .collect::<Vec<_>>()
+                .join("\n");
+
+            return CleanedComment {
+                text: cleaned,
+                format_info: FormatInfo {
+                    style: CommentStyle::DocOuter,
+                    base_indent,
+                    line_prefix: Some("/// ".to_string()),
+                    ends_with_newline: false,
+                },
+            };
+        }
+
+        // Handle Rust inner doc: //!
+        if trimmed.starts_with("//!") {
+            let cleaned = trimmed
+                .lines()
+                .map(|line| {
+                    let line_trimmed = line.trim_start();
+                    line_trimmed
+                        .strip_prefix("//!")
+                        .map(|s| s.trim_start())
+                        .unwrap_or(line_trimmed)
+                })
+                .collect::<Vec<_>>()
+                .join("\n");
+
+            return CleanedComment {
+                text: cleaned,
+                format_info: FormatInfo {
+                    style: CommentStyle::DocInner,
+                    base_indent,
+                    line_prefix: Some("//! ".to_string()),
+                    ends_with_newline: false,
+                },
+            };
+        }
+
+        // Handle block doc comments: /** */
+        if trimmed.starts_with("/**") {
+            let content = trimmed
+                .strip_prefix("/**")
+                .and_then(|s| s.strip_suffix("*/"))
+                .unwrap_or(trimmed);
+
+            let lines: Vec<&str> = content.lines().collect();
+            let is_multiline = lines.len() > 1;
+
+            // Detect line prefix pattern
+            let line_prefix = if is_multiline {
+                lines
+                    .iter()
+                    .skip(1)
+                    .filter(|line| !line.trim().is_empty())
+                    .find_map(|line| {
+                        let trimmed_line = line.trim_start();
+                        if trimmed_line.starts_with('*') {
+                            let indent = line.len() - trimmed_line.len();
+                            Some(line[..indent + 1].to_string())
+                        } else {
+                            None
+                        }
+                    })
+            } else {
+                None
+            };
+
+            let processed_lines: Vec<String> = lines
+                .iter()
+                .map(|line| {
+                    let trimmed_line = line.trim_start();
+                    if trimmed_line.starts_with('*') {
+                        trimmed_line[1..].trim_start().to_string()
+                    } else {
+                        trimmed_line.to_string()
+                    }
+                })
+                .collect();
+
+            let cleaned_text = processed_lines.join("\n").trim_end().to_string();
+
+            let format_info = if is_multiline && line_prefix.is_some() {
+                FormatInfo {
+                    style: CommentStyle::DocBlock,
+                    base_indent,
+                    line_prefix,
+                    ends_with_newline: false,
+                }
+            } else {
+                FormatInfo {
+                    style: CommentStyle::DocBlock,
+                    base_indent,
+                    line_prefix: None,
+                    ends_with_newline: false,
+                }
+            };
+
+            return CleanedComment {
+                text: cleaned_text,
+                format_info,
+            };
+        }
+
+        // Fall back to line comment handling
+        self.clean_line_comment_with_format(text)
     }
 
     /// Clean string literal by removing quotes and handling escape sequences

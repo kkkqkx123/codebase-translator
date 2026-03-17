@@ -23,8 +23,8 @@ async fn test_llm_single_translation() {
     let provider = &global_config.llm.providers[0];
     let api_key = provider.api_keys.first().cloned().unwrap_or_default();
 
-    if api_key.is_empty() {
-        println!("Skipping: No API key configured");
+    if !super::is_configured(&api_key) || !super::is_configured(&provider.base_url) {
+        println!("Skipping: No API key or base URL configured");
         return;
     }
 
@@ -80,8 +80,8 @@ async fn test_llm_batch_translation() {
     let provider = &global_config.llm.providers[0];
     let api_key = provider.api_keys.first().cloned().unwrap_or_default();
 
-    if api_key.is_empty() {
-        println!("Skipping: No API key configured");
+    if !super::is_configured(&api_key) || !super::is_configured(&provider.base_url) {
+        println!("Skipping: No API key or base URL configured");
         return;
     }
 
@@ -152,8 +152,8 @@ async fn test_llm_factory() {
     let provider = &global_config.llm.providers[0];
     let api_key = provider.api_keys.first().cloned().unwrap_or_default();
 
-    if api_key.is_empty() {
-        println!("Skipping: No API key configured");
+    if !super::is_configured(&api_key) || !super::is_configured(&provider.base_url) {
+        println!("Skipping: No API key or base URL configured");
         return;
     }
 
@@ -230,8 +230,8 @@ async fn test_llm_rate_limiting() {
     let provider = &global_config.llm.providers[0];
     let api_key = provider.api_keys.first().cloned().unwrap_or_default();
 
-    if api_key.is_empty() {
-        println!("Skipping: No API key configured");
+    if !super::is_configured(&api_key) || !super::is_configured(&provider.base_url) {
+        println!("Skipping: No API key or base URL configured");
         return;
     }
 
