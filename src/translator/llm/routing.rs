@@ -10,7 +10,7 @@
 //! The threshold is set to the minimum capacity among all providers,
 //! ensuring short texts can be handled by any provider.
 
-use std::sync::atomic::{AtomicU32, AtomicU64, Ordering};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 
 use tracing::{debug, trace, warn};
@@ -72,15 +72,12 @@ pub struct ProviderRouter {
     capacity_threshold: usize,
     /// Current index for weighted selection
     current_index: AtomicU64,
-    /// Total weight for all providers
-    total_weight: AtomicU32,
 }
 
 impl ProviderRouter {
     /// Create a new provider router from configurations
     pub fn new(configs: &[LLMProviderConfig]) -> Result<Self> {
         let mut providers = Vec::new();
-        let mut total_weight = 0u32;
 
         for config in configs {
             match CapacityProvider::new(config) {
@@ -89,7 +86,6 @@ impl ProviderRouter {
                         "Added provider {} with capacity {} chars, weight {}",
                         config.id, provider.max_chars, provider.weight
                     );
-                    total_weight += provider.weight;
                     providers.push(provider);
                 }
                 Err(e) => {
@@ -122,7 +118,6 @@ impl ProviderRouter {
             providers,
             capacity_threshold,
             current_index: AtomicU64::new(0),
-            total_weight: AtomicU32::new(total_weight),
         })
     }
 

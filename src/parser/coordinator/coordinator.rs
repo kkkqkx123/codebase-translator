@@ -1,11 +1,13 @@
 //! Parser coordinator implementation
 
 use rayon::prelude::*;
+use std::collections::HashMap;
 use std::sync::Arc;
 
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, TranslationUnit};
 use crate::parser::filter::ContentFilter;
+use crate::parser::regex::state_machine::StateMachineMatcher;
 
 use crate::parser::regex_parsers::FallbackParser;
 use crate::parser::strategy::{ExtractionConfig, ExtractionStrategyImpl};
@@ -22,6 +24,10 @@ use super::ParserType;
 pub struct ParserCoordinator {
     tree_sitter_parsers: Vec<TreeSitterParser>,
     fallback_parser: FallbackParser,
+    /// State machine matchers for custom pattern extraction
+    state_machine_matchers: Vec<StateMachineMatcher>,
+    /// Map from file extension to state machine matcher indices
+    extension_to_matchers: HashMap<String, Vec<usize>>,
 }
 
 impl ParserCoordinator {
@@ -65,6 +71,16 @@ impl ParserCoordinator {
         strategy: Arc<ExtractionStrategyImpl>,
         filter: Arc<ContentFilter>,
     ) -> Result<Self> {
+        Self::with_extraction_config(config, strategy, filter, None)
+    }
+
+    /// Creates a new parser coordinator with extraction config for state machine patterns.
+    pub fn with_extraction_config(
+        config: ParserConfig,
+        strategy: Arc<ExtractionStrategyImpl>,
+        filter: Arc<ContentFilter>,
+        extraction_config: Option<crate::config::project::ExtractionConfig>,
+    ) -> Result<Self> {
         let mut tree_sitter_parsers: Vec<TreeSitterParser> = Vec::new();
 
         for parser_result in
@@ -80,9 +96,54 @@ impl ParserCoordinator {
 
         let fallback_parser = FallbackParser::new(config);
 
+        // Load state machine patterns from extraction config
+        let state_machine_patterns = extraction_config
+            .and_then(|cfg| {
+                if cfg.state_machine_patterns.is_empty() {
+                    None
+                } else {
+                    Some(cfg.state_machine_patterns)
+                }
+            })
+            .unwrap_or_default();
+
+        // Create state machine matchers
+        let state_machine_matchers: Vec<_> = state_machine_patterns
+            .iter()
+            .filter_map(|pattern| {
+                StateMachineMatcher::from_config(
+                    pattern.name.clone(),
+                    pattern.initial_state.clone(),
+                    pattern.accepting_states.clone(),
+                    &pattern.states,
+                    pattern.extraction_rule.clone(),
+                )
+                .ok()
+            })
+            .collect();
+
+        // Build extension to matchers mapping
+        let mut extension_to_matchers = HashMap::new();
+        for (idx, pattern) in state_machine_patterns.iter().enumerate() {
+            let extensions = if pattern.file_extensions.is_empty() {
+                vec!["*".to_string()]
+            } else {
+                pattern.file_extensions.clone()
+            };
+
+            for ext in extensions {
+                extension_to_matchers
+                    .entry(ext.to_lowercase())
+                    .or_insert_with(Vec::new)
+                    .push(idx);
+            }
+        }
+
         Ok(Self {
             tree_sitter_parsers,
             fallback_parser,
+            state_machine_matchers,
+            extension_to_matchers,
         })
     }
 
@@ -94,11 +155,77 @@ impl ParserCoordinator {
         Self {
             tree_sitter_parsers,
             fallback_parser,
+            state_machine_matchers: Vec::new(),
+            extension_to_matchers: HashMap::new(),
         }
     }
 
-    /// Parses a file using the appropriate parser.
+    /// Parses a file using the appropriate parser and applies state machines.
     pub fn parse_file(&self, file: &File) -> Result<Vec<TranslationUnit>> {
+        // 1. Use appropriate parser to parse file
+        let mut units = self.parse_with_parser(file)?;
+
+        // 2. Apply state machine patterns (only for matching file extensions)
+        let file_ext = file.extension().unwrap_or("").to_lowercase();
+
+        // Check if there are applicable state machines
+        if let Some(matcher_indices) = self
+            .extension_to_matchers
+            .get(&file_ext)
+            .or_else(|| self.extension_to_matchers.get("*"))
+        {
+            let content = file.content_string().map_err(|e| {
+                TranslateError::Parse(format!("Failed to decode file content: {}", e))
+            })?;
+
+            for &idx in matcher_indices {
+                let matcher = &self.state_machine_matchers[idx];
+
+                tracing::debug!(
+                    matcher_name = %matcher.name,
+                    file_extension = %file_ext,
+                    "Applying state machine pattern"
+                );
+
+                let matches = matcher.find_matches(&content)?;
+
+                for m in matches {
+                    // Use extracted text
+                    let text = &m.extracted_text;
+
+                    // Filter by length (using default values if not in config)
+                    let min_length = 2;
+                    let max_length = 10000;
+
+                    if text.len() >= min_length && text.len() <= max_length {
+                        let id = format!(
+                            "{}_sm_{}_{}",
+                            file.path.display(),
+                            matcher.name,
+                            units.len()
+                        );
+
+                        let unit = TranslationUnit::new(
+                            id,
+                            crate::core::models::NodeType::StringLiteral,
+                            text.clone(),
+                            m.start_pos,
+                            m.end_pos,
+                        );
+                        units.push(unit);
+                    }
+                }
+            }
+        }
+
+        // 3. Sort by position
+        units.sort_by(|a, b| a.start_pos.offset.cmp(&b.start_pos.offset));
+
+        Ok(units)
+    }
+
+    /// Parse file with appropriate parser only (without state machines).
+    fn parse_with_parser(&self, file: &File) -> Result<Vec<TranslationUnit>> {
         let filename = file.path.file_name().and_then(|n| n.to_str()).unwrap_or("");
 
         for parser in &self.tree_sitter_parsers {

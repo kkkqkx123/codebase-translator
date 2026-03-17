@@ -43,27 +43,6 @@ impl CParser {
         })
     }
 
-    /// Clean comment text by removing C comment markers
-    fn clean_comment_text(&self, text: &str) -> String {
-        let trimmed = text.trim();
-
-        // Handle block comments: /*
-        if trimmed.starts_with("/*") {
-            return self
-                .string_processor
-                .clean_comment(trimmed, CommentType::Block);
-        }
-
-        // Handle line comments: //
-        if trimmed.starts_with("//") {
-            return self
-                .string_processor
-                .clean_comment(trimmed, CommentType::Line);
-        }
-
-        trimmed.to_string()
-    }
-
     /// Clean comment text and extract format information
     fn clean_comment_with_format(&self, text: &str) -> (String, Option<FormatInfo>) {
         let trimmed = text.trim_start();

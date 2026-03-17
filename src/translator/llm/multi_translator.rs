@@ -109,13 +109,15 @@ impl MultiProviderTranslator {
             ));
         }
 
-        // Try each alternative provider
-        for (idx, provider) in other_providers.iter().enumerate() {
+        // Try each alternative provider (limited by max_retries)
+        let max_attempts = self.max_retries.min(other_providers.len());
+        for (idx, provider) in other_providers.iter().take(max_attempts).enumerate() {
             let provider_id = provider.provider().id().to_string();
             debug!(
-                "Trying alternative provider {} (attempt {})",
+                "Trying alternative provider {} (attempt {}/{})",
                 provider_id,
-                idx + 1
+                idx + 1,
+                max_attempts
             );
 
             match provider

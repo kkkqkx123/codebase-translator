@@ -74,7 +74,6 @@ impl StringExtractorConfig {
     /// Create config from project config and language
     pub fn from_project_config(
         categories: &crate::config::project::StringLiteralCategories,
-        custom: &crate::config::project::CustomStringPatterns,
         language: &str,
     ) -> Result<Self> {
         use crate::config::project::get_default_patterns_for_language;
@@ -85,16 +84,14 @@ impl StringExtractorConfig {
         // Error handling
         if categories.error_handling {
             enabled_categories.insert(StringCategory::ErrorHandling);
-            let mut error_patterns = get_default_patterns_for_language(language, "error_handling");
-            error_patterns.extend(custom.error_handling.clone());
+            let error_patterns = get_default_patterns_for_language(language, "error_handling");
             patterns.error_handling = error_patterns;
         }
 
         // Output
         if categories.output {
             enabled_categories.insert(StringCategory::Output);
-            let mut output_patterns = get_default_patterns_for_language(language, "output");
-            output_patterns.extend(custom.output.clone());
+            let output_patterns = get_default_patterns_for_language(language, "output");
             patterns.output = output_patterns;
         }
 
@@ -108,36 +105,12 @@ impl StringExtractorConfig {
             enabled_categories.insert(StringCategory::Properties);
         }
 
-        // Compile custom regex patterns
-        let mut custom_regex_patterns = Vec::new();
-        for pattern in &custom.regex_patterns {
-            let category = match pattern.category {
-                crate::config::project::StringLiteralCategory::ErrorHandling => {
-                    StringCategory::ErrorHandling
-                }
-                crate::config::project::StringLiteralCategory::Output => StringCategory::Output,
-                crate::config::project::StringLiteralCategory::Variables => {
-                    StringCategory::Variables
-                }
-                crate::config::project::StringLiteralCategory::Properties => {
-                    StringCategory::Properties
-                }
-                crate::config::project::StringLiteralCategory::Other => StringCategory::Other,
-            };
-
-            let regex = Regex::new(&pattern.regex).map_err(|e| {
-                TranslateError::Config(format!("Invalid regex pattern '{}': {}", pattern.name, e))
-            })?;
-
-            custom_regex_patterns.push((pattern.name.clone(), regex, pattern.group, category));
-        }
-
         Ok(Self {
             enabled_categories,
             patterns,
-            variable_patterns: custom.variable_patterns.clone(),
-            property_patterns: custom.property_patterns.clone(),
-            custom_regex_patterns,
+            variable_patterns: Vec::new(),
+            property_patterns: Vec::new(),
+            custom_regex_patterns: Vec::new(),
         })
     }
 
@@ -580,7 +553,7 @@ impl StringExtractor {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::parser::string_extractor::{StringCategory, StringExtractorConfig};
 
     #[test]
     fn test_category_as_str() {

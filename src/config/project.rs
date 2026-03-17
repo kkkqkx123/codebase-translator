@@ -486,6 +486,9 @@ pub struct ExtractionConfig {
     /// Custom regex patterns
     #[serde(default)]
     pub custom_patterns: Vec<String>,
+    /// Advanced state machine patterns
+    #[serde(default)]
+    pub state_machine_patterns: Vec<StateMachinePattern>,
 }
 
 impl Default for ExtractionConfig {
@@ -497,6 +500,7 @@ impl Default for ExtractionConfig {
             format_strings: true,
             string_literals: StringLiteralConfig::default(),
             custom_patterns: Vec::new(),
+            state_machine_patterns: Vec::new(),
         }
     }
 }
@@ -510,9 +514,6 @@ pub struct StringLiteralConfig {
     /// Categories to enable
     #[serde(default = "default_categories")]
     pub categories: StringLiteralCategories,
-    /// Custom patterns by category
-    #[serde(default)]
-    pub custom_patterns: CustomStringPatterns,
 }
 
 impl Default for StringLiteralConfig {
@@ -520,7 +521,6 @@ impl Default for StringLiteralConfig {
         Self {
             enabled: false,
             categories: default_categories(),
-            custom_patterns: CustomStringPatterns::default(),
         }
     }
 }
@@ -557,42 +557,6 @@ fn default_categories() -> StringLiteralCategories {
     StringLiteralCategories::default()
 }
 
-/// Custom patterns for string extraction
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CustomStringPatterns {
-    /// Error handling patterns
-    #[serde(default)]
-    pub error_handling: Vec<String>,
-    /// Output patterns
-    #[serde(default)]
-    pub output: Vec<String>,
-    /// Variable name patterns (regex)
-    #[serde(default)]
-    pub variable_patterns: Vec<String>,
-    /// Object property patterns
-    #[serde(default)]
-    pub property_patterns: Vec<String>,
-    /// Custom regex patterns with names
-    #[serde(default)]
-    pub regex_patterns: Vec<CustomRegexPattern>,
-    /// Advanced state machine patterns
-    #[serde(default)]
-    pub state_machine_patterns: Vec<StateMachinePattern>,
-}
-
-impl Default for CustomStringPatterns {
-    fn default() -> Self {
-        Self {
-            error_handling: Vec::new(),
-            output: Vec::new(),
-            variable_patterns: Vec::new(),
-            property_patterns: Vec::new(),
-            regex_patterns: Vec::new(),
-            state_machine_patterns: Vec::new(),
-        }
-    }
-}
-
 /// Custom regex pattern configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CustomRegexPattern {
@@ -608,15 +572,56 @@ pub struct CustomRegexPattern {
     pub group: usize,
 }
 
+/// Extraction rule for state machine patterns
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "snake_case")]
+pub enum ExtractionRule {
+    /// No extraction, use raw content as is
+    None,
+    /// Remove surrounding quotes (single or double)
+    RemoveQuotes,
+    /// Extract using regex pattern
+    Regex {
+        /// Regex pattern to match
+        pattern: String,
+        /// Capture group index (0 = full match)
+        #[serde(default)]
+        group: usize,
+    },
+    /// Remove comment markers
+    RemoveCommentMarkers {
+        /// Type of comment: "line", "block", or "doc"
+        comment_type: String,
+    },
+    /// Remove surrounding brackets
+    RemoveBrackets {
+        /// Type of brackets: "round", "square", or "curly"
+        bracket_type: String,
+    },
+}
+
+impl Default for ExtractionRule {
+    fn default() -> Self {
+        ExtractionRule::None
+    }
+}
+
 /// State machine pattern for complex extraction
 /// Allows matching sequences of tokens with conditions
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StateMachinePattern {
     /// Pattern name for identification
     pub name: String,
+    /// File extensions this pattern applies to
+    /// Empty means applies to all files
+    #[serde(default)]
+    pub file_extensions: Vec<String>,
     /// Category this pattern belongs to
     #[serde(default)]
     pub category: StringLiteralCategory,
+    /// Extraction rule
+    #[serde(default)]
+    pub extraction_rule: ExtractionRule,
     /// States and their transitions
     pub states: Vec<PatternState>,
     /// Initial state name

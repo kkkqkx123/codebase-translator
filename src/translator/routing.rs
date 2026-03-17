@@ -161,17 +161,3 @@ impl CapacityRouter {
         Ok(results)
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    // Note: These tests would require mock translators
-    // For now, we just verify the structure compiles
-
-    #[test]
-    fn test_capacity_translator_can_handle() {
-        // This is a placeholder test
-        // Real tests would use mock translators
-    }
-}

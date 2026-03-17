@@ -3,11 +3,11 @@
 ## Summary
 
 - **Total Errors**: 0
-- **Total Warnings**: 17
-- **Total Issues**: 17
+- **Total Warnings**: 8
+- **Total Issues**: 8
 - **Unique Error Patterns**: 0
-- **Unique Warning Patterns**: 15
-- **Files with Issues**: 9
+- **Unique Warning Patterns**: 8
+- **Files with Issues**: 7
 
 ## Error Statistics
 
@@ -15,70 +15,55 @@
 
 ## Warning Statistics
 
-**Total Warnings**: 17
+**Total Warnings**: 8
 
 ### Warning Type Breakdown
 
-- **warning**: 17 warnings
+- **warning**: 8 warnings
 
 ### Files with Warnings (Top 10)
 
-- `src\parser\core\language_parser.rs`: 6 warnings
-- `src\parser\string_extractor.rs`: 3 warnings
-- `src\translator\service.rs`: 2 warnings
-- `src\translator\llm\provider.rs`: 1 warnings
-- `src\parser\coordinator\tests.rs`: 1 warnings
-- `src\parser\regex\state_machine.rs`: 1 warnings
-- `src\parser\languages\tests\strategy_integration_tests.rs`: 1 warnings
-- `src\parser\filter.rs`: 1 warnings
-- `src\parser\function_patterns.rs`: 1 warnings
+- `src\parser\string_extractor.rs`: 2 warnings
+- `src\translator\routing.rs`: 1 warnings
+- `src\parser\tree_sitter.rs`: 1 warnings
+- `src\parser\coordinator\coordinator.rs`: 1 warnings
+- `src\parser\languages\c\parser.rs`: 1 warnings
+- `src\translator\llm\multi_translator.rs`: 1 warnings
+- `src\translator\llm\routing.rs`: 1 warnings
 
 ## Detailed Warning Categorization
 
 ### warning: unused import: `super::*`
 
-**Total Occurrences**: 17  
-**Unique Files**: 9
+**Total Occurrences**: 8  
+**Unique Files**: 7
 
-#### `src\parser\core\language_parser.rs`: 6 occurrences
+#### `src\parser\string_extractor.rs`: 2 occurrences
 
-- Line 10: unused import: `Position`
-- Line 11: unused import: `QueryMatch`
-- Line 18: unused import: `crate::parser::Parser`
-- ... 3 more occurrences in this file
+- Line 559: use of deprecated constant `parser::string_extractor::tests::test_category_as_str`: This module is not currently used and may be removed in a future version
+- Line 568: use of deprecated constant `parser::string_extractor::tests::test_config_category_enabled`: This module is not currently used and may be removed in a future version
 
-#### `src\parser\string_extractor.rs`: 3 occurrences
+#### `src\translator\routing.rs`: 1 occurrences
 
-- Line 420: unused variable: `file_path`: help: if this is intentional, prefix it with an underscore: `_file_path`
-- Line 437: unused variable: `matches`: help: if this is intentional, prefix it with an underscore: `_matches`
-- Line 455: unused variable: `name`: help: if this is intentional, prefix it with an underscore: `_name`
+- Line 167: unused import: `super::*`
 
-#### `src\translator\service.rs`: 2 occurrences
+#### `src\translator\llm\routing.rs`: 1 occurrences
 
-- Line 191: unused import: `super::*`
-- Line 192: unused imports: `DeepLXConfig` and `ProviderType`
+- Line 76: field `total_weight` is never read
 
-#### `src\parser\coordinator\tests.rs`: 1 occurrences
+#### `src\parser\coordinator\coordinator.rs`: 1 occurrences
 
-- Line 7: unused import: `crate::parser::Parser`
+- Line 165: unused variable: `filename`: help: if this is intentional, prefix it with an underscore: `_filename`
 
-#### `src\parser\function_patterns.rs`: 1 occurrences
+#### `src\parser\languages\c\parser.rs`: 1 occurrences
 
-- Line 429: field `registry` is never read
+- Line 47: method `clean_comment_text` is never used
 
-#### `src\translator\llm\provider.rs`: 1 occurrences
+#### `src\translator\llm\multi_translator.rs`: 1 occurrences
 
-- Line 281: method `close` is never used
+- Line 20: field `max_retries` is never read
 
-#### `src\parser\filter.rs`: 1 occurrences
+#### `src\parser\tree_sitter.rs`: 1 occurrences
 
-- Line 360: unused import: `Lang`
-
-#### `src\parser\languages\tests\strategy_integration_tests.rs`: 1 occurrences
-
-- Line 38: function `create_default_strategy` is never used
-
-#### `src\parser\regex\state_machine.rs`: 1 occurrences
-
-- Line 159: unused variable: `match_start`: help: if this is intentional, prefix it with an underscore: `_match_start`
+- Line 11: unused import: `FormatInfo`
 

@@ -13,8 +13,10 @@ use crate::core::models::Position;
 /// A match result from the state machine
 #[derive(Debug, Clone)]
 pub struct StateMachineMatch {
-    /// The matched content
-    pub content: String,
+    /// Complete matched content (including format markers)
+    pub raw_content: String,
+    /// Extracted text content (for translation)
+    pub extracted_text: String,
     /// Start position in the source
     pub start_pos: Position,
     /// End position in the source
@@ -59,6 +61,8 @@ pub struct StateMachineMatcher {
     accepting_states: Vec<String>,
     /// Pattern name for identification
     pub name: String,
+    /// Extraction rule for processing matched content
+    pub extraction_rule: crate::config::project::ExtractionRule,
 }
 
 impl StateMachineMatcher {
@@ -68,6 +72,7 @@ impl StateMachineMatcher {
         initial_state: String,
         accepting_states: Vec<String>,
         state_configs: &[crate::config::project::PatternState],
+        extraction_rule: crate::config::project::ExtractionRule,
     ) -> Result<Self> {
         debug!(
             name = %name,
@@ -152,7 +157,76 @@ impl StateMachineMatcher {
             initial_state,
             accepting_states,
             name,
+            extraction_rule,
         })
+    }
+
+    /// Extract text from complete content
+    fn extract_text(&self, raw_content: &str) -> String {
+        use crate::parser::core::{CommentType, StringProcessor};
+
+        match &self.extraction_rule {
+            crate::config::project::ExtractionRule::None => raw_content.to_string(),
+
+            crate::config::project::ExtractionRule::RemoveQuotes => {
+                let text = raw_content.trim();
+                if (text.starts_with('"') && text.ends_with('"'))
+                    || (text.starts_with('\'') && text.ends_with('\''))
+                {
+                    text[1..text.len() - 1].to_string()
+                } else {
+                    text.to_string()
+                }
+            }
+
+            crate::config::project::ExtractionRule::Regex { pattern, group } => {
+                if let Ok(re) = Regex::new(pattern) {
+                    if let Some(caps) = re.captures(raw_content) {
+                        if *group > 0 {
+                            caps.get(*group)
+                                .map(|m| m.as_str().to_string())
+                                .unwrap_or_else(|| raw_content.to_string())
+                        } else if *group == 0 {
+                            caps.get(0)
+                                .map(|m| m.as_str().to_string())
+                                .unwrap_or_else(|| raw_content.to_string())
+                        } else {
+                            raw_content.to_string()
+                        }
+                    } else {
+                        raw_content.to_string()
+                    }
+                } else {
+                    raw_content.to_string()
+                }
+            }
+
+            crate::config::project::ExtractionRule::RemoveCommentMarkers { comment_type } => {
+                let processor = StringProcessor::new();
+                match comment_type.as_str() {
+                    "line" => processor.clean_comment(raw_content, CommentType::Line),
+                    "block" => processor.clean_comment(raw_content, CommentType::Block),
+                    "doc" => processor.clean_comment(raw_content, CommentType::Doc),
+                    _ => raw_content.to_string(),
+                }
+            }
+
+            crate::config::project::ExtractionRule::RemoveBrackets { bracket_type } => {
+                let text = raw_content.trim();
+                let (open, close) = match bracket_type.as_str() {
+                    "round" => ('(', ')'),
+                    "square" => ('[', ']'),
+                    "curly" => ('{', '}'),
+                    _ => return raw_content.to_string(),
+                };
+
+                if text.starts_with(open) && text.ends_with(close) {
+                    text[1..text.len() - 1].to_string()
+                } else {
+                    text.to_string()
+                }
+            }
+        }
     }
 
     /// Find all matches in the content
@@ -296,17 +370,19 @@ impl StateMachineMatcher {
         }
 
         // Return the last accepting match if any
-        if let Some((extracted_content, end_offset, captures)) = last_accepting_match {
+        if let Some((raw_content, end_offset, captures)) = last_accepting_match {
             trace!(
                 name = %self.name,
-                content_length = extracted_content.len(),
+                content_length = raw_content.len(),
                 "Returning accepting match"
             );
             let start_pos_obj = self.byte_to_position(content, start_pos);
             let end_pos_obj = self.byte_to_position(content, end_offset);
+            let extracted_text = self.extract_text(&raw_content);
 
             Ok(Some(StateMachineMatch {
-                content: extracted_content,
+                raw_content,
+                extracted_text,
                 start_pos: start_pos_obj,
                 end_pos: end_pos_obj,
                 state_name: current_state_name,
@@ -447,7 +523,13 @@ impl StateMachineBuilder {
             ));
         }
 
-        StateMachineMatcher::from_config(name, initial_state, self.accepting_states, &self.states)
+        StateMachineMatcher::from_config(
+            name,
+            initial_state,
+            self.accepting_states,
+            &self.states,
+            crate::config::project::ExtractionRule::None,
+        )
     }
 }
 
@@ -479,7 +561,7 @@ mod tests {
         let matches = matcher.find_matches(content).expect("Matching failed");
 
         assert_eq!(matches.len(), 1);
-        assert_eq!(matches[0].content, "Hello World");
+        assert_eq!(matches[0].extracted_text, "Hello World");
     }
 
     #[test]

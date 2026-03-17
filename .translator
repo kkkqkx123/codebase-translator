@@ -179,24 +179,120 @@ property_patterns = [
 # regex = 'throw new Error\("([^"]+)"\)'
 # group = 1  # 捕获组索引
 
+# 提取配置
+# 控制从代码中提取哪些内容进行翻译
+[extraction]
+comments = true              # 是否提取注释
+doc_strings = true           # 是否提取文档字符串
+error_messages = true        # 是否提取错误消息
+format_strings = true        # 是否提取格式化字符串
+
 # 状态机模式（高级）
 # 用于匹配复杂的代码模式，支持多步骤匹配
-# [[parser.extraction.string_literals.custom_patterns.state_machine_patterns]]
+# 状态机现在位于 extraction 配置的顶层，适用于所有解析器
+# [[extraction.state_machine_patterns]]
 # name = "i18n_with_default"
-# category = "other"
+# file_extensions = ["js", "ts", "jsx", "tsx"]  # 适用的文件扩展名，空表示所有文件
+# category = "other"  # error_handling, output, variables, properties, other
+# extraction_rule = { type = "remove_quotes" }  # 提取规则：none, remove_quotes, regex, remove_comment_markers, remove_brackets
 # initial_state = "start"
 # accepting_states = ["extract"]
 #
-# [[parser.extraction.string_literals.custom_patterns.state_machine_patterns.states]]
+# [[extraction.state_machine_patterns.states]]
 # name = "start"
 # regex = 't\s*\(\s*["\'][^"\']+["\']\s*,\s*["\']'
 # transitions = [{ target = "extract" }]
 #
-# [[parser.extraction.string_literals.custom_patterns.state_machine_patterns.states]]
+# [[extraction.state_machine_patterns.states]]
 # name = "extract"
 # regex = '([^"\']+)'
 # capture_group = 1
 # is_final = true
+
+# 状态机模式示例：自定义错误消息函数
+# [[extraction.state_machine_patterns]]
+# name = "add_message"
+# file_extensions = ["js", "ts", "jsx", "tsx"]
+# category = "error_handling"
+# extraction_rule = { type = "remove_quotes" }
+# initial_state = "start"
+# accepting_states = ["extract"]
+#
+# [[extraction.state_machine_patterns.states]]
+# name = "start"
+# regex = 'add_message\s*\(\s*["\'][^"\']+["\']\s*,\s*["\']'
+# transitions = [{ target = "extract" }]
+#
+# [[extraction.state_machine_patterns.states]]
+# name = "extract"
+# regex = '([^"\']+)'
+# capture_group = 1
+# is_final = true
+
+# 状态机模式示例：使用正则提取规则
+# [[extraction.state_machine_patterns]]
+# name = "custom_regex_extract"
+# file_extensions = ["py", "rb"]
+# category = "error_handling"
+# extraction_rule = { type = "regex", pattern = 'Error:\s*([^"]+)', group = 1 }
+# initial_state = "start"
+# accepting_states = ["extract"]
+#
+# [[extraction.state_machine_patterns.states]]
+# name = "start"
+# regex = 'raise\s+Error\s*\('
+# transitions = [{ target = "extract" }]
+#
+# [[extraction.state_machine_patterns.states]]
+# name = "extract"
+# regex = '[^"]+'
+# capture_group = 0
+# is_final = true
+
+# 状态机模式示例：移除注释标记
+# [[extraction.state_machine_patterns]]
+# name = "doc_comment"
+# file_extensions = ["rs", "go"]
+# category = "other"
+# extraction_rule = { type = "remove_comment_markers", comment_type = "doc" }
+# initial_state = "start"
+# accepting_states = ["extract"]
+#
+# [[extraction.state_machine_patterns.states]]
+# name = "start"
+# regex = '///\s*'
+# transitions = [{ target = "extract" }]
+#
+# [[extraction.state_machine_patterns.states]]
+# name = "extract"
+# regex = '.*'
+# capture_group = 0
+# is_final = true
+
+# 状态机模式示例：移除括号
+# [[extraction.state_machine_patterns]]
+# name = "config_object"
+# file_extensions = ["js", "ts"]
+# category = "other"
+# extraction_rule = { type = "remove_brackets", bracket_type = "curly" }
+# initial_state = "start"
+# accepting_states = ["extract"]
+#
+# [[extraction.state_machine_patterns.states]]
+# name = "start"
+# regex = 'config\s*=\s*\{'
+# transitions = [{ target = "extract" }]
+#
+# [[extraction.state_machine_patterns.states]]
+# name = "extract"
+# regex = 'message:\s*["\']([^"\']+)["\']'
+# capture_group = 1
+# is_final = true
+
+# 自定义正则模式（简单）
+# [[extraction.custom_patterns]]
+# pattern = 'TODO:\s*(.+)'
+# category = "other"  # 可选：error_handling, output, variables, properties, other
 
 # 编码检测配置
 [encoding]

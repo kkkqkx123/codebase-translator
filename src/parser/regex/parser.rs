@@ -73,6 +73,7 @@ impl RegexParser {
                     pattern.initial_state.clone(),
                     pattern.accepting_states.clone(),
                     &pattern.states,
+                    pattern.extraction_rule.clone(),
                 )
                 .ok()
             })
@@ -271,7 +272,7 @@ impl RegexParser {
             let matches = matcher.find_matches(content)?;
             for m in matches {
                 if should_include(
-                    &m.content,
+                    &m.extracted_text,
                     self.config.min_content_length,
                     self.config.max_content_length,
                 ) {
@@ -281,7 +282,7 @@ impl RegexParser {
                     let unit = TranslationUnit::new(
                         id,
                         NodeType::StringLiteral,
-                        m.content,
+                        m.extracted_text,
                         m.start_pos,
                         m.end_pos,
                     );
