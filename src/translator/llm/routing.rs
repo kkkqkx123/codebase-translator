@@ -10,7 +10,6 @@
 //! The threshold is set to the minimum capacity among all providers,
 //! ensuring short texts can be handled by any provider.
 
-use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 
 use tracing::{debug, trace, warn};
@@ -70,22 +69,56 @@ pub struct ProviderRouter {
     providers: Vec<CapacityProvider>,
     /// Threshold for long text routing (minimum capacity among all providers)
     capacity_threshold: usize,
-    /// Current index for weighted selection
-    current_index: AtomicU64,
 }
 
 impl ProviderRouter {
     /// Create a new provider router from configurations
     pub fn new(configs: &[LLMProviderConfig]) -> Result<Self> {
+        // Validate input configurations
+        if configs.is_empty() {
+            return Err(TranslateError::Config(
+                "At least one LLM provider configuration is required".to_string(),
+            ));
+        }
+
+        // Check for duplicate provider IDs
+        let mut seen_ids = std::collections::HashSet::new();
+        for config in configs {
+            if config.id.is_empty() {
+                return Err(TranslateError::Config(
+                    "Provider ID cannot be empty".to_string(),
+                ));
+            }
+            if !seen_ids.insert(&config.id) {
+                return Err(TranslateError::Config(format!(
+                    "Duplicate provider ID: {}",
+                    config.id
+                )));
+            }
+        }
+
         let mut providers = Vec::new();
+        let mut total_weight = 0u32;
 
         for config in configs {
+            // Validate individual configuration
+            if config.base_url.is_empty() {
+                warn!("Provider {} has empty base_url, skipping", config.id);
+                continue;
+            }
+
+            if config.api_keys.is_empty() {
+                warn!("Provider {} has no API keys, skipping", config.id);
+                continue;
+            }
+
             match CapacityProvider::new(config) {
                 Ok(provider) => {
                     debug!(
                         "Added provider {} with capacity {} chars, weight {}",
                         config.id, provider.max_chars, provider.weight
                     );
+                    total_weight += provider.weight();
                     providers.push(provider);
                 }
                 Err(e) => {
@@ -96,8 +129,15 @@ impl ProviderRouter {
 
         if providers.is_empty() {
             return Err(TranslateError::Config(
-                "No valid LLM providers configured".to_string(),
+                "No valid LLM providers configured. Please check your configuration for missing required fields (id, base_url, api_keys)".to_string(),
             ));
+        }
+
+        // Warn if all weights are zero
+        if total_weight == 0 {
+            warn!(
+                "All providers have weight 0. Weighted selection will fall back to random selection."
+            );
         }
 
         // Calculate capacity threshold (minimum capacity among all providers)
@@ -109,15 +149,15 @@ impl ProviderRouter {
             .unwrap_or(0);
 
         info!(
-            "Created ProviderRouter with {} providers, capacity_threshold: {}",
+            "Created ProviderRouter with {} providers, capacity_threshold: {}, total_weight: {}",
             providers.len(),
-            capacity_threshold
+            capacity_threshold,
+            total_weight
         );
 
         Ok(Self {
             providers,
             capacity_threshold,
-            current_index: AtomicU64::new(0),
         })
     }
 
@@ -151,7 +191,7 @@ impl ProviderRouter {
         self.select_weighted(&candidates)
     }
 
-    /// Select provider by weighted strategy
+    /// Select provider by weighted strategy using random selection
     fn select_weighted<'a>(
         &self,
         candidates: &[&'a CapacityProvider],
@@ -167,21 +207,25 @@ impl ProviderRouter {
         // Calculate total weight of candidates
         let total_weight: u32 = candidates.iter().map(|p| p.weight()).sum();
         if total_weight == 0 {
-            // Fall back to round-robin if all weights are 0
-            let index =
-                self.current_index.fetch_add(1, Ordering::Relaxed) as usize % candidates.len();
+            // Fall back to random selection if all weights are 0
+            let index = rand::random::<usize>() % candidates.len();
+            trace!(
+                "All weights are 0, randomly selected provider at index {}",
+                index
+            );
             return Some(candidates[index]);
         }
 
-        let target_weight =
-            self.current_index.fetch_add(1, Ordering::Relaxed) as u32 % total_weight;
+        // Use random selection for weighted distribution
+        let target_weight = rand::random::<u32>() % total_weight;
 
         let mut current_weight = 0u32;
         for provider in candidates {
             current_weight += provider.weight();
             if target_weight < current_weight {
                 trace!(
-                    "Weighted selected provider with weight {} (target: {})",
+                    "Weighted selected provider {} with weight {} (target: {})",
+                    provider.provider().id(),
                     provider.weight(),
                     target_weight
                 );
@@ -190,7 +234,14 @@ impl ProviderRouter {
         }
 
         // Fallback to last candidate
-        candidates.last().copied()
+        let provider = candidates.last().copied();
+        if let Some(p) = provider {
+            trace!(
+                "Weighted selection fell back to last provider {}",
+                p.provider().id()
+            );
+        }
+        provider
     }
 
     /// Get capacity threshold (minimum capacity among all providers)

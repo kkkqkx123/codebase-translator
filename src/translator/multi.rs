@@ -8,7 +8,7 @@ use async_trait::async_trait;
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, Ordering};
 use std::sync::Arc;
-use tracing::{debug, error, info};
+use tracing::{debug, error, info, warn};
 
 use crate::core::error::{Result, TranslateError};
 use crate::translator::common::TranslateResponse;
@@ -19,7 +19,6 @@ use crate::translator::{Translator, TranslatorImpl};
 pub enum SelectionStrategy {
     RoundRobin,
     Weighted,
-    Priority,
 }
 
 impl std::str::FromStr for SelectionStrategy {
@@ -79,7 +78,8 @@ impl TranslatorWrapper {
 
     fn increment_failure(&self) {
         let count = self.failure_count.fetch_add(1, Ordering::Relaxed) + 1;
-        if count >= 3 {
+        // Immediately mark as unhealthy on first failure for real-time health update
+        if count >= 1 {
             self.mark_unhealthy();
         }
     }
@@ -108,10 +108,22 @@ impl MultiTranslator {
         strategy: SelectionStrategy,
         max_retries: usize,
     ) -> Result<Self> {
+        // Validate input
         if translators.is_empty() {
             return Err(TranslateError::Config(
                 "At least one translator is required".to_string(),
             ));
+        }
+
+        // Check for duplicate translators by name
+        let mut seen_names = std::collections::HashSet::new();
+        for (translator, _) in &translators {
+            if !seen_names.insert(translator.name()) {
+                warn!(
+                    "Duplicate translator name detected: {}. This may affect routing behavior.",
+                    translator.name()
+                );
+            }
         }
 
         let wrappers: Vec<TranslatorWrapper> = translators
@@ -119,12 +131,28 @@ impl MultiTranslator {
             .map(|(t, w)| TranslatorWrapper::new(t, w))
             .collect();
 
-        let max_retries = if max_retries == 0 { 3 } else { max_retries };
+        // Validate that at least one translator is available
+        if wrappers.is_empty() {
+            return Err(TranslateError::Config(
+                "No valid translators configured".to_string(),
+            ));
+        }
+
+        // Validate max_retries
+        let max_retries = if max_retries == 0 {
+            3
+        } else if max_retries > 10 {
+            warn!("max_retries {} is too high, limiting to 10", max_retries);
+            10
+        } else {
+            max_retries
+        };
 
         info!(
-            "Multi-translator created with {} translators, strategy: {:?}",
+            "Multi-translator created with {} translators, strategy: {:?}, max_retries: {}",
             wrappers.len(),
-            strategy
+            strategy,
+            max_retries
         );
 
         Ok(Self {
@@ -140,7 +168,6 @@ impl MultiTranslator {
         match self.strategy {
             SelectionStrategy::RoundRobin => self.select_round_robin(attempted),
             SelectionStrategy::Weighted => self.select_weighted(attempted),
-            SelectionStrategy::Priority => self.select_priority(attempted),
         }
     }
 
@@ -205,23 +232,6 @@ impl MultiTranslator {
         None
     }
 
-    /// Priority selection (by index order)
-    fn select_priority(&self, attempted: &HashMap<usize, bool>) -> Option<usize> {
-        for i in 0..self.translators.len() {
-            if self.translators[i].is_healthy() && !attempted.get(&i).copied().unwrap_or(false) {
-                return Some(i);
-            }
-        }
-
-        for i in 0..self.translators.len() {
-            if !attempted.get(&i).copied().unwrap_or(false) {
-                return Some(i);
-            }
-        }
-
-        None
-    }
-
     /// Translate with failover
     async fn translate_with_failover(
         &self,
@@ -229,24 +239,33 @@ impl MultiTranslator {
         source_lang: &str,
         target_lang: &str,
     ) -> Result<TranslateResponse> {
+        let start_time = std::time::Instant::now();
         let mut last_error = None;
         let mut attempted = HashMap::new();
+        let text_len = text.len();
 
         for attempt in 0..=self.max_retries {
             let index = match self.select_translator(&attempted) {
                 Some(i) => i,
                 None => {
+                    error!("No more translators available for selection");
                     break;
                 }
             };
 
             attempted.insert(index, true);
 
+            let attempt_start = std::time::Instant::now();
+            let translator_name = self.translators[index].translator.name();
+            let translator_healthy = self.translators[index].is_healthy();
+
             debug!(
-                "Attempting translation with translator {} (attempt {}/{})",
-                self.translators[index].translator.name(),
+                "Attempting translation with translator {} (attempt {}/{}, healthy: {}, text: {} chars)",
+                translator_name,
                 attempt + 1,
-                self.max_retries + 1
+                self.max_retries + 1,
+                translator_healthy,
+                text_len
             );
 
             match self.translators[index]
@@ -255,10 +274,14 @@ impl MultiTranslator {
                 .await
             {
                 Ok(translated_text) => {
+                    let latency = attempt_start.elapsed();
                     self.translators[index].reset_failure();
                     info!(
-                        "Translation succeeded with translator {}",
-                        self.translators[index].translator.name()
+                        "Translation succeeded with translator {} in {:?} (attempt {}/{})",
+                        translator_name,
+                        latency,
+                        attempt + 1,
+                        self.max_retries + 1
                     );
                     return Ok(TranslateResponse {
                         original_text: text.to_string(),
@@ -269,10 +292,10 @@ impl MultiTranslator {
                     });
                 }
                 Err(e) => {
+                    let latency = attempt_start.elapsed();
                     error!(
-                        "Translation failed with translator {}: {}",
-                        self.translators[index].translator.name(),
-                        e
+                        "Translation failed with translator {} in {:?}: {}",
+                        translator_name, latency, e
                     );
                     self.translators[index].increment_failure();
                     last_error = Some(e);
@@ -280,6 +303,12 @@ impl MultiTranslator {
             }
         }
 
+        let total_latency = start_time.elapsed();
+        error!(
+            "All translators failed after {:?} ({} attempts made)",
+            total_latency,
+            attempted.len()
+        );
         Err(last_error
             .unwrap_or_else(|| TranslateError::Translation("All translators failed".to_string())))
     }

@@ -45,12 +45,18 @@ impl MultiProviderTranslator {
         source_lang: &str,
         target_lang: &str,
     ) -> Result<TranslateResponse> {
+        let start_time = std::time::Instant::now();
         let text_len = text.len();
 
         // Select provider based on capacity
         let provider = match self.router.select_provider(text_len) {
             Some(p) => p.provider().clone(),
             None => {
+                error!(
+                    "No provider can handle text of length {}. Maximum capacity: {}",
+                    text_len,
+                    self.router.max_capacity()
+                );
                 return Err(TranslateError::Translation(format!(
                     "No provider can handle text of length {}. Maximum capacity: {}",
                     text_len,
@@ -61,18 +67,30 @@ impl MultiProviderTranslator {
 
         let provider_id = provider.id().to_string();
         debug!(
-            "Selected provider {} for text length {}",
-            provider_id, text_len
+            "Selected provider {} for text length {} ({} chars)",
+            provider_id, text_len, text_len
         );
 
         // Try translation with the selected provider
         match provider.translate(text, source_lang, target_lang).await {
             Ok(response) => {
-                info!("Translation succeeded with provider {}", provider_id);
+                let latency = start_time.elapsed();
+                info!(
+                    "Translation succeeded with provider {} in {:?} (text: {} chars)",
+                    provider_id, latency, text_len
+                );
+                // Mark provider as healthy on success
+                provider.mark_healthy().await;
                 Ok(response)
             }
             Err(e) => {
-                error!("Translation failed with provider {}: {}", provider_id, e);
+                let latency = start_time.elapsed();
+                error!(
+                    "Translation failed with provider {} in {:?}: {}",
+                    provider_id, latency, e
+                );
+                // Immediately mark provider as unhealthy on failure
+                provider.mark_unhealthy().await;
 
                 // If retryable, try other providers that can handle this text
                 if Self::is_retryable_error(&e) {
@@ -93,6 +111,7 @@ impl MultiProviderTranslator {
         target_lang: &str,
         exclude_provider: &str,
     ) -> Result<TranslateResponse> {
+        let start_time = std::time::Instant::now();
         let text_len = text.len();
 
         // Find other providers that can handle this text
@@ -103,7 +122,14 @@ impl MultiProviderTranslator {
             .filter(|p| p.can_handle(text_len) && p.provider().id() != exclude_provider)
             .collect();
 
+        info!(
+            "Attempting failover with {} alternative providers (excluded: {})",
+            other_providers.len(),
+            exclude_provider
+        );
+
         if other_providers.is_empty() {
+            error!("No alternative providers available for failover");
             return Err(TranslateError::Translation(
                 "No alternative providers available".to_string(),
             ));
@@ -113,11 +139,13 @@ impl MultiProviderTranslator {
         let max_attempts = self.max_retries.min(other_providers.len());
         for (idx, provider) in other_providers.iter().take(max_attempts).enumerate() {
             let provider_id = provider.provider().id().to_string();
+            let attempt_start = std::time::Instant::now();
             debug!(
-                "Trying alternative provider {} (attempt {}/{})",
+                "Trying alternative provider {} (attempt {}/{}, capacity: {} chars)",
                 provider_id,
                 idx + 1,
-                max_attempts
+                max_attempts,
+                provider.max_chars()
             );
 
             match provider
@@ -126,18 +154,32 @@ impl MultiProviderTranslator {
                 .await
             {
                 Ok(response) => {
+                    let latency = attempt_start.elapsed();
                     info!(
-                        "Translation succeeded with alternative provider {}",
-                        provider_id
+                        "Translation succeeded with alternative provider {} in {:?}",
+                        provider_id, latency
                     );
+                    // Mark provider as healthy on success
+                    provider.provider().mark_healthy().await;
                     return Ok(response);
                 }
                 Err(e) => {
-                    error!("Alternative provider {} failed: {}", provider_id, e);
+                    let latency = attempt_start.elapsed();
+                    error!(
+                        "Alternative provider {} failed in {:?}: {}",
+                        provider_id, latency, e
+                    );
+                    // Immediately mark provider as unhealthy on failure
+                    provider.provider().mark_unhealthy().await;
                 }
             }
         }
 
+        let total_latency = start_time.elapsed();
+        error!(
+            "All alternative providers failed after {:?} ({} attempts made)",
+            total_latency, max_attempts
+        );
         Err(TranslateError::Translation(
             "All alternative providers failed".to_string(),
         ))

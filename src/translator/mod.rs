@@ -11,7 +11,6 @@ pub mod deeplx;
 pub mod factory;
 pub mod llm;
 pub mod multi;
-pub mod routing;
 pub mod service;
 pub mod tencent;
 pub mod r#trait;
@@ -40,6 +39,3 @@ pub use batch::{create_batch_translator, BatchTranslator};
 
 // Re-export sync translation service
 pub use service::{BatchTranslationService, TranslationService};
-
-// Re-export routing
-pub use routing::{CapacityRouter, CapacityTranslator};

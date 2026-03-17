@@ -435,9 +435,7 @@ impl Cache for BinaryCache {
             return Ok(());
         }
 
-        let result: std::result::Result<(), std::io::Error> =
-            std::fs::remove_file(&self.cache_file_path);
-        match result {
+        match std::fs::remove_file(&self.cache_file_path) {
             Ok(_) => Ok(()),
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
             Err(e) => Err(TranslateError::Cache(format!(
@@ -526,9 +524,7 @@ impl Cache for BinaryCache {
         })?;
         let entry_count = index_lock.len();
 
-        let metadata: std::result::Result<std::fs::Metadata, std::io::Error> =
-            std::fs::metadata(&self.cache_file_path);
-        let total_size = match metadata {
+        let total_size = match std::fs::metadata(&self.cache_file_path) {
             Ok(m) => m.len(),
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => 0,
             Err(e) => {

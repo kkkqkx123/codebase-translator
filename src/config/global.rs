@@ -476,9 +476,6 @@ pub struct LLMProviderConfig {
     /// Rate limit (requests per second)
     #[serde(default = "default_rate_limit")]
     pub rate_limit: u32,
-    /// Priority for routing (lower = higher priority)
-    #[serde(default)]
-    pub priority: u32,
     /// Extra headers
     #[serde(default)]
     pub extra_headers: HashMap<String, String>,
@@ -700,7 +697,6 @@ mod tests {
                 proxy_url: None,
                 timeout: 30,
                 rate_limit: 10,
-                priority: 0,
                 extra_headers: std::collections::HashMap::new(),
                 extra_params: std::collections::HashMap::new(),
             },
@@ -717,7 +713,6 @@ mod tests {
                 proxy_url: None,
                 timeout: 30,
                 rate_limit: 10,
-                priority: 0,
                 extra_headers: std::collections::HashMap::new(),
                 extra_params: std::collections::HashMap::new(),
             },

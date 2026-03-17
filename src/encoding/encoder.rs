@@ -76,22 +76,14 @@ impl Encoder {
             if new_data.len() == data.len() {
                 return Ok(false);
             }
-            std::fs::write(path, new_data).map_err(|e| {
-                Error::Io(std::io::Error::new(
-                    std::io::ErrorKind::Other,
-                    format!("Failed to write file: {}", e),
-                ))
-            })?;
+            std::fs::write(path, new_data)
+                .map_err(|e| Error::io(format!("Failed to write file: {}", e)))?;
             return Ok(true);
         }
 
         let utf8_text = self.to_utf8(&data, from_encoding)?;
-        std::fs::write(path, utf8_text).map_err(|e| {
-            Error::Io(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                format!("Failed to write file: {}", e),
-            ))
-        })?;
+        std::fs::write(path, utf8_text)
+            .map_err(|e| Error::io(format!("Failed to write file: {}", e)))?;
 
         debug!(
             path = %path.display(),

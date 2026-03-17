@@ -57,9 +57,7 @@ impl Cache for FileCache {
 
         let cache_path = self.get_cache_path(file_hash);
 
-        let data_result: std::result::Result<String, std::io::Error> =
-            std::fs::read_to_string(&cache_path);
-        let data = match data_result {
+        let data = match std::fs::read_to_string(&cache_path) {
             Ok(d) => d,
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(None),
             Err(e) => {
@@ -86,9 +84,7 @@ impl Cache for FileCache {
         }
 
         let cache_dir = self.get_cache_dir();
-        let create_result: std::result::Result<(), std::io::Error> =
-            std::fs::create_dir_all(&cache_dir);
-        create_result
+        std::fs::create_dir_all(&cache_dir)
             .map_err(|e| TranslateError::Cache(format!("Failed to create cache dir: {}", e)))?;
 
         let mut entry_to_save = entry.clone();
@@ -99,9 +95,7 @@ impl Cache for FileCache {
             .map_err(|e| TranslateError::Cache(format!("JSON serialize error: {}", e)))?;
 
         let cache_path = self.get_cache_path(&entry.file_hash);
-        let write_result: std::result::Result<(), std::io::Error> =
-            std::fs::write(&cache_path, data);
-        write_result
+        std::fs::write(&cache_path, data)
             .map_err(|e| TranslateError::Cache(format!("Failed to write cache file: {}", e)))?;
 
         Ok(())
@@ -114,8 +108,7 @@ impl Cache for FileCache {
 
         let cache_path = self.get_cache_path(file_hash);
 
-        let result: std::result::Result<(), std::io::Error> = std::fs::remove_file(&cache_path);
-        match result {
+        match std::fs::remove_file(&cache_path) {
             Ok(_) => Ok(()),
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
             Err(e) => Err(TranslateError::Cache(format!(
@@ -132,8 +125,7 @@ impl Cache for FileCache {
 
         let cache_dir = self.get_cache_dir();
 
-        let result: std::result::Result<(), std::io::Error> = std::fs::remove_dir_all(&cache_dir);
-        match result {
+        match std::fs::remove_dir_all(&cache_dir) {
             Ok(_) => Ok(()),
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
             Err(e) => Err(TranslateError::Cache(format!(
@@ -156,9 +148,7 @@ impl Cache for FileCache {
 
         let mut result = Vec::new();
 
-        let read_dir_result: std::result::Result<std::fs::ReadDir, std::io::Error> =
-            std::fs::read_dir(&cache_dir);
-        let entries: std::fs::ReadDir = match read_dir_result {
+        let entries = match std::fs::read_dir(&cache_dir) {
             Ok(e) => e,
             Err(ref e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(Vec::new()),
             Err(e) => {
@@ -187,9 +177,7 @@ impl Cache for FileCache {
                 continue;
             }
 
-            let data_result: std::result::Result<String, std::io::Error> =
-                std::fs::read_to_string(&path);
-            let data = match data_result {
+            let data = match std::fs::read_to_string(&path) {
                 Ok(d) => d,
                 Err(_) => continue,
             };
@@ -214,9 +202,7 @@ impl Cache for FileCache {
 
         let mut cleaned_count = 0;
 
-        let read_dir_result: std::result::Result<std::fs::ReadDir, std::io::Error> =
-            std::fs::read_dir(&cache_dir);
-        let entries: std::fs::ReadDir = match read_dir_result {
+        let entries = match std::fs::read_dir(&cache_dir) {
             Ok(e) => e,
             Err(ref e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(0),
             Err(e) => {
@@ -248,8 +234,7 @@ impl Cache for FileCache {
             let file_hash = name_str.trim_end_matches(".json");
 
             if !existing_hashes.contains_key(file_hash) {
-                let result: std::result::Result<(), std::io::Error> = std::fs::remove_file(&path);
-                if result.is_ok() {
+                if std::fs::remove_file(&path).is_ok() {
                     cleaned_count += 1;
                 }
             }
@@ -267,9 +252,7 @@ impl Cache for FileCache {
 
         let mut stats = CacheStats::default();
 
-        let read_dir_result: std::result::Result<std::fs::ReadDir, std::io::Error> =
-            std::fs::read_dir(&cache_dir);
-        let entries: std::fs::ReadDir = match read_dir_result {
+        let entries = match std::fs::read_dir(&cache_dir) {
             Ok(e) => e,
             Err(ref e) if e.kind() == std::io::ErrorKind::NotFound => {
                 return Ok(CacheStats::default())
@@ -291,9 +274,7 @@ impl Cache for FileCache {
 
             stats.entry_count += 1;
 
-            let metadata_result: std::result::Result<std::fs::Metadata, std::io::Error> =
-                std::fs::metadata(&path);
-            if let Ok(metadata) = metadata_result {
+            if let Ok(metadata) = std::fs::metadata(&path) {
                 stats.total_size += metadata.len() as u64;
             }
         }

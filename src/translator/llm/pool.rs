@@ -218,7 +218,7 @@ impl ProviderPool {
         ))
     }
 
-    /// Get provider by weighted strategy
+    /// Get provider by weighted strategy using random selection
     async fn get_weighted_provider(&self) -> Result<Arc<ProviderImpl>> {
         let providers = self.providers.read().await;
 
@@ -233,10 +233,8 @@ impl ProviderPool {
             return self.get_round_robin_provider().await;
         }
 
-        let target_weight = self
-            .current_index
-            .fetch_add(1, std::sync::atomic::Ordering::Relaxed) as u32
-            % total_weight;
+        // Use random selection for weighted distribution
+        let target_weight = rand::random::<u32>() % total_weight;
 
         let mut current_weight = 0u32;
         for provider in providers.iter() {
@@ -246,6 +244,11 @@ impl ProviderPool {
 
             current_weight += provider.weight();
             if target_weight < current_weight {
+                tracing::debug!(
+                    "Weighted selected provider {} with weight {}",
+                    provider.id(),
+                    provider.weight()
+                );
                 return Ok(provider.clone());
             }
         }
