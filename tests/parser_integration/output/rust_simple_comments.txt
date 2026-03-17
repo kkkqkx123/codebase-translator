@@ -1,4 +1,4 @@
-Extracted 19 translation units from rust_simple_comments
+Extracted 20 translation units from rust_simple_comments
 ==================================================
 
 --- Unit 1 ---
@@ -131,6 +131,13 @@ Content:
        comment */
 
 --- Unit 19 ---
+ID: test.rs_string_literal_0
+Type: string_literal
+Position: Line 32, Column 14 (Offset: 614)
+Content:
+"Hello, world!"
+
+--- Unit 20 ---
 ID: test.rs_comment_22
 Type: comment
 Position: Line 41, Column 1 (Offset: 746)

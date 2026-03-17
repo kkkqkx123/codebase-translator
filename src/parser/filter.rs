@@ -438,6 +438,50 @@ pub fn default_filter() -> crate::core::error::Result<ContentFilter> {
     ContentFilter::default()
 }
 
+/// Create a filter from project config
+pub fn from_project_config(
+    config: &crate::config::project::FilterConfig,
+) -> crate::core::error::Result<ContentFilter> {
+    let filter_config = FilterConfig {
+        exclude_keywords: config.exclude_keywords.clone(),
+        exclude_patterns: config.exclude_patterns.clone(),
+        include_patterns: config.include_patterns.clone(),
+        min_length: config.min_length,
+        max_length: if config.max_length == 0 {
+            10000
+        } else {
+            config.max_length
+        },
+        allow_placeholders: config.allow_placeholders,
+        detect_code_patterns: config.detect_code_patterns,
+    };
+    ContentFilter::new(filter_config)
+}
+
+/// Create a filter from project config with translator max length
+pub fn from_project_config_with_translator(
+    project_config: &crate::config::project::FilterConfig,
+    translator_max_length: Option<usize>,
+) -> crate::core::error::Result<ContentFilter> {
+    let max_length = match (project_config.max_length, translator_max_length) {
+        (0, None) => 10000,
+        (0, Some(translator_max)) => translator_max,
+        (project_max, None) => project_max,
+        (project_max, Some(translator_max)) => project_max.min(translator_max),
+    };
+
+    let filter_config = FilterConfig {
+        exclude_keywords: project_config.exclude_keywords.clone(),
+        exclude_patterns: project_config.exclude_patterns.clone(),
+        include_patterns: project_config.include_patterns.clone(),
+        min_length: project_config.min_length,
+        max_length,
+        allow_placeholders: project_config.allow_placeholders,
+        detect_code_patterns: project_config.detect_code_patterns,
+    };
+    ContentFilter::new(filter_config)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

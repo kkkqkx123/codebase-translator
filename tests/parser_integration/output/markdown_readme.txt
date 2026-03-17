@@ -13,14 +13,14 @@ ID: readme.md_comment_1
 Type: comment
 Position: Line 6, Column 2 (Offset: 142)
 Content:
-# Installation
+Installation
 
 --- Unit 3 ---
 ID: readme.md_comment_2
 Type: comment
 Position: Line 14, Column 2 (Offset: 229)
 Content:
-# Usage
+Usage
 
 --- Unit 4 ---
 ID: readme.md_string_13
@@ -46,49 +46,49 @@ ID: readme.md_comment_4
 Type: comment
 Position: Line 25, Column 2 (Offset: 365)
 Content:
-# Features
+Features
 
 --- Unit 7 ---
 ID: readme.md_comment_5
 Type: comment
 Position: Line 31, Column 2 (Offset: 493)
 Content:
-# API Reference
+API Reference
 
 --- Unit 8 ---
 ID: readme.md_comment_6
 Type: comment
 Position: Line 33, Column 2 (Offset: 511)
 Content:
-## Functions
+# Functions
 
 --- Unit 9 ---
 ID: readme.md_comment_7
 Type: comment
 Position: Line 35, Column 2 (Offset: 526)
 Content:
-### `add(a, b)`
+## `add(a, b)`
 
 --- Unit 10 ---
 ID: readme.md_comment_8
 Type: comment
 Position: Line 52, Column 2 (Offset: 773)
 Content:
-# Contributing
+Contributing
 
 --- Unit 11 ---
 ID: readme.md_comment_9
 Type: comment
 Position: Line 56, Column 2 (Offset: 873)
 Content:
-# License
+License
 
 --- Unit 12 ---
 ID: readme.md_comment_10
 Type: comment
 Position: Line 60, Column 2 (Offset: 934)
 Content:
-# Contact
+Contact
 
 --- Unit 13 ---
 ID: readme.md_comment_11

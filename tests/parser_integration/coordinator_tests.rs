@@ -36,17 +36,27 @@ fn test_coordinator_creation_with_defaults() {
 
 #[test]
 fn test_coordinator_creation_with_custom_config() {
-    let config = ParserConfig {
+    let parser_config = ParserConfig {
         extract_comments: true,
         extract_docstrings: false,
         extract_strings: true,
-        min_content_length: 5,
-        max_content_length: 500,
         trim_content: true,
+        ..Default::default()
     };
 
+    let filter_config = FilterConfig {
+        min_length: 5,
+        max_length: 500,
+        ..Default::default()
+    };
+
+    let filter = Arc::new(
+        ContentFilter::new(filter_config).expect("Failed to create filter")
+    );
+    let strategy = Arc::new(default_strategy());
+
     let coordinator =
-        ParserCoordinator::with_defaults(config).expect("Failed to create coordinator");
+        ParserCoordinator::new(parser_config, strategy, filter).expect("Failed to create coordinator");
 
     assert!(coordinator.tree_sitter_parser_count() > 0);
 }

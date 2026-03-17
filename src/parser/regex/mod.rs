@@ -22,10 +22,14 @@ pub mod parser;
 // State machine matcher
 pub mod state_machine;
 
+// Custom pattern matcher
+pub mod custom_pattern_matcher;
+
 // Utilities
 pub mod utils;
 
 // Re-exports
 pub use config::RegexParserConfig;
+pub use custom_pattern_matcher::{CustomPatternMatch, CustomPatternMatcher};
 pub use parser::RegexParser;
 pub use state_machine::{StateMachineBuilder, StateMachineMatch, StateMachineMatcher};

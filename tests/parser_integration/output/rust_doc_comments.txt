@@ -1,4 +1,4 @@
-Extracted 47 translation units from rust_doc_comments
+Extracted 48 translation units from rust_doc_comments
 ==================================================
 
 --- Unit 1 ---
@@ -337,4 +337,11 @@ Type: doc_string
 Position: Line 91, Column 1 (Offset: 1650)
 Content:
 /// say_hello!();
+
+--- Unit 48 ---
+ID: test.rs_string_literal_1
+Type: string_literal
+Position: Line 96, Column 18 (Offset: 1746)
+Content:
+"Hello!"
 

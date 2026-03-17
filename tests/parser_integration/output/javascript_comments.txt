@@ -1,4 +1,4 @@
-Extracted 15 translation units from javascript_comments
+Extracted 17 translation units from javascript_comments
 ==================================================
 
 --- Unit 1 ---
@@ -112,13 +112,27 @@ Content:
 // Template literals
 
 --- Unit 14 ---
+ID: test.js_string_literal_1
+Type: string_literal
+Position: Line 77, Column 14 (Offset: 1467)
+Content:
+"world"
+
+--- Unit 15 ---
 ID: test.js_comment_21
 Type: comment
 Position: Line 84, Column 1 (Offset: 1570)
 Content:
 // String with escapes
 
---- Unit 15 ---
+--- Unit 16 ---
+ID: test.js_string_literal_4
+Type: string_literal
+Position: Line 85, Column 17 (Offset: 1609)
+Content:
+"Line 1\nLine 2\tTabbed"
+
+--- Unit 17 ---
 ID: test.js_comment_22
 Type: comment
 Position: Line 87, Column 1 (Offset: 1636)

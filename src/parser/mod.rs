@@ -62,7 +62,9 @@ pub mod r#trait;
 
 // Re-export commonly used types
 pub use core::{ExtractionCandidate, ExtractionType, Extractor, QueryExecutor, StringProcessor};
-pub use filter::{ContentFilter, FilterConfig};
+pub use filter::{
+    from_project_config, from_project_config_with_translator, ContentFilter, FilterConfig,
+};
 pub use function_patterns::{FunctionCategory, LanguageFunctionPatterns};
 pub use language::{LanguageDetector, LanguageInfo};
 pub use languages::RustParser;

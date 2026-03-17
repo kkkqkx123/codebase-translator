@@ -77,18 +77,3 @@ pub enum TranslateError {
     Parse { message: String },
 }
 ```
-
-### Trait-Based Design
-```rust
-#[async_trait]
-pub trait Translator: Send + Sync {
-    async fn translate(&self, texts: &[String], target_lang: &str) -> Result<Vec<String>>;
-}
-```
-
-## Related Documentation
-
-- [Architecture Design](docs/architecture.md) - Detailed system architecture design
-- [Rust Migration Guide](docs/rust-migration/architecture-design.md) - Rust-specific architecture
-- [Dependency Mapping](docs/rust-migration/dependency-mapping.md) - Go to Rust dependency mapping
-- [Requirements Specification](docs/spec/) - Functional requirements and acceptance criteria

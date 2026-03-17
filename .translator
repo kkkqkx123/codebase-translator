@@ -172,12 +172,47 @@ property_patterns = [
     "hint",
 ]
 
-# 自定义正则模式（高级）
-# [[parser.extraction.string_literals.custom_patterns.regex_patterns]]
-# name = "custom_error"
-# category = "error_handling"  # error_handling, output, variables, properties, other
-# regex = 'throw new Error\("([^"]+)"\)'
-# group = 1  # 捕获组索引
+# 自定义正则模式（简单）
+# 用于简单的单步正则匹配，提取特定模式的文本
+# 这些模式会与状态机模式一起应用到所有符合扩展名条件的文件
+[[extraction.custom_patterns]]
+name = "todo_pattern"
+file_extensions = ["js", "ts", "py", "rs", "go"]  # 适用的文件扩展名，空表示所有文件
+category = "other"  # error_handling, output, variables, properties, other
+regex = 'TODO:\s*(.+)'
+group = 1  # 捕获组索引
+
+# 自定义正则模式示例：提取自定义错误消息
+[[extraction.custom_patterns]]
+name = "custom_error_message"
+file_extensions = ["js", "ts", "jsx", "tsx"]
+category = "error_handling"
+regex = 'throw new Error\("([^"]+)"\)'
+group = 1
+
+# 自定义正则模式示例：提取日志消息
+[[extraction.custom_patterns]]
+name = "custom_log_message"
+file_extensions = ["py", "rb"]
+category = "output"
+regex = 'logger\.(info|debug|warn|error)\("([^"]+)"\)'
+group = 2
+
+# 自定义正则模式示例：提取配置消息
+[[extraction.custom_patterns]]
+name = "config_message"
+file_extensions = ["js", "ts"]
+category = "other"
+regex = 'message:\s*"([^"]+)"'
+group = 1
+
+# 自定义正则模式示例：提取注释中的标记
+[[extraction.custom_patterns]]
+name = "note_pattern"
+file_extensions = []  # 空列表表示应用到所有文件
+category = "other"
+regex = 'NOTE:\s*(.+)'
+group = 1
 
 # 提取配置
 # 控制从代码中提取哪些内容进行翻译
@@ -189,7 +224,8 @@ format_strings = true        # 是否提取格式化字符串
 
 # 状态机模式（高级）
 # 用于匹配复杂的代码模式，支持多步骤匹配
-# 状态机现在位于 extraction 配置的顶层，适用于所有解析器
+# 状态机与自定义正则模式是平级的，一起应用到所有符合扩展名条件的文件
+# 状态机模式位于 extraction 配置的顶层，适用于所有解析器（Tree-sitter 和 Regex）
 # [[extraction.state_machine_patterns]]
 # name = "i18n_with_default"
 # file_extensions = ["js", "ts", "jsx", "tsx"]  # 适用的文件扩展名，空表示所有文件
@@ -288,11 +324,6 @@ format_strings = true        # 是否提取格式化字符串
 # regex = 'message:\s*["\']([^"\']+)["\']'
 # capture_group = 1
 # is_final = true
-
-# 自定义正则模式（简单）
-# [[extraction.custom_patterns]]
-# pattern = 'TODO:\s*(.+)'
-# category = "other"  # 可选：error_handling, output, variables, properties, other
 
 # 编码检测配置
 [encoding]

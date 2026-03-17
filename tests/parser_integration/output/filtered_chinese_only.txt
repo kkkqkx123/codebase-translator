@@ -5,11 +5,27 @@ Chinese-only content (to be translated zh->en):
 2: [doc_string] /// 这是一个纯中文的文档注释
 3: [comment] /// 当源语言为zh，目标语言为en时，应该被提取
 4: [doc_string] /// 当源语言为zh，目标语言为en时，应该被提取
-5: [comment] /// Mixed content: 你好 World
-6: [doc_string] /// Mixed content: 你好 World
-7: [comment] /// 包含两种语言的内容
-8: [doc_string] /// 包含两种语言的内容
-9: [comment] // 纯中文注释
+5: [string_literal] "这是一个中文字符串"
+6: [string_literal] "你好世界"
+7: [comment] /// Mixed content: 你好 World
+8: [doc_string] /// Mixed content: 你好 World
+9: [comment] /// 包含两种语言的内容
+10: [doc_string] /// 包含两种语言的内容
+11: [string_literal] "Hello 世界"
+12: [string_literal] "欢迎使用 Rust programming language"
+13: [string_literal] "混合内容 mixed content"
+14: [comment] // 纯中文注释
+15: [string_literal] "测试值"
+16: [string_literal] "另一个值"
+17: [string_literal] "系统发生错误"
+18: [string_literal] "断言失败"
+19: [string_literal] "Error: 操作失败"
+20: [string_literal] "应用程序已启动"
+21: [string_literal] "正在处理请求"
+22: [string_literal] "User 张三 logged in"
+23: [string_literal] "中文常量值"
+24: [string_literal] "Mixed 混合 value"
+25: [string_literal] "操作失败"
 
 
 English-only content (skip translation):
@@ -21,14 +37,24 @@ English-only content (skip translation):
 4: [doc_string] /// This is an English-only doc comment
 5: [comment] /// It should NOT be extracted when source is zh and target is en
 6: [doc_string] /// It should NOT be extracted when source is zh and target is en
-7: [comment] /// This function has both languages
-8: [doc_string] /// This function has both languages
-9: [comment] // Pure English comment
-10: [comment] // English errors - should NOT be extracted
-11: [comment] // Chinese errors - should be extracted
-12: [comment] // Mixed errors - should be extracted (contains Chinese)
-13: [comment] // English logs - should NOT be extracted
-14: [comment] // Chinese logs - should be extracted
-15: [comment] // Mixed logs - should be extracted
-16: [comment] // English - should NOT be extracted
-17: [comment] // Chinese - should be extracted
+7: [string_literal] "This is an English string"
+8: [string_literal] "Hello World"
+9: [comment] /// This function has both languages
+10: [doc_string] /// This function has both languages
+11: [comment] // Pure English comment
+12: [string_literal] "test value"
+13: [string_literal] "another value"
+14: [comment] // English errors - should NOT be extracted
+15: [string_literal] "System error occurred"
+16: [string_literal] "Assertion failed"
+17: [comment] // Chinese errors - should be extracted
+18: [comment] // Mixed errors - should be extracted (contains Chinese)
+19: [comment] // English logs - should NOT be extracted
+20: [string_literal] "Application started"
+21: [string_literal] "Processing request"
+22: [comment] // Chinese logs - should be extracted
+23: [comment] // Mixed logs - should be extracted
+24: [string_literal] "English constant value"
+25: [comment] // English - should NOT be extracted
+26: [string_literal] "Operation successful"
+27: [comment] // Chinese - should be extracted

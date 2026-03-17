@@ -13,28 +13,28 @@ ID: test.md_comment_1
 Type: comment
 Position: Line 7, Column 2 (Offset: 241)
 Content:
-# Section with Mixed Content
+Section with Mixed Content
 
 --- Unit 3 ---
 ID: test.md_comment_2
 Type: comment
 Position: Line 11, Column 2 (Offset: 383)
 Content:
-## Pure English Subsection
+# Pure English Subsection
 
 --- Unit 4 ---
 ID: test.md_comment_3
 Type: comment
 Position: Line 15, Column 2 (Offset: 481)
 Content:
-## 纯中文小节
+# 纯中文小节
 
 --- Unit 5 ---
 ID: test.md_comment_4
 Type: comment
 Position: Line 19, Column 2 (Offset: 561)
 Content:
-# Code Examples
+Code Examples
 
 --- Unit 6 ---
 ID: test.md_comment_5
@@ -76,33 +76,33 @@ ID: test.md_comment_7
 Type: comment
 Position: Line 36, Column 2 (Offset: 932)
 Content:
-# Lists
+Lists
 
 --- Unit 12 ---
 ID: test.md_comment_8
 Type: comment
 Position: Line 53, Column 2 (Offset: 1174)
 Content:
-# Blockquotes
+Blockquotes
 
 --- Unit 13 ---
 ID: test.md_comment_9
 Type: comment
 Position: Line 61, Column 2 (Offset: 1339)
 Content:
-# Tables
+Tables
 
 --- Unit 14 ---
 ID: test.md_comment_10
 Type: comment
 Position: Line 71, Column 2 (Offset: 1551)
 Content:
-# Links and References
+Links and References
 
 --- Unit 15 ---
 ID: test.md_comment_11
 Type: comment
 Position: Line 77, Column 2 (Offset: 1650)
 Content:
-# Emphasis
+Emphasis
 

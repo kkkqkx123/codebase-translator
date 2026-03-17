@@ -483,9 +483,9 @@ pub struct ExtractionConfig {
     /// Extract string literals
     #[serde(default)]
     pub string_literals: StringLiteralConfig,
-    /// Custom regex patterns
+    /// Custom regex patterns (simple regex-based extraction)
     #[serde(default)]
-    pub custom_patterns: Vec<String>,
+    pub custom_patterns: Vec<CustomRegexPattern>,
     /// Advanced state machine patterns
     #[serde(default)]
     pub state_machine_patterns: Vec<StateMachinePattern>,
@@ -562,6 +562,10 @@ fn default_categories() -> StringLiteralCategories {
 pub struct CustomRegexPattern {
     /// Pattern name for identification
     pub name: String,
+    /// File extensions this pattern applies to
+    /// Empty means applies to all files
+    #[serde(default)]
+    pub file_extensions: Vec<String>,
     /// Category this pattern belongs to
     #[serde(default)]
     pub category: StringLiteralCategory,
