@@ -1,0 +1,13 @@
+顶部注释nt
+fn main() {
+    函数注释nt
+    let x = 5; 行内注释t
+    /*
+     * 块注释
+     * 多行
+     */
+     * with multiple lines
+     */
+    let y = 10;
+底部注释
+// Bottom comment

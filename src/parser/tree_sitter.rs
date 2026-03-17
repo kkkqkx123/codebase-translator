@@ -169,7 +169,95 @@ impl TreeSitterParser {
         // Sort by position for consistent ordering
         units.sort_by(|a, b| a.start_pos.offset.cmp(&b.start_pos.offset));
 
-        Ok(units)
+        // Merge consecutive multi-line comments
+        let merged_units = self.merge_multiline_comments(units);
+
+        Ok(merged_units)
+    }
+
+    /// Merge consecutive multi-line comments into single units
+    fn merge_multiline_comments(&self, units: Vec<TranslationUnit>) -> Vec<TranslationUnit> {
+        if units.is_empty() {
+            return units;
+        }
+
+        let mut merged = Vec::new();
+        let mut current_group: Vec<TranslationUnit> = Vec::new();
+
+        for unit in units {
+            // Check if this unit can be merged with the current group
+            let can_merge = if let Some(last) = current_group.last() {
+                // Check if they are on consecutive lines
+                unit.start_pos.line == last.end_pos.line + 1
+                    && unit.node_type == last.node_type
+                    && unit.format_info.is_some()
+                    && last.format_info.is_some()
+                    && unit.format_info.as_ref().unwrap().style == CommentStyle::DocOuter
+                    && last.format_info.as_ref().unwrap().style == CommentStyle::DocOuter
+            } else {
+                false
+            };
+
+            if can_merge {
+                current_group.push(unit);
+            } else {
+                // Process the current group
+                if !current_group.is_empty() {
+                    if current_group.len() > 1 {
+                        merged.push(self.merge_comment_group(current_group));
+                    } else {
+                        merged.push(current_group.into_iter().next().unwrap());
+                    }
+                    current_group = Vec::new();
+                }
+                current_group.push(unit);
+            }
+        }
+
+        // Process the last group
+        if !current_group.is_empty() {
+            if current_group.len() > 1 {
+                merged.push(self.merge_comment_group(current_group));
+            } else {
+                merged.push(current_group.into_iter().next().unwrap());
+            }
+        }
+
+        merged
+    }
+
+    /// Merge a group of consecutive comments into a single unit
+    fn merge_comment_group(&self, mut group: Vec<TranslationUnit>) -> TranslationUnit {
+        // Sort by line number
+        group.sort_by(|a, b| a.start_pos.line.cmp(&b.start_pos.line));
+
+        // Create merged content
+        let merged_content: String = group
+            .iter()
+            .map(|u| u.content.as_str())
+            .collect::<Vec<_>>()
+            .join("\n");
+
+        // Get the first and last positions
+        let first = &group[0];
+        let last = &group[group.len() - 1];
+
+        // Update format info to mark as multiline
+        let mut format_info = first.format_info.clone().unwrap();
+        format_info.is_multiline = true;
+
+        // Create merged unit
+        TranslationUnit {
+            id: format!("{}_merged", first.id),
+            node_type: first.node_type,
+            content: merged_content,
+            start_pos: first.start_pos.clone(),
+            end_pos: last.end_pos.clone(),
+            language: first.language.clone(),
+            should_translate: true,
+            translated: None,
+            format_info: Some(format_info),
+        }
     }
 
     /// Extract units using a tree-sitter query

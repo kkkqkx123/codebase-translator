@@ -175,6 +175,9 @@ pub struct FormatInfo {
     pub line_prefix: Option<String>,
     /// Whether the comment ends with a newline
     pub ends_with_newline: bool,
+    /// Whether this is a multi-line comment (merged from multiple lines)
+    #[serde(default)]
+    pub is_multiline: bool,
 }
 
 impl FormatInfo {
@@ -185,6 +188,7 @@ impl FormatInfo {
             base_indent: indent.into(),
             line_prefix: None,
             ends_with_newline: false,
+            is_multiline: false,
         }
     }
 
@@ -195,6 +199,7 @@ impl FormatInfo {
             base_indent: indent.into(),
             line_prefix: Some(line_prefix.into()),
             ends_with_newline: false,
+            is_multiline: false,
         }
     }
 
@@ -205,6 +210,35 @@ impl FormatInfo {
             base_indent: indent.into(),
             line_prefix: None,
             ends_with_newline: false,
+            is_multiline: false,
+        }
+    }
+
+    /// Create new format info for a multi-line comment (merged from multiple lines)
+    pub fn multiline_block(
+        indent: impl Into<String>,
+        line_prefix: impl Into<String>,
+    ) -> Self {
+        Self {
+            style: CommentStyle::BlockMulti,
+            base_indent: indent.into(),
+            line_prefix: Some(line_prefix.into()),
+            ends_with_newline: false,
+            is_multiline: true,
+        }
+    }
+
+    /// Create new format info for a multi-line doc comment
+    pub fn multiline_doc_block(
+        indent: impl Into<String>,
+        line_prefix: impl Into<String>,
+    ) -> Self {
+        Self {
+            style: CommentStyle::DocBlock,
+            base_indent: indent.into(),
+            line_prefix: Some(line_prefix.into()),
+            ends_with_newline: false,
+            is_multiline: true,
         }
     }
 }

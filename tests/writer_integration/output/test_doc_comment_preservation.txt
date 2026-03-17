@@ -1,0 +1,53 @@
+Test: test_doc_comment_preservation
+==================================================
+
+--- Translation Units ---
+Unit 1:
+  ID: 1
+  Content: "This is a doc comment"
+  Position: Line 1, Col 5-26
+  Translated: "这是一个文档注释"
+
+Unit 2:
+  ID: 2
+  Content: "with multiple lines"
+  Position: Line 2, Col 5-24
+  Translated: "多行"
+
+Unit 3:
+  ID: 3
+  Content: "Another doc comment"
+  Position: Line 7, Col 5-24
+  Translated: "另一个文档注释"
+
+Unit 4:
+  ID: 4
+  Content: "for another function"
+  Position: Line 8, Col 5-25
+  Translated: "用于另一个函数"
+
+--- Original Content ---
+/// This is a doc comment
+/// with multiple lines
+fn example() -> i32 {
+    42
+}
+
+/// Another doc comment
+/// for another function
+fn another() -> i32 {
+    100
+}
+
+--- Written Content ---
+/// 这是一个文档注释
+/// 多行
+fn example() -> i32 {
+    42
+}
+
+/// 另一个文档注释
+/// 用于另一个函数
+fn another() -> i32 {
+    100
+}

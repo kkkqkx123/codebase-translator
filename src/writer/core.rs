@@ -29,25 +29,79 @@ impl TranslationApplier {
         let normalized_content = content.replace("\r\n", "\n");
         let lines: Vec<&str> = normalized_content.split('\n').collect();
 
+        // Separate multiline and single-line units
+        let mut multiline_units: Vec<&TranslationUnit> = Vec::new();
         let mut unit_map: std::collections::HashMap<usize, Vec<&TranslationUnit>> =
             std::collections::HashMap::new();
+
         for unit in units {
             if unit.start_pos.line >= 1 {
-                unit_map.entry(unit.start_pos.line).or_default().push(unit);
+                if unit.format_info.as_ref().map(|f| f.is_multiline).unwrap_or(false) {
+                    multiline_units.push(unit);
+                } else {
+                    unit_map.entry(unit.start_pos.line).or_default().push(unit);
+                }
             }
         }
 
         let mut builder = String::with_capacity(content.len());
+        let mut line_idx = 0;
 
-        for (line_num, line) in lines.iter().enumerate() {
-            if let Some(line_units) = unit_map.get(&(line_num + 1)) {
-                builder.push_str(&Self::apply_translations_to_line(line, line_units));
-            } else {
-                builder.push_str(line);
+        while line_idx < lines.len() {
+            let line_num = line_idx + 1;
+
+            // Check if this line is part of a multiline comment
+            let multiline_unit = multiline_units
+                .iter()
+                .find(|u| line_num >= u.start_pos.line && line_num <= u.end_pos.line);
+
+            if let Some(unit) = multiline_unit {
+                // This line is part of a multiline comment
+                if line_num == unit.start_pos.line {
+                    // First line of multiline comment - apply the full replacement
+                    if let Some(translated) = &unit.translated {
+                        let formatted = if let Some(format) = &unit.format_info {
+                            Self::format_translated_text(translated, format)
+                        } else {
+                            translated.clone()
+                        };
+
+                        // Calculate how many lines this multiline comment spans
+                        let line_count = unit.end_pos.line - unit.start_pos.line + 1;
+
+                        // Replace the first line's content
+                        let line = lines[line_idx];
+                        let start_char = unit.start_pos.column.saturating_sub(1);
+                        let chars: Vec<char> = line.chars().collect();
+
+                        if start_char < chars.len() {
+                            builder.push_str(&chars[..start_char].iter().collect::<String>());
+                        }
+                        builder.push_str(&formatted);
+
+                        // Skip the remaining lines of this multiline comment
+                        line_idx += line_count;
+                        continue;
+                    }
+                } else {
+                    // Skip intermediate lines of multiline comment
+                    line_idx += 1;
+                    continue;
+                }
             }
-            if line_num < lines.len() - 1 {
+
+            // Regular single-line processing
+            if let Some(line_units) = unit_map.get(&line_num) {
+                builder.push_str(&Self::apply_translations_to_line(lines[line_idx], line_units));
+            } else {
+                builder.push_str(lines[line_idx]);
+            }
+
+            if line_idx < lines.len() - 1 {
                 builder.push_str(line_ending);
             }
+
+            line_idx += 1;
         }
 
         Ok(builder)
@@ -139,6 +193,11 @@ impl TranslationApplier {
 
     /// Format translated text according to the original format
     fn format_translated_text(translated: &str, format: &FormatInfo) -> String {
+        // Check if this is a multiline comment that needs special handling
+        if format.is_multiline {
+            return Self::format_multiline_comment(translated, format);
+        }
+
         match format.style {
             CommentStyle::Line => {
                 // For line comments, just return the text as-is
@@ -155,31 +214,42 @@ impl TranslationApplier {
             }
             CommentStyle::DocOuter => {
                 // Outer doc comment: /// text
-                if let Some(prefix) = &format.line_prefix {
-                    translated
-                        .lines()
-                        .map(|line| format!("{}{}", prefix, line))
-                        .collect::<Vec<_>>()
-                        .join("\n")
-                } else {
-                    translated.to_string()
-                }
+                // The comment prefix is preserved in the original line
+                translated.to_string()
             }
             CommentStyle::DocInner => {
                 // Inner doc comment: //! text
-                if let Some(prefix) = &format.line_prefix {
-                    translated
-                        .lines()
-                        .map(|line| format!("{}{}", prefix, line))
-                        .collect::<Vec<_>>()
-                        .join("\n")
-                } else {
-                    translated.to_string()
-                }
+                // The comment prefix is preserved in the original line
+                translated.to_string()
             }
             CommentStyle::DocBlock => {
                 // Block doc comment: /** ... */
                 Self::format_multiline_block_comment(translated, format)
+            }
+        }
+    }
+
+    /// Format a multiline comment (merged from multiple lines)
+    fn format_multiline_comment(translated: &str, format: &FormatInfo) -> String {
+        let lines: Vec<&str> = translated.lines().collect();
+
+        if lines.is_empty() {
+            return String::new();
+        }
+
+        match format.style {
+            CommentStyle::DocOuter | CommentStyle::DocInner => {
+                // For doc comments, add prefix to each line
+                let prefix = format.line_prefix.as_deref().unwrap_or("");
+                lines.join(&format!("\n{}", prefix))
+            }
+            CommentStyle::BlockMulti | CommentStyle::DocBlock => {
+                // For block comments, use the existing multiline block comment formatter
+                Self::format_multiline_block_comment(translated, format)
+            }
+            _ => {
+                // For other styles, just join with newlines
+                lines.join("\n")
             }
         }
     }
