@@ -7,11 +7,14 @@ pub mod cache;
 pub mod config;
 pub mod core;
 pub mod encoding;
+pub mod factory;
 pub mod logger;
 pub mod parser;
 pub mod reporter;
 pub mod scanner;
 pub mod translator;
+pub mod utils;
+pub mod workflow;
 pub mod writer;
 
 // Re-export core types
@@ -26,6 +29,17 @@ pub use reporter::Reporter;
 pub use scanner::Scanner;
 pub use translator::{ProviderType, Translator};
 pub use writer::r#trait::{AsyncWriter, Writer};
+
+// Re-export workflow types
+pub use workflow::{
+    FileProcessResult, FileProcessor, TranslationWorkflow, WorkflowConfig, WorkflowResult,
+};
+
+// Re-export factory functions
+pub use factory::{create_cache, create_parser, create_translator, create_writer};
+
+// Re-export utility functions
+pub use utils::hash::calculate_hash;
 
 /// Version of the library
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");

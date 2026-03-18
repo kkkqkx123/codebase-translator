@@ -266,7 +266,7 @@ impl FileWriter {
             let _ = tokio::fs::set_permissions(&backup_path, perm).await;
         }
 
-        info!(
+        debug!(
             file = %file_path.display(),
             backup = %backup_path.display(),
             "Backup created"

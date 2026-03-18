@@ -36,12 +36,16 @@ impl TranslationApplier {
 
         for unit in units {
             if unit.start_pos.line >= 1 {
-                if unit
+                // Check if this is a multiline unit:
+                // 1. If format_info is set, use its is_multiline flag
+                // 2. Otherwise, check if start and end positions are on different lines
+                let is_multiline = unit
                     .format_info
                     .as_ref()
                     .map(|f| f.is_multiline)
-                    .unwrap_or(false)
-                {
+                    .unwrap_or_else(|| unit.start_pos.line != unit.end_pos.line);
+
+                if is_multiline {
                     multiline_units.push(unit);
                 } else {
                     unit_map.entry(unit.start_pos.line).or_default().push(unit);

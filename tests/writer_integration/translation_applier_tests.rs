@@ -1,6 +1,6 @@
 //! TranslationApplier integration tests
 
-use codebase_translate::core::models::{CommentStyle, FormatInfo, NodeType, Position};
+use codebase_translate::core::models::{CommentStyle, FormatInfo, NodeType, Position, TranslationUnit};
 use codebase_translate::writer::apply_translations;
 
 use super::common::*;
@@ -402,4 +402,34 @@ fn test_translation_applier_preserves_line_structure() {
     assert!(modified.contains("Line 2"));
     assert!(modified.contains("第三行"));
     assert!(modified.contains("Line 4"));
+}
+
+#[test]
+fn test_translation_applier_multiline_without_format_info() {
+    // Test multiline comment handling when format_info is None
+    // When format_info is None, the translated text should include the comment markers
+    let content = "/*\nThis is a multi-line comment\nwith multiple lines of text\n*/\nint x = 5;";
+
+    // Create a unit that spans lines 1-4 (the multiline comment)
+    // Content is the cleaned text (without /* */)
+    let mut unit = TranslationUnit {
+        id: "1".to_string(),
+        node_type: NodeType::Comment,
+        content: "This is a multi-line comment\nwith multiple lines of text".to_string(),
+        start_pos: Position::new(1, 1, 0),
+        end_pos: Position::new(4, 3, 0), // Ends at line 4, column 3 (after */)
+        language: None,
+        should_translate: true,
+        translated: None,
+        format_info: None, // No format info
+    };
+    // When format_info is None, the translated text should include the full formatted comment
+    unit.set_translated("/*\nThis is a multi-line comment\nwith multiple lines of text\n*/");
+
+    let result = apply_translations(content, &[unit]);
+    assert!(result.is_ok());
+    let modified = result.unwrap();
+
+    // The content should be correctly replaced without duplication
+    assert_eq!(modified, content, "Multiline comment without format_info should be correctly replaced");
 }

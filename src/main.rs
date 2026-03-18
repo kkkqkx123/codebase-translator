@@ -1,24 +1,14 @@
-use std::path::PathBuf;
-
 use clap::{Parser as ClapParser, Subcommand};
-use tracing::{debug, error, info, instrument, warn};
+use tracing::info;
 
 use codebase_translate::{
-    cache::binary::BinaryCache,
     config::{global::GlobalConfig, loader::ConfigLoader, project::ProjectConfig},
     core::error::Result,
-    core::models::{CacheEntry, File, FileEntry, TranslationStats},
-    encoding::{Detector, Encoder},
+    factory::create_cache,
     logger,
-    parser::coordinator::ParserCoordinator,
-    parser::tree_sitter::ParserConfig,
-    scanner::r#trait::{ScanOptions, Scanner},
-    scanner::FSScanner,
-    translator::factory::TranslatorConfig,
-    translator::service::TranslationService,
     translator::ProviderType,
-    writer::file::{FileWriter, WriterConfig},
-    Cache,
+    workflow::TranslationWorkflow,
+    NAME, VERSION,
 };
 
 /// Codebase Translate - Automatic code comment translator
@@ -133,8 +123,8 @@ fn run() -> Result<()> {
     logger::init(&global_config.logging)?;
 
     info!(
-        name = codebase_translate::NAME,
-        version = codebase_translate::VERSION,
+        name = NAME,
+        version = VERSION,
         "Starting application"
     );
 
@@ -185,8 +175,10 @@ fn run() -> Result<()> {
                 "Translation configuration"
             );
 
-            // Execute translation workflow
-            execute_translation_workflow(&path, &global_config, &project_config)?;
+            // Execute translation workflow using the library
+            let workflow =
+                TranslationWorkflow::from_configs_with_path(global_config, project_config, path);
+            workflow.execute()?;
         }
 
         Some(Commands::Init { global, force }) => {
@@ -213,327 +205,14 @@ fn run() -> Result<()> {
                 target_lang = %project_config.translate.target_lang,
                 "Default translation target"
             );
-            execute_translation_workflow(".", &global_config, &project_config)?;
+            // Execute translation workflow using the library
+            let workflow =
+                TranslationWorkflow::from_configs_with_path(global_config, project_config, ".");
+            workflow.execute()?;
         }
     }
 
     Ok(())
-}
-
-/// Execute the complete translation workflow
-#[instrument(skip(global_config, project_config), fields(path = %path))]
-fn execute_translation_workflow(
-    path: &str,
-    global_config: &GlobalConfig,
-    project_config: &ProjectConfig,
-) -> Result<()> {
-    let start_time = std::time::Instant::now();
-
-    info!(
-        path = %path,
-        "Step 1: Scanning directory"
-    );
-    let files = scan_files(path, project_config)?;
-    info!(files_count = files.len(), "Directory scan completed");
-
-    if files.is_empty() {
-        info!("No files found to translate");
-        return Ok(());
-    }
-
-    let cache = create_cache(&project_config.cache, path)?;
-    let translator = create_translator(global_config, project_config)?;
-    let parser = create_parser(project_config)?;
-    let writer = create_writer(project_config)?;
-    let detector = Detector::default();
-    let encoder = Encoder::default();
-
-    info!("Step 2: Processing files");
-    let mut stats = TranslationStats::default();
-
-    for (idx, file_entry) in files.iter().enumerate() {
-        info!(
-            index = idx + 1,
-            total = files.len(),
-            file = %file_entry.path.display(),
-            "Processing file"
-        );
-
-        match process_file(
-            file_entry,
-            &cache,
-            &translator,
-            &parser,
-            &writer,
-            &detector,
-            &encoder,
-            project_config,
-        ) {
-            Ok(file_stats) => {
-                stats.merge(&file_stats);
-            }
-            Err(e) => {
-                error!(
-                    error = %e,
-                    file = %file_entry.path.display(),
-                    "Failed to process file"
-                );
-                stats.errors += 1;
-            }
-        }
-    }
-
-    // Step 4: Print summary
-    let elapsed = start_time.elapsed();
-    info!("========================================");
-    info!(
-        duration_secs = elapsed.as_secs_f64(),
-        "Translation completed"
-    );
-    info!(
-        total_files = stats.total_files,
-        total_units = stats.total_units,
-        translated_units = stats.translated_units,
-        cached_units = stats.cached_units,
-        skipped_units = stats.skipped_units,
-        errors = stats.errors,
-        "Translation summary"
-    );
-    info!("========================================");
-
-    Ok(())
-}
-
-/// Scan directory for files to translate
-fn scan_files(path: &str, project_config: &ProjectConfig) -> Result<Vec<FileEntry>> {
-    let scanner = FSScanner::new();
-
-    let opts = ScanOptions {
-        root_path: path.to_string(),
-        include_patterns: project_config.include.patterns.clone(),
-        exclude_patterns: project_config.exclude.patterns.clone(),
-        follow_symlinks: false,
-        respect_gitignore: project_config.exclude.respect_gitignore,
-        gitignore_patterns: project_config.exclude.gitignore_patterns.clone(),
-        gitignore_path: None,
-    };
-
-    scanner.scan(opts)
-}
-
-/// Create cache instance
-fn create_cache(
-    cache_config: &codebase_translate::config::project::CacheConfig,
-    project_path: &str,
-) -> Result<Box<dyn Cache>> {
-    let cache_dir = PathBuf::from(project_path).join(&cache_config.cache_dir);
-
-    // Create a core CacheConfig from project CacheConfig
-    let core_cache_config = codebase_translate::core::models::CacheConfig {
-        enabled: cache_config.cache_type != "none",
-        mode: codebase_translate::core::models::CacheMode::Local,
-        directory: cache_dir.to_string_lossy().to_string(),
-        format: cache_config.cache_type.clone(),
-    };
-
-    let cache: Box<dyn Cache> = match cache_config.cache_type.as_str() {
-        "file" | "json" => Box::new(BinaryCache::new(core_cache_config, project_path)?),
-        "binary" => Box::new(BinaryCache::new(core_cache_config, project_path)?),
-        _ => Box::new(BinaryCache::new(core_cache_config, project_path)?),
-    };
-
-    Ok(cache)
-}
-
-/// Create translator instance
-fn create_translator(
-    global_config: &GlobalConfig,
-    project_config: &ProjectConfig,
-) -> Result<TranslationService> {
-    let translator_config = TranslatorConfig {
-        provider: project_config.translate.provider,
-        deeplx: Some(codebase_translate::translator::common::DeepLXConfig {
-            api_url: global_config.deeplx.api_url.clone(),
-            api_key: global_config.deeplx.api_key.clone(),
-            proxy_url: global_config.deeplx.proxy_url.clone(),
-            max_retries: global_config.deeplx.max_retries as usize,
-        }),
-        llm: None,
-        tencent: None,
-    };
-
-    TranslationService::new(translator_config)
-}
-
-/// Create parser coordinator
-fn create_parser(project_config: &ProjectConfig) -> Result<ParserCoordinator> {
-    let parser_config = ParserConfig {
-        extract_comments: project_config.extraction.comments,
-        extract_docstrings: project_config.extraction.doc_strings,
-        extract_strings: project_config.extraction.format_strings,
-        min_content_length: 2,
-        max_content_length: 10000,
-        trim_content: true,
-    };
-
-    ParserCoordinator::from_project_config(parser_config, project_config)
-}
-
-/// Create file writer
-fn create_writer(project_config: &ProjectConfig) -> Result<FileWriter> {
-    let writer_config = WriterConfig {
-        preview_only: project_config.writer.dry_run,
-        backup: project_config.writer.backup,
-        backup_dir: project_config.writer.backup_dir.as_ref().map(PathBuf::from),
-        strict_encoding: false,
-    };
-
-    writer_config.validate()?;
-    Ok(FileWriter::new(writer_config))
-}
-
-/// Process a single file
-#[instrument(skip(cache, translator, parser, writer, detector, encoder, project_config), fields(file = %file_entry.path.display()))]
-fn process_file(
-    file_entry: &FileEntry,
-    cache: &Box<dyn Cache>,
-    translator: &TranslationService,
-    parser: &ParserCoordinator,
-    writer: &FileWriter,
-    detector: &Detector,
-    encoder: &Encoder,
-    project_config: &ProjectConfig,
-) -> Result<TranslationStats> {
-    let mut stats = TranslationStats::default();
-    stats.total_files = 1;
-
-    let content = std::fs::read(&file_entry.path)?;
-
-    let encoding_result = detector.detect_bytes(&content)?;
-    let encoding = encoding_result.encoding;
-
-    let utf8_content = if encoding != "UTF-8" {
-        debug!(
-            original_encoding = %encoding,
-            "Converting to UTF-8"
-        );
-        encoder.to_utf8(&content, &encoding)?.into_bytes()
-    } else {
-        content.clone()
-    };
-
-    let file_hash = calculate_hash(&utf8_content);
-
-    let cached_entry = cache.get(&file_hash)?;
-    let modified_time = file_entry
-        .modified
-        .duration_since(std::time::UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_secs() as i64;
-
-    if let Some(entry) = cached_entry {
-        if entry.is_valid(modified_time) && entry.is_translated {
-            info!("Cache hit, verifying file translation status");
-
-            let file = File::new(file_entry.path.clone(), utf8_content.clone(), "UTF-8");
-            let units = parser.parse_file(&file)?;
-            stats.total_units = units.len();
-
-            let all_translated = units.iter().all(|u| u.translated.is_some());
-
-            if all_translated {
-                info!("File already translated, skipping");
-                stats.cached_units = units.len();
-                return Ok(stats);
-            } else {
-                info!("Cache invalid: file not fully translated, re-translating");
-            }
-        } else {
-            info!("Cache expired or file modified, re-translating");
-        }
-    } else {
-        info!("Cache miss, translating file");
-    }
-
-    let file = File::new(file_entry.path.clone(), utf8_content.clone(), "UTF-8");
-    let mut units = parser.parse_file(&file)?;
-    stats.total_units = units.len();
-
-    if units.is_empty() {
-        info!("No translatable content found");
-        return Ok(stats);
-    }
-
-    let units_to_translate: Vec<_> = units.iter().filter(|u| u.should_translate).collect();
-    let num_to_translate = units_to_translate.len();
-
-    if num_to_translate == 0 {
-        info!("All units filtered, nothing to translate");
-        stats.skipped_units = units.len();
-        return Ok(stats);
-    }
-
-    let texts: Vec<String> = units_to_translate
-        .iter()
-        .map(|u| u.content.clone())
-        .collect();
-
-    info!(units_count = texts.len(), "Translating units");
-
-    let translated_texts =
-        translator.translate_batch(&texts, &project_config.translate.target_lang)?;
-
-    let mut translate_idx = 0;
-    for unit in units.iter_mut() {
-        if unit.should_translate {
-            if let Some(translated) = translated_texts.get(translate_idx) {
-                unit.set_translated(translated.clone());
-                translate_idx += 1;
-            }
-        }
-    }
-
-    stats.translated_units = num_to_translate;
-
-    if !project_config.writer.dry_run {
-        let rt = tokio::runtime::Runtime::new()?;
-        rt.block_on(async { writer.write(&file, &units).await })?;
-    } else {
-        info!("Dry run mode - not writing changes");
-        for unit in &units {
-            if let Some(translated) = &unit.translated {
-                info!(
-                    node_type = %unit.node_type,
-                    original = %unit.content,
-                    translated = %translated,
-                    "Translation preview"
-                );
-            }
-        }
-    }
-
-    let mut cache_entry = CacheEntry::new(
-        &file_hash,
-        file_entry.path.to_string_lossy(),
-        modified_time,
-        &project_config.cache.cache_type,
-        "",
-    );
-    cache_entry.mark_as_translated();
-
-    cache.set(&cache_entry)?;
-
-    Ok(stats)
-}
-
-/// Calculate simple hash for content
-fn calculate_hash(content: &[u8]) -> String {
-    use std::collections::hash_map::DefaultHasher;
-    use std::hash::{Hash, Hasher};
-
-    let mut hasher = DefaultHasher::new();
-    content.hash(&mut hasher);
-    format!("{:016x}", hasher.finish())
 }
 
 /// Execute cache command
