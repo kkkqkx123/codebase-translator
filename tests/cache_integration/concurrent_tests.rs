@@ -2,12 +2,12 @@
 //!
 //! Tests cache behavior under concurrent access scenarios.
 
+use crate::cache_integration::test_utils::hash_utils;
 use codebase_translate::cache::{binary::BinaryCache, file::FileCache};
 use codebase_translate::core::models::{CacheConfig, CacheMode};
 use codebase_translate::Cache;
 use std::sync::Arc;
 use std::thread;
-use crate::cache_integration::test_utils::hash_utils;
 
 #[test]
 fn test_file_cache_concurrent_reads() {

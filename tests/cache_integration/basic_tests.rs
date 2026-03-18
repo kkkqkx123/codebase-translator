@@ -2,11 +2,11 @@
 //!
 //! Tests the core functionality of both FileCache and BinaryCache implementations.
 
+use crate::cache_integration::test_utils::hash_utils;
 use codebase_translate::cache::{binary::BinaryCache, file::FileCache};
 use codebase_translate::core::models::{CacheConfig, CacheEntry, CacheMode};
 use codebase_translate::Cache;
 use std::collections::HashMap;
-use crate::cache_integration::test_utils::hash_utils;
 
 #[test]
 fn test_file_cache_set_and_get() {
@@ -53,13 +53,7 @@ fn test_binary_cache_set_and_get() {
     let fingerprint = cache.project_fingerprint().to_string();
 
     let hash1 = hash_utils::generate_test_hash("file1");
-    let entry = CacheEntry::new(
-        &hash1,
-        "/path/to/file1.txt",
-        123456,
-        "local",
-        fingerprint,
-    );
+    let entry = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456, "local", fingerprint);
 
     cache.set(&entry).unwrap();
 
@@ -149,13 +143,7 @@ fn test_binary_cache_invalidate() {
     let fingerprint = cache.project_fingerprint().to_string();
 
     let hash1 = hash_utils::generate_test_hash("file1");
-    let entry = CacheEntry::new(
-        &hash1,
-        "/path/to/file1.txt",
-        123456,
-        "local",
-        fingerprint,
-    );
+    let entry = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456, "local", fingerprint);
 
     cache.set(&entry).unwrap();
 
@@ -236,13 +224,7 @@ fn test_binary_cache_clear() {
         "local",
         fingerprint.clone(),
     );
-    let entry2 = CacheEntry::new(
-        &hash2,
-        "/path/to/file2.txt",
-        123457,
-        "local",
-        fingerprint,
-    );
+    let entry2 = CacheEntry::new(&hash2, "/path/to/file2.txt", 123457, "local", fingerprint);
 
     cache.set(&entry1).unwrap();
     cache.set(&entry2).unwrap();
@@ -419,13 +401,7 @@ fn test_binary_cache_stats() {
         "local",
         fingerprint.clone(),
     );
-    let entry2 = CacheEntry::new(
-        &hash2,
-        "/path/to/file2.txt",
-        123457,
-        "local",
-        fingerprint,
-    );
+    let entry2 = CacheEntry::new(&hash2, "/path/to/file2.txt", 123457, "local", fingerprint);
 
     cache.set(&entry1).unwrap();
     cache.set(&entry2).unwrap();
@@ -590,13 +566,7 @@ fn test_binary_cache_disabled() {
     let fingerprint = cache.project_fingerprint().to_string();
 
     let hash1 = hash_utils::generate_test_hash("file1");
-    let entry = CacheEntry::new(
-        &hash1,
-        "/path/to/file1.txt",
-        123456,
-        "local",
-        fingerprint,
-    );
+    let entry = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456, "local", fingerprint);
 
     cache.set(&entry).unwrap();
 

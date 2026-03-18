@@ -2,12 +2,12 @@
 //!
 //! Tests cache behavior with different cache modes (Local vs Global).
 
+use crate::cache_integration::test_utils::hash_utils;
 use codebase_translate::cache::util;
 use codebase_translate::cache::{binary::BinaryCache, file::FileCache};
 use codebase_translate::core::models::{CacheConfig, CacheMode};
 use codebase_translate::Cache;
 use std::path::PathBuf;
-use crate::cache_integration::test_utils::hash_utils;
 
 #[test]
 fn test_file_cache_local_mode() {

@@ -21,10 +21,7 @@ fn write_scan_result(filename: &str, entries: &[FileEntry]) {
     let output_path = PathBuf::from(OUTPUT_DIR).join(format!("{}.txt", filename));
     let mut output = String::new();
 
-    output.push_str(&format!(
-        "Found {} files\n",
-        entries.len()
-    ));
+    output.push_str(&format!("Found {} files\n", entries.len()));
     output.push_str("==================================================\n\n");
 
     for (i, entry) in entries.iter().enumerate() {
@@ -52,7 +49,10 @@ fn test_empty_include_patterns() {
     };
 
     let result = scanner.scan(opts).expect("Scan should succeed");
-    assert!(!result.is_empty(), "Empty include patterns should match all files");
+    assert!(
+        !result.is_empty(),
+        "Empty include patterns should match all files"
+    );
 
     write_scan_result("empty_include_patterns", &result);
 }
@@ -72,7 +72,10 @@ fn test_empty_exclude_patterns() {
     };
 
     let result = scanner.scan(opts).expect("Scan should succeed");
-    assert!(!result.is_empty(), "Empty exclude patterns should not exclude anything");
+    assert!(
+        !result.is_empty(),
+        "Empty exclude patterns should not exclude anything"
+    );
 
     write_scan_result("empty_exclude_patterns", &result);
 }
@@ -92,7 +95,10 @@ fn test_no_matching_include_patterns() {
     };
 
     let result = scanner.scan(opts).expect("Scan should succeed");
-    assert!(result.is_empty(), "No files should match non-existent patterns");
+    assert!(
+        result.is_empty(),
+        "No files should match non-existent patterns"
+    );
 
     write_scan_result("no_matching_include_patterns", &result);
 }
@@ -133,14 +139,20 @@ fn test_special_characters_in_filename() {
 
     let result = scanner.scan(opts).expect("Scan should succeed");
 
-    let has_special_chars = result
-        .iter()
-        .any(|entry| {
-            let filename = entry.relative_path.file_name().unwrap_or_default().to_string_lossy().to_string();
-            filename.contains(' ') || filename.contains('-') || filename.contains('_')
-        });
+    let has_special_chars = result.iter().any(|entry| {
+        let filename = entry
+            .relative_path
+            .file_name()
+            .unwrap_or_default()
+            .to_string_lossy()
+            .to_string();
+        filename.contains(' ') || filename.contains('-') || filename.contains('_')
+    });
 
-    assert!(has_special_chars, "Should find files with special characters");
+    assert!(
+        has_special_chars,
+        "Should find files with special characters"
+    );
 
     write_scan_result("special_characters_in_filename", &result);
 }
@@ -161,12 +173,15 @@ fn test_hidden_files() {
 
     let result = scanner.scan(opts).expect("Scan should succeed");
 
-    let has_hidden = result
-        .iter()
-        .any(|entry| {
-            let filename = entry.relative_path.file_name().unwrap_or_default().to_string_lossy().to_string();
-            filename.starts_with('.')
-        });
+    let has_hidden = result.iter().any(|entry| {
+        let filename = entry
+            .relative_path
+            .file_name()
+            .unwrap_or_default()
+            .to_string_lossy()
+            .to_string();
+        filename.starts_with('.')
+    });
 
     assert!(has_hidden, "Should find hidden files");
 
@@ -190,7 +205,12 @@ fn test_empty_filename() {
     let result = scanner.scan(opts).expect("Scan should succeed");
 
     for entry in &result {
-        let filename = entry.relative_path.file_name().unwrap_or_default().to_string_lossy().to_string();
+        let filename = entry
+            .relative_path
+            .file_name()
+            .unwrap_or_default()
+            .to_string_lossy()
+            .to_string();
         assert!(!filename.is_empty(), "No file should have empty filename");
     }
 
@@ -214,7 +234,12 @@ fn test_case_sensitive_patterns() {
     let result = scanner.scan(opts).expect("Scan should succeed");
 
     for entry in &result {
-        let ext = entry.relative_path.extension().unwrap_or_default().to_str().unwrap_or("");
+        let ext = entry
+            .relative_path
+            .extension()
+            .unwrap_or_default()
+            .to_str()
+            .unwrap_or("");
         assert_eq!(ext, "RS", "Extension should match case-sensitively");
     }
 

@@ -21,10 +21,7 @@ fn write_scan_result(filename: &str, entries: &[FileEntry]) {
     let output_path = PathBuf::from(OUTPUT_DIR).join(format!("{}.txt", filename));
     let mut output = String::new();
 
-    output.push_str(&format!(
-        "Found {} files\n",
-        entries.len()
-    ));
+    output.push_str(&format!("Found {} files\n", entries.len()));
     output.push_str("==================================================\n\n");
 
     for (i, entry) in entries.iter().enumerate() {
@@ -56,7 +53,10 @@ fn test_include_single_extension() {
 
     for entry in &result {
         assert!(
-            entry.relative_path.extension().map_or(false, |ext| ext == "rs"),
+            entry
+                .relative_path
+                .extension()
+                .map_or(false, |ext| ext == "rs"),
             "All files should have .rs extension"
         );
     }
@@ -82,7 +82,12 @@ fn test_include_multiple_extensions() {
     assert!(!result.is_empty(), "Should find .rs or .py files");
 
     for entry in &result {
-        let ext = entry.relative_path.extension().unwrap_or_default().to_str().unwrap_or("");
+        let ext = entry
+            .relative_path
+            .extension()
+            .unwrap_or_default()
+            .to_str()
+            .unwrap_or("");
         assert!(
             ext == "rs" || ext == "py",
             "All files should have .rs or .py extension"
@@ -109,11 +114,11 @@ fn test_exclude_extension() {
     let result = scanner.scan(opts).expect("Scan should succeed");
 
     for entry in &result {
-        let ext = entry.relative_path.extension().map_or(true, |ext| ext != "log");
-        assert!(
-            ext,
-            "No files should have .log extension"
-        );
+        let ext = entry
+            .relative_path
+            .extension()
+            .map_or(true, |ext| ext != "log");
+        assert!(ext, "No files should have .log extension");
     }
 
     write_scan_result("exclude_extension", &result);
@@ -136,7 +141,12 @@ fn test_include_and_exclude() {
     let result = scanner.scan(opts).expect("Scan should succeed");
 
     for entry in &result {
-        let ext = entry.relative_path.extension().unwrap_or_default().to_str().unwrap_or("");
+        let ext = entry
+            .relative_path
+            .extension()
+            .unwrap_or_default()
+            .to_str()
+            .unwrap_or("");
         assert!(
             ext != "log" && ext != "tmp",
             "No files should have .log or .tmp extension"
@@ -161,7 +171,10 @@ fn test_wildcard_pattern() {
     };
 
     let result = scanner.scan(opts).expect("Scan should succeed");
-    assert!(!result.is_empty(), "Should find all files with wildcard pattern");
+    assert!(
+        !result.is_empty(),
+        "Should find all files with wildcard pattern"
+    );
 
     write_scan_result("wildcard_pattern", &result);
 }
@@ -185,7 +198,10 @@ fn test_recursive_pattern() {
 
     for entry in &result {
         assert!(
-            entry.relative_path.extension().map_or(false, |ext| ext == "rs"),
+            entry
+                .relative_path
+                .extension()
+                .map_or(false, |ext| ext == "rs"),
             "All files should have .rs extension"
         );
     }

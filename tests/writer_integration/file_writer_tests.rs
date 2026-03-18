@@ -1,7 +1,7 @@
 //! FileWriter integration tests
 
-use codebase_translate::writer::{FileWriter, WriterConfig};
 use codebase_translate::core::models::{CommentStyle, FormatInfo, NodeType, Position};
+use codebase_translate::writer::{FileWriter, WriterConfig};
 
 use super::common::*;
 
@@ -85,7 +85,10 @@ async fn test_file_writer_preview_mode() {
     assert!(result.is_ok());
 
     let written_content = read_file_content(&file.path).await;
-    assert_eq!(written_content, content, "File should not be modified in preview mode");
+    assert_eq!(
+        written_content, content,
+        "File should not be modified in preview mode"
+    );
 }
 
 #[tokio::test]
@@ -105,7 +108,10 @@ async fn test_file_writer_no_changes() {
     assert!(result.is_ok());
 
     let written_content = read_file_content(&file.path).await;
-    assert_eq!(written_content, content, "File should not be modified when no translations");
+    assert_eq!(
+        written_content, content,
+        "File should not be modified when no translations"
+    );
 }
 
 #[tokio::test]
@@ -263,7 +269,10 @@ async fn test_file_writer_crlf_preservation() {
     assert!(result.is_ok());
 
     let written_content = read_file_content(&file.path).await;
-    assert!(written_content.contains("\r\n"), "CRLF line endings should be preserved");
+    assert!(
+        written_content.contains("\r\n"),
+        "CRLF line endings should be preserved"
+    );
     assert!(written_content.contains("第一行"));
 }
 

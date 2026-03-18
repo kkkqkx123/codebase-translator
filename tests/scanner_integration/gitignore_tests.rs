@@ -21,10 +21,7 @@ fn write_scan_result(filename: &str, entries: &[FileEntry]) {
     let output_path = PathBuf::from(OUTPUT_DIR).join(format!("{}.txt", filename));
     let mut output = String::new();
 
-    output.push_str(&format!(
-        "Found {} files\n",
-        entries.len()
-    ));
+    output.push_str(&format!("Found {} files\n", entries.len()));
     output.push_str("==================================================\n\n");
 
     for (i, entry) in entries.iter().enumerate() {
@@ -80,8 +77,18 @@ fn test_custom_gitignore_patterns() {
     let result = scanner.scan(opts).expect("Scan should succeed");
 
     for entry in &result {
-        let ext = entry.relative_path.extension().unwrap_or_default().to_str().unwrap_or("");
-        let filename = entry.relative_path.file_name().unwrap_or_default().to_string_lossy().to_string();
+        let ext = entry
+            .relative_path
+            .extension()
+            .unwrap_or_default()
+            .to_str()
+            .unwrap_or("");
+        let filename = entry
+            .relative_path
+            .file_name()
+            .unwrap_or_default()
+            .to_string_lossy()
+            .to_string();
         assert!(
             ext != "tmp" && !filename.starts_with("temp_"),
             "Files matching custom gitignore patterns should be excluded"
@@ -110,7 +117,12 @@ fn test_custom_gitignore_file() {
     let result = scanner.scan(opts).expect("Scan should succeed");
 
     for entry in &result {
-        let filename = entry.relative_path.file_name().unwrap_or_default().to_string_lossy().to_string();
+        let filename = entry
+            .relative_path
+            .file_name()
+            .unwrap_or_default()
+            .to_string_lossy()
+            .to_string();
         assert!(
             !filename.ends_with(".custom"),
             "Files matching custom .gitignore should be excluded"
@@ -163,7 +175,12 @@ fn test_gitignore_with_exclude_patterns() {
     let result = scanner.scan(opts).expect("Scan should succeed");
 
     for entry in &result {
-        let ext = entry.relative_path.extension().unwrap_or_default().to_str().unwrap_or("");
+        let ext = entry
+            .relative_path
+            .extension()
+            .unwrap_or_default()
+            .to_str()
+            .unwrap_or("");
         assert!(
             ext != "log",
             "Files matching exclude patterns should be excluded"
@@ -244,7 +261,12 @@ fn test_gitignore_globstar_patterns() {
     let result = scanner.scan(opts).expect("Scan should succeed");
 
     for entry in &result {
-        let ext = entry.relative_path.extension().unwrap_or_default().to_str().unwrap_or("");
+        let ext = entry
+            .relative_path
+            .extension()
+            .unwrap_or_default()
+            .to_str()
+            .unwrap_or("");
         assert!(
             ext != "cache",
             "Files matching **/*.cache pattern should be excluded"

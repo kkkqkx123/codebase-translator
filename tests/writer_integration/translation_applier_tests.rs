@@ -1,7 +1,7 @@
 //! TranslationApplier integration tests
 
-use codebase_translate::writer::apply_translations;
 use codebase_translate::core::models::{CommentStyle, FormatInfo, NodeType, Position};
+use codebase_translate::writer::apply_translations;
 
 use super::common::*;
 
@@ -300,7 +300,10 @@ fn test_translation_applier_should_translate_false() {
     let result = apply_translations(content, &[unit]);
     assert!(result.is_ok());
     let modified = result.unwrap();
-    assert_eq!(modified, content, "Should not translate when should_translate is false");
+    assert_eq!(
+        modified, content,
+        "Should not translate when should_translate is false"
+    );
 }
 
 #[test]

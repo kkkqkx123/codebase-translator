@@ -4,6 +4,9 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::sync::{Arc, RwLock};
 
+#[cfg(test)]
+use std::thread;
+
 /// Translation statistics
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TranslationStats {
@@ -20,6 +23,8 @@ pub struct TranslationStats {
     pub cache_hit_count: usize,
     pub cache_miss_count: usize,
     pub errors: Vec<ErrorRecord>,
+    pub total_duration_ms: u64,
+    pub avg_speed_files_per_sec: f64,
 }
 
 /// Error record
@@ -46,6 +51,8 @@ impl Default for TranslationStats {
             cache_hit_count: 0,
             cache_miss_count: 0,
             errors: Vec::new(),
+            total_duration_ms: 0,
+            avg_speed_files_per_sec: 0.0,
         }
     }
 }
@@ -99,6 +106,16 @@ impl TranslationStats {
 
     pub fn finalize(&mut self) {
         self.end_time = Some(Utc::now());
+
+        if let Some(end_time) = self.end_time {
+            let duration = end_time.signed_duration_since(self.start_time);
+            self.total_duration_ms = duration.num_milliseconds() as u64;
+
+            if self.total_duration_ms > 0 {
+                self.avg_speed_files_per_sec =
+                    (self.processed_files as f64) / (self.total_duration_ms as f64 / 1000.0);
+            }
+        }
     }
 
     pub fn has_errors(&self) -> bool {
@@ -258,6 +275,8 @@ mod tests {
         assert_eq!(stats.cache_hit_count, 0);
         assert_eq!(stats.cache_miss_count, 0);
         assert!(stats.errors.is_empty());
+        assert_eq!(stats.total_duration_ms, 0);
+        assert_eq!(stats.avg_speed_files_per_sec, 0.0);
     }
 
     #[test]
@@ -330,9 +349,17 @@ mod tests {
     #[test]
     fn test_translation_stats_finalize() {
         let mut stats = TranslationStats::new();
+        stats.record_processed();
+        stats.record_processed();
+        stats.record_processed();
         assert!(stats.end_time.is_none());
+        assert_eq!(stats.total_duration_ms, 0);
+        assert_eq!(stats.avg_speed_files_per_sec, 0.0);
+        std::thread::sleep(std::time::Duration::from_millis(10));
         stats.finalize();
         assert!(stats.end_time.is_some());
+        assert!(stats.total_duration_ms >= 10);
+        assert!(stats.avg_speed_files_per_sec > 0.0);
     }
 
     #[test]

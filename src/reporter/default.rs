@@ -1,11 +1,15 @@
 //! Default reporter implementation
 
+use chrono::Utc;
 use std::path::Path;
 use std::sync::Arc;
 
 use crate::core::error::TranslateError;
 use crate::reporter::r#trait::{ReportFormat, Reporter};
 use crate::reporter::stats::{SharedStats, TranslationStats};
+
+#[cfg(feature = "progress")]
+use crate::reporter::progress::ProgressReporter;
 
 /// Default reporter implementation
 #[derive(Debug, Clone)]
@@ -45,8 +49,12 @@ impl DefaultReporter {
             end_time.format("%Y-%m-%d %H:%M:%S")
         ));
         report.push_str(&format!(
-            "  Duration:   {:.3}s\n\n",
+            "  Duration:   {:.3}s\n",
             duration.num_milliseconds() as f64 / 1000.0
+        ));
+        report.push_str(&format!(
+            "  Speed:      {:.1} files/s\n\n",
+            stats.avg_speed_files_per_sec
         ));
 
         report.push_str("Files:\n");
@@ -165,84 +173,166 @@ impl Reporter for DefaultReporter {
     fn finalize(&self) {
         self.stats.finalize();
     }
+
+    fn save_report(&self, path: &Path, format: ReportFormat) -> Result<(), TranslateError> {
+        let report = self.final_report(format)?;
+
+        if let Some(parent) = path.parent() {
+            std::fs::create_dir_all(parent).map_err(|e| TranslateError::Io(e.to_string()))?;
+        }
+
+        std::fs::write(path, report).map_err(|e| TranslateError::Io(e.to_string()))?;
+
+        Ok(())
+    }
+
+    fn save_report_with_template(
+        &self,
+        dir: &Path,
+        template: &str,
+        format: ReportFormat,
+    ) -> Result<std::path::PathBuf, TranslateError> {
+        std::fs::create_dir_all(dir).map_err(|e| TranslateError::Io(e.to_string()))?;
+
+        let timestamp = Utc::now().format("%Y%m%d_%H%M%S");
+        let ext = match format {
+            ReportFormat::Text => "txt",
+            ReportFormat::Json => "json",
+        };
+        let filename = template
+            .replace("{timestamp}", &timestamp.to_string())
+            .replace("{format}", ext);
+        let path = dir.join(filename);
+
+        self.save_report(&path, format)?;
+
+        Ok(path)
+    }
 }
 
 /// Reporter implementation enum for static dispatch
 #[derive(Debug, Clone)]
 pub enum ReporterImpl {
     Default(DefaultReporter),
+    #[cfg(feature = "progress")]
+    Progress(ProgressReporter),
 }
 
 impl Reporter for ReporterImpl {
     fn report_file(&self, path: &Path, units: usize) {
         match self {
             Self::Default(r) => r.report_file(path, units),
+            #[cfg(feature = "progress")]
+            Self::Progress(r) => r.report_file(path, units),
         }
     }
 
     fn report_progress(&self, current: usize, total: usize) {
         match self {
             Self::Default(r) => r.report_progress(current, total),
+            #[cfg(feature = "progress")]
+            Self::Progress(r) => r.report_progress(current, total),
         }
     }
 
     fn report_error(&self, error: &TranslateError) {
         match self {
             Self::Default(r) => r.report_error(error),
+            #[cfg(feature = "progress")]
+            Self::Progress(r) => r.report_error(error),
         }
     }
 
     fn report_skipped(&self, path: &Path) {
         match self {
             Self::Default(r) => r.report_skipped(path),
+            #[cfg(feature = "progress")]
+            Self::Progress(r) => r.report_skipped(path),
         }
     }
 
     fn report_api_call(&self, count: usize) {
         match self {
             Self::Default(r) => r.report_api_call(count),
+            #[cfg(feature = "progress")]
+            Self::Progress(r) => r.report_api_call(count),
         }
     }
 
     fn report_cache_hit(&self) {
         match self {
             Self::Default(r) => r.report_cache_hit(),
+            #[cfg(feature = "progress")]
+            Self::Progress(r) => r.report_cache_hit(),
         }
     }
 
     fn report_cache_miss(&self) {
         match self {
             Self::Default(r) => r.report_cache_miss(),
+            #[cfg(feature = "progress")]
+            Self::Progress(r) => r.report_cache_miss(),
         }
     }
 
     fn final_report(&self, format: ReportFormat) -> Result<String, TranslateError> {
         match self {
             Self::Default(r) => r.final_report(format),
+            #[cfg(feature = "progress")]
+            Self::Progress(r) => r.final_report(format),
         }
     }
 
     fn get_stats(&self) -> TranslationStats {
         match self {
             Self::Default(r) => r.get_stats(),
+            #[cfg(feature = "progress")]
+            Self::Progress(r) => r.get_stats(),
         }
     }
 
     fn has_errors(&self) -> bool {
         match self {
             Self::Default(r) => r.has_errors(),
+            #[cfg(feature = "progress")]
+            Self::Progress(r) => r.has_errors(),
         }
     }
 
     fn get_progress(&self) -> f64 {
         match self {
             Self::Default(r) => r.get_progress(),
+            #[cfg(feature = "progress")]
+            Self::Progress(r) => r.get_progress(),
         }
     }
 
     fn finalize(&self) {
         match self {
             Self::Default(r) => r.finalize(),
+            #[cfg(feature = "progress")]
+            Self::Progress(r) => r.finalize(),
+        }
+    }
+
+    fn save_report(&self, path: &Path, format: ReportFormat) -> Result<(), TranslateError> {
+        match self {
+            Self::Default(r) => r.save_report(path, format),
+            #[cfg(feature = "progress")]
+            Self::Progress(r) => r.save_report(path, format),
+        }
+    }
+
+    fn save_report_with_template(
+        &self,
+        dir: &Path,
+        template: &str,
+        format: ReportFormat,
+    ) -> Result<std::path::PathBuf, TranslateError> {
+        match self {
+            Self::Default(r) => r.save_report_with_template(dir, template, format),
+            #[cfg(feature = "progress")]
+            Self::Progress(r) => r.save_report_with_template(dir, template, format),
         }
     }
 }
@@ -250,6 +340,14 @@ impl Reporter for ReporterImpl {
 /// Create a new default reporter
 pub fn create_reporter() -> Arc<ReporterImpl> {
     Arc::new(ReporterImpl::Default(DefaultReporter::new()))
+}
+
+/// Create a new progress reporter
+#[cfg(feature = "progress")]
+pub fn create_progress_reporter(enable_progress: bool) -> Arc<ReporterImpl> {
+    Arc::new(ReporterImpl::Progress(ProgressReporter::new(
+        enable_progress,
+    )))
 }
 
 #[cfg(test)]
@@ -334,6 +432,39 @@ mod tests {
         reporter.finalize();
         let stats = reporter.get_stats();
         assert!(stats.end_time.is_some());
+    }
+
+    #[test]
+    fn test_default_reporter_save_report() {
+        let reporter = DefaultReporter::new();
+        reporter.finalize();
+        let temp_dir = std::env::temp_dir();
+        let report_path = temp_dir.join("test_report.txt");
+
+        let result = reporter.save_report(&report_path, ReportFormat::Text);
+        assert!(result.is_ok());
+        assert!(report_path.exists());
+
+        std::fs::remove_file(&report_path).expect("Failed to remove test file");
+    }
+
+    #[test]
+    fn test_default_reporter_save_report_with_template() {
+        let reporter = DefaultReporter::new();
+        reporter.finalize();
+        let temp_dir = std::env::temp_dir();
+
+        let result = reporter.save_report_with_template(
+            &temp_dir,
+            "report_{timestamp}.{format}",
+            ReportFormat::Text,
+        );
+        assert!(result.is_ok());
+
+        let report_path = result.expect("Failed to get report path");
+        assert!(report_path.exists());
+
+        std::fs::remove_file(&report_path).expect("Failed to remove test file");
     }
 
     #[test]

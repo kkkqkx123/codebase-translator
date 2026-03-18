@@ -264,7 +264,8 @@ impl FSScanner {
                     let suffix_prefix = suffix_parts[0];
                     let suffix_suffix = suffix_parts[1];
                     let filename = path.rsplit('/').next().unwrap_or(path);
-                    return filename.starts_with(suffix_prefix) && filename.ends_with(suffix_suffix);
+                    return filename.starts_with(suffix_prefix)
+                        && filename.ends_with(suffix_suffix);
                 }
             }
             return path.ends_with(suffix);

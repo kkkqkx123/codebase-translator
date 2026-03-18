@@ -21,10 +21,7 @@ fn write_scan_result(filename: &str, entries: &[FileEntry]) {
     let output_path = PathBuf::from(OUTPUT_DIR).join(format!("{}.txt", filename));
     let mut output = String::new();
 
-    output.push_str(&format!(
-        "Found {} files\n",
-        entries.len()
-    ));
+    output.push_str(&format!("Found {} files\n", entries.len()));
     output.push_str("==================================================\n\n");
 
     for (i, entry) in entries.iter().enumerate() {
@@ -80,7 +77,10 @@ fn test_scan_multiple_extensions() {
     assert!(result.is_ok(), "Scan should succeed");
 
     let entries = result.unwrap();
-    assert!(!entries.is_empty(), "Should find files with multiple extensions");
+    assert!(
+        !entries.is_empty(),
+        "Should find files with multiple extensions"
+    );
 
     write_scan_result("scan_multiple_extensions", &entries);
 }
@@ -123,7 +123,10 @@ fn test_scan_nonexistent_directory() {
     };
 
     let result = scanner.scan(opts);
-    assert!(result.is_err(), "Scan should fail for nonexistent directory");
+    assert!(
+        result.is_err(),
+        "Scan should fail for nonexistent directory"
+    );
 }
 
 #[test]
@@ -144,7 +147,10 @@ fn test_scan_file_instead_of_directory() {
     };
 
     let result = scanner.scan(opts);
-    assert!(result.is_err(), "Scan should fail when path is a file, not directory");
+    assert!(
+        result.is_err(),
+        "Scan should fail when path is a file, not directory"
+    );
 }
 
 #[test]
@@ -168,7 +174,10 @@ fn test_scan_empty_directory() {
     assert!(result.is_ok(), "Scan should succeed for empty directory");
 
     let entries = result.unwrap();
-    assert!(entries.is_empty(), "Should find no files in empty directory");
+    assert!(
+        entries.is_empty(),
+        "Should find no files in empty directory"
+    );
 
     write_scan_result("scan_empty_directory", &entries);
 }

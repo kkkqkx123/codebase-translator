@@ -54,4 +54,15 @@ pub trait Reporter: Send + Sync {
 
     /// Finalize the reporter
     fn finalize(&self);
+
+    /// Save report to file
+    fn save_report(&self, path: &Path, format: ReportFormat) -> Result<(), TranslateError>;
+
+    /// Save report with filename template
+    fn save_report_with_template(
+        &self,
+        dir: &Path,
+        template: &str,
+        format: ReportFormat,
+    ) -> Result<std::path::PathBuf, TranslateError>;
 }
