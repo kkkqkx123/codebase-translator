@@ -534,7 +534,7 @@ mod tests {
                 base_indent: "".to_string(),
                 line_prefix: Some(" * ".to_string()),
                 ends_with_newline: true,
-                is_multiline: false,
+                is_multiline: true,
             }),
         }];
 
@@ -542,7 +542,7 @@ mod tests {
 
         let result = TranslationApplier::apply_translations(content, &units).unwrap();
         println!("Result: {:?}", result);
-        assert!(result.contains("/*\n * 这是一个\n * 文档注释\n */"));
+        assert!(result.contains("/**\n * 这是一个\n * 文档注释\n */"));
     }
 
     #[test]
