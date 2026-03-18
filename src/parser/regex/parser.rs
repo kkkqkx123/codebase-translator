@@ -101,7 +101,6 @@ impl RegexParser {
     }
 
     /// Parse content and extract translation units
-    #[instrument(skip(self, content), fields(file_path))]
     fn parse_content(&self, content: &str, file_path: &str) -> Result<Vec<TranslationUnit>> {
         info!(content_length = content.len(), "Starting regex parsing");
         let mut units = Vec::new();
@@ -310,7 +309,6 @@ impl RegexParser {
 }
 
 impl ParserTrait for RegexParser {
-    #[instrument(skip(self, file), fields(file_path = %file.path.display()))]
     fn parse(&self, file: &File) -> Result<Vec<TranslationUnit>> {
         let content = file.content_string().map_err(|e| {
             warn!(error = %e, "Failed to get content string from file");

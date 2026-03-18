@@ -75,7 +75,6 @@ impl FileWriter {
     /// # Arguments
     /// * `file` - The file to write to
     /// * `units` - Translation units with translated content
-    #[instrument(skip(self), fields(file = %file.path.display(), units_count = units.len()))]
     pub async fn write(&self, file: &File, units: &[TranslationUnit]) -> Result<()> {
         info!(
             file = %file.path.display(),

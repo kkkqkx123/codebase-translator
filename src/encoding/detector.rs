@@ -63,7 +63,6 @@ impl Detector {
         results
     }
 
-    #[instrument(skip(self, data), fields(source = %source))]
     fn detect_bytes_with_source(&self, data: &[u8], source: &str) -> Result<EncodingResult> {
         let result = self.detect_internal(data)?;
 
