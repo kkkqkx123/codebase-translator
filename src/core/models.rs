@@ -199,7 +199,7 @@ impl FormatInfo {
             base_indent: indent.into(),
             line_prefix: Some(line_prefix.into()),
             ends_with_newline: false,
-            is_multiline: false,
+            is_multiline: true,
         }
     }
 

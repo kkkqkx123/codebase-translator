@@ -384,7 +384,7 @@ impl StringProcessor {
                     base_indent,
                     line_prefix,
                     ends_with_newline: false,
-                    is_multiline: false,
+                    is_multiline: true,
                 }
             } else {
                 FormatInfo {
