@@ -4,10 +4,11 @@ use clap::{Parser as ClapParser, Subcommand};
 use tracing::{error, info};
 
 use codebase_translate::{
-    cache::{file::FileCache, Cache},
+    cache::binary::BinaryCache,
+    Cache,
     config::{global::GlobalConfig, loader::ConfigLoader, project::ProjectConfig},
     core::error::Result,
-    core::models::{CacheEntry, File, FileEntry, TranslationStats, TranslatedUnit},
+    core::models::{CacheEntry, File, FileEntry, TranslationStats},
     encoding::{Detector, Encoder},
     logger,
     parser::coordinator::ParserCoordinator,
@@ -312,12 +313,9 @@ fn create_cache(
     };
 
     let cache: Box<dyn Cache> = match cache_config.cache_type.as_str() {
-        "file" | "json" => Box::new(FileCache::new(core_cache_config, project_path)?),
-        "binary" => {
-            // For binary cache, we would use BinaryCache, but let's use FileCache for simplicity
-            Box::new(FileCache::new(core_cache_config, project_path)?)
-        }
-        _ => Box::new(FileCache::new(core_cache_config, project_path)?),
+        "file" | "json" => Box::new(BinaryCache::new(core_cache_config, project_path)?),
+        "binary" => Box::new(BinaryCache::new(core_cache_config, project_path)?),
+        _ => Box::new(BinaryCache::new(core_cache_config, project_path)?),
     };
 
     Ok(cache)
@@ -410,12 +408,29 @@ fn process_file(
         .as_secs() as i64;
 
     if let Some(entry) = cached_entry {
-        if entry.is_valid(modified_time) {
-            info!("  Cache hit, using cached translations");
-            stats.cached_units = entry.translation_units.len();
-            return Ok(stats);
+        if entry.is_valid(modified_time) && entry.is_translated {
+            info!("  Cache hit, verifying file translation status");
+
+            // Parse file to verify translation status
+            let file = File::new(file_entry.path.clone(), utf8_content.clone(), "UTF-8");
+            let units = parser.parse_file(&file)?;
+            stats.total_units = units.len();
+
+            // Check if all units are translated
+            let all_translated = units.iter().all(|u| u.translated.is_some());
+
+            if all_translated {
+                info!("  File already translated, skipping");
+                stats.cached_units = units.len();
+                return Ok(stats);
+            } else {
+                info!("  Cache invalid: file not fully translated, re-translating");
+            }
+        } else {
+            info!("  Cache expired or file modified, re-translating");
         }
-        // Cache expired, need to re-translate
+    } else {
+        info!("  Cache miss, translating file");
     }
 
     // Parse file to extract translatable units
@@ -473,7 +488,7 @@ fn process_file(
         }
     }
 
-    // Update cache
+    // Update cache - only store translation status, not content
     let mut cache_entry = CacheEntry::new(
         &file_hash,
         file_entry.path.to_string_lossy(),
@@ -481,18 +496,7 @@ fn process_file(
         &project_config.cache.cache_type,
         "", // project fingerprint
     );
-
-    for unit in &units {
-        if let Some(translated) = &unit.translated {
-            cache_entry.add_translated_unit(TranslatedUnit::new(
-                &unit.id,
-                &unit.content,
-                translated.clone(),
-                "AUTO",
-                &project_config.translate.target_lang,
-            ));
-        }
-    }
+    cache_entry.mark_as_translated();
 
     cache.set(&cache_entry)?;
 

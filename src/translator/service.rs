@@ -4,13 +4,7 @@
 //! functionality. It encapsulates the async runtime and provides a clean boundary
 //! between the sync and async parts of the codebase.
 //!
-//! Uses static dispatch via TranslatorImpl enum for better performance.
-//!
-//! Usage:
-//! ```rust
-//! let service = TranslationService::new(config)?;
-//! let results = service.translate_batch(&texts, "ZH")?;
-//! ```
+//! Uses static dispatch via TranslatorImpl for better performance.
 
 use std::sync::Arc;
 

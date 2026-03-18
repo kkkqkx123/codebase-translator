@@ -615,13 +615,14 @@ mod tests {
 
         // Test set and get
         let hash1 = generate_test_hash("test_file");
-        let entry = CacheEntry::new(
+        let mut entry = CacheEntry::new(
             &hash1,
             "/path/to/file.txt",
             123456,
             "local",
             fingerprint,
         );
+        entry.mark_as_translated();
 
         cache.set(&entry).unwrap();
 
@@ -630,6 +631,8 @@ mod tests {
         let retrieved = retrieved.unwrap();
         assert_eq!(retrieved.file_hash, hash1);
         assert_eq!(retrieved.file_path, "/path/to/file.txt");
+        assert!(retrieved.is_translated);
+        assert!(retrieved.translation_timestamp > 0);
 
         // Test stats
         let stats = cache.stats().unwrap();

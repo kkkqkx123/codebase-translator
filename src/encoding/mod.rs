@@ -22,15 +22,16 @@
 //!
 //! ```no_run
 //! use codebase_translate::encoding::{Detector, Encoder};
+//! use std::path::Path;
 //!
 //! // Detect encoding
 //! let detector = Detector::default();
-//! let result = detector.detect_file("test.txt").expect("detection failed");
+//! let result = detector.detect_file(Path::new("test.txt")).expect("detection failed");
 //! println!("Detected: {} (confidence: {:.2})", result.encoding, result.confidence);
 //!
 //! // Convert to UTF-8
 //! let encoder = Encoder::default();
-//! encoder.convert_file_to_utf8("test.txt", &result.encoding).expect("conversion failed");
+//! encoder.convert_file_to_utf8(Path::new("test.txt"), &result.encoding).expect("conversion failed");
 //! ```
 
 pub mod detector;

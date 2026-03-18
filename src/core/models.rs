@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
-use std::time::SystemTime;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 /// Cache mode
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -473,8 +473,10 @@ pub struct CacheEntry {
     pub file_path: String,
     /// Last modified time (Unix timestamp)
     pub last_modified: i64,
-    /// Translation units
-    pub translation_units: Vec<TranslatedUnit>,
+    /// Whether the file has been translated
+    pub is_translated: bool,
+    /// Translation timestamp (when the file was last translated)
+    pub translation_timestamp: i64,
     /// Created at
     #[serde(with = "serde_timestamp")]
     pub created_at: std::time::SystemTime,
@@ -524,16 +526,21 @@ impl CacheEntry {
             file_hash: file_hash.into(),
             file_path: file_path.into(),
             last_modified,
-            translation_units: Vec::new(),
+            is_translated: false,
+            translation_timestamp: 0,
             created_at: SystemTime::now(),
             cache_mode: cache_mode.into(),
             project_fingerprint: project_fingerprint.into(),
         }
     }
 
-    /// Add a translated unit
-    pub fn add_translated_unit(&mut self, unit: TranslatedUnit) {
-        self.translation_units.push(unit);
+    /// Mark the file as translated
+    pub fn mark_as_translated(&mut self) {
+        self.is_translated = true;
+        self.translation_timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_secs() as i64;
     }
 
     /// Check if cache entry is valid (file not modified)
