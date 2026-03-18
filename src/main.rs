@@ -540,7 +540,19 @@ fn execute_cache_command(
     Ok(())
 }
 
-fn init_global_config(loader: &ConfigLoader, force: bool) -> Result<()> {
+fn init_global_config(_loader: &ConfigLoader, force: bool) -> Result<()> {
+    // Check if any global config already exists in search paths
+    let existing_config = ConfigLoader::find_global_config_path();
+    
+    if let Some(ref path) = existing_config {
+        if !force {
+            info!("Global config already exists at: {}", path.display());
+            info!("Use --force to overwrite");
+            return Ok(());
+        }
+    }
+
+    // Always use user config directory for init
     let config_path = dirs::config_dir()
         .map(|mut p| {
             p.push("codebase-translate");
@@ -553,14 +565,24 @@ fn init_global_config(loader: &ConfigLoader, force: bool) -> Result<()> {
             )
         })?;
 
+    // Check if config exists in user config directory specifically
     if config_path.exists() && !force {
         info!("Global config already exists at: {}", config_path.display());
         info!("Use --force to overwrite");
         return Ok(());
     }
 
+    // Create default config and save directly to the user config directory
     let config = GlobalConfig::default();
-    loader.save_global(&config)?;
+    
+    // Ensure parent directory exists
+    if let Some(parent) = config_path.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+    
+    // Serialize and save config directly
+    let content = toml::to_string_pretty(&config)?;
+    std::fs::write(&config_path, content)?;
 
     info!("Created global config at: {}", config_path.display());
     Ok(())

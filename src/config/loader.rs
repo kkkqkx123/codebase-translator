@@ -186,7 +186,8 @@ impl ConfigLoader {
     }
 
     /// Find global config path by searching in priority order
-    fn find_global_config_path() -> Option<PathBuf> {
+    /// Find global config path by searching in priority order
+    pub fn find_global_config_path() -> Option<PathBuf> {
         for path in Self::get_global_config_search_paths() {
             if path.exists() {
                 return Some(path);
@@ -241,22 +242,17 @@ impl ConfigLoader {
         files
     }
 
-    /// Save global configuration
-    pub fn save_global(&self, config: &GlobalConfig) -> Result<()> {
-        let path = self
-            .global_config_path
-            .clone()
-            .or_else(Self::find_global_config_path)
-            .ok_or_else(|| {
-                TranslateError::Config("Could not determine global config path".to_string())
-            })?;
-
+    /// Save global configuration to a specific path
+    /// 
+    /// NOTE: This method does NOT check if the file already exists.
+    /// The caller is responsible for checking and confirming overwrite.
+    pub fn save_global(&self, config: &GlobalConfig, path: &Path) -> Result<()> {
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent)?;
         }
 
         let content = toml::to_string_pretty(config)?;
-        std::fs::write(&path, content)?;
+        std::fs::write(path, content)?;
         Ok(())
     }
 
