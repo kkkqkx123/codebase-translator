@@ -22,7 +22,13 @@ fn test_binary_cache_local_mode() {
     let fingerprint = cache.project_fingerprint().to_string();
 
     let hash1 = hash_utils::generate_test_hash("file1");
-    let mut entry1 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456i64, "local", fingerprint.clone());
+    let mut entry1 = CacheEntry::new(
+        &hash1,
+        "/path/to/file1.txt",
+        123456i64,
+        "local",
+        fingerprint.clone(),
+    );
     entry1.mark_as_translated();
 
     cache.set(&entry1).unwrap();
@@ -49,7 +55,13 @@ fn test_binary_cache_global_mode() {
     let fingerprint = cache.project_fingerprint().to_string();
 
     let hash1 = hash_utils::generate_test_hash("file1");
-    let mut entry1 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456i64, "global", fingerprint.clone());
+    let mut entry1 = CacheEntry::new(
+        &hash1,
+        "/path/to/file1.txt",
+        123456i64,
+        "global",
+        fingerprint.clone(),
+    );
     entry1.mark_as_translated();
 
     cache.set(&entry1).unwrap();
@@ -57,8 +69,11 @@ fn test_binary_cache_global_mode() {
     // Cache file should be in global cache directory
     let global_cache_dir = util::get_global_cache_dir();
     let project_id = util::generate_project_id(temp_dir.path());
-    let _cache_file = global_cache_dir.join(&project_id).join(".cache").join("cache.bin");
-    
+    let _cache_file = global_cache_dir
+        .join(&project_id)
+        .join(".cache")
+        .join("cache.bin");
+
     // The cache file should exist in global directory
     assert!(global_cache_dir.exists());
 }
@@ -92,7 +107,13 @@ fn test_binary_cache_local_mode_isolation() {
     assert_ne!(fingerprint1, fingerprint2);
 
     let hash1 = hash_utils::generate_test_hash("file1");
-    let mut entry1 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456i64, "local", fingerprint1.clone());
+    let mut entry1 = CacheEntry::new(
+        &hash1,
+        "/path/to/file1.txt",
+        123456i64,
+        "local",
+        fingerprint1.clone(),
+    );
     entry1.mark_as_translated();
 
     cache1.set(&entry1).unwrap();
@@ -135,7 +156,13 @@ fn test_binary_cache_global_mode_isolation() {
     assert_ne!(fingerprint1, fingerprint2);
 
     let hash1 = hash_utils::generate_test_hash("file1");
-    let mut entry1 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456i64, "global", fingerprint1.clone());
+    let mut entry1 = CacheEntry::new(
+        &hash1,
+        "/path/to/file1.txt",
+        123456i64,
+        "global",
+        fingerprint1.clone(),
+    );
     entry1.mark_as_translated();
 
     cache1.set(&entry1).unwrap();
@@ -163,7 +190,13 @@ fn test_binary_cache_mode_persistence() {
     let fingerprint = cache1.project_fingerprint().to_string();
 
     let hash1 = hash_utils::generate_test_hash("file1");
-    let mut entry1 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456i64, "local", fingerprint.clone());
+    let mut entry1 = CacheEntry::new(
+        &hash1,
+        "/path/to/file1.txt",
+        123456i64,
+        "local",
+        fingerprint.clone(),
+    );
     entry1.mark_as_translated();
 
     cache1.set(&entry1).unwrap();
@@ -195,7 +228,13 @@ fn test_binary_cache_custom_directory() {
     let fingerprint = cache.project_fingerprint().to_string();
 
     let hash1 = hash_utils::generate_test_hash("file1");
-    let mut entry1 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456i64, "local", fingerprint.clone());
+    let mut entry1 = CacheEntry::new(
+        &hash1,
+        "/path/to/file1.txt",
+        123456i64,
+        "local",
+        fingerprint.clone(),
+    );
     entry1.mark_as_translated();
 
     cache.set(&entry1).unwrap();
@@ -221,7 +260,13 @@ fn test_binary_cache_mode_disabled() {
     let cache = BinaryCache::new(config, temp_dir.path()).unwrap();
 
     let hash1 = hash_utils::generate_test_hash("file1");
-    let mut entry1 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456i64, "local", cache.project_fingerprint().to_string());
+    let mut entry1 = CacheEntry::new(
+        &hash1,
+        "/path/to/file1.txt",
+        123456i64,
+        "local",
+        cache.project_fingerprint().to_string(),
+    );
     entry1.mark_as_translated();
 
     // Should not create cache file when disabled

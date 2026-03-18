@@ -501,17 +501,17 @@ mod example {
     };
 
     let mut units = vec![
-        create_translation_unit("1", "Module comment", 1, 3, 18),  // "Module comment" (13 chars) - ends at 3+13=16, but we need 18 for exclusive end with space
-        create_translation_unit("2", "Nested module comment", 3, 7, 29),  // "Nested module comment" (21 chars) - ends at 7+21=28, but we need 29 for exclusive end with space
+        create_translation_unit("1", "Module comment", 1, 3, 18), // "Module comment" (13 chars) - ends at 3+13=16, but we need 18 for exclusive end with space
+        create_translation_unit("2", "Nested module comment", 3, 7, 29), // "Nested module comment" (21 chars) - ends at 7+21=28, but we need 29 for exclusive end with space
         create_translation_unit_with_format(
             "3",
-            "Field doc comment",  // Note: without the "/// " prefix
+            "Field doc comment", // Note: without the "/// " prefix
             5,
             13,
-            31,  // "Field doc comment" (17 chars) - this one seems correct now
+            31, // "Field doc comment" (17 chars) - this one seems correct now
             format_info.clone(),
         ),
-        create_translation_unit("4", "Method comment", 10, 11, 27),  // "Method comment" (14 chars) - ends at 11+14=25, but we need 27 for exclusive end with space
+        create_translation_unit("4", "Method comment", 10, 11, 27), // "Method comment" (14 chars) - ends at 11+14=25, but we need 27 for exclusive end with space
     ];
 
     units[0].set_translated(" 模块注释");

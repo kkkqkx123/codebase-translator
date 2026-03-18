@@ -11,7 +11,6 @@ use crate::config::global::LoggingConfig;
 use crate::core::error::{Result, TranslateError};
 
 mod config;
-mod macros;
 
 pub use config::{get_format_string, get_output_string, parse_level, validate_config};
 

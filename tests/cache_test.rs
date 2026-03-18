@@ -19,13 +19,7 @@ fn test_binary_cache_basic() {
 
     // Test set and get - use a 64-character hex hash
     let hash = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
-    let mut entry = CacheEntry::new(
-        hash,
-        "/path/to/file.txt",
-        123456,
-        "local",
-        fingerprint,
-    );
+    let mut entry = CacheEntry::new(hash, "/path/to/file.txt", 123456, "local", fingerprint);
     entry.mark_as_translated();
 
     cache.set(&entry).unwrap();

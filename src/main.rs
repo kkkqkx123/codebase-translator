@@ -1,11 +1,10 @@
 use std::path::PathBuf;
 
 use clap::{Parser as ClapParser, Subcommand};
-use tracing::{error, info};
+use tracing::{debug, error, info, instrument, warn};
 
 use codebase_translate::{
     cache::binary::BinaryCache,
-    Cache,
     config::{global::GlobalConfig, loader::ConfigLoader, project::ProjectConfig},
     core::error::Result,
     core::models::{CacheEntry, File, FileEntry, TranslationStats},
@@ -19,6 +18,7 @@ use codebase_translate::{
     translator::service::TranslationService,
     translator::ProviderType,
     writer::file::{FileWriter, WriterConfig},
+    Cache,
 };
 
 /// Codebase Translate - Automatic code comment translator
@@ -133,9 +133,9 @@ fn run() -> Result<()> {
     logger::init(&global_config.logging)?;
 
     info!(
-        "Starting {} v{}",
-        codebase_translate::NAME,
-        codebase_translate::VERSION
+        name = codebase_translate::NAME,
+        version = codebase_translate::VERSION,
+        "Starting application"
     );
 
     // Override dry run from CLI
@@ -175,9 +175,15 @@ fn run() -> Result<()> {
                     exc.split(',').map(|s| s.trim().to_string()).collect();
             }
 
-            info!("Translating directory: {}", path);
-            info!("Target language: {}", project_config.translate.target_lang);
-            info!("Provider: {}", project_config.translate.provider);
+            info!(
+                path = %path,
+                "Translating directory"
+            );
+            info!(
+                target_lang = %project_config.translate.target_lang,
+                provider = %project_config.translate.provider,
+                "Translation configuration"
+            );
 
             // Execute translation workflow
             execute_translation_workflow(&path, &global_config, &project_config)?;
@@ -196,15 +202,17 @@ fn run() -> Result<()> {
         }
 
         Some(Commands::Validate) => {
-            info!("Validating configuration...");
+            info!("Validating configuration");
             validate_config(&global_config, &project_config)?;
-            info!("Configuration is valid!");
+            info!("Configuration is valid");
         }
 
         None => {
-            // Default: translate current directory
             info!("No command specified, translating current directory");
-            info!("Target language: {}", project_config.translate.target_lang);
+            info!(
+                target_lang = %project_config.translate.target_lang,
+                "Default translation target"
+            );
             execute_translation_workflow(".", &global_config, &project_config)?;
         }
     }
@@ -213,6 +221,7 @@ fn run() -> Result<()> {
 }
 
 /// Execute the complete translation workflow
+#[instrument(skip(global_config, project_config), fields(path = %path))]
 fn execute_translation_workflow(
     path: &str,
     global_config: &GlobalConfig,
@@ -220,17 +229,18 @@ fn execute_translation_workflow(
 ) -> Result<()> {
     let start_time = std::time::Instant::now();
 
-    // Step 1: Scan directory for files
-    info!("Step 1: Scanning directory...");
+    info!(
+        path = %path,
+        "Step 1: Scanning directory"
+    );
     let files = scan_files(path, project_config)?;
-    info!("Found {} files to process", files.len());
+    info!(files_count = files.len(), "Directory scan completed");
 
     if files.is_empty() {
-        info!("No files found to translate. Exiting.");
+        info!("No files found to translate");
         return Ok(());
     }
 
-    // Step 2: Initialize components
     let cache = create_cache(&project_config.cache, path)?;
     let translator = create_translator(global_config, project_config)?;
     let parser = create_parser(project_config)?;
@@ -238,12 +248,16 @@ fn execute_translation_workflow(
     let detector = Detector::default();
     let encoder = Encoder::default();
 
-    // Step 3: Process files
-    info!("Step 2: Processing files...");
+    info!("Step 2: Processing files");
     let mut stats = TranslationStats::default();
 
     for (idx, file_entry) in files.iter().enumerate() {
-        info!("[{}/{}] Processing: {}", idx + 1, files.len(), file_entry.path.display());
+        info!(
+            index = idx + 1,
+            total = files.len(),
+            file = %file_entry.path.display(),
+            "Processing file"
+        );
 
         match process_file(
             file_entry,
@@ -259,7 +273,11 @@ fn execute_translation_workflow(
                 stats.merge(&file_stats);
             }
             Err(e) => {
-                error!("Failed to process file {}: {}", file_entry.path.display(), e);
+                error!(
+                    error = %e,
+                    file = %file_entry.path.display(),
+                    "Failed to process file"
+                );
                 stats.errors += 1;
             }
         }
@@ -268,13 +286,19 @@ fn execute_translation_workflow(
     // Step 4: Print summary
     let elapsed = start_time.elapsed();
     info!("========================================");
-    info!("Translation completed in {:.2}s", elapsed.as_secs_f64());
-    info!("Total files: {}", stats.total_files);
-    info!("Total units: {}", stats.total_units);
-    info!("Translated: {}", stats.translated_units);
-    info!("From cache: {}", stats.cached_units);
-    info!("Skipped: {}", stats.skipped_units);
-    info!("Errors: {}", stats.errors);
+    info!(
+        duration_secs = elapsed.as_secs_f64(),
+        "Translation completed"
+    );
+    info!(
+        total_files = stats.total_files,
+        total_units = stats.total_units,
+        translated_units = stats.translated_units,
+        cached_units = stats.cached_units,
+        skipped_units = stats.skipped_units,
+        errors = stats.errors,
+        "Translation summary"
+    );
     info!("========================================");
 
     Ok(())
@@ -369,6 +393,7 @@ fn create_writer(project_config: &ProjectConfig) -> Result<FileWriter> {
 }
 
 /// Process a single file
+#[instrument(skip(cache, translator, parser, writer, detector, encoder, project_config), fields(file = %file_entry.path.display()))]
 fn process_file(
     file_entry: &FileEntry,
     cache: &Box<dyn Cache>,
@@ -382,24 +407,23 @@ fn process_file(
     let mut stats = TranslationStats::default();
     stats.total_files = 1;
 
-    // Read file content
     let content = std::fs::read(&file_entry.path)?;
 
-    // Detect encoding
     let encoding_result = detector.detect_bytes(&content)?;
     let encoding = encoding_result.encoding;
 
-    // Convert to UTF-8 if needed
     let utf8_content = if encoding != "UTF-8" {
+        debug!(
+            original_encoding = %encoding,
+            "Converting to UTF-8"
+        );
         encoder.to_utf8(&content, &encoding)?.into_bytes()
     } else {
         content.clone()
     };
 
-    // Calculate file hash for cache
     let file_hash = calculate_hash(&utf8_content);
 
-    // Check cache
     let cached_entry = cache.get(&file_hash)?;
     let modified_time = file_entry
         .modified
@@ -409,60 +433,56 @@ fn process_file(
 
     if let Some(entry) = cached_entry {
         if entry.is_valid(modified_time) && entry.is_translated {
-            info!("  Cache hit, verifying file translation status");
+            info!("Cache hit, verifying file translation status");
 
-            // Parse file to verify translation status
             let file = File::new(file_entry.path.clone(), utf8_content.clone(), "UTF-8");
             let units = parser.parse_file(&file)?;
             stats.total_units = units.len();
 
-            // Check if all units are translated
             let all_translated = units.iter().all(|u| u.translated.is_some());
 
             if all_translated {
-                info!("  File already translated, skipping");
+                info!("File already translated, skipping");
                 stats.cached_units = units.len();
                 return Ok(stats);
             } else {
-                info!("  Cache invalid: file not fully translated, re-translating");
+                info!("Cache invalid: file not fully translated, re-translating");
             }
         } else {
-            info!("  Cache expired or file modified, re-translating");
+            info!("Cache expired or file modified, re-translating");
         }
     } else {
-        info!("  Cache miss, translating file");
+        info!("Cache miss, translating file");
     }
 
-    // Parse file to extract translatable units
     let file = File::new(file_entry.path.clone(), utf8_content.clone(), "UTF-8");
     let mut units = parser.parse_file(&file)?;
     stats.total_units = units.len();
 
     if units.is_empty() {
-        info!("  No translatable content found");
+        info!("No translatable content found");
         return Ok(stats);
     }
 
-    // Filter units that need translation
     let units_to_translate: Vec<_> = units.iter().filter(|u| u.should_translate).collect();
     let num_to_translate = units_to_translate.len();
 
     if num_to_translate == 0 {
-        info!("  All units filtered, nothing to translate");
+        info!("All units filtered, nothing to translate");
         stats.skipped_units = units.len();
         return Ok(stats);
     }
 
-    // Prepare texts for translation
-    let texts: Vec<String> = units_to_translate.iter().map(|u| u.content.clone()).collect();
+    let texts: Vec<String> = units_to_translate
+        .iter()
+        .map(|u| u.content.clone())
+        .collect();
 
-    info!("  Translating {} units...", texts.len());
+    info!(units_count = texts.len(), "Translating units");
 
-    // Translate
     let translated_texts =
         translator.translate_batch(&texts, &project_config.translate.target_lang)?;
 
-    // Update units with translations
     let mut translate_idx = 0;
     for unit in units.iter_mut() {
         if unit.should_translate {
@@ -475,26 +495,29 @@ fn process_file(
 
     stats.translated_units = num_to_translate;
 
-    // Write translations back to file
     if !project_config.writer.dry_run {
         let rt = tokio::runtime::Runtime::new()?;
         rt.block_on(async { writer.write(&file, &units).await })?;
     } else {
-        info!("  Dry run mode - not writing changes");
+        info!("Dry run mode - not writing changes");
         for unit in &units {
             if let Some(translated) = &unit.translated {
-                info!("  [{}] '{}' -> '{}'", unit.node_type, unit.content, translated);
+                info!(
+                    node_type = %unit.node_type,
+                    original = %unit.content,
+                    translated = %translated,
+                    "Translation preview"
+                );
             }
         }
     }
 
-    // Update cache - only store translation status, not content
     let mut cache_entry = CacheEntry::new(
         &file_hash,
         file_entry.path.to_string_lossy(),
         modified_time,
         &project_config.cache.cache_type,
-        "", // project fingerprint
+        "",
     );
     cache_entry.mark_as_translated();
 
@@ -520,7 +543,10 @@ fn execute_cache_command(
     detailed: bool,
 ) -> Result<()> {
     let current_dir = std::env::current_dir()?;
-    let cache = create_cache(&project_config.cache, current_dir.to_string_lossy().as_ref())?;
+    let cache = create_cache(
+        &project_config.cache,
+        current_dir.to_string_lossy().as_ref(),
+    )?;
 
     if clear {
         info!("Clearing cache...");
@@ -547,7 +573,7 @@ fn execute_cache_command(
 fn init_global_config(_loader: &ConfigLoader, force: bool) -> Result<()> {
     // Check if any global config already exists in search paths
     let existing_config = ConfigLoader::find_global_config_path();
-    
+
     if let Some(ref path) = existing_config {
         if !force {
             info!("Global config already exists at: {}", path.display());
@@ -578,12 +604,12 @@ fn init_global_config(_loader: &ConfigLoader, force: bool) -> Result<()> {
 
     // Create default config and save directly to the user config directory
     let config = GlobalConfig::default();
-    
+
     // Ensure parent directory exists
     if let Some(parent) = config_path.parent() {
         std::fs::create_dir_all(parent)?;
     }
-    
+
     // Serialize and save config directly
     let content = toml::to_string_pretty(&config)?;
     std::fs::write(&config_path, content)?;

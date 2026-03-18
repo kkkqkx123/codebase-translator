@@ -22,7 +22,13 @@ fn test_binary_cache_set_and_get() {
     let fingerprint = cache.project_fingerprint().to_string();
 
     let hash1 = hash_utils::generate_test_hash("file1");
-    let mut entry1 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456i64, "local", fingerprint);
+    let mut entry1 = CacheEntry::new(
+        &hash1,
+        "/path/to/file1.txt",
+        123456i64,
+        "local",
+        fingerprint,
+    );
     entry1.mark_as_translated();
 
     cache.set(&entry1).unwrap();
@@ -67,7 +73,13 @@ fn test_binary_cache_invalidate() {
     let fingerprint = cache.project_fingerprint().to_string();
 
     let hash1 = hash_utils::generate_test_hash("file1");
-    let mut entry1 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456i64, "local", fingerprint);
+    let mut entry1 = CacheEntry::new(
+        &hash1,
+        "/path/to/file1.txt",
+        123456i64,
+        "local",
+        fingerprint,
+    );
     entry1.mark_as_translated();
 
     cache.set(&entry1).unwrap();
@@ -99,8 +111,20 @@ fn test_binary_cache_clear() {
 
     let hash1 = hash_utils::generate_test_hash("file1");
     let hash2 = hash_utils::generate_test_hash("file2");
-    let mut entry1 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456i64, "local", fingerprint.clone());
-    let mut entry2 = CacheEntry::new(&hash2, "/path/to/file2.txt", 123457i64, "local", fingerprint);
+    let mut entry1 = CacheEntry::new(
+        &hash1,
+        "/path/to/file1.txt",
+        123456i64,
+        "local",
+        fingerprint.clone(),
+    );
+    let mut entry2 = CacheEntry::new(
+        &hash2,
+        "/path/to/file2.txt",
+        123457i64,
+        "local",
+        fingerprint,
+    );
     entry1.mark_as_translated();
     entry2.mark_as_translated();
 
@@ -140,9 +164,27 @@ fn test_binary_cache_list_entries() {
     let hash1 = hash_utils::generate_test_hash("file1");
     let hash2 = hash_utils::generate_test_hash("file2");
     let hash3 = hash_utils::generate_test_hash("file3");
-    let mut entry1 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456i64, "local", fingerprint.clone());
-    let mut entry2 = CacheEntry::new(&hash2, "/path/to/file2.txt", 123457i64, "local", fingerprint.clone());
-    let mut entry3 = CacheEntry::new(&hash3, "/path/to/file3.txt", 123458i64, "local", fingerprint);
+    let mut entry1 = CacheEntry::new(
+        &hash1,
+        "/path/to/file1.txt",
+        123456i64,
+        "local",
+        fingerprint.clone(),
+    );
+    let mut entry2 = CacheEntry::new(
+        &hash2,
+        "/path/to/file2.txt",
+        123457i64,
+        "local",
+        fingerprint.clone(),
+    );
+    let mut entry3 = CacheEntry::new(
+        &hash3,
+        "/path/to/file3.txt",
+        123458i64,
+        "local",
+        fingerprint,
+    );
     entry1.mark_as_translated();
     entry2.mark_as_translated();
     entry3.mark_as_translated();
@@ -180,8 +222,20 @@ fn test_binary_cache_stats() {
     // Add entries
     let hash1 = hash_utils::generate_test_hash("file1");
     let hash2 = hash_utils::generate_test_hash("file2");
-    let mut entry1 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456i64, "local", fingerprint.clone());
-    let mut entry2 = CacheEntry::new(&hash2, "/path/to/file2.txt", 123457i64, "local", fingerprint);
+    let mut entry1 = CacheEntry::new(
+        &hash1,
+        "/path/to/file1.txt",
+        123456i64,
+        "local",
+        fingerprint.clone(),
+    );
+    let mut entry2 = CacheEntry::new(
+        &hash2,
+        "/path/to/file2.txt",
+        123457i64,
+        "local",
+        fingerprint,
+    );
     entry1.mark_as_translated();
     entry2.mark_as_translated();
 
@@ -209,8 +263,20 @@ fn test_binary_cache_cleanup_orphaned() {
 
     let hash1 = hash_utils::generate_test_hash("file1");
     let hash2 = hash_utils::generate_test_hash("file2");
-    let mut entry1 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456i64, "local", fingerprint.clone());
-    let mut entry2 = CacheEntry::new(&hash2, "/path/to/file2.txt", 123457i64, "local", fingerprint);
+    let mut entry1 = CacheEntry::new(
+        &hash1,
+        "/path/to/file1.txt",
+        123456i64,
+        "local",
+        fingerprint.clone(),
+    );
+    let mut entry2 = CacheEntry::new(
+        &hash2,
+        "/path/to/file2.txt",
+        123457i64,
+        "local",
+        fingerprint,
+    );
     entry1.mark_as_translated();
     entry2.mark_as_translated();
 
@@ -242,7 +308,13 @@ fn test_binary_cache_disabled() {
     let fingerprint = cache.project_fingerprint().to_string();
 
     let hash1 = hash_utils::generate_test_hash("file1");
-    let mut entry1 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456i64, "local", fingerprint);
+    let mut entry1 = CacheEntry::new(
+        &hash1,
+        "/path/to/file1.txt",
+        123456i64,
+        "local",
+        fingerprint,
+    );
     entry1.mark_as_translated();
 
     // Should not fail even when disabled
@@ -267,13 +339,25 @@ fn test_binary_cache_update_existing_entry() {
     let fingerprint = cache.project_fingerprint().to_string();
 
     let hash1 = hash_utils::generate_test_hash("file1");
-    let mut entry1 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456i64, "local", fingerprint.clone());
+    let mut entry1 = CacheEntry::new(
+        &hash1,
+        "/path/to/file1.txt",
+        123456i64,
+        "local",
+        fingerprint.clone(),
+    );
     entry1.mark_as_translated();
 
     cache.set(&entry1).unwrap();
 
     // Update with new modification time
-    let mut entry2 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123457i64, "local", fingerprint);
+    let mut entry2 = CacheEntry::new(
+        &hash1,
+        "/path/to/file1.txt",
+        123457i64,
+        "local",
+        fingerprint,
+    );
     entry2.mark_as_translated();
 
     cache.set(&entry2).unwrap();
@@ -298,7 +382,13 @@ fn test_binary_cache_is_valid() {
     let fingerprint = cache.project_fingerprint().to_string();
 
     let hash1 = hash_utils::generate_test_hash("file1");
-    let mut entry1 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456i64, "local", fingerprint);
+    let mut entry1 = CacheEntry::new(
+        &hash1,
+        "/path/to/file1.txt",
+        123456i64,
+        "local",
+        fingerprint,
+    );
     entry1.mark_as_translated();
 
     cache.set(&entry1).unwrap();
@@ -328,7 +418,13 @@ fn test_binary_cache_mark_as_translated() {
     let fingerprint = cache.project_fingerprint().to_string();
 
     let hash1 = hash_utils::generate_test_hash("file1");
-    let mut entry1 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456i64, "local", fingerprint);
+    let mut entry1 = CacheEntry::new(
+        &hash1,
+        "/path/to/file1.txt",
+        123456i64,
+        "local",
+        fingerprint,
+    );
 
     // Initially not translated
     assert!(!entry1.is_translated);

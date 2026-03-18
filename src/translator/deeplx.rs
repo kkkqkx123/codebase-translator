@@ -81,7 +81,10 @@ impl DeepLXTranslator {
             .build()
             .map_err(|e| TranslateError::Http(e.to_string()))?;
 
-        info!("DeepLX translator created with API URL: {}", api_url);
+        info!(
+            api_url = %api_url,
+            "DeepLX translator created"
+        );
 
         Ok(Self {
             client,
@@ -113,7 +116,6 @@ impl DeepLXTranslator {
             target_lang: target_lang.to_string(),
         };
 
-        // Build API URL
         let api_url = if let Some(ref api_key) = self.config.api_key {
             format!("{}/{}/translate", self.api_url, api_key)
         } else {
@@ -121,8 +123,10 @@ impl DeepLXTranslator {
         };
 
         debug!(
-            "DeepLX request: url={}, source_lang={}, target_lang={}",
-            api_url, source_lang, target_lang
+            url = %api_url,
+            source_lang = source_lang,
+            target_lang = target_lang,
+            "Sending DeepLX translation request"
         );
 
         let response = self
@@ -143,8 +147,9 @@ impl DeepLXTranslator {
 
         if !status.is_success() {
             error!(
-                "DeepLX API error: status={}, body={}",
-                status, response_text
+                status = %status,
+                response_body = %response_text,
+                "DeepLX API error"
             );
             return Err(TranslateError::Translation(format!(
                 "DeepLX API error: {} - {}",
@@ -153,6 +158,11 @@ impl DeepLXTranslator {
         }
 
         let deeplx_resp: DeepLXResponse = serde_json::from_str(&response_text).map_err(|e| {
+            error!(
+                error = %e,
+                response_body = %response_text,
+                "Failed to parse DeepLX response"
+            );
             TranslateError::Parse(format!(
                 "Failed to parse DeepLX response: {} - {}",
                 e, response_text

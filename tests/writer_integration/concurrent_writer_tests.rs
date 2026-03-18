@@ -179,7 +179,14 @@ async fn test_concurrent_writer_mixed_success_failure() {
         ends_with_newline: false,
         is_multiline: false,
     };
-    let units2 = vec![create_translation_unit_with_format("2", "Another", 1, 1, 8, format_info)];
+    let units2 = vec![create_translation_unit_with_format(
+        "2",
+        "Another",
+        1,
+        1,
+        8,
+        format_info,
+    )];
 
     let config = WriterConfig::default();
     let writer = ConcurrentWriter::new(config, 2);

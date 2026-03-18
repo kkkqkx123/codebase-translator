@@ -1,6 +1,6 @@
 use rayon::prelude::*;
 use std::path::{Path, PathBuf};
-use tracing::{debug, warn};
+use tracing::{debug, instrument, warn};
 
 use crate::encoding::error::Error;
 use crate::encoding::types::{DetectorConfig, EncodingResult, EncodingType, Result};
@@ -35,25 +35,23 @@ impl Detector {
     }
 
     pub fn detect_file(&self, path: &Path) -> Result<EncodingResult> {
+        debug!(
+            path = %path.display(),
+            "Detecting file encoding"
+        );
         let data = std::fs::read(path)
             .map_err(|e| Error::file_not_found(format!("{}: {}", path.display(), e)))?;
         self.detect_bytes_with_source(&data, path.display().to_string().as_str())
     }
 
-    /// Detects encodings for multiple files in parallel using Rayon.
-    ///
-    /// This method is CPU-intensive and benefits from parallel processing.
-    /// Suitable for projects with many files.
-    ///
-    /// # Arguments
-    /// * `paths` - Slice of file paths to detect
-    ///
-    /// # Returns
-    /// Vector of tuples containing (Path, EncodingResult)
     pub fn detect_files_parallel(
         &self,
         paths: &[PathBuf],
     ) -> Result<Vec<(PathBuf, EncodingResult)>> {
+        debug!(
+            files_count = paths.len(),
+            "Detecting encodings for multiple files in parallel"
+        );
         let results: Result<Vec<_>> = paths
             .par_iter()
             .map(|path| {
@@ -65,6 +63,7 @@ impl Detector {
         results
     }
 
+    #[instrument(skip(self, data), fields(source = %source))]
     fn detect_bytes_with_source(&self, data: &[u8], source: &str) -> Result<EncodingResult> {
         let result = self.detect_internal(data)?;
 

@@ -163,7 +163,7 @@ impl TranslationApplier {
                         end_char: unit.end_pos.column.saturating_sub(1),
                         text: formatted_text,
                     };
-                    
+
                     replacement
                 })
             })

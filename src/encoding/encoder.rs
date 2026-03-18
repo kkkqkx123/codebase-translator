@@ -1,5 +1,5 @@
 use std::path::Path;
-use tracing::debug;
+use tracing::{debug, info};
 
 use crate::encoding::error::Error;
 use crate::encoding::types::{EncoderConfig, EncodingType, Result};
@@ -23,6 +23,12 @@ impl Encoder {
         } else {
             from_encoding
         };
+
+        debug!(
+            from_encoding = %encoding_name,
+            data_length = data.len(),
+            "Converting to UTF-8"
+        );
 
         let encoding_type = EncodingType::from_str(encoding_name)
             .ok_or_else(|| Error::unsupported_encoding(encoding_name))?;
@@ -78,6 +84,10 @@ impl Encoder {
             }
             std::fs::write(path, new_data)
                 .map_err(|e| Error::io(format!("Failed to write file: {}", e)))?;
+            info!(
+                path = %path.display(),
+                "Removed BOM from UTF-8 file"
+            );
             return Ok(true);
         }
 
@@ -85,7 +95,7 @@ impl Encoder {
         std::fs::write(path, utf8_text)
             .map_err(|e| Error::io(format!("Failed to write file: {}", e)))?;
 
-        debug!(
+        info!(
             path = %path.display(),
             from_encoding = %from_encoding,
             "Converted file to UTF-8"

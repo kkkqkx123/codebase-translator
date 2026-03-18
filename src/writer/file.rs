@@ -6,7 +6,7 @@
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use tracing::{debug, error, info, warn};
+use tracing::{debug, error, info, instrument, warn};
 
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, TranslationUnit};
@@ -75,6 +75,7 @@ impl FileWriter {
     /// # Arguments
     /// * `file` - The file to write to
     /// * `units` - Translation units with translated content
+    #[instrument(skip(self), fields(file = %file.path.display(), units_count = units.len()))]
     pub async fn write(&self, file: &File, units: &[TranslationUnit]) -> Result<()> {
         info!(
             file = %file.path.display(),
@@ -97,7 +98,10 @@ impl FileWriter {
         self.write_file_atomically(file, &content, &modified_content)
             .await?;
 
-        info!(file = %file.path.display(), "Async file write completed successfully");
+        info!(
+            file = %file.path.display(),
+            "Async file write completed successfully"
+        );
         Ok(())
     }
 

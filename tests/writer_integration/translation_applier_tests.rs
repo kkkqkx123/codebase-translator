@@ -71,7 +71,14 @@ fn test_translation_applier_missing_translation() {
         ends_with_newline: false,
         is_multiline: false,
     };
-    let units = vec![create_translation_unit_with_format("1", "Hello", 1, 1, 6, format_info)];
+    let units = vec![create_translation_unit_with_format(
+        "1",
+        "Hello",
+        1,
+        1,
+        6,
+        format_info,
+    )];
 
     let result = apply_translations(content, &units);
     assert!(result.is_err());
@@ -201,7 +208,7 @@ fn test_translation_applier_doc_block_comment() {
         "/**\n * This is a doc comment\n */",
         1,
         1,
-        4,  // End of line 3 (exclusive), where " */" is at positions 1-3
+        4, // End of line 3 (exclusive), where " */" is at positions 1-3
         format_info,
     )];
     units[0].set_translated("这是一个\n文档注释");

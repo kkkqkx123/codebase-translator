@@ -105,6 +105,7 @@ impl BatchTranslator {
             total_chars += text.len();
 
             let permit = self.semaphore.clone().acquire_owned().await.map_err(|e| {
+                error!(error = %e, "Failed to acquire semaphore");
                 TranslateError::Translation(format!("Failed to acquire semaphore: {}", e))
             })?;
 
@@ -126,7 +127,11 @@ impl BatchTranslator {
                     success_count += 1;
                 }
                 Err(e) => {
-                    error!("Translation failed: {}", e);
+                    error!(
+                        error = %e,
+                        text_length = text.len(),
+                        "Translation failed"
+                    );
                     errors.push(e.to_string());
                     results.push(TranslateResponse {
                         original_text: text.clone(),
@@ -150,8 +155,13 @@ impl BatchTranslator {
         };
 
         info!(
-            "Batch translation completed: total={}, success={}, failed={}, time={}ms, avg_latency={}ms",
-            total_count, success_count, failed_count, processing_time, average_latency_ms
+            total_count = total_count,
+            success_count = success_count,
+            failed_count = failed_count,
+            processing_time_ms = processing_time,
+            average_latency_ms = average_latency_ms,
+            total_chars = total_chars,
+            "Batch translation completed"
         );
 
         Ok(BatchResult {

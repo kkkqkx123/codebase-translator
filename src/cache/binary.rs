@@ -615,13 +615,7 @@ mod tests {
 
         // Test set and get
         let hash1 = generate_test_hash("test_file");
-        let mut entry = CacheEntry::new(
-            &hash1,
-            "/path/to/file.txt",
-            123456,
-            "local",
-            fingerprint,
-        );
+        let mut entry = CacheEntry::new(&hash1, "/path/to/file.txt", 123456, "local", fingerprint);
         entry.mark_as_translated();
 
         cache.set(&entry).unwrap();
@@ -663,20 +657,8 @@ mod tests {
 
         let hash1 = generate_test_hash("file1");
         let hash2 = generate_test_hash("file2");
-        let entry1 = CacheEntry::new(
-            &hash1,
-            "/path/to/file1.txt",
-            123456,
-            "local",
-            fingerprint,
-        );
-        let entry2 = CacheEntry::new(
-            &hash2,
-            "/path/to/file2.txt",
-            123456,
-            "local",
-            fingerprint,
-        );
+        let entry1 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456, "local", fingerprint);
+        let entry2 = CacheEntry::new(&hash2, "/path/to/file2.txt", 123456, "local", fingerprint);
 
         cache.set(&entry1).unwrap();
         cache.set(&entry2).unwrap();
@@ -700,20 +682,8 @@ mod tests {
 
         let hash1 = generate_test_hash("file1");
         let hash2 = generate_test_hash("file2");
-        let entry1 = CacheEntry::new(
-            &hash1,
-            "/path/to/file1.txt",
-            123456,
-            "local",
-            fingerprint,
-        );
-        let entry2 = CacheEntry::new(
-            &hash2,
-            "/path/to/file2.txt",
-            123456,
-            "local",
-            fingerprint,
-        );
+        let entry1 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456, "local", fingerprint);
+        let entry2 = CacheEntry::new(&hash2, "/path/to/file2.txt", 123456, "local", fingerprint);
 
         cache.set(&entry1).unwrap();
         cache.set(&entry2).unwrap();

@@ -23,7 +23,13 @@ fn test_concurrent_reads() {
     let fingerprint = cache.project_fingerprint().to_string();
 
     let hash1 = hash_utils::generate_test_hash("file1");
-    let mut entry1 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456i64, "local", fingerprint.clone());
+    let mut entry1 = CacheEntry::new(
+        &hash1,
+        "/path/to/file1.txt",
+        123456i64,
+        "local",
+        fingerprint.clone(),
+    );
     entry1.mark_as_translated();
 
     cache.set(&entry1).unwrap();
@@ -148,7 +154,13 @@ fn test_concurrent_invalidate() {
     let fingerprint = cache.project_fingerprint().to_string();
 
     let hash1 = hash_utils::generate_test_hash("file1");
-    let mut entry1 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456i64, "local", fingerprint.clone());
+    let mut entry1 = CacheEntry::new(
+        &hash1,
+        "/path/to/file1.txt",
+        123456i64,
+        "local",
+        fingerprint.clone(),
+    );
     entry1.mark_as_translated();
 
     cache.set(&entry1).unwrap();

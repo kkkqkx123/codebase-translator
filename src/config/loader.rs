@@ -243,7 +243,7 @@ impl ConfigLoader {
     }
 
     /// Save global configuration to a specific path
-    /// 
+    ///
     /// NOTE: This method does NOT check if the file already exists.
     /// The caller is responsible for checking and confirming overwrite.
     pub fn save_global(&self, config: &GlobalConfig, path: &Path) -> Result<()> {

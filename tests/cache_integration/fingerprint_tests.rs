@@ -21,7 +21,13 @@ fn test_cache_fingerprint_validation() {
     let fingerprint = cache.project_fingerprint().to_string();
 
     let hash1 = hash_utils::generate_test_hash("file1");
-    let mut entry1 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456i64, "local", fingerprint.clone());
+    let mut entry1 = CacheEntry::new(
+        &hash1,
+        "/path/to/file1.txt",
+        123456i64,
+        "local",
+        fingerprint.clone(),
+    );
     entry1.mark_as_translated();
 
     cache.set(&entry1).unwrap();
@@ -47,7 +53,13 @@ fn test_cache_fingerprint_mismatch() {
     let fingerprint = cache.project_fingerprint().to_string();
 
     let hash1 = hash_utils::generate_test_hash("file1");
-    let mut entry1 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456i64, "local", fingerprint.clone());
+    let mut entry1 = CacheEntry::new(
+        &hash1,
+        "/path/to/file1.txt",
+        123456i64,
+        "local",
+        fingerprint.clone(),
+    );
     entry1.mark_as_translated();
 
     cache.set(&entry1).unwrap();
@@ -93,7 +105,13 @@ fn test_cache_fingerprint_consistency() {
     assert_eq!(fingerprint1, fingerprint2);
 
     let hash1 = hash_utils::generate_test_hash("file1");
-    let mut entry1 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456i64, "local", fingerprint1.clone());
+    let mut entry1 = CacheEntry::new(
+        &hash1,
+        "/path/to/file1.txt",
+        123456i64,
+        "local",
+        fingerprint1.clone(),
+    );
     entry1.mark_as_translated();
 
     cache1.set(&entry1).unwrap();
@@ -151,7 +169,13 @@ fn test_cache_fingerprint_different_projects() {
     assert_ne!(fingerprint1, fingerprint2);
 
     let hash1 = hash_utils::generate_test_hash("file1");
-    let mut entry1 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456i64, "local", fingerprint1.clone());
+    let mut entry1 = CacheEntry::new(
+        &hash1,
+        "/path/to/file1.txt",
+        123456i64,
+        "local",
+        fingerprint1.clone(),
+    );
     entry1.mark_as_translated();
 
     cache1.set(&entry1).unwrap();
@@ -183,7 +207,13 @@ fn test_cache_fingerprint_format() {
     assert!(fingerprint.chars().all(|c| c.is_ascii_hexdigit()));
 
     let hash1 = hash_utils::generate_test_hash("file1");
-    let mut entry1 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456i64, "local", fingerprint.clone());
+    let mut entry1 = CacheEntry::new(
+        &hash1,
+        "/path/to/file1.txt",
+        123456i64,
+        "local",
+        fingerprint.clone(),
+    );
     entry1.mark_as_translated();
 
     cache.set(&entry1).unwrap();
@@ -208,7 +238,13 @@ fn test_cache_fingerprint_with_file_modification() {
     let fingerprint = cache.project_fingerprint().to_string();
 
     let hash1 = hash_utils::generate_test_hash("file1");
-    let mut entry1 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456i64, "local", fingerprint.clone());
+    let mut entry1 = CacheEntry::new(
+        &hash1,
+        "/path/to/file1.txt",
+        123456i64,
+        "local",
+        fingerprint.clone(),
+    );
     entry1.mark_as_translated();
 
     cache.set(&entry1).unwrap();
@@ -223,7 +259,13 @@ fn test_cache_fingerprint_with_file_modification() {
     assert!(!entry.is_valid(123457));
 
     // Create new entry with updated modification time
-    let mut entry2 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123457i64, "local", fingerprint);
+    let mut entry2 = CacheEntry::new(
+        &hash1,
+        "/path/to/file1.txt",
+        123457i64,
+        "local",
+        fingerprint,
+    );
     entry2.mark_as_translated();
 
     cache.set(&entry2).unwrap();
@@ -249,8 +291,14 @@ fn test_cache_translation_status_persistence() {
     let fingerprint = cache.project_fingerprint().to_string();
 
     let hash1 = hash_utils::generate_test_hash("file1");
-    let mut entry1 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456i64, "local", fingerprint.clone());
-    
+    let mut entry1 = CacheEntry::new(
+        &hash1,
+        "/path/to/file1.txt",
+        123456i64,
+        "local",
+        fingerprint.clone(),
+    );
+
     // Initially not translated
     assert!(!entry1.is_translated);
     assert_eq!(entry1.translation_timestamp, 0);
@@ -260,7 +308,7 @@ fn test_cache_translation_status_persistence() {
     let retrieved = cache.get(&hash1).unwrap();
     assert!(retrieved.is_some());
     let entry = retrieved.unwrap();
-    
+
     // Should still not be translated
     assert!(!entry.is_translated);
     assert_eq!(entry.translation_timestamp, 0);
@@ -273,7 +321,7 @@ fn test_cache_translation_status_persistence() {
     let retrieved = cache.get(&hash1).unwrap();
     assert!(retrieved.is_some());
     let entry = retrieved.unwrap();
-    
+
     // Now should be translated
     assert!(entry.is_translated);
     assert!(entry.translation_timestamp > 0);
