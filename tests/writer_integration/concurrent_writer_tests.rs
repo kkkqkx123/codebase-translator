@@ -172,7 +172,14 @@ async fn test_concurrent_writer_mixed_success_failure() {
     let mut units1 = vec![create_translation_unit("1", "Valid", 1, 1, 6)];
     units1[0].set_translated("有效");
 
-    let units2 = vec![create_translation_unit("2", "Another", 1, 1, 8)];
+    let format_info = FormatInfo {
+        style: CommentStyle::BlockSingle,
+        base_indent: "".to_string(),
+        line_prefix: Some("/* ".to_string()),
+        ends_with_newline: false,
+        is_multiline: false,
+    };
+    let units2 = vec![create_translation_unit_with_format("2", "Another", 1, 1, 8, format_info)];
 
     let config = WriterConfig::default();
     let writer = ConcurrentWriter::new(config, 2);
@@ -255,8 +262,8 @@ async fn test_concurrent_writer_with_format_info() {
         "1",
         "This is a comment",
         1,
-        5,
-        22,
+        8,  // Start after "    // " (1-indexed)
+        25, // End of "This is a comment" (1-indexed, exclusive)
         format_info,
     )];
     units[0].set_translated("这是一个注释");

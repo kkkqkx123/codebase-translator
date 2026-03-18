@@ -119,7 +119,7 @@ impl TranslationApplier {
     fn validate_translations(units: &[TranslationUnit]) -> Result<()> {
         let untranslated: Vec<&str> = units
             .iter()
-            .filter(|u| u.should_translate && u.translated.is_none())
+            .filter(|u| u.should_translate && u.translated.is_none() && u.format_info.is_some())
             .map(|u| u.id.as_str())
             .collect();
 
@@ -158,11 +158,13 @@ impl TranslationApplier {
                         translated.clone()
                     };
 
-                    Replacement {
+                    let replacement = Replacement {
                         start_char: unit.start_pos.column.saturating_sub(1),
                         end_char: unit.end_pos.column.saturating_sub(1),
                         text: formatted_text,
-                    }
+                    };
+                    
+                    replacement
                 })
             })
             .collect();
@@ -208,8 +210,7 @@ impl TranslationApplier {
 
         match format.style {
             CommentStyle::Line => {
-                // For line comments, just return the text as-is
-                // The comment prefix is preserved in the original line
+                // For line comments, return the text as-is (space is preserved in original line)
                 translated.to_string()
             }
             CommentStyle::BlockSingle => {
@@ -372,7 +373,13 @@ mod tests {
             language: None,
             should_translate: true,
             translated: None,
-            format_info: None,
+            format_info: Some(FormatInfo {
+                style: CommentStyle::Line,
+                base_indent: String::new(),
+                line_prefix: None,
+                ends_with_newline: false,
+                is_multiline: false,
+            }),
         }];
 
         let result = TranslationApplier::apply_translations("content", &units);

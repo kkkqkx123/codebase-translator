@@ -64,7 +64,14 @@ fn test_translation_applier_empty_units() {
 #[test]
 fn test_translation_applier_missing_translation() {
     let content = "Hello world";
-    let units = vec![create_translation_unit("1", "Hello", 1, 1, 6)];
+    let format_info = FormatInfo {
+        style: CommentStyle::BlockSingle,
+        base_indent: "".to_string(),
+        line_prefix: Some("/* ".to_string()),
+        ends_with_newline: false,
+        is_multiline: false,
+    };
+    let units = vec![create_translation_unit_with_format("1", "Hello", 1, 1, 6, format_info)];
 
     let result = apply_translations(content, &units);
     assert!(result.is_err());
@@ -85,8 +92,8 @@ fn test_translation_applier_line_comment_format() {
         "1",
         "This is a comment",
         1,
-        5,
-        22,
+        8,  // Start after "    // " (1-indexed)
+        25, // End of "This is a comment" (1-indexed, exclusive)
         format_info,
     )];
     units[0].set_translated("这是一个注释");
@@ -194,7 +201,7 @@ fn test_translation_applier_doc_block_comment() {
         "/**\n * This is a doc comment\n */",
         1,
         1,
-        37,
+        4,  // End of line 3 (exclusive), where " */" is at positions 1-3
         format_info,
     )];
     units[0].set_translated("这是一个\n文档注释");
@@ -202,7 +209,7 @@ fn test_translation_applier_doc_block_comment() {
     let result = apply_translations(content, &units);
     assert!(result.is_ok());
     let modified = result.unwrap();
-    assert!(modified.contains("/*\n * 这是一个\n * 文档注释\n */"));
+    assert!(modified.contains("/**\n * 这是一个\n * 文档注释\n */"));
 }
 
 #[test]

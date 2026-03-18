@@ -163,8 +163,8 @@ async fn test_file_writer_with_line_comment_format() {
         "1",
         "This is a comment",
         1,
-        5,
-        22,
+        8,  // Start after "    // " (1-indexed)
+        25, // End of "This is a comment" (1-indexed, exclusive)
         format_info,
     )];
     units[0].set_translated("这是一个注释");
