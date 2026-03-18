@@ -4,9 +4,6 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::sync::{Arc, RwLock};
 
-#[cfg(test)]
-use std::thread;
-
 /// Translation statistics
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TranslationStats {

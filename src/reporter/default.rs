@@ -344,10 +344,8 @@ pub fn create_reporter() -> Arc<ReporterImpl> {
 
 /// Create a new progress reporter
 #[cfg(feature = "progress")]
-pub fn create_progress_reporter(enable_progress: bool) -> Arc<ReporterImpl> {
-    Arc::new(ReporterImpl::Progress(ProgressReporter::new(
-        enable_progress,
-    )))
+pub fn create_progress_reporter() -> Arc<ReporterImpl> {
+    Arc::new(ReporterImpl::Progress(ProgressReporter::new()))
 }
 
 #[cfg(test)]

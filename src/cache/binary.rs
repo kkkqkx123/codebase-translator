@@ -10,7 +10,6 @@ use crate::core::error::{Result, TranslateError};
 use crate::core::models::{CacheConfig, CacheEntry, CacheEntryInfo, CacheStats};
 
 use crc32fast::Hasher as Crc32Hasher;
-use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, RwLock};
@@ -591,6 +590,7 @@ fn calculate_crc32(data: &[u8]) -> u32 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use sha2::{Digest, Sha256};
     use tempfile::TempDir;
 
     fn generate_test_hash(seed: &str) -> String {
@@ -611,7 +611,7 @@ mod tests {
         };
 
         let cache = BinaryCache::new(config, temp_dir.path()).unwrap();
-        let fingerprint = cache.project_fingerprint().clone();
+        let fingerprint = cache.project_fingerprint();
 
         // Test set and get
         let hash1 = generate_test_hash("test_file");
@@ -620,7 +620,7 @@ mod tests {
             "/path/to/file.txt",
             123456,
             "local",
-            fingerprint.clone(),
+            fingerprint,
         );
 
         cache.set(&entry).unwrap();
@@ -656,7 +656,7 @@ mod tests {
         };
 
         let cache = BinaryCache::new(config, temp_dir.path()).unwrap();
-        let fingerprint = cache.project_fingerprint().clone();
+        let fingerprint = cache.project_fingerprint();
 
         let hash1 = generate_test_hash("file1");
         let hash2 = generate_test_hash("file2");
@@ -665,14 +665,14 @@ mod tests {
             "/path/to/file1.txt",
             123456,
             "local",
-            fingerprint.clone(),
+            fingerprint,
         );
         let entry2 = CacheEntry::new(
             &hash2,
             "/path/to/file2.txt",
             123456,
             "local",
-            fingerprint.clone(),
+            fingerprint,
         );
 
         cache.set(&entry1).unwrap();
@@ -693,7 +693,7 @@ mod tests {
         };
 
         let cache = BinaryCache::new(config, temp_dir.path()).unwrap();
-        let fingerprint = cache.project_fingerprint().clone();
+        let fingerprint = cache.project_fingerprint();
 
         let hash1 = generate_test_hash("file1");
         let hash2 = generate_test_hash("file2");
@@ -702,14 +702,14 @@ mod tests {
             "/path/to/file1.txt",
             123456,
             "local",
-            fingerprint.clone(),
+            fingerprint,
         );
         let entry2 = CacheEntry::new(
             &hash2,
             "/path/to/file2.txt",
             123456,
             "local",
-            fingerprint.clone(),
+            fingerprint,
         );
 
         cache.set(&entry1).unwrap();

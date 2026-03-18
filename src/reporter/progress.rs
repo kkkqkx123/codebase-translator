@@ -20,9 +20,9 @@ pub struct ProgressReporter {
 }
 
 impl ProgressReporter {
-    pub fn new(enable_progress: bool) -> Self {
+    pub fn new() -> Self {
         #[cfg(feature = "progress")]
-        let progress_bar = if enable_progress {
+        let progress_bar = {
             let bar = ProgressBar::new(0);
             bar.set_style(
                 ProgressStyle::default_bar()
@@ -31,8 +31,6 @@ impl ProgressReporter {
                     .progress_chars("#>-"),
             );
             Some(bar)
-        } else {
-            None
         };
 
         Self {
@@ -88,7 +86,7 @@ impl ProgressReporter {
 
 impl Default for ProgressReporter {
     fn default() -> Self {
-        Self::new(true)
+        Self::new()
     }
 }
 
@@ -283,7 +281,7 @@ mod tests {
 
     #[test]
     fn test_progress_reporter_new() {
-        let reporter = ProgressReporter::new(false);
+        let reporter = ProgressReporter::new();
         let stats = reporter.get_stats();
         assert_eq!(stats.total_files, 0);
         assert_eq!(stats.processed_files, 0);
@@ -299,7 +297,7 @@ mod tests {
 
     #[test]
     fn test_progress_reporter_report_file() {
-        let reporter = ProgressReporter::new(false);
+        let reporter = ProgressReporter::new();
         reporter.report_file(Path::new("test.rs"), 5);
         let stats = reporter.get_stats();
         assert_eq!(stats.processed_files, 1);
@@ -308,7 +306,7 @@ mod tests {
 
     #[test]
     fn test_progress_reporter_report_skipped() {
-        let reporter = ProgressReporter::new(false);
+        let reporter = ProgressReporter::new();
         reporter.report_skipped(Path::new("test.rs"));
         let stats = reporter.get_stats();
         assert_eq!(stats.skipped_files, 1);
@@ -316,7 +314,7 @@ mod tests {
 
     #[test]
     fn test_progress_reporter_report_api_call() {
-        let reporter = ProgressReporter::new(false);
+        let reporter = ProgressReporter::new();
         reporter.report_api_call(5);
         let stats = reporter.get_stats();
         assert_eq!(stats.api_call_count, 5);
@@ -324,7 +322,7 @@ mod tests {
 
     #[test]
     fn test_progress_reporter_report_cache_hit() {
-        let reporter = ProgressReporter::new(false);
+        let reporter = ProgressReporter::new();
         reporter.report_cache_hit();
         let stats = reporter.get_stats();
         assert_eq!(stats.cache_hit_count, 1);
@@ -332,7 +330,7 @@ mod tests {
 
     #[test]
     fn test_progress_reporter_report_cache_miss() {
-        let reporter = ProgressReporter::new(false);
+        let reporter = ProgressReporter::new();
         reporter.report_cache_miss();
         let stats = reporter.get_stats();
         assert_eq!(stats.cache_miss_count, 1);
@@ -340,7 +338,7 @@ mod tests {
 
     #[test]
     fn test_progress_reporter_has_errors() {
-        let reporter = ProgressReporter::new(false);
+        let reporter = ProgressReporter::new();
         assert!(!reporter.has_errors());
         reporter.report_error(&TranslateError::Parse("test error".to_string()));
         assert!(reporter.has_errors());
@@ -348,13 +346,13 @@ mod tests {
 
     #[test]
     fn test_progress_reporter_get_progress() {
-        let reporter = ProgressReporter::new(false);
+        let reporter = ProgressReporter::new();
         assert_eq!(reporter.get_progress(), 0.0);
     }
 
     #[test]
     fn test_progress_reporter_finalize() {
-        let reporter = ProgressReporter::new(false);
+        let reporter = ProgressReporter::new();
         reporter.finalize();
         let stats = reporter.get_stats();
         assert!(stats.end_time.is_some());
@@ -362,7 +360,7 @@ mod tests {
 
     #[test]
     fn test_progress_reporter_save_report() {
-        let reporter = ProgressReporter::new(false);
+        let reporter = ProgressReporter::new();
         reporter.finalize();
         let temp_dir = std::env::temp_dir();
         let report_path = temp_dir.join("test_report.txt");
@@ -376,7 +374,7 @@ mod tests {
 
     #[test]
     fn test_progress_reporter_save_report_with_template() {
-        let reporter = ProgressReporter::new(false);
+        let reporter = ProgressReporter::new();
         reporter.finalize();
         let temp_dir = std::env::temp_dir();
 

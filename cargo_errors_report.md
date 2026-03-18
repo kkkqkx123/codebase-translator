@@ -27,15 +27,15 @@
 
 ## Detailed Warning Categorization
 
-### warning: call to `.clone()` on a reference in this situation does nothing
+### warning: call to `.clone()` on a reference in this situation does nothing: help: remove this redundant call
 
 **Total Occurrences**: 8  
 **Unique Files**: 1
 
 #### `src\cache\binary.rs`: 8 occurrences
 
-- Line 614: call to `.clone()` on a reference in this situation does nothing
-- Line 623: call to `.clone()` on a reference in this situation does nothing
-- Line 659: call to `.clone()` on a reference in this situation does nothing
+- Line 614: call to `.clone()` on a reference in this situation does nothing: help: remove this redundant call
+- Line 623: call to `.clone()` on a reference in this situation does nothing: help: remove this redundant call
+- Line 659: call to `.clone()` on a reference in this situation does nothing: help: remove this redundant call
 - ... 5 more occurrences in this file
 
