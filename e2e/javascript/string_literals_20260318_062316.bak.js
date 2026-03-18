@@ -1,13 +1,5 @@
 /**
  * JavaScript String Literals Fixture
- *
- * Tests extraction of string literals from various JavaScript code patterns.
- *//**
- * JavaScript String Literals Fixture
- *
- * Tests extraction of string literals from various JavaScript code patterns.
- */
- * JavaScript String Literals Fixture
  * 
  * Tests extraction of string literals from various JavaScript code patterns.
  */
@@ -161,7 +153,7 @@ const eventMessages = {
     error: "An error occurred"
 };
 
-// Message validation
+// Validation messages
 const validationMessages = {
     required: "此字段为必填项",
     email: "请输入有效的电子邮件地址",

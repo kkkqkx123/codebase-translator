@@ -1,0 +1,171 @@
+{
+  "file_hash": "7cfaa05ceda8d049",
+  "file_path": "\\\\?\\E:\\project\\codebase-translator\\e2e\\python\\comments.py",
+  "last_modified": 1773632642,
+  "translation_units": [
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\python\\comments.py_doc_string_0",
+      "original": "\"\"\"Python comments fixture for testing.\r\n\r\nThis module contains various Python comments and docstrings for testing extraction.\r\n\"\"\"",
+      "translated": "\"\"\"Python comments fixture for testing.\r\n\r\nThis module contains various Python comments and docstrings for testing extraction.\r\n\"\"\"",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\python\\comments.py_doc_string_1",
+      "original": "\"\"\"Python comments fixture for testing.\r\n\r\nThis module contains various Python comments and docstrings for testing extraction.\r\n\"\"\"",
+      "translated": "\"\"\"Python comments fixture for testing.\r\n\r\nThis module contains various Python comments and docstrings for testing extraction.\r\n\"\"\"",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\python\\comments.py_comment_0",
+      "original": "# Module level comment",
+      "translated": "# Module level comment",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\python\\comments.py_comment_1",
+      "original": "# Function with regular comments",
+      "translated": "# Function with regular comments",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\python\\comments.py_comment_2",
+      "original": "# Add two numbers",
+      "translated": "# Add two numbers",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\python\\comments.py_doc_string_2",
+      "original": "\"\"\"Function with simple docstring.\"\"\"",
+      "translated": "\"\"\"Function with simple docstring.\"\"\"",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\python\\comments.py_doc_string_4",
+      "original": "\"\"\"Class docstring.\r\n    \r\n    This class demonstrates class-level documentation.\r\n    \r\n    Attributes:\r\n        name: The name attribute\r\n        value: The value attribute\r\n    \"\"\"",
+      "translated": "\"\"\"Class docstring.\r\n    \r\n    This class demonstrates class-level documentation.\r\n    \r\n    Attributes:\r\n        name: The name attribute\r\n        value: The value attribute\r\n    \"\"\"",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\python\\comments.py_doc_string_5",
+      "original": "\"\"\"Initialize the class.\r\n        \r\n        Args:\r\n            name: The name to use\r\n        \"\"\"",
+      "translated": "\"\"\"Initialize the class.\r\n        \r\n        Args:\r\n            name: The name to use\r\n        \"\"\"",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\python\\comments.py_comment_3",
+      "original": "# Instance variable",
+      "translated": "# Instance variable",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\python\\comments.py_comment_4",
+      "original": "# Another instance variable",
+      "translated": "# Another instance variable",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\python\\comments.py_doc_string_6",
+      "original": "\"\"\"Method docstring.\"\"\"",
+      "translated": "\"\"\"Method docstring.\"\"\"",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\python\\comments.py_comment_5",
+      "original": "# Method comment",
+      "translated": "# Method comment",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\python\\comments.py_comment_10",
+      "original": "# Normal comment that should be translated",
+      "translated": "# Normal comment that should be translated",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\python\\comments.py_comment_11",
+      "original": "# This is a regular comment",
+      "translated": "# This is a regular comment",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\python\\comments.py_comment_12",
+      "original": "# Inline comment after code",
+      "translated": "# Inline comment after code",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\python\\comments.py_comment_13",
+      "original": "# Set x to 5",
+      "translated": "# Set x to 5",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\python\\comments.py_comment_14",
+      "original": "# Multi-line comment using multiple single-line comments",
+      "translated": "# Multi-line comment using multiple single-line comments",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\python\\comments.py_comment_15",
+      "original": "# Line 1 of comment",
+      "translated": "# Line 1 of comment",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\python\\comments.py_comment_16",
+      "original": "# Line 2 of comment",
+      "translated": "# Line 2 of comment",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\python\\comments.py_comment_17",
+      "original": "# Line 3 of comment",
+      "translated": "# Line 3 of comment",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\python\\comments.py_doc_string_7",
+      "original": "\"\"\"\r\nThis is a module-level string literal.\r\nIt might be used as documentation.\r\n\"\"\"",
+      "translated": "\"\"\"\r\nThis is a module-level string literal.\r\nIt might be used as documentation.\r\n\"\"\"",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\python\\comments.py_doc_string_8",
+      "original": "\"\"\"\r\nThis is a module-level string literal.\r\nIt might be used as documentation.\r\n\"\"\"",
+      "translated": "\"\"\"\r\nThis is a module-level string literal.\r\nIt might be used as documentation.\r\n\"\"\"",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\python\\comments.py_comment_18",
+      "original": "# f-strings with various formats",
+      "translated": "# f-strings with various formats",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    }
+  ],
+  "created_at": 1773815043,
+  "cache_mode": "local",
+  "project_fingerprint": "dfee5a9a879af5aa"
+}

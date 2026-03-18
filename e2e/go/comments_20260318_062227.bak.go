@@ -19,11 +19,11 @@ type Person struct {
 // NewPerson creates a new Person with the given name and age
 //
 // Parameters:
-// - name: The person's name
-// - age: The person's age
+//   - name: The person's name
+//   - age: The person's age
 //
 // Returns:
-// - A pointer to the new Person
+//   - A pointer to the new Person
 //
 // Example:
 //
@@ -46,19 +46,12 @@ Block comment
 spanning multiple lines
 This is another paragraph
 */
-Block comment
-spanning multiple lines
-This is another paragraph
-*/
 
 func main() {
 	// Line comment in function
 	fmt.Println("Hello, World!")
 
 	/*
-		Indented block comment
-		Inside a function
-	*/
 		Indented block comment
 		Inside a function
 	*/

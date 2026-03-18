@@ -1,12 +1,6 @@
 """Python comments fixture for testing.
 
 This module contains various Python comments and docstrings for testing extraction.
-""""""Python comments fixture for testing.
-
-This module contains various Python comments and docstrings for testing extraction.
-"""Python comments fixture for testing.
-
-This module contains various Python comments and docstrings for testing extraction.
 """
 
 # Module level comment
@@ -55,20 +49,9 @@ class MyClass:
     Attributes:
         name: The name attribute
         value: The value attribute
-    """Class docstring.
-    
-    This class demonstrates class-level documentation.
-    
-    Attributes:
-        name: The name attribute
-        value: The value attribute
     """
     
     def __init__(self, name):
-        """Initialize the class.
-        
-        Args:
-            name: The name to use
         """Initialize the class.
         
         Args:
@@ -99,12 +82,6 @@ x = 5  # Set x to 5
 # Line 2 of comment
 # Line 3 of comment
 
-"""
-This is a module-level string literal.
-It might be used as documentation.
-""""""
-This is a module-level string literal.
-It might be used as documentation.
 """
 This is a module-level string literal.
 It might be used as documentation.

@@ -31,7 +31,7 @@ fn another_english_function() {
     let y = "another value";
 }
 
-// Chinese-only comments
+// 纯中文注释
 fn another_chinese_function() {
     let x = "测试值";
     let y = "另一个值";

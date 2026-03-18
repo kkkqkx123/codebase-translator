@@ -1,12 +1,6 @@
 """Python String Literals Fixture
 
 Tests extraction of string literals from various Python code patterns.
-""""""Python String Literals Fixture
-
-Tests extraction of string literals from various Python code patterns.
-"""Python String Literals Fixture
-
-Tests extraction of string literals from various Python code patterns.
 """
 
 import logging
@@ -128,9 +122,6 @@ def config_strings():
 
 # Docstrings with different languages
 def documented_function():
-    """This is a Chinese document string.
-
-    Describe the function in detail.
     """这是一个中文文档字符串。
     
     详细描述函数的功能。
@@ -138,9 +129,6 @@ def documented_function():
     pass
 
 def english_documented_function():
-    """This is an English docstring.
-    
-    Detailed description of the function.
     """This is an English docstring.
     
     Detailed description of the function.

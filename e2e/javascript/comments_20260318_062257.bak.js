@@ -2,14 +2,6 @@
  * JavaScript comments fixture for testing
  *
  * This file contains various JavaScript comments for testing extraction.
- *//**
- * JavaScript comments fixture for testing
- *
- * This file contains various JavaScript comments for testing extraction.
- */
- * JavaScript comments fixture for testing
- *
- * This file contains various JavaScript comments for testing extraction.
  */
 
 // Module level comment
@@ -29,14 +21,6 @@ function add(a, b) {
 }
 
 /**
- * Person class
- * @class
- * @classdesc Represents a person
- *//**
- * Person class
- * @class
- * @classdesc Represents a person
- */
  * Person class
  * @class
  * @classdesc Represents a person
@@ -72,9 +56,6 @@ function regularFunction() {
 }
 
 /*
- * Block comment
- * spanning multiple lines
- */
  * Block comment
  * spanning multiple lines
  */

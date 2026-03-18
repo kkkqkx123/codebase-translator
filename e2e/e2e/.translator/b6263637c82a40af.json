@@ -1,0 +1,206 @@
+{
+  "file_hash": "b6263637c82a40af",
+  "file_path": "\\\\?\\E:\\project\\codebase-translator\\e2e\\go\\comments.go",
+  "last_modified": 1773632653,
+  "translation_units": [
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\go\\comments.go_comment_0",
+      "original": "// Go comments fixture for testing",
+      "translated": "// Go comments fixture for testing",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\go\\comments.go_comment_2",
+      "original": "// This file contains various Go comments for testing extraction.",
+      "translated": "// This file contains various Go comments for testing extraction.",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\go\\comments.go_comment_3",
+      "original": "// Package level comment",
+      "translated": "// Package level comment",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\go\\comments.go_comment_4",
+      "original": "// Person represents a person with a name and age",
+      "translated": "// Person represents a person with a name and age",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\go\\comments.go_comment_5",
+      "original": "// Name is the person's name",
+      "translated": "// Name is the person's name",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\go\\comments.go_comment_6",
+      "original": "// Age is the person's age",
+      "translated": "// Age is the person's age",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\go\\comments.go_comment_7",
+      "original": "// NewPerson creates a new Person with the given name and age",
+      "translated": "// NewPerson creates a new Person with the given name and age",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\go\\comments.go_comment_9",
+      "original": "// Parameters:",
+      "translated": "// Parameters:",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\go\\comments.go_comment_10",
+      "original": "//   - name: The person's name",
+      "translated": "// - name: The person's name",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\go\\comments.go_comment_11",
+      "original": "//   - age: The person's age",
+      "translated": "// - age: The person's age",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\go\\comments.go_comment_13",
+      "original": "// Returns:",
+      "translated": "// Returns:",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\go\\comments.go_comment_14",
+      "original": "//   - A pointer to the new Person",
+      "translated": "// - A pointer to the new Person",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\go\\comments.go_comment_16",
+      "original": "// Example:",
+      "translated": "// Example:",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\go\\comments.go_comment_19",
+      "original": "// Greet returns a greeting message",
+      "translated": "// Greet returns a greeting message",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\go\\comments.go_comment_20",
+      "original": "// Create greeting",
+      "translated": "// Create greeting",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\go\\comments.go_comment_21",
+      "original": "/*\nBlock comment\nspanning multiple lines\nThis is another paragraph\n*/",
+      "translated": "/*\nBlock comment\nspanning multiple lines\nThis is another paragraph\n*/",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\go\\comments.go_comment_22",
+      "original": "// Line comment in function",
+      "translated": "// Line comment in function",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\go\\comments.go_comment_23",
+      "original": "/*\n\t\tIndented block comment\n\t\tInside a function\n\t*/",
+      "translated": "/*\n\t\tIndented block comment\n\t\tInside a function\n\t*/",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\go\\comments.go_comment_27",
+      "original": "// Normal comment that should be translated",
+      "translated": "// Normal comment that should be translated",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\go\\comments.go_comment_28",
+      "original": "// Inline comment",
+      "translated": "// Inline comment",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\go\\comments.go_comment_29",
+      "original": "// Interface with documentation",
+      "translated": "// Interface with documentation",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\go\\comments.go_comment_30",
+      "original": "// Greet returns a greeting",
+      "translated": "// Greet returns a greeting",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\go\\comments.go_comment_31",
+      "original": "// Constant with documentation",
+      "translated": "// Constant with documentation",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\go\\comments.go_comment_32",
+      "original": "// DefaultName is the default name",
+      "translated": "// DefaultName is the default name",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\go\\comments.go_comment_33",
+      "original": "// DefaultAge is the default age",
+      "translated": "// DefaultAge is the default age",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\go\\comments.go_comment_34",
+      "original": "// Error handling example",
+      "translated": "// Error handling example",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\go\\comments.go_comment_35",
+      "original": "// Check condition",
+      "translated": "// Check condition",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    },
+    {
+      "unit_id": "\\\\?\\E:\\project\\codebase-translator\\e2e\\go\\comments.go_comment_36",
+      "original": "// Error comment",
+      "translated": "// Error comment",
+      "source_lang": "AUTO",
+      "target_lang": "en"
+    }
+  ],
+  "created_at": 1773814947,
+  "cache_mode": "local",
+  "project_fingerprint": "dfee5a9a879af5aa"
+}
