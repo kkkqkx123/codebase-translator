@@ -1,4 +1,4 @@
-Extracted 32 translation units from go_comments
+Extracted 6 translation units from go_comments
 ==================================================
 
 --- Unit 1 ---
@@ -6,229 +6,43 @@ ID: test.go_comment_0
 Type: comment
 Position: Line 1, Column 1 (Offset: 0)
 Content:
-// Go comments fixture for testing
+// Go comments for testing
 
 --- Unit 2 ---
-ID: test.go_comment_2
+ID: test.go_comment_1
 Type: comment
-Position: Line 3, Column 1 (Offset: 38)
+Position: Line 4, Column 1 (Offset: 41)
 Content:
-// This file contains various Go comments for testing extraction.
+// This is a single-line comment
 
 --- Unit 3 ---
-ID: test.go_string_literal_0
-Type: string_literal
-Position: Line 7, Column 8 (Offset: 126)
+ID: test.go_comment_2
+Type: comment
+Position: Line 7, Column 1 (Offset: 92)
 Content:
-"fmt"
+/*
+This is a multi-line comment
+with multiple lines of text
+*/
 
 --- Unit 4 ---
 ID: test.go_comment_3
 Type: comment
-Position: Line 9, Column 1 (Offset: 133)
+Position: Line 13, Column 5 (Offset: 178)
 Content:
-// Package level comment
+// Another comment inside function
 
 --- Unit 5 ---
 ID: test.go_comment_4
 Type: comment
-Position: Line 11, Column 1 (Offset: 159)
+Position: Line 17, Column 1 (Offset: 233)
 Content:
-// Person represents a person with a name and age
+// greet returns a greeting message
 
 --- Unit 6 ---
 ID: test.go_comment_5
 Type: comment
-Position: Line 13, Column 2 (Offset: 231)
+Position: Line 18, Column 1 (Offset: 269)
 Content:
-// Name is the person's name
-
---- Unit 7 ---
-ID: test.go_comment_6
-Type: comment
-Position: Line 15, Column 2 (Offset: 274)
-Content:
-// Age is the person's age
-
---- Unit 8 ---
-ID: test.go_comment_7
-Type: comment
-Position: Line 19, Column 1 (Offset: 313)
-Content:
-// NewPerson creates a new Person with the given name and age
-
---- Unit 9 ---
-ID: test.go_comment_9
-Type: comment
-Position: Line 21, Column 1 (Offset: 378)
-Content:
-// Parameters:
-
---- Unit 10 ---
-ID: test.go_comment_10
-Type: comment
-Position: Line 22, Column 1 (Offset: 393)
-Content:
-//   - name: The person's name
-
---- Unit 11 ---
-ID: test.go_comment_11
-Type: comment
-Position: Line 23, Column 1 (Offset: 424)
-Content:
-//   - age: The person's age
-
---- Unit 12 ---
-ID: test.go_comment_13
-Type: comment
-Position: Line 25, Column 1 (Offset: 456)
-Content:
-// Returns:
-
---- Unit 13 ---
-ID: test.go_comment_14
-Type: comment
-Position: Line 26, Column 1 (Offset: 468)
-Content:
-//   - A pointer to the new Person
-
---- Unit 14 ---
-ID: test.go_comment_16
-Type: comment
-Position: Line 28, Column 1 (Offset: 506)
-Content:
-// Example:
-
---- Unit 15 ---
-ID: test.go_comment_19
-Type: comment
-Position: Line 38, Column 1 (Offset: 654)
-Content:
-// Greet returns a greeting message
-
---- Unit 16 ---
-ID: test.go_comment_20
-Type: comment
-Position: Line 40, Column 2 (Offset: 725)
-Content:
-// Create greeting
-
---- Unit 17 ---
-ID: test.go_comment_21
-Type: comment
-Position: Line 44, Column 1 (Offset: 799)
-Content:
-/*
-Block comment
-spanning multiple lines
-This is another paragraph
-*/
-
---- Unit 18 ---
-ID: test.go_comment_22
-Type: comment
-Position: Line 51, Column 2 (Offset: 885)
-Content:
-// Line comment in function
-
---- Unit 19 ---
-ID: test.go_string_literal_2
-Type: string_literal
-Position: Line 52, Column 14 (Offset: 926)
-Content:
-"Hello, World!"
-
---- Unit 20 ---
-ID: test.go_comment_23
-Type: comment
-Position: Line 54, Column 2 (Offset: 945)
-Content:
-/*
-		Indented block comment
-		Inside a function
-	*/
-
---- Unit 21 ---
-ID: test.go_comment_27
-Type: comment
-Position: Line 63, Column 2 (Offset: 1079)
-Content:
-// Normal comment that should be translated
-
---- Unit 22 ---
-ID: test.go_comment_28
-Type: comment
-Position: Line 64, Column 9 (Offset: 1131)
-Content:
-// Inline comment
-
---- Unit 23 ---
-ID: test.go_comment_29
-Type: comment
-Position: Line 68, Column 1 (Offset: 1159)
-Content:
-// Interface with documentation
-
---- Unit 24 ---
-ID: test.go_comment_30
-Type: comment
-Position: Line 70, Column 2 (Offset: 1217)
-Content:
-// Greet returns a greeting
-
---- Unit 25 ---
-ID: test.go_comment_31
-Type: comment
-Position: Line 74, Column 1 (Offset: 1264)
-Content:
-// Constant with documentation
-
---- Unit 26 ---
-ID: test.go_comment_32
-Type: comment
-Position: Line 76, Column 2 (Offset: 1304)
-Content:
-// DefaultName is the default name
-
---- Unit 27 ---
-ID: test.go_string_literal_3
-Type: string_literal
-Position: Line 77, Column 16 (Offset: 1354)
-Content:
-"Anonymous"
-
---- Unit 28 ---
-ID: test.go_comment_33
-Type: comment
-Position: Line 78, Column 2 (Offset: 1367)
-Content:
-// DefaultAge is the default age
-
---- Unit 29 ---
-ID: test.go_comment_34
-Type: comment
-Position: Line 82, Column 1 (Offset: 1419)
-Content:
-// Error handling example
-
---- Unit 30 ---
-ID: test.go_comment_35
-Type: comment
-Position: Line 84, Column 2 (Offset: 1469)
-Content:
-// Check condition
-
---- Unit 31 ---
-ID: test.go_string_literal_4
-Type: string_literal
-Position: Line 86, Column 21 (Offset: 1519)
-Content:
-"error message"
-
---- Unit 32 ---
-ID: test.go_comment_36
-Type: comment
-Position: Line 86, Column 38 (Offset: 1536)
-Content:
-// Error comment
+// name is the person to greet
 

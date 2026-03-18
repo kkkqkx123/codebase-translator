@@ -1,4 +1,4 @@
-Extracted 15 translation units from language_filter_markdown
+Extracted 7 translation units from language_filter_markdown
 ==================================================
 
 --- Unit 1 ---
@@ -6,103 +6,47 @@ ID: test.md_comment_0
 Type: comment
 Position: Line 1, Column 3 (Offset: 2)
 Content:
-Mixed Language Markdown Document
+Mixed Content Markdown
 
 --- Unit 2 ---
 ID: test.md_comment_1
 Type: comment
-Position: Line 7, Column 2 (Offset: 241)
+Position: Line 5, Column 2 (Offset: 87)
 Content:
-Section with Mixed Content
+Introduction
 
 --- Unit 3 ---
 ID: test.md_comment_2
 Type: comment
-Position: Line 11, Column 2 (Offset: 383)
+Position: Line 9, Column 2 (Offset: 156)
 Content:
-# Pure English Subsection
+Features
 
 --- Unit 4 ---
 ID: test.md_comment_3
 Type: comment
-Position: Line 15, Column 2 (Offset: 481)
-Content:
-# 纯中文小节
-
---- Unit 5 ---
-ID: test.md_comment_4
-Type: comment
-Position: Line 19, Column 2 (Offset: 561)
+Position: Line 15, Column 2 (Offset: 272)
 Content:
 Code Examples
 
---- Unit 6 ---
-ID: test.md_comment_5
-Type: comment
-Position: Line 22, Column 4 (Offset: 589)
+--- Unit 5 ---
+ID: test.md_string_5
+Type: format_string
+Position: Line 19, Column 15 (Offset: 324)
 Content:
-This English comment should NOT be extracted
+Hello, world!
+
+--- Unit 6 ---
+ID: test.md_string_6
+Type: format_string
+Position: Line 25, Column 15 (Offset: 384)
+Content:
+你好，世界！
 
 --- Unit 7 ---
-ID: test.md_string_12
-Type: format_string
-Position: Line 24, Column 15 (Offset: 660)
-Content:
-Hello World
-
---- Unit 8 ---
-ID: test.md_string_13
-Type: format_string
-Position: Line 25, Column 15 (Offset: 717)
-Content:
-你好世界
-
---- Unit 9 ---
-ID: test.md_comment_6
+ID: test.md_comment_4
 Type: comment
-Position: Line 30, Column 3 (Offset: 780)
+Position: Line 29, Column 2 (Offset: 414)
 Content:
-这是一个中文注释，应该被提取
-
---- Unit 10 ---
-ID: test.md_string_14
-Type: format_string
-Position: Line 32, Column 12 (Offset: 847)
-Content:
-Hello
-
---- Unit 11 ---
-ID: test.md_comment_7
-Type: comment
-Position: Line 36, Column 2 (Offset: 932)
-Content:
-Lists
-
---- Unit 12 ---
-ID: test.md_comment_8
-Type: comment
-Position: Line 53, Column 2 (Offset: 1174)
-Content:
-Blockquotes
-
---- Unit 13 ---
-ID: test.md_comment_9
-Type: comment
-Position: Line 61, Column 2 (Offset: 1339)
-Content:
-Tables
-
---- Unit 14 ---
-ID: test.md_comment_10
-Type: comment
-Position: Line 71, Column 2 (Offset: 1551)
-Content:
-Links and References
-
---- Unit 15 ---
-ID: test.md_comment_11
-Type: comment
-Position: Line 77, Column 2 (Offset: 1650)
-Content:
-Emphasis
+Conclusion
 

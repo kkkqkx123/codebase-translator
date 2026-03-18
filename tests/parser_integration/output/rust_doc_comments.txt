@@ -1,4 +1,4 @@
-Extracted 48 translation units from rust_doc_comments
+Extracted 19 translation units from rust_doc_comments
 ==================================================
 
 --- Unit 1 ---
@@ -6,342 +6,131 @@ ID: test.rs_comment_0
 Type: comment
 Position: Line 1, Column 1 (Offset: 0)
 Content:
-//! Doc comments fixture for testing
+// Rust doc comments for testing
 
 --- Unit 2 ---
-ID: test.rs_comment_2
+ID: test.rs_comment_1
 Type: comment
-Position: Line 3, Column 1 (Offset: 41)
+Position: Line 3, Column 1 (Offset: 34)
 Content:
-//! This file tests various forms of Rust documentation comments.
+/// This is a module-level documentation comment
 
 --- Unit 3 ---
-ID: test.rs_comment_3
-Type: comment
-Position: Line 5, Column 1 (Offset: 108)
-Content:
-//! Inner doc comment for the crate root
-
---- Unit 4 ---
-ID: test.rs_comment_4
-Type: comment
-Position: Line 6, Column 1 (Offset: 149)
-Content:
-//! More inner documentation
-
---- Unit 5 ---
-ID: test.rs_comment_5
-Type: comment
-Position: Line 8, Column 1 (Offset: 179)
-Content:
-/// Outer doc comment for module
-
---- Unit 6 ---
 ID: test.rs_doc_string_0
 Type: doc_string
-Position: Line 8, Column 1 (Offset: 179)
+Position: Line 3, Column 1 (Offset: 34)
 Content:
-/// Outer doc comment for module
+/// This is a module-level documentation comment
 
---- Unit 7 ---
-ID: test.rs_comment_6
+--- Unit 4 ---
+ID: test.rs_comment_2
 Type: comment
-Position: Line 9, Column 1 (Offset: 212)
+Position: Line 5, Column 5 (Offset: 101)
 Content:
-/// Continues here
+/// This is a struct documentation comment
 
---- Unit 8 ---
+--- Unit 5 ---
 ID: test.rs_doc_string_1
 Type: doc_string
-Position: Line 9, Column 1 (Offset: 212)
+Position: Line 5, Column 5 (Offset: 101)
 Content:
-/// Continues here
+/// This is a struct documentation comment
 
---- Unit 9 ---
-ID: test.rs_comment_7
+--- Unit 6 ---
+ID: test.rs_comment_3
 Type: comment
-Position: Line 11, Column 1 (Offset: 232)
+Position: Line 7, Column 9 (Offset: 177)
 Content:
-/// Struct with documentation
+/// Field documentation
 
---- Unit 10 ---
+--- Unit 7 ---
 ID: test.rs_doc_string_2
 Type: doc_string
-Position: Line 11, Column 1 (Offset: 232)
+Position: Line 7, Column 9 (Offset: 177)
 Content:
-/// Struct with documentation
+/// Field documentation
+
+--- Unit 8 ---
+ID: test.rs_comment_4
+Type: comment
+Position: Line 12, Column 9 (Offset: 263)
+Content:
+/// Creates a new Example instance
+
+--- Unit 9 ---
+ID: test.rs_doc_string_3
+Type: doc_string
+Position: Line 12, Column 9 (Offset: 263)
+Content:
+/// Creates a new Example instance
+
+--- Unit 10 ---
+ID: test.rs_comment_5
+Type: comment
+Position: Line 17, Column 9 (Offset: 396)
+Content:
+/// Returns the value
 
 --- Unit 11 ---
-ID: test.rs_comment_9
-Type: comment
-Position: Line 13, Column 1 (Offset: 267)
-Content:
-/// # Fields
-
---- Unit 12 ---
 ID: test.rs_doc_string_4
 Type: doc_string
-Position: Line 13, Column 1 (Offset: 267)
+Position: Line 17, Column 9 (Offset: 396)
 Content:
-/// # Fields
+/// Returns the value
+
+--- Unit 12 ---
+ID: test.rs_comment_6
+Type: comment
+Position: Line 24, Column 1 (Offset: 501)
+Content:
+/// Function documentation
 
 --- Unit 13 ---
-ID: test.rs_comment_13
-Type: comment
-Position: Line 18, Column 5 (Offset: 367)
+ID: test.rs_doc_string_5
+Type: doc_string
+Position: Line 24, Column 1 (Offset: 501)
 Content:
-/// The person's name
+/// Function documentation
 
 --- Unit 14 ---
-ID: test.rs_doc_string_8
-Type: doc_string
-Position: Line 18, Column 5 (Offset: 367)
+ID: test.rs_comment_8
+Type: comment
+Position: Line 26, Column 1 (Offset: 533)
 Content:
-/// The person's name
+/// # Arguments
 
 --- Unit 15 ---
-ID: test.rs_comment_14
-Type: comment
-Position: Line 20, Column 5 (Offset: 411)
+ID: test.rs_doc_string_7
+Type: doc_string
+Position: Line 26, Column 1 (Offset: 533)
 Content:
-/// The person's age
+/// # Arguments
 
 --- Unit 16 ---
-ID: test.rs_doc_string_9
-Type: doc_string
-Position: Line 20, Column 5 (Offset: 411)
+ID: test.rs_comment_12
+Type: comment
+Position: Line 30, Column 1 (Offset: 590)
 Content:
-/// The person's age
+/// # Returns
 
 --- Unit 17 ---
-ID: test.rs_comment_15
-Type: comment
-Position: Line 25, Column 5 (Offset: 467)
+ID: test.rs_doc_string_11
+Type: doc_string
+Position: Line 30, Column 1 (Offset: 590)
 Content:
-/// Creates a new Person
+/// # Returns
 
 --- Unit 18 ---
-ID: test.rs_doc_string_10
-Type: doc_string
-Position: Line 25, Column 5 (Offset: 467)
+ID: test.rs_comment_14
+Type: comment
+Position: Line 32, Column 1 (Offset: 609)
 Content:
-/// Creates a new Person
+/// A greeting message
 
 --- Unit 19 ---
-ID: test.rs_comment_17
-Type: comment
-Position: Line 27, Column 5 (Offset: 505)
-Content:
-/// # Arguments
-
---- Unit 20 ---
-ID: test.rs_doc_string_12
+ID: test.rs_doc_string_13
 Type: doc_string
-Position: Line 27, Column 5 (Offset: 505)
+Position: Line 32, Column 1 (Offset: 609)
 Content:
-/// # Arguments
-
---- Unit 21 ---
-ID: test.rs_comment_22
-Type: comment
-Position: Line 32, Column 5 (Offset: 611)
-Content:
-/// # Examples
-
---- Unit 22 ---
-ID: test.rs_doc_string_17
-Type: doc_string
-Position: Line 32, Column 5 (Offset: 611)
-Content:
-/// # Examples
-
---- Unit 23 ---
-ID: test.rs_comment_27
-Type: comment
-Position: Line 44, Column 5 (Offset: 846)
-Content:
-/// Gets the person's name
-
---- Unit 24 ---
-ID: test.rs_doc_string_22
-Type: doc_string
-Position: Line 44, Column 5 (Offset: 846)
-Content:
-/// Gets the person's name
-
---- Unit 25 ---
-ID: test.rs_comment_28
-Type: comment
-Position: Line 49, Column 5 (Offset: 940)
-Content:
-/** Block doc comment
-        This is a block-style documentation comment
-        It can span multiple lines
-    */
-
---- Unit 26 ---
-ID: test.rs_doc_string_23
-Type: doc_string
-Position: Line 49, Column 5 (Offset: 940)
-Content:
-/** Block doc comment
-        This is a block-style documentation comment
-        It can span multiple lines
-    */
-
---- Unit 27 ---
-ID: test.rs_comment_29
-Type: comment
-Position: Line 58, Column 1 (Offset: 1113)
-Content:
-/*! Inner block doc comment
-   For the module
-*/
-
---- Unit 28 ---
-ID: test.rs_comment_30
-Type: comment
-Position: Line 62, Column 1 (Offset: 1163)
-Content:
-/// Trait with documentation
-
---- Unit 29 ---
-ID: test.rs_doc_string_24
-Type: doc_string
-Position: Line 62, Column 1 (Offset: 1163)
-Content:
-/// Trait with documentation
-
---- Unit 30 ---
-ID: test.rs_comment_31
-Type: comment
-Position: Line 64, Column 5 (Offset: 1214)
-Content:
-/// Returns a greeting
-
---- Unit 31 ---
-ID: test.rs_doc_string_25
-Type: doc_string
-Position: Line 64, Column 5 (Offset: 1214)
-Content:
-/// Returns a greeting
-
---- Unit 32 ---
-ID: test.rs_comment_32
-Type: comment
-Position: Line 69, Column 5 (Offset: 1303)
-Content:
-/// Greets the person
-
---- Unit 33 ---
-ID: test.rs_doc_string_26
-Type: doc_string
-Position: Line 69, Column 5 (Offset: 1303)
-Content:
-/// Greets the person
-
---- Unit 34 ---
-ID: test.rs_comment_33
-Type: comment
-Position: Line 75, Column 1 (Offset: 1417)
-Content:
-/// Enum with documentation
-
---- Unit 35 ---
-ID: test.rs_doc_string_27
-Type: doc_string
-Position: Line 75, Column 1 (Offset: 1417)
-Content:
-/// Enum with documentation
-
---- Unit 36 ---
-ID: test.rs_comment_34
-Type: comment
-Position: Line 78, Column 5 (Offset: 1484)
-Content:
-/// Active status
-
---- Unit 37 ---
-ID: test.rs_doc_string_28
-Type: doc_string
-Position: Line 78, Column 5 (Offset: 1484)
-Content:
-/// Active status
-
---- Unit 38 ---
-ID: test.rs_comment_35
-Type: comment
-Position: Line 80, Column 5 (Offset: 1518)
-Content:
-/// Inactive status
-
---- Unit 39 ---
-ID: test.rs_doc_string_29
-Type: doc_string
-Position: Line 80, Column 5 (Offset: 1518)
-Content:
-/// Inactive status
-
---- Unit 40 ---
-ID: test.rs_comment_36
-Type: comment
-Position: Line 82, Column 5 (Offset: 1556)
-Content:
-/// Pending status
-
---- Unit 41 ---
-ID: test.rs_doc_string_30
-Type: doc_string
-Position: Line 82, Column 5 (Offset: 1556)
-Content:
-/// Pending status
-
---- Unit 42 ---
-ID: test.rs_comment_37
-Type: comment
-Position: Line 86, Column 1 (Offset: 1591)
-Content:
-/// Macro with documentation
-
---- Unit 43 ---
-ID: test.rs_doc_string_31
-Type: doc_string
-Position: Line 86, Column 1 (Offset: 1591)
-Content:
-/// Macro with documentation
-
---- Unit 44 ---
-ID: test.rs_comment_39
-Type: comment
-Position: Line 88, Column 1 (Offset: 1625)
-Content:
-/// # Usage
-
---- Unit 45 ---
-ID: test.rs_doc_string_33
-Type: doc_string
-Position: Line 88, Column 1 (Offset: 1625)
-Content:
-/// # Usage
-
---- Unit 46 ---
-ID: test.rs_comment_42
-Type: comment
-Position: Line 91, Column 1 (Offset: 1650)
-Content:
-/// say_hello!();
-
---- Unit 47 ---
-ID: test.rs_doc_string_36
-Type: doc_string
-Position: Line 91, Column 1 (Offset: 1650)
-Content:
-/// say_hello!();
-
---- Unit 48 ---
-ID: test.rs_string_literal_1
-Type: string_literal
-Position: Line 96, Column 18 (Offset: 1746)
-Content:
-"Hello!"
+/// A greeting message
 

@@ -1,253 +1,108 @@
-Extracted 30 translation units from python_comments
+Extracted 12 translation units from python_comments
 ==================================================
 
 --- Unit 1 ---
-ID: test.py_doc_string_0
-Type: doc_string
+ID: test.py_comment_0
+Type: comment
 Position: Line 1, Column 1 (Offset: 0)
 Content:
-"""Python comments fixture for testing.
-
-This module contains various Python comments and docstrings for testing extraction.
-"""
+# Python comments for testing
 
 --- Unit 2 ---
-ID: test.py_doc_string_1
-Type: doc_string
-Position: Line 1, Column 1 (Offset: 0)
+ID: test.py_comment_1
+Type: comment
+Position: Line 3, Column 1 (Offset: 31)
 Content:
-"""Python comments fixture for testing.
-
-This module contains various Python comments and docstrings for testing extraction.
-"""
+# This is a single-line comment
 
 --- Unit 3 ---
-ID: test.py_string_literal_0
-Type: string_literal
-Position: Line 1, Column 1 (Offset: 0)
+ID: test.py_doc_string_0
+Type: doc_string
+Position: Line 6, Column 1 (Offset: 75)
 Content:
-"""Python comments fixture for testing.
-
-This module contains various Python comments and docstrings for testing extraction.
+"""
+This is a multi-line comment
+with multiple lines of text
 """
 
 --- Unit 4 ---
-ID: test.py_comment_0
-Type: comment
-Position: Line 6, Column 1 (Offset: 135)
+ID: test.py_doc_string_1
+Type: doc_string
+Position: Line 6, Column 1 (Offset: 75)
 Content:
-# Module level comment
+"""
+This is a multi-line comment
+with multiple lines of text
+"""
 
 --- Unit 5 ---
-ID: test.py_comment_1
-Type: comment
-Position: Line 11, Column 1 (Offset: 176)
+ID: test.py_string_literal_0
+Type: string_literal
+Position: Line 6, Column 1 (Offset: 75)
 Content:
-# Function with regular comments
+"""
+This is a multi-line comment
+with multiple lines of text
+"""
 
 --- Unit 6 ---
 ID: test.py_comment_2
 Type: comment
-Position: Line 13, Column 5 (Offset: 230)
+Position: Line 12, Column 5 (Offset: 157)
 Content:
-# Add two numbers
+# Another comment inside function
 
 --- Unit 7 ---
 ID: test.py_doc_string_2
 Type: doc_string
-Position: Line 18, Column 5 (Offset: 307)
+Position: Line 16, Column 5 (Offset: 230)
 Content:
-"""Function with simple docstring."""
+"""
+    Documentation string for greet function
+    Args:
+        name: The name to greet
+    Returns:
+        A greeting message
+    """
 
 --- Unit 8 ---
 ID: test.py_string_literal_1
 Type: string_literal
-Position: Line 18, Column 5 (Offset: 307)
+Position: Line 16, Column 5 (Offset: 230)
 Content:
-"""Function with simple docstring."""
+"""
+    Documentation string for greet function
+    Args:
+        name: The name to greet
+    Returns:
+        A greeting message
+    """
 
 --- Unit 9 ---
-ID: test.py_doc_string_4
+ID: test.py_doc_string_3
 Type: doc_string
-Position: Line 45, Column 5 (Offset: 913)
+Position: Line 26, Column 5 (Offset: 417)
 Content:
-"""Class docstring.
-    
-    This class demonstrates class-level documentation.
-    
-    Attributes:
-        name: The name attribute
-        value: The value attribute
-    """
+"""Example class for testing"""
 
 --- Unit 10 ---
 ID: test.py_string_literal_3
 Type: string_literal
-Position: Line 45, Column 5 (Offset: 913)
+Position: Line 26, Column 5 (Offset: 417)
 Content:
-"""Class docstring.
-    
-    This class demonstrates class-level documentation.
-    
-    Attributes:
-        name: The name attribute
-        value: The value attribute
-    """
+"""Example class for testing"""
 
 --- Unit 11 ---
-ID: test.py_doc_string_5
+ID: test.py_doc_string_4
 Type: doc_string
-Position: Line 55, Column 9 (Offset: 1143)
+Position: Line 29, Column 9 (Offset: 484)
 Content:
-"""Initialize the class.
-        
-        Args:
-            name: The name to use
-        """
+"""Method documentation"""
 
 --- Unit 12 ---
 ID: test.py_string_literal_4
 Type: string_literal
-Position: Line 55, Column 9 (Offset: 1143)
+Position: Line 29, Column 9 (Offset: 484)
 Content:
-"""Initialize the class.
-        
-        Args:
-            name: The name to use
-        """
-
---- Unit 13 ---
-ID: test.py_comment_3
-Type: comment
-Position: Line 60, Column 27 (Offset: 1268)
-Content:
-# Instance variable
-
---- Unit 14 ---
-ID: test.py_comment_4
-Type: comment
-Position: Line 61, Column 25 (Offset: 1313)
-Content:
-# Another instance variable
-
---- Unit 15 ---
-ID: test.py_doc_string_6
-Type: doc_string
-Position: Line 64, Column 9 (Offset: 1379)
-Content:
-"""Method docstring."""
-
---- Unit 16 ---
-ID: test.py_string_literal_5
-Type: string_literal
-Position: Line 64, Column 9 (Offset: 1379)
-Content:
-"""Method docstring."""
-
---- Unit 17 ---
-ID: test.py_comment_5
-Type: comment
-Position: Line 65, Column 9 (Offset: 1412)
-Content:
-# Method comment
-
---- Unit 18 ---
-ID: test.py_comment_10
-Type: comment
-Position: Line 74, Column 1 (Offset: 1552)
-Content:
-# Normal comment that should be translated
-
---- Unit 19 ---
-ID: test.py_comment_11
-Type: comment
-Position: Line 75, Column 1 (Offset: 1596)
-Content:
-# This is a regular comment
-
---- Unit 20 ---
-ID: test.py_comment_12
-Type: comment
-Position: Line 77, Column 1 (Offset: 1627)
-Content:
-# Inline comment after code
-
---- Unit 21 ---
-ID: test.py_comment_13
-Type: comment
-Position: Line 78, Column 8 (Offset: 1663)
-Content:
-# Set x to 5
-
---- Unit 22 ---
-ID: test.py_comment_14
-Type: comment
-Position: Line 80, Column 1 (Offset: 1679)
-Content:
-# Multi-line comment using multiple single-line comments
-
---- Unit 23 ---
-ID: test.py_comment_15
-Type: comment
-Position: Line 81, Column 1 (Offset: 1737)
-Content:
-# Line 1 of comment
-
---- Unit 24 ---
-ID: test.py_comment_16
-Type: comment
-Position: Line 82, Column 1 (Offset: 1758)
-Content:
-# Line 2 of comment
-
---- Unit 25 ---
-ID: test.py_comment_17
-Type: comment
-Position: Line 83, Column 1 (Offset: 1779)
-Content:
-# Line 3 of comment
-
---- Unit 26 ---
-ID: test.py_doc_string_7
-Type: doc_string
-Position: Line 85, Column 1 (Offset: 1802)
-Content:
-"""
-This is a module-level string literal.
-It might be used as documentation.
-"""
-
---- Unit 27 ---
-ID: test.py_doc_string_8
-Type: doc_string
-Position: Line 85, Column 1 (Offset: 1802)
-Content:
-"""
-This is a module-level string literal.
-It might be used as documentation.
-"""
-
---- Unit 28 ---
-ID: test.py_string_literal_6
-Type: string_literal
-Position: Line 85, Column 1 (Offset: 1802)
-Content:
-"""
-This is a module-level string literal.
-It might be used as documentation.
-"""
-
---- Unit 29 ---
-ID: test.py_comment_18
-Type: comment
-Position: Line 90, Column 1 (Offset: 1890)
-Content:
-# f-strings with various formats
-
---- Unit 30 ---
-ID: test.py_string_literal_7
-Type: string_literal
-Position: Line 92, Column 12 (Offset: 1959)
-Content:
-"world"
+"""Method documentation"""
 

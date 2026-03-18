@@ -1,4 +1,4 @@
-Extracted 52 translation units from language_filter_rust
+Extracted 19 translation units from language_filter_rust
 ==================================================
 
 --- Unit 1 ---
@@ -6,362 +6,137 @@ ID: test.rs_comment_0
 Type: comment
 Position: Line 1, Column 1 (Offset: 0)
 Content:
-//! Mixed Language Content Fixture
+// Mixed content Rust file for language filtering tests
 
 --- Unit 2 ---
-ID: test.rs_comment_2
+ID: test.rs_comment_1
 Type: comment
-Position: Line 3, Column 1 (Offset: 39)
+Position: Line 3, Column 1 (Offset: 57)
 Content:
-//! Contains both Chinese and English content to test language filtering.
+// This is an English comment
 
 --- Unit 3 ---
-ID: test.rs_comment_3
+ID: test.rs_comment_2
 Type: comment
-Position: Line 5, Column 1 (Offset: 114)
+Position: Line 6, Column 1 (Offset: 119)
 Content:
-/// This is an English-only doc comment
+// 这是一个中文注释
 
 --- Unit 4 ---
-ID: test.rs_doc_string_0
-Type: doc_string
-Position: Line 5, Column 1 (Offset: 114)
+ID: test.rs_comment_3
+Type: comment
+Position: Line 9, Column 1 (Offset: 180)
 Content:
-/// This is an English-only doc comment
+/*
+ * Multi-line English comment
+ * with multiple lines
+ */
 
 --- Unit 5 ---
 ID: test.rs_comment_4
 Type: comment
-Position: Line 6, Column 1 (Offset: 154)
+Position: Line 14, Column 1 (Offset: 241)
 Content:
-/// It should NOT be extracted when source is zh and target is en
+/*
+ * 多行中文注释
+ * 包含多行内容
+ */
 
 --- Unit 6 ---
-ID: test.rs_doc_string_1
-Type: doc_string
-Position: Line 6, Column 1 (Offset: 154)
-Content:
-/// It should NOT be extracted when source is zh and target is en
-
---- Unit 7 ---
 ID: test.rs_string_literal_0
 Type: string_literal
-Position: Line 8, Column 15 (Offset: 263)
+Position: Line 20, Column 14 (Offset: 330)
 Content:
-"This is an English string"
+"This is English output"
 
---- Unit 8 ---
+--- Unit 7 ---
 ID: test.rs_string_literal_1
 Type: string_literal
-Position: Line 9, Column 14 (Offset: 305)
+Position: Line 24, Column 14 (Offset: 397)
 Content:
-"Hello World"
+"这是中文输出"
 
---- Unit 9 ---
+--- Unit 8 ---
 ID: test.rs_comment_5
 Type: comment
-Position: Line 12, Column 1 (Offset: 324)
+Position: Line 28, Column 5 (Offset: 449)
 Content:
-/// 这是一个纯中文的文档注释
+// English comment with some Chinese words
 
---- Unit 10 ---
-ID: test.rs_doc_string_2
-Type: doc_string
-Position: Line 12, Column 1 (Offset: 324)
-Content:
-/// 这是一个纯中文的文档注释
-
---- Unit 11 ---
-ID: test.rs_comment_6
-Type: comment
-Position: Line 13, Column 1 (Offset: 365)
-Content:
-/// 当源语言为zh，目标语言为en时，应该被提取
-
---- Unit 12 ---
-ID: test.rs_doc_string_3
-Type: doc_string
-Position: Line 13, Column 1 (Offset: 365)
-Content:
-/// 当源语言为zh，目标语言为en时，应该被提取
-
---- Unit 13 ---
+--- Unit 9 ---
 ID: test.rs_string_literal_2
 Type: string_literal
-Position: Line 15, Column 15 (Offset: 471)
-Content:
-"这是一个中文字符串"
-
---- Unit 14 ---
-ID: test.rs_string_literal_3
-Type: string_literal
-Position: Line 16, Column 14 (Offset: 515)
-Content:
-"你好世界"
-
---- Unit 15 ---
-ID: test.rs_comment_7
-Type: comment
-Position: Line 19, Column 1 (Offset: 535)
-Content:
-/// Mixed content: 你好 World
-
---- Unit 16 ---
-ID: test.rs_doc_string_4
-Type: doc_string
-Position: Line 19, Column 1 (Offset: 535)
-Content:
-/// Mixed content: 你好 World
-
---- Unit 17 ---
-ID: test.rs_comment_8
-Type: comment
-Position: Line 20, Column 1 (Offset: 567)
-Content:
-/// This function has both languages
-
---- Unit 18 ---
-ID: test.rs_doc_string_5
-Type: doc_string
-Position: Line 20, Column 1 (Offset: 567)
-Content:
-/// This function has both languages
-
---- Unit 19 ---
-ID: test.rs_comment_9
-Type: comment
-Position: Line 21, Column 1 (Offset: 604)
-Content:
-/// 包含两种语言的内容
-
---- Unit 20 ---
-ID: test.rs_doc_string_6
-Type: doc_string
-Position: Line 21, Column 1 (Offset: 604)
-Content:
-/// 包含两种语言的内容
-
---- Unit 21 ---
-ID: test.rs_string_literal_4
-Type: string_literal
-Position: Line 23, Column 16 (Offset: 681)
+Position: Line 29, Column 19 (Offset: 510)
 Content:
 "Hello 世界"
 
---- Unit 22 ---
-ID: test.rs_string_literal_5
-Type: string_literal
-Position: Line 24, Column 16 (Offset: 712)
+--- Unit 10 ---
+ID: test.rs_comment_6
+Type: comment
+Position: Line 32, Column 5 (Offset: 564)
 Content:
-"欢迎使用 Rust programming language"
+// Chinese comment with English words
 
---- Unit 23 ---
-ID: test.rs_string_literal_6
+--- Unit 11 ---
+ID: test.rs_string_literal_4
 Type: string_literal
-Position: Line 25, Column 14 (Offset: 767)
+Position: Line 33, Column 20 (Offset: 621)
 Content:
-"混合内容 mixed content"
+"你好 World"
 
---- Unit 24 ---
+--- Unit 12 ---
+ID: test.rs_comment_7
+Type: comment
+Position: Line 37, Column 1 (Offset: 670)
+Content:
+/// English documentation comment
+
+--- Unit 13 ---
+ID: test.rs_doc_string_0
+Type: doc_string
+Position: Line 37, Column 1 (Offset: 670)
+Content:
+/// English documentation comment
+
+--- Unit 14 ---
+ID: test.rs_comment_8
+Type: comment
+Position: Line 38, Column 1 (Offset: 704)
+Content:
+/// @param value - The value to process
+
+--- Unit 15 ---
+ID: test.rs_doc_string_1
+Type: doc_string
+Position: Line 38, Column 1 (Offset: 704)
+Content:
+/// @param value - The value to process
+
+--- Unit 16 ---
+ID: test.rs_comment_9
+Type: comment
+Position: Line 43, Column 1 (Offset: 801)
+Content:
+/// 中文文档注释
+
+--- Unit 17 ---
+ID: test.rs_doc_string_2
+Type: doc_string
+Position: Line 43, Column 1 (Offset: 801)
+Content:
+/// 中文文档注释
+
+--- Unit 18 ---
 ID: test.rs_comment_10
 Type: comment
-Position: Line 28, Column 1 (Offset: 801)
+Position: Line 44, Column 1 (Offset: 824)
 Content:
-// Pure English comment
+/// @param value - 要处理的值
 
---- Unit 25 ---
-ID: test.rs_string_literal_7
-Type: string_literal
-Position: Line 30, Column 13 (Offset: 869)
+--- Unit 19 ---
+ID: test.rs_doc_string_3
+Type: doc_string
+Position: Line 44, Column 1 (Offset: 824)
 Content:
-"test value"
-
---- Unit 26 ---
-ID: test.rs_string_literal_8
-Type: string_literal
-Position: Line 31, Column 13 (Offset: 895)
-Content:
-"another value"
-
---- Unit 27 ---
-ID: test.rs_comment_11
-Type: comment
-Position: Line 34, Column 1 (Offset: 915)
-Content:
-// 纯中文注释
-
---- Unit 28 ---
-ID: test.rs_string_literal_9
-Type: string_literal
-Position: Line 36, Column 13 (Offset: 978)
-Content:
-"测试值"
-
---- Unit 29 ---
-ID: test.rs_string_literal_10
-Type: string_literal
-Position: Line 37, Column 13 (Offset: 1003)
-Content:
-"另一个值"
-
---- Unit 30 ---
-ID: test.rs_comment_12
-Type: comment
-Position: Line 41, Column 5 (Offset: 1048)
-Content:
-// English errors - should NOT be extracted
-
---- Unit 31 ---
-ID: test.rs_string_literal_11
-Type: string_literal
-Position: Line 42, Column 12 (Offset: 1103)
-Content:
-"System error occurred"
-
---- Unit 32 ---
-ID: test.rs_string_literal_12
-Type: string_literal
-Position: Line 43, Column 20 (Offset: 1148)
-Content:
-"Assertion failed"
-
---- Unit 33 ---
-ID: test.rs_comment_13
-Type: comment
-Position: Line 45, Column 5 (Offset: 1178)
-Content:
-// Chinese errors - should be extracted
-
---- Unit 34 ---
-ID: test.rs_string_literal_13
-Type: string_literal
-Position: Line 46, Column 12 (Offset: 1229)
-Content:
-"系统发生错误"
-
---- Unit 35 ---
-ID: test.rs_string_literal_14
-Type: string_literal
-Position: Line 47, Column 20 (Offset: 1271)
-Content:
-"断言失败"
-
---- Unit 36 ---
-ID: test.rs_comment_14
-Type: comment
-Position: Line 49, Column 5 (Offset: 1297)
-Content:
-// Mixed errors - should be extracted (contains Chinese)
-
---- Unit 37 ---
-ID: test.rs_string_literal_15
-Type: string_literal
-Position: Line 50, Column 12 (Offset: 1365)
-Content:
-"Error: 操作失败"
-
---- Unit 38 ---
-ID: test.rs_comment_15
-Type: comment
-Position: Line 54, Column 5 (Offset: 1416)
-Content:
-// English logs - should NOT be extracted
-
---- Unit 39 ---
-ID: test.rs_string_literal_16
-Type: string_literal
-Position: Line 55, Column 14 (Offset: 1471)
-Content:
-"Application started"
-
---- Unit 40 ---
-ID: test.rs_string_literal_17
-Type: string_literal
-Position: Line 56, Column 16 (Offset: 1510)
-Content:
-"Processing request"
-
---- Unit 41 ---
-ID: test.rs_comment_16
-Type: comment
-Position: Line 58, Column 5 (Offset: 1542)
-Content:
-// Chinese logs - should be extracted
-
---- Unit 42 ---
-ID: test.rs_string_literal_18
-Type: string_literal
-Position: Line 59, Column 14 (Offset: 1593)
-Content:
-"应用程序已启动"
-
---- Unit 43 ---
-ID: test.rs_string_literal_19
-Type: string_literal
-Position: Line 60, Column 16 (Offset: 1634)
-Content:
-"正在处理请求"
-
---- Unit 44 ---
-ID: test.rs_comment_17
-Type: comment
-Position: Line 62, Column 5 (Offset: 1666)
-Content:
-// Mixed logs - should be extracted
-
---- Unit 45 ---
-ID: test.rs_string_literal_20
-Type: string_literal
-Position: Line 63, Column 14 (Offset: 1715)
-Content:
-"User 张三 logged in"
-
---- Unit 46 ---
-ID: test.rs_string_literal_21
-Type: string_literal
-Position: Line 66, Column 29 (Offset: 1772)
-Content:
-"English constant value"
-
---- Unit 47 ---
-ID: test.rs_string_literal_22
-Type: string_literal
-Position: Line 67, Column 29 (Offset: 1826)
-Content:
-"中文常量值"
-
---- Unit 48 ---
-ID: test.rs_string_literal_23
-Type: string_literal
-Position: Line 68, Column 27 (Offset: 1871)
-Content:
-"Mixed 混合 value"
-
---- Unit 49 ---
-ID: test.rs_comment_18
-Type: comment
-Position: Line 78, Column 13 (Offset: 2079)
-Content:
-// English - should NOT be extracted
-
---- Unit 50 ---
-ID: test.rs_string_literal_24
-Type: string_literal
-Position: Line 79, Column 43 (Offset: 2158)
-Content:
-"Operation successful"
-
---- Unit 51 ---
-ID: test.rs_comment_19
-Type: comment
-Position: Line 80, Column 13 (Offset: 2195)
-Content:
-// Chinese - should be extracted
-
---- Unit 52 ---
-ID: test.rs_string_literal_25
-Type: string_literal
-Position: Line 81, Column 41 (Offset: 2268)
-Content:
-"操作失败"
+/// @param value - 要处理的值
 

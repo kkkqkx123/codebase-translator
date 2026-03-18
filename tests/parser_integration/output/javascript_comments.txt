@@ -1,4 +1,4 @@
-Extracted 17 translation units from javascript_comments
+Extracted 4 translation units from javascript_comments
 ==================================================
 
 --- Unit 1 ---
@@ -6,136 +6,29 @@ ID: test.js_comment_0
 Type: comment
 Position: Line 1, Column 1 (Offset: 0)
 Content:
-/**
- * JavaScript comments fixture for testing
- *
- * This file contains various JavaScript comments for testing extraction.
- */
+// JavaScript comments for testing
 
 --- Unit 2 ---
-ID: test.js_doc_string_0
-Type: doc_string
-Position: Line 1, Column 1 (Offset: 0)
-Content:
-/**
- * JavaScript comments fixture for testing
- *
- * This file contains various JavaScript comments for testing extraction.
- */
-
---- Unit 3 ---
 ID: test.js_comment_1
 Type: comment
-Position: Line 7, Column 1 (Offset: 129)
+Position: Line 2, Column 1 (Offset: 35)
 Content:
-// Module level comment
+// This is a single-line comment
+
+--- Unit 3 ---
+ID: test.js_comment_2
+Type: comment
+Position: Line 5, Column 1 (Offset: 87)
+Content:
+/*
+ * This is a multi-line comment
+ * with multiple lines of text
+ */
 
 --- Unit 4 ---
 ID: test.js_comment_3
 Type: comment
-Position: Line 19, Column 5 (Offset: 386)
+Position: Line 11, Column 5 (Offset: 180)
 Content:
-// Add the numbers
-
---- Unit 5 ---
-ID: test.js_comment_4
-Type: comment
-Position: Line 23, Column 1 (Offset: 426)
-Content:
-/**
- * Person class
- * @class
- * @classdesc Represents a person
- */
-
---- Unit 6 ---
-ID: test.js_doc_string_2
-Type: doc_string
-Position: Line 23, Column 1 (Offset: 426)
-Content:
-/**
- * Person class
- * @class
- * @classdesc Represents a person
- */
-
---- Unit 7 ---
-ID: test.js_comment_9
-Type: comment
-Position: Line 46, Column 9 (Offset: 898)
-Content:
-// Return greeting
-
---- Unit 8 ---
-ID: test.js_comment_10
-Type: comment
-Position: Line 51, Column 1 (Offset: 975)
-Content:
-// Regular function comment
-
---- Unit 9 ---
-ID: test.js_comment_11
-Type: comment
-Position: Line 53, Column 5 (Offset: 1036)
-Content:
-// Line comment
-
---- Unit 10 ---
-ID: test.js_comment_12
-Type: comment
-Position: Line 54, Column 18 (Offset: 1069)
-Content:
-// Inline comment
-
---- Unit 11 ---
-ID: test.js_comment_13
-Type: comment
-Position: Line 58, Column 1 (Offset: 1104)
-Content:
-/*
- * Block comment
- * spanning multiple lines
- */
-
---- Unit 12 ---
-ID: test.js_comment_19
-Type: comment
-Position: Line 74, Column 1 (Offset: 1388)
-Content:
-// Normal comment that should be translated
-
---- Unit 13 ---
-ID: test.js_comment_20
-Type: comment
-Position: Line 76, Column 1 (Offset: 1433)
-Content:
-// Template literals
-
---- Unit 14 ---
-ID: test.js_string_literal_1
-Type: string_literal
-Position: Line 77, Column 14 (Offset: 1467)
-Content:
-"world"
-
---- Unit 15 ---
-ID: test.js_comment_21
-Type: comment
-Position: Line 84, Column 1 (Offset: 1570)
-Content:
-// String with escapes
-
---- Unit 16 ---
-ID: test.js_string_literal_4
-Type: string_literal
-Position: Line 85, Column 17 (Offset: 1609)
-Content:
-"Line 1\nLine 2\tTabbed"
-
---- Unit 17 ---
-ID: test.js_comment_22
-Type: comment
-Position: Line 87, Column 1 (Offset: 1636)
-Content:
-// Regular expressions
+// Another comment inside function
 
