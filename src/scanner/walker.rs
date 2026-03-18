@@ -183,16 +183,14 @@ impl FSScanner {
         exclude_patterns: &[String],
         gitignore: &Option<GitignoreMatcher>,
     ) -> bool {
-        if include_patterns.is_empty() {
-            return true;
-        }
+        if !include_patterns.is_empty() {
+            let matched = include_patterns
+                .iter()
+                .any(|pattern| self.match_pattern(path, pattern));
 
-        let matched = include_patterns
-            .iter()
-            .any(|pattern| self.match_pattern(path, pattern));
-
-        if !matched {
-            return false;
+            if !matched {
+                return false;
+            }
         }
 
         if exclude_patterns
@@ -259,8 +257,17 @@ impl FSScanner {
             return false;
         }
 
-        if !suffix.is_empty() && !path.ends_with(suffix) {
-            return false;
+        if !suffix.is_empty() {
+            if suffix.contains('*') {
+                let suffix_parts: Vec<&str> = suffix.split('*').collect();
+                if suffix_parts.len() == 2 {
+                    let suffix_prefix = suffix_parts[0];
+                    let suffix_suffix = suffix_parts[1];
+                    let filename = path.rsplit('/').next().unwrap_or(path);
+                    return filename.starts_with(suffix_prefix) && filename.ends_with(suffix_suffix);
+                }
+            }
+            return path.ends_with(suffix);
         }
 
         true

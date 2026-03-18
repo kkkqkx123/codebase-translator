@@ -3,11 +3,11 @@
 ## Summary
 
 - **Total Errors**: 0
-- **Total Warnings**: 4
-- **Total Issues**: 4
+- **Total Warnings**: 8
+- **Total Issues**: 8
 - **Unique Error Patterns**: 0
-- **Unique Warning Patterns**: 4
-- **Files with Issues**: 3
+- **Unique Warning Patterns**: 1
+- **Files with Issues**: 1
 
 ## Error Statistics
 
@@ -15,35 +15,27 @@
 
 ## Warning Statistics
 
-**Total Warnings**: 4
+**Total Warnings**: 8
 
 ### Warning Type Breakdown
 
-- **warning**: 4 warnings
+- **warning**: 8 warnings
 
 ### Files with Warnings (Top 10)
 
-- `src\parser\string_extractor.rs`: 2 warnings
-- `src\cache\binary.rs`: 1 warnings
-- `src\parser\tree_sitter.rs`: 1 warnings
+- `src\cache\binary.rs`: 8 warnings
 
 ## Detailed Warning Categorization
 
-### warning: constant `INDEX_ENTRY_SIZE` is never used
+### warning: call to `.clone()` on a reference in this situation does nothing
 
-**Total Occurrences**: 4  
-**Unique Files**: 3
+**Total Occurrences**: 8  
+**Unique Files**: 1
 
-#### `src\parser\string_extractor.rs`: 2 occurrences
+#### `src\cache\binary.rs`: 8 occurrences
 
-- Line 559: use of deprecated constant `parser::string_extractor::tests::test_category_as_str`: This module is not currently used and may be removed in a future version
-- Line 568: use of deprecated constant `parser::string_extractor::tests::test_config_category_enabled`: This module is not currently used and may be removed in a future version
-
-#### `src\cache\binary.rs`: 1 occurrences
-
-- Line 20: constant `INDEX_ENTRY_SIZE` is never used
-
-#### `src\parser\tree_sitter.rs`: 1 occurrences
-
-- Line 11: unused import: `FormatInfo`
+- Line 614: call to `.clone()` on a reference in this situation does nothing
+- Line 623: call to `.clone()` on a reference in this situation does nothing
+- Line 659: call to `.clone()` on a reference in this situation does nothing
+- ... 5 more occurrences in this file
 

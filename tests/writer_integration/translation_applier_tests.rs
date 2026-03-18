@@ -78,6 +78,7 @@ fn test_translation_applier_line_comment_format() {
         base_indent: "    ".to_string(),
         line_prefix: Some("// ".to_string()),
         ends_with_newline: false,
+        is_multiline: false,
     };
 
     let mut units = vec![create_translation_unit_with_format(
@@ -104,6 +105,7 @@ fn test_translation_applier_block_comment_format() {
         base_indent: "".to_string(),
         line_prefix: None,
         ends_with_newline: false,
+        is_multiline: false,
     };
 
     let mut units = vec![create_translation_unit_with_format(
@@ -130,6 +132,7 @@ fn test_translation_applier_multiline_block_comment() {
         base_indent: "".to_string(),
         line_prefix: Some(" * ".to_string()),
         ends_with_newline: true,
+        is_multiline: false,
     };
 
     let mut units = vec![create_translation_unit_with_format(
@@ -156,6 +159,7 @@ fn test_translation_applier_doc_outer_comment() {
         base_indent: "".to_string(),
         line_prefix: Some("/// ".to_string()),
         ends_with_newline: false,
+        is_multiline: false,
     };
 
     let mut units = vec![create_translation_unit_with_format(
@@ -182,6 +186,7 @@ fn test_translation_applier_doc_block_comment() {
         base_indent: "".to_string(),
         line_prefix: Some(" * ".to_string()),
         ends_with_newline: true,
+        is_multiline: false,
     };
 
     let mut units = vec![create_translation_unit_with_format(
@@ -208,6 +213,7 @@ fn test_translation_applier_multiline_translated_text() {
         base_indent: "".to_string(),
         line_prefix: Some(" * ".to_string()),
         ends_with_newline: true,
+        is_multiline: false,
     };
 
     let mut units = vec![create_translation_unit_with_format(
@@ -305,6 +311,7 @@ fn test_translation_applier_complex_multiline_format() {
         base_indent: "    ".to_string(),
         line_prefix: Some(" * ".to_string()),
         ends_with_newline: true,
+        is_multiline: false,
     };
 
     let mut units = vec![create_translation_unit_with_format(

@@ -7,7 +7,7 @@ use codebase_translate::core::models::{CacheConfig, CacheMode};
 use codebase_translate::Cache;
 use std::sync::Arc;
 use std::thread;
-use crate::test_utils::hash_utils;
+use crate::cache_integration::test_utils::hash_utils;
 
 #[test]
 fn test_file_cache_concurrent_reads() {
@@ -35,7 +35,7 @@ fn test_file_cache_concurrent_reads() {
 
     for _ in 0..10 {
         let cache_clone = Arc::clone(&cache);
-        let handle = thread::spawn(move || {
+        let handle: std::thread::JoinHandle<String> = thread::spawn(move || {
             let retrieved = cache_clone.get("hash1").unwrap();
             assert!(retrieved.is_some());
             retrieved.unwrap().file_hash
@@ -77,7 +77,7 @@ fn test_binary_cache_concurrent_reads() {
     for _ in 0..10 {
         let cache_clone = Arc::clone(&cache);
         let hash1_clone = hash1.clone();
-        let handle = thread::spawn(move || {
+        let handle: std::thread::JoinHandle<String> = thread::spawn(move || {
             let retrieved = cache_clone.get(&hash1_clone).unwrap();
             assert!(retrieved.is_some());
             retrieved.unwrap().file_hash
@@ -109,7 +109,7 @@ fn test_file_cache_concurrent_writes() {
     for i in 0..10 {
         let cache_clone = Arc::clone(&cache);
         let fingerprint_clone = fingerprint.clone();
-        let handle = thread::spawn(move || {
+        let handle: std::thread::JoinHandle<String> = thread::spawn(move || {
             let hash = format!("hash{}", i);
             let path = format!("/path/to/file{}.txt", i);
             let entry = codebase_translate::core::models::CacheEntry::new(
@@ -127,7 +127,7 @@ fn test_file_cache_concurrent_writes() {
 
     let mut hashes = vec![];
     for handle in handles {
-        let hash = handle.join().unwrap();
+        let hash: String = handle.join().unwrap();
         hashes.push(hash);
     }
 
@@ -158,7 +158,7 @@ fn test_binary_cache_concurrent_writes() {
     for i in 0..10 {
         let cache_clone = Arc::clone(&cache);
         let fingerprint_clone = fingerprint.clone();
-        let handle = thread::spawn(move || {
+        let handle: std::thread::JoinHandle<String> = thread::spawn(move || {
             let hash = hash_utils::generate_test_hash(&format!("file{}", i));
             let path = format!("/path/to/file{}.txt", i);
             let entry = codebase_translate::core::models::CacheEntry::new(
@@ -176,7 +176,7 @@ fn test_binary_cache_concurrent_writes() {
 
     let mut hashes = vec![];
     for handle in handles {
-        let hash = handle.join().unwrap();
+        let hash: String = handle.join().unwrap();
         hashes.push(hash);
     }
 
@@ -207,7 +207,7 @@ fn test_file_cache_concurrent_mixed_operations() {
     for i in 0..20 {
         let cache_clone = Arc::clone(&cache);
         let fingerprint_clone = fingerprint.clone();
-        let handle = thread::spawn(move || {
+        let handle: std::thread::JoinHandle<()> = thread::spawn(move || {
             if i % 3 == 0 {
                 let hash = format!("hash{}", i);
                 let path = format!("/path/to/file{}.txt", i);
@@ -256,7 +256,7 @@ fn test_binary_cache_concurrent_mixed_operations() {
     for i in 0..20 {
         let cache_clone = Arc::clone(&cache);
         let fingerprint_clone = fingerprint.clone();
-        let handle = thread::spawn(move || {
+        let handle: std::thread::JoinHandle<()> = thread::spawn(move || {
             if i % 3 == 0 {
                 let hash = format!("hash{:02}_123456789012345678", i);
                 let path = format!("/path/to/file{}.txt", i);
@@ -317,7 +317,7 @@ fn test_file_cache_concurrent_list_entries() {
 
     for _ in 0..5 {
         let cache_clone = Arc::clone(&cache);
-        let handle = thread::spawn(move || {
+        let handle: std::thread::JoinHandle<usize> = thread::spawn(move || {
             let entries = cache_clone.list_entries().unwrap();
             entries.len()
         });
@@ -360,7 +360,7 @@ fn test_binary_cache_concurrent_list_entries() {
 
     for _ in 0..5 {
         let cache_clone = Arc::clone(&cache);
-        let handle = thread::spawn(move || {
+        let handle: std::thread::JoinHandle<usize> = thread::spawn(move || {
             let entries = cache_clone.list_entries().unwrap();
             entries.len()
         });
@@ -403,7 +403,7 @@ fn test_file_cache_concurrent_stats() {
 
     for _ in 0..5 {
         let cache_clone = Arc::clone(&cache);
-        let handle = thread::spawn(move || {
+        let handle: std::thread::JoinHandle<usize> = thread::spawn(move || {
             let stats = cache_clone.stats().unwrap();
             stats.entry_count
         });
@@ -446,7 +446,7 @@ fn test_binary_cache_concurrent_stats() {
 
     for _ in 0..5 {
         let cache_clone = Arc::clone(&cache);
-        let handle = thread::spawn(move || {
+        let handle: std::thread::JoinHandle<usize> = thread::spawn(move || {
             let stats = cache_clone.stats().unwrap();
             stats.entry_count
         });

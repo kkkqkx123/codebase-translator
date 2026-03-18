@@ -6,7 +6,7 @@ use codebase_translate::cache::{binary::BinaryCache, file::FileCache};
 use codebase_translate::core::models::{CacheConfig, CacheEntry, CacheMode};
 use codebase_translate::Cache;
 use std::collections::HashMap;
-use crate::test_utils::hash_utils;
+use crate::cache_integration::test_utils::hash_utils;
 
 #[test]
 fn test_file_cache_set_and_get() {

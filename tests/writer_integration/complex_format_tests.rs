@@ -25,6 +25,7 @@ async fn test_complex_nested_block_comment() {
         base_indent: "    ".to_string(),
         line_prefix: Some(" * ".to_string()),
         ends_with_newline: true,
+        is_multiline: false,
     };
 
     let mut units = vec![create_translation_unit_with_format(
@@ -85,12 +86,7 @@ async fn test_multiline_string_literal() {
     let temp_dir = create_temp_dir();
     let temp_path = temp_dir.path().to_path_buf();
 
-    let content = r#"fn main() {
-    let message = r#"This is a
-multiline
-string literal"#;
-    println!("{}", message);
-}"#;
+    let content = "fn main() {\n    let message = r#\"This is a\nmultiline\nstring literal\"#;\n    println!(\"{}\", message);\n}";
 
     let file = create_test_file(&temp_path, "multiline_string.rs", content).await;
 
@@ -105,8 +101,8 @@ string literal"#;
 
     let written_content = read_file_content(&file.path).await;
 
-    assert!(written_content.contains("r#"), "Raw string prefix should be preserved");
-    assert!(written_content.contains("#;"), "Raw string suffix should be preserved");
+    assert!(written_content.contains("r#\""), "Raw string prefix should be preserved");
+    assert!(written_content.contains("\"#;"), "Raw string suffix should be preserved");
     assert!(written_content.contains("multiline"), "Other lines should be preserved");
 }
 
@@ -133,6 +129,7 @@ fn main() {
         base_indent: "    ".to_string(),
         line_prefix: Some(" * ".to_string()),
         ends_with_newline: true,
+        is_multiline: false,
     };
 
     let mut units = vec![
@@ -195,6 +192,7 @@ async fn test_indented_block_comment_preservation() {
         base_indent: "        ".to_string(),
         line_prefix: Some(" * ".to_string()),
         ends_with_newline: true,
+        is_multiline: false,
     };
 
     let mut units = vec![create_translation_unit_with_format(
@@ -247,6 +245,7 @@ fn another() -> i32 {
         base_indent: "".to_string(),
         line_prefix: Some("/// ".to_string()),
         ends_with_newline: false,
+        is_multiline: false,
     };
 
     let mut units = vec![
@@ -342,6 +341,7 @@ mod example {
         base_indent: "        ".to_string(),
         line_prefix: Some("/// ".to_string()),
         ends_with_newline: false,
+        is_multiline: false,
     };
 
     let mut units = vec![
@@ -395,6 +395,7 @@ fn example() -> i32 {
         base_indent: "".to_string(),
         line_prefix: Some(" * ".to_string()),
         ends_with_newline: true,
+        is_multiline: false,
     };
 
     let mut units = vec![create_translation_unit_with_format(

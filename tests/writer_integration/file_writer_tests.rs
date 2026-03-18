@@ -51,13 +51,11 @@ async fn test_file_writer_with_backup() {
     let written_content = read_file_content(&file.path).await;
     assert!(written_content.contains("修改后的"));
 
-    let backup_files = tokio::fs::read_dir(temp_path)
+    let mut backup_files = tokio::fs::read_dir(&temp_path)
         .await
         .expect("Failed to read dir");
     let mut backup_count = 0;
-    let mut entries = backup_files.collect::<Vec<_>>().await;
-    while let Some(entry) = entries.pop() {
-        let entry = entry.expect("Failed to read entry");
+    while let Ok(Some(entry)) = backup_files.next_entry().await {
         let file_name = entry.file_name().to_string_lossy().to_string();
         if file_name.contains(".bak.") {
             backup_count += 1;
@@ -152,6 +150,7 @@ async fn test_file_writer_with_line_comment_format() {
         base_indent: "    ".to_string(),
         line_prefix: Some("// ".to_string()),
         ends_with_newline: false,
+        is_multiline: false,
     };
 
     let mut units = vec![create_translation_unit_with_format(
@@ -187,6 +186,7 @@ async fn test_file_writer_with_block_comment_format() {
         base_indent: "".to_string(),
         line_prefix: None,
         ends_with_newline: false,
+        is_multiline: false,
     };
 
     let mut units = vec![create_translation_unit_with_format(
@@ -222,6 +222,7 @@ async fn test_file_writer_with_multiline_block_comment() {
         base_indent: "".to_string(),
         line_prefix: Some(" * ".to_string()),
         ends_with_newline: true,
+        is_multiline: false,
     };
 
     let mut units = vec![create_translation_unit_with_format(
