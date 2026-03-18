@@ -15,7 +15,7 @@
 
 # 启用的翻译器列表（支持多个）
 # 可选值: "deeplx", "llm", "tencent"
-enabled_providers = ["deeplx", "llm", "tencent"]
+enabled_providers = ["deeplx", "llm"]
 
 # DeepLX 配置
 [deeplx]
