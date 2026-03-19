@@ -7,10 +7,10 @@ Files processed: 1
 Total files: 1
 Total units: 11
 Translated units: 11
-Cached units: 0
+Cached files: 0
 Skipped units: 0
 Errors: 0
-Duration: 11.94s
+Duration: 14.21s
 
 
 Directory Contents:
@@ -22,8 +22,8 @@ Directory Contents:
 
 Translated File Content:
 =========================
-This is a simple Rust file for testing translation functionality
-Contains Chinese comments and document strings
+// This is a simple Rust file for testing translation functionality
+// Contains Chinese comments and document strings
 
 /// Calculating the sum of two numbers
 /// # Arguments

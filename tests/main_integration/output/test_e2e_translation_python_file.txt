@@ -7,10 +7,10 @@ Files processed: 1
 Total files: 1
 Total units: 6
 Translated units: 6
-Cached units: 0
+Cached files: 0
 Skipped units: 0
 Errors: 0
-Duration: 6.73s
+Duration: 7.23s
 
 
 Directory Contents:
@@ -22,8 +22,8 @@ Directory Contents:
 
 Translated File Content:
 =========================
-# This is a simple Python file to test the translation functionality
-# Contains Chinese comments and documentation strings
+// # This is a simple Python file to test the translation functionality
+// # Contains Chinese comments and documentation strings
 
 def add(a, b):
 /// """

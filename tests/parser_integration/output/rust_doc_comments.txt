@@ -11,7 +11,7 @@ Rust doc comments for testing
 --- Unit 2 ---
 ID: test.rs_doc_string_0_merged
 Type: doc_string
-Position: Line 3, Column 0 (Offset: 30)
+Position: Line 3, Column 1 (Offset: 34)
 Content:
 This is a module-level documentation comment
 This is a struct documentation comment
@@ -34,7 +34,7 @@ Returns the value
 --- Unit 5 ---
 ID: test.rs_doc_string_5_merged
 Type: doc_string
-Position: Line 24, Column 0 (Offset: 497)
+Position: Line 24, Column 1 (Offset: 501)
 Content:
 Function documentation
 # Arguments
@@ -42,7 +42,7 @@ Function documentation
 --- Unit 6 ---
 ID: test.rs_doc_string_11_merged
 Type: doc_string
-Position: Line 30, Column 0 (Offset: 586)
+Position: Line 30, Column 1 (Offset: 590)
 Content:
 # Returns
 A greeting message

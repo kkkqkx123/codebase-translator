@@ -257,18 +257,10 @@ impl TreeSitterParser {
         let mut format_info = first.format_info.clone().unwrap();
         format_info.is_multiline = true;
 
-        // Fix: Adjust start_pos to include the prefix (e.g., "/// ")
-        // This ensures the entire comment line is replaced, not just the content after prefix
-        let prefix_len = format_info
-            .line_prefix
-            .as_ref()
-            .map(|p| p.len())
-            .unwrap_or(0);
-        let merged_start_pos = Position::new(
-            first.start_pos.line,
-            first.start_pos.column.saturating_sub(prefix_len),
-            first.start_pos.offset.saturating_sub(prefix_len),
-        );
+        // Fix: Use the first unit's start_pos directly
+        // The first.start_pos already points to the beginning of the comment (including prefix like "// ")
+        // We should NOT subtract prefix_len because start_pos.column is 1-indexed and already includes the prefix
+        let merged_start_pos = first.start_pos.clone();
 
         // Fix: Use the original last unit's end_pos for accurate position
         // The last unit's end_pos already includes the correct offset including any suffix

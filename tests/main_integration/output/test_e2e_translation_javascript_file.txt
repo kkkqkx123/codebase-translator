@@ -7,10 +7,10 @@ Files processed: 1
 Total files: 1
 Total units: 3
 Translated units: 3
-Cached units: 0
+Cached files: 0
 Skipped units: 0
 Errors: 0
-Duration: 3.50s
+Duration: 3.60s
 
 
 Directory Contents:
@@ -22,8 +22,8 @@ Directory Contents:
 
 Translated File Content:
 =========================
-This is a simple JavaScript file to test the translation function
-Includes Chinese comments
+// This is a simple JavaScript file to test the translation function
+// Includes Chinese comments
 
 /**
  * 计算两个数的和

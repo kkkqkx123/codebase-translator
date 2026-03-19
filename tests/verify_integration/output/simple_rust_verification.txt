@@ -33,9 +33,9 @@ Total files: 1
 Total matches: 13
 
 Patterns used:
-  - docstring: 3
   - comment: 2
   - string_literal: 8
+  - docstring: 3
 
 By category:
   - variables: 8

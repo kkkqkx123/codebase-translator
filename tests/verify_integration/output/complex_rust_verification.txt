@@ -58,9 +58,9 @@ Total files: 1
 Total matches: 25
 
 Patterns used:
-  - docstring: 7
-  - comment: 10
   - string_literal: 8
+  - comment: 10
+  - docstring: 7
 
 By category:
   - variables: 8

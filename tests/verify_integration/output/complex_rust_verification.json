@@ -8,7 +8,7 @@
       "pattern_name": "comment",
       "pattern_type": "Builtin",
       "position": {
-        "column": 0,
+        "column": 1,
         "line": 1,
         "offset": 0
       },
@@ -50,9 +50,9 @@
       "pattern_name": "docstring",
       "pattern_type": "Builtin",
       "position": {
-        "column": 0,
+        "column": 1,
         "line": 6,
-        "offset": 178
+        "offset": 182
       },
       "raw_match": ""
     },

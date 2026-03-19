@@ -33,7 +33,7 @@ Another comment inside function
 --- Unit 5 ---
 ID: test.go_comment_4_merged
 Type: comment
-Position: Line 17, Column 0 (Offset: 230)
+Position: Line 17, Column 1 (Offset: 233)
 Content:
 greet returns a greeting message
 name is the person to greet

@@ -7,10 +7,10 @@ Files processed: 1
 Total files: 1
 Total units: 8
 Translated units: 8
-Cached units: 0
+Cached files: 0
 Skipped units: 0
 Errors: 0
-Duration: 8.37s
+Duration: 8.52s
 
 
 Directory Contents:

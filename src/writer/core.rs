@@ -276,8 +276,8 @@ impl TranslationApplier {
         }
 
         match format.style {
-            CommentStyle::DocOuter | CommentStyle::DocInner => {
-                // For merged doc comments, add prefix to each line
+            CommentStyle::DocOuter | CommentStyle::DocInner | CommentStyle::Line => {
+                // For merged doc comments and line comments, add prefix to each line
                 // Note: base_indent should NOT be added here as it's already in the original line
                 let prefix = format.line_prefix.as_deref().unwrap_or("");
                 lines
