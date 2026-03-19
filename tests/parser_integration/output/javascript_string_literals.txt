@@ -6,7 +6,7 @@ ID: test.js_comment_0
 Type: comment
 Position: Line 1, Column 1 (Offset: 0)
 Content:
-// JavaScript string literals for testing
+JavaScript string literals for testing
 
 --- Unit 2 ---
 ID: test.js_string_literal_0

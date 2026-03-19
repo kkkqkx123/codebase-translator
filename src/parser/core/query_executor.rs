@@ -132,10 +132,30 @@ impl QueryExecutor {
                     node.start_position().column + 1,
                     node.start_byte(),
                 );
+                
+                // Fix: Adjust end_pos to not include trailing newlines
+                // If the node text ends with a newline, the end_position would point to the next line
+                // We need to keep end_pos on the same line as the actual content
+                let end_row = node.end_position().row;
+                let end_col = node.end_position().column;
+                let end_byte = node.end_byte();
+                
+                // Check if the text ends with newline and adjust accordingly
+                // When end_col == 0, it means the end_position points to the start of the next line
+                // (after the newline character), so we need to adjust it to the previous line
+                let (adjusted_end_row, adjusted_end_col, adjusted_end_byte) = if end_col == 0 && end_row > node.start_position().row {
+                    // end_position points to the start of next line (after newline)
+                    // Adjust to the end of the current line
+                    let prev_line_end_byte = end_byte.saturating_sub(1);
+                    (end_row, end_col, prev_line_end_byte)
+                } else {
+                    (end_row, end_col, end_byte)
+                };
+                
                 let end_pos = Position::new(
-                    node.end_position().row + 1,
-                    node.end_position().column + 1,
-                    node.end_byte(),
+                    adjusted_end_row + 1,
+                    adjusted_end_col + 1,
+                    adjusted_end_byte,
                 );
 
                 debug!(

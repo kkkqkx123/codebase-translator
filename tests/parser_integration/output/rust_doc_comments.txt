@@ -1,4 +1,4 @@
-Extracted 19 translation units from rust_doc_comments
+Extracted 6 translation units from rust_doc_comments
 ==================================================
 
 --- Unit 1 ---
@@ -6,131 +6,44 @@ ID: test.rs_comment_0
 Type: comment
 Position: Line 1, Column 1 (Offset: 0)
 Content:
-// Rust doc comments for testing
+Rust doc comments for testing
 
 --- Unit 2 ---
-ID: test.rs_comment_1
-Type: comment
-Position: Line 3, Column 1 (Offset: 34)
+ID: test.rs_doc_string_0_merged
+Type: doc_string
+Position: Line 3, Column 0 (Offset: 30)
 Content:
-/// This is a module-level documentation comment
+This is a module-level documentation comment
+This is a struct documentation comment
+Field documentation
 
 --- Unit 3 ---
-ID: test.rs_doc_string_0
-Type: doc_string
-Position: Line 3, Column 1 (Offset: 34)
-Content:
-/// This is a module-level documentation comment
-
---- Unit 4 ---
-ID: test.rs_comment_2
-Type: comment
-Position: Line 5, Column 5 (Offset: 101)
-Content:
-/// This is a struct documentation comment
-
---- Unit 5 ---
-ID: test.rs_doc_string_1
-Type: doc_string
-Position: Line 5, Column 5 (Offset: 101)
-Content:
-/// This is a struct documentation comment
-
---- Unit 6 ---
-ID: test.rs_comment_3
-Type: comment
-Position: Line 7, Column 9 (Offset: 177)
-Content:
-/// Field documentation
-
---- Unit 7 ---
-ID: test.rs_doc_string_2
-Type: doc_string
-Position: Line 7, Column 9 (Offset: 177)
-Content:
-/// Field documentation
-
---- Unit 8 ---
-ID: test.rs_comment_4
-Type: comment
-Position: Line 12, Column 9 (Offset: 263)
-Content:
-/// Creates a new Example instance
-
---- Unit 9 ---
 ID: test.rs_doc_string_3
 Type: doc_string
 Position: Line 12, Column 9 (Offset: 263)
 Content:
-/// Creates a new Example instance
+Creates a new Example instance
 
---- Unit 10 ---
-ID: test.rs_comment_5
-Type: comment
-Position: Line 17, Column 9 (Offset: 396)
-Content:
-/// Returns the value
-
---- Unit 11 ---
+--- Unit 4 ---
 ID: test.rs_doc_string_4
 Type: doc_string
 Position: Line 17, Column 9 (Offset: 396)
 Content:
-/// Returns the value
+Returns the value
 
---- Unit 12 ---
-ID: test.rs_comment_6
-Type: comment
-Position: Line 24, Column 1 (Offset: 501)
-Content:
-/// Function documentation
-
---- Unit 13 ---
-ID: test.rs_doc_string_5
+--- Unit 5 ---
+ID: test.rs_doc_string_5_merged
 Type: doc_string
-Position: Line 24, Column 1 (Offset: 501)
+Position: Line 24, Column 0 (Offset: 497)
 Content:
-/// Function documentation
+Function documentation
+# Arguments
 
---- Unit 14 ---
-ID: test.rs_comment_8
-Type: comment
-Position: Line 26, Column 1 (Offset: 533)
-Content:
-/// # Arguments
-
---- Unit 15 ---
-ID: test.rs_doc_string_7
+--- Unit 6 ---
+ID: test.rs_doc_string_11_merged
 Type: doc_string
-Position: Line 26, Column 1 (Offset: 533)
+Position: Line 30, Column 0 (Offset: 586)
 Content:
-/// # Arguments
-
---- Unit 16 ---
-ID: test.rs_comment_12
-Type: comment
-Position: Line 30, Column 1 (Offset: 590)
-Content:
-/// # Returns
-
---- Unit 17 ---
-ID: test.rs_doc_string_11
-Type: doc_string
-Position: Line 30, Column 1 (Offset: 590)
-Content:
-/// # Returns
-
---- Unit 18 ---
-ID: test.rs_comment_14
-Type: comment
-Position: Line 32, Column 1 (Offset: 609)
-Content:
-/// A greeting message
-
---- Unit 19 ---
-ID: test.rs_doc_string_13
-Type: doc_string
-Position: Line 32, Column 1 (Offset: 609)
-Content:
-/// A greeting message
+# Returns
+A greeting message
 

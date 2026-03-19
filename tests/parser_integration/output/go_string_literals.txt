@@ -6,7 +6,7 @@ ID: test.go_comment_0
 Type: comment
 Position: Line 1, Column 1 (Offset: 0)
 Content:
-// Go string literals for testing
+Go string literals for testing
 
 --- Unit 2 ---
 ID: test.go_string_literal_0

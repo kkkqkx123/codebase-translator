@@ -6,29 +6,27 @@ ID: test.rs_comment_0
 Type: comment
 Position: Line 1, Column 1 (Offset: 0)
 Content:
-// Rust simple comments for testing
+Rust simple comments for testing
 
 --- Unit 2 ---
 ID: test.rs_comment_1
 Type: comment
 Position: Line 3, Column 1 (Offset: 37)
 Content:
-// This is a single-line comment
+This is a single-line comment
 
 --- Unit 3 ---
 ID: test.rs_comment_2
 Type: comment
 Position: Line 6, Column 1 (Offset: 94)
 Content:
-/*
 This is a multi-line comment
 with multiple lines of text
-*/
 
 --- Unit 4 ---
 ID: test.rs_comment_3
 Type: comment
 Position: Line 12, Column 5 (Offset: 181)
 Content:
-// Another comment inside function
+Another comment inside function
 

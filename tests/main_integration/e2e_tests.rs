@@ -195,10 +195,8 @@ fn test_e2e_translation_rust_file() {
     
     let (global_config, project_config) = loader.load().expect("Failed to load configs");
     
-    let workflow_config = WorkflowConfig {
-        root_path: temp_dir.path().to_string_lossy().to_string(),
-        ..Default::default()
-    };
+    let mut workflow_config = WorkflowConfig::from(&project_config);
+    workflow_config.root_path = temp_dir.path().to_string_lossy().to_string();
     
     let workflow = TranslationWorkflow::new(global_config, project_config, workflow_config);
     
@@ -284,10 +282,8 @@ fn test_e2e_translation_python_file() {
     
     let (global_config, project_config) = loader.load().expect("Failed to load configs");
     
-    let workflow_config = WorkflowConfig {
-        root_path: temp_dir.path().to_string_lossy().to_string(),
-        ..Default::default()
-    };
+    let mut workflow_config = WorkflowConfig::from(&project_config);
+    workflow_config.root_path = temp_dir.path().to_string_lossy().to_string();
     
     let workflow = TranslationWorkflow::new(global_config, project_config, workflow_config);
     
@@ -373,10 +369,8 @@ fn test_e2e_translation_javascript_file() {
     
     let (global_config, project_config) = loader.load().expect("Failed to load configs");
     
-    let workflow_config = WorkflowConfig {
-        root_path: temp_dir.path().to_string_lossy().to_string(),
-        ..Default::default()
-    };
+    let mut workflow_config = WorkflowConfig::from(&project_config);
+    workflow_config.root_path = temp_dir.path().to_string_lossy().to_string();
     
     let workflow = TranslationWorkflow::new(global_config, project_config, workflow_config);
     
@@ -462,10 +456,8 @@ fn test_e2e_translation_markdown_file() {
     
     let (global_config, project_config) = loader.load().expect("Failed to load configs");
     
-    let workflow_config = WorkflowConfig {
-        root_path: temp_dir.path().to_string_lossy().to_string(),
-        ..Default::default()
-    };
+    let mut workflow_config = WorkflowConfig::from(&project_config);
+    workflow_config.root_path = temp_dir.path().to_string_lossy().to_string();
     
     let workflow = TranslationWorkflow::new(global_config, project_config, workflow_config);
     
@@ -551,10 +543,8 @@ fn test_e2e_translation_multiple_files() {
     
     let (global_config, project_config) = loader.load().expect("Failed to load configs");
     
-    let workflow_config = WorkflowConfig {
-        root_path: temp_dir.path().to_string_lossy().to_string(),
-        ..Default::default()
-    };
+    let mut workflow_config = WorkflowConfig::from(&project_config);
+    workflow_config.root_path = temp_dir.path().to_string_lossy().to_string();
     
     let workflow = TranslationWorkflow::new(global_config, project_config, workflow_config);
     
@@ -640,10 +630,8 @@ fn test_e2e_translation_with_cache() {
     
     let (global_config, project_config) = loader.load().expect("Failed to load configs");
     
-    let workflow_config = WorkflowConfig {
-        root_path: temp_dir.path().to_string_lossy().to_string(),
-        ..Default::default()
-    };
+    let mut workflow_config = WorkflowConfig::from(&project_config);
+    workflow_config.root_path = temp_dir.path().to_string_lossy().to_string();
     
     let workflow = TranslationWorkflow::new(global_config, project_config, workflow_config.clone());
     

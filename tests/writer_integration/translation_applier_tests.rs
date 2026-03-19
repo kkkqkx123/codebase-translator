@@ -440,3 +440,48 @@ fn test_translation_applier_multiline_without_format_info() {
         "Multiline comment without format_info should be correctly replaced"
     );
 }
+
+#[test]
+fn test_translation_applier_merged_multiline_doc_comment() {
+    // Test merged multiline doc comment (simulating what happens after parser merges consecutive lines)
+    let content = "/// Line 1\n/// Line 2\n/// Line 3\npub fn foo() {}";
+    
+    // This simulates a merged unit from the parser
+    let format_info = FormatInfo {
+        style: CommentStyle::DocOuter,
+        base_indent: "".to_string(),
+        line_prefix: Some("/// ".to_string()),
+        ends_with_newline: true,
+        is_multiline: true, // Marked as multiline (merged)
+    };
+
+    let mut unit = TranslationUnit {
+        id: "1".to_string(),
+        node_type: NodeType::DocString,
+        content: "Line 1\nLine 2\nLine 3".to_string(), // Merged content without prefixes
+        start_pos: Position::new(1, 5, 0), // Line 1, column 5 (after "/// ")
+        end_pos: Position::new(3, 10, 0),  // Line 3, column 10
+        language: None,
+        should_translate: true,
+        translated: None,
+        format_info: Some(format_info),
+        pattern_type: None,
+        pattern_name: None,
+    };
+    unit.set_translated("第一行\n第二行\n第三行");
+
+    let result = apply_translations(content, &[unit]);
+    assert!(result.is_ok());
+    let modified = result.unwrap();
+    
+    // Should correctly replace all three lines with translated content
+    assert!(modified.contains("/// 第一行"));
+    assert!(modified.contains("/// 第二行"));
+    assert!(modified.contains("/// 第三行"));
+    assert!(modified.contains("pub fn foo() {}"));
+    
+    // Should NOT have original text
+    assert!(!modified.contains("Line 1"));
+    assert!(!modified.contains("Line 2"));
+    assert!(!modified.contains("Line 3"));
+}

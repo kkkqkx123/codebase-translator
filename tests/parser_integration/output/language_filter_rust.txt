@@ -1,4 +1,4 @@
-Extracted 19 translation units from language_filter_rust
+Extracted 15 translation units from language_filter_rust
 ==================================================
 
 --- Unit 1 ---
@@ -6,41 +6,37 @@ ID: test.rs_comment_0
 Type: comment
 Position: Line 1, Column 1 (Offset: 0)
 Content:
-// Mixed content Rust file for language filtering tests
+Mixed content Rust file for language filtering tests
 
 --- Unit 2 ---
 ID: test.rs_comment_1
 Type: comment
 Position: Line 3, Column 1 (Offset: 57)
 Content:
-// This is an English comment
+This is an English comment
 
 --- Unit 3 ---
 ID: test.rs_comment_2
 Type: comment
 Position: Line 6, Column 1 (Offset: 119)
 Content:
-// 这是一个中文注释
+这是一个中文注释
 
 --- Unit 4 ---
 ID: test.rs_comment_3
 Type: comment
 Position: Line 9, Column 1 (Offset: 180)
 Content:
-/*
- * Multi-line English comment
- * with multiple lines
- */
+Multi-line English comment
+with multiple lines
 
 --- Unit 5 ---
 ID: test.rs_comment_4
 Type: comment
 Position: Line 14, Column 1 (Offset: 241)
 Content:
-/*
- * 多行中文注释
- * 包含多行内容
- */
+多行中文注释
+包含多行内容
 
 --- Unit 6 ---
 ID: test.rs_string_literal_0
@@ -61,7 +57,7 @@ ID: test.rs_comment_5
 Type: comment
 Position: Line 28, Column 5 (Offset: 449)
 Content:
-// English comment with some Chinese words
+English comment with some Chinese words
 
 --- Unit 9 ---
 ID: test.rs_string_literal_2
@@ -75,7 +71,7 @@ ID: test.rs_comment_6
 Type: comment
 Position: Line 32, Column 5 (Offset: 564)
 Content:
-// Chinese comment with English words
+Chinese comment with English words
 
 --- Unit 11 ---
 ID: test.rs_string_literal_4
@@ -85,58 +81,30 @@ Content:
 "你好 World"
 
 --- Unit 12 ---
-ID: test.rs_comment_7
-Type: comment
-Position: Line 37, Column 1 (Offset: 670)
-Content:
-/// English documentation comment
-
---- Unit 13 ---
 ID: test.rs_doc_string_0
 Type: doc_string
 Position: Line 37, Column 1 (Offset: 670)
 Content:
-/// English documentation comment
+English documentation comment
 
---- Unit 14 ---
-ID: test.rs_comment_8
-Type: comment
-Position: Line 38, Column 1 (Offset: 704)
-Content:
-/// @param value - The value to process
-
---- Unit 15 ---
+--- Unit 13 ---
 ID: test.rs_doc_string_1
 Type: doc_string
 Position: Line 38, Column 1 (Offset: 704)
 Content:
-/// @param value - The value to process
+@param value - The value to process
 
---- Unit 16 ---
-ID: test.rs_comment_9
-Type: comment
-Position: Line 43, Column 1 (Offset: 801)
-Content:
-/// 中文文档注释
-
---- Unit 17 ---
+--- Unit 14 ---
 ID: test.rs_doc_string_2
 Type: doc_string
 Position: Line 43, Column 1 (Offset: 801)
 Content:
-/// 中文文档注释
+中文文档注释
 
---- Unit 18 ---
-ID: test.rs_comment_10
-Type: comment
-Position: Line 44, Column 1 (Offset: 824)
-Content:
-/// @param value - 要处理的值
-
---- Unit 19 ---
+--- Unit 15 ---
 ID: test.rs_doc_string_3
 Type: doc_string
 Position: Line 44, Column 1 (Offset: 824)
 Content:
-/// @param value - 要处理的值
+@param value - 要处理的值
 

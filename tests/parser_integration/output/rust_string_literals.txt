@@ -6,7 +6,7 @@ ID: test.rs_comment_0
 Type: comment
 Position: Line 1, Column 1 (Offset: 0)
 Content:
-// Rust string literals for testing
+Rust string literals for testing
 
 --- Unit 2 ---
 ID: test.rs_string_literal_0

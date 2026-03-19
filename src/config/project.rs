@@ -869,6 +869,7 @@ mod tests {
             writer: WriterConfig::default(),
             encoding: EncodingConfig::default(),
             extraction: ExtractionConfig::default(),
+            logging: None,
         };
 
         base.merge(other);

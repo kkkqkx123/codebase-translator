@@ -60,9 +60,15 @@ impl TranslationApplier {
             let line_num = line_idx + 1;
 
             // Check if this line is part of a multiline comment
-            let multiline_unit = multiline_units
-                .iter()
-                .find(|u| line_num >= u.start_pos.line && line_num <= u.end_pos.line);
+            // Use content line count to determine the span, not end_pos.line
+            let multiline_unit = multiline_units.iter().find(|u| {
+                if line_num < u.start_pos.line {
+                    return false;
+                }
+                let content_line_count = u.content.lines().count();
+                let span = if content_line_count > 0 { content_line_count } else { 1 };
+                line_num < u.start_pos.line + span
+            });
 
             if let Some(unit) = multiline_unit {
                 // This line is part of a multiline comment
@@ -76,14 +82,16 @@ impl TranslationApplier {
                         };
 
                         // Calculate how many lines this multiline comment spans
-                        let line_count = unit.end_pos.line - unit.start_pos.line + 1;
+                        // Use the actual content line count to determine how many lines to skip
+                        let content_line_count = unit.content.lines().count();
+                        let line_count = if content_line_count > 0 { content_line_count } else { 1 };
 
                         // For multiline comments, the formatted text already includes all necessary prefixes
                         // So we should replace the entire comment content, not preserve any prefix
                         // The formatted text includes the full comment with all prefixes
                         builder.push_str(&formatted);
 
-                        // Add line ending after the multiline comment
+                        // Add line ending after the multiline comment (only if not the last line of file)
                         if line_idx + line_count < lines.len() {
                             builder.push_str(line_ending);
                         }
@@ -252,11 +260,12 @@ impl TranslationApplier {
 
         match format.style {
             CommentStyle::DocOuter | CommentStyle::DocInner => {
-                // For doc comments, add prefix to each line including the first
+                // For merged doc comments, add prefix and base_indent to each line
                 let prefix = format.line_prefix.as_deref().unwrap_or("");
+                let base_indent = &format.base_indent;
                 lines
                     .iter()
-                    .map(|line| format!("{}{}", prefix, line))
+                    .map(|line| format!("{}{}{}", base_indent, prefix, line))
                     .collect::<Vec<_>>()
                     .join("\n")
             }

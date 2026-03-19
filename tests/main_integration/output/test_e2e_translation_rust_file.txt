@@ -3,19 +3,20 @@ E2E Translation Test - Rust File
 
 Translation completed successfully!
 
-Files processed: 0
-Total files: 0
-Total units: 0
-Translated units: 0
+Files processed: 1
+Total files: 1
+Total units: 12
+Translated units: 12
 Cached units: 0
 Skipped units: 0
-Errors: 2
-Duration: 46.32s
+Errors: 0
+Duration: 14.98s
 
 
 Directory Contents:
 ====================
   .translator [FILE]
+  .translator-cache [DIR]
   simple_rust.rs [FILE]
 
 
@@ -24,24 +25,35 @@ Translated File Content:
 // This is a simple Rust file to test the translation functionality
 // Include Chinese comments and document strings
 
-/// Calculate the sum of two numbers
-/// # Arguments
-/// * `a` - first digit
+/// /// Calculating the sum of two numbers
+/// /// # Arguments
+/// /// * `a` - first number
+/// 
+/// * `a` - 第一个数字
+/// /// * `b` - second digit
+/// /// # Examples
 /// # Examples
+/// 
 /// ```
 /// let result = add(1, 2);
 /// assert_eq!(result, 3);
+/// ```
 pub fn add(a: i32, b: i32) -> i32 {
     a + b
 }
 
-/// Calculate the difference between two numbers
-/// # Arguments
-/// * `a` - subtracted number
+/// /// Calculate the difference between two numbers
+/// /// # Arguments
+/// /// * `a` - the subtracted number
+/// 
+/// * `a` - 被减数
+/// * `b` - 减数
+pub fn subtract(a: i32, b: i32) -> i32 {
     a - b
 }
 
-/// Multiplication
+/// 乘法运算
+pub fn multiply(a: i32, b: i32) -> i32 {
     a * b
 }
 
@@ -52,15 +64,19 @@ pub struct Calculator {
 }
 
 impl Calculator {
-/// Creating a New Calculator Instance
-/// # Arguments
-/// * `name` - name of calculator
+/// /// Create a new instance of the calculator
+/// /// # Arguments
+/// /// * `name` - the name of the calculator
+    /// 
+    /// * `name` - 计算器名称
+    pub fn new(name: &str) -> Self {
         Calculator {
             name: name.to_string(),
         }
     }
 
-/// Get the name of the calculator
+    /// 获取计算器名称
+    pub fn get_name(&self) -> &str {
         &self.name
     }
 }
@@ -70,3 +86,8 @@ fn main() {
     let result = add(10, 20);
     println!("结果: {}", result);
 }
+
+
+Cache Directory Contents:
+==========================
+  cache.bin [FILE]

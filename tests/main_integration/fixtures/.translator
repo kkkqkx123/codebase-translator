@@ -44,7 +44,9 @@ detect_code_patterns = true
 # 缓存配置
 [cache]
 enabled = true
-directory = ".translator-cache"
+cache_type = "file"
+cache_dir = ".translator-cache"
+cache_file = "translation_cache.json"
 
 # 写入配置
 [writer]
