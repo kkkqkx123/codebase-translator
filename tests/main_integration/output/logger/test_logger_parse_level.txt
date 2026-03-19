@@ -1,0 +1,17 @@
+Logger Level Parsing Test
+===========================
+
+parse_level("trace") = Level(Trace)
+parse_level("debug") = Level(Debug)
+parse_level("info") = Level(Info)
+parse_level("warn") = Level(Warn)
+parse_level("error") = Level(Error)
+parse_level("TRACE") = Level(Trace)
+parse_level("Debug") = Level(Debug)
+parse_level("INFO") = Level(Info)
+parse_level("Warn") = Level(Warn)
+parse_level("ERROR") = Level(Error)
+parse_level("unknown") = Level(Info)
+parse_level("") = Level(Info)
+
+All level parsing tests passed!

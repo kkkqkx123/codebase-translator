@@ -1,0 +1,7 @@
+Logger Config Validation Test - stdout
+=====================================
+
+Config: LoggingConfig { level: "info", output: "stdout", file: None, format: "pretty" }
+Validation result: Ok(())
+
+stdout config validation passed!

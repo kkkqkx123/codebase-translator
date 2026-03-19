@@ -124,9 +124,24 @@ impl ConfigLoader {
     }
 
     /// Load both global and project configs
+    ///
+    /// Configuration priority (from high to low):
+    /// 1. Environment variables
+    /// 2. ProjectConfig.logging
+    /// 3. GlobalConfig.logging
+    /// 4. Default values
     pub fn load(&self) -> Result<(GlobalConfig, ProjectConfig)> {
-        let global = self.load_global()?;
+        let mut global = self.load_global()?;
         let project = self.load_project()?;
+
+        // Merge logging configuration: project config overrides global config
+        if let Some(ref project_logging) = project.logging {
+            global.logging = project_logging.clone();
+        }
+
+        // Apply environment variable overrides (highest priority)
+        global.apply_env_vars();
+
         Ok((global, project))
     }
 

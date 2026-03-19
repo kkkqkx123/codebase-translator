@@ -1,0 +1,10 @@
+Logger All Levels Test
+======================
+
+Level 'trace': Ok(())
+Level 'debug': Ok(())
+Level 'info': Ok(())
+Level 'warn': Ok(())
+Level 'error': Ok(())
+
+All level validation tests passed!

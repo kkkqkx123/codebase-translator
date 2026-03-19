@@ -1,0 +1,7 @@
+Logger Config Validation Test - stderr
+=====================================
+
+Config: LoggingConfig { level: "debug", output: "stderr", file: None, format: "json" }
+Validation result: Ok(())
+
+stderr config validation passed!

@@ -1,0 +1,8 @@
+Logger All Formats Test
+=========================
+
+Format 'pretty': Ok(())
+Format 'compact': Ok(())
+Format 'json': Ok(())
+
+All format validation tests passed!

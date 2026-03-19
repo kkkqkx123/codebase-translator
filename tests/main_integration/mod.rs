@@ -13,3 +13,4 @@
 
 pub mod e2e_tests;
 pub mod logger_tests;
+pub mod project_logging_tests;

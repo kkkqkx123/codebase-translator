@@ -250,6 +250,39 @@ impl GlobalConfig {
             );
             self.tencent.secret_key = Some(secret_key);
         }
+
+        // Logging configuration environment variables
+        if let Ok(log_level) = std::env::var("TRANSLATOR_LOG_LEVEL") {
+            debug!(
+                env_var = "TRANSLATOR_LOG_LEVEL",
+                value = %log_level,
+                "Setting log level from environment variable"
+            );
+            self.logging.level = log_level;
+        }
+        if let Ok(log_output) = std::env::var("TRANSLATOR_LOG_OUTPUT") {
+            debug!(
+                env_var = "TRANSLATOR_LOG_OUTPUT",
+                value = %log_output,
+                "Setting log output from environment variable"
+            );
+            self.logging.output = log_output;
+        }
+        if let Ok(log_format) = std::env::var("TRANSLATOR_LOG_FORMAT") {
+            debug!(
+                env_var = "TRANSLATOR_LOG_FORMAT",
+                value = %log_format,
+                "Setting log format from environment variable"
+            );
+            self.logging.format = log_format;
+        }
+        if let Ok(log_file) = std::env::var("TRANSLATOR_LOG_FILE") {
+            debug!(
+                env_var = "TRANSLATOR_LOG_FILE",
+                "Setting log file from environment variable"
+            );
+            self.logging.file = Some(log_file);
+        }
     }
 
     /// Expand environment variables in configuration

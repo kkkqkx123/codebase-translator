@@ -1,0 +1,10 @@
+Logger Initialization Test - stdout
+=====================================
+
+Config: LoggingConfig { level: "info", output: "stdout", file: None, format: "pretty" }
+Init result: Ok(())
+
+stdout logger initialization passed!
+
+Note: Logger is now initialized for stdout output.
+Subsequent tests will use this logger.

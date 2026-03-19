@@ -1,0 +1,7 @@
+Logger Config Validation Test - file with path
+==============================================
+
+Config: LoggingConfig { level: "info", output: "file", file: Some("E:\\project\\codebase-translator\\test_log.log"), format: "compact" }
+Validation result: Ok(())
+
+file config with path validation passed!

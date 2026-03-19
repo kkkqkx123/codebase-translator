@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+use crate::config::global::LoggingConfig;
 use crate::translator::ProviderType;
 use tracing::debug;
 
@@ -31,6 +32,9 @@ pub struct ProjectConfig {
     /// Extraction settings
     #[serde(default)]
     pub extraction: ExtractionConfig,
+    /// Logging settings (optional, overrides global config)
+    #[serde(default)]
+    pub logging: Option<LoggingConfig>,
 }
 
 impl ProjectConfig {

@@ -330,3 +330,10 @@ format_strings = true        # 是否提取格式化字符串
 detect_encodings = ["UTF-8"]  # 要检测的编码列表
 min_confidence = 0.7          # 最小置信度阈值 (0-1)
 convert_to_utf8 = true        # 是否自动转换为 UTF-8 (翻译后不保留旧编码)
+
+# 日志配置（可选，覆盖全局配置）
+[logging]
+level = "debug"              # 日志级别：trace, debug, info, warn, error
+output = "file"               # 输出目标：stdout, stderr, file
+format = "pretty"             # 日志格式：pretty, json, compact
+file = "logs/translator.log"  # 日志文件路径（当output为file时）

@@ -1,0 +1,12 @@
+Logger Initialization Test - file
+===================================
+
+Config: LoggingConfig { level: "info", output: "file", file: Some("E:\\project\\codebase-translator\\tests\\main_integration\\output\\test_logger.log"), format: "pretty" }
+Init result: Ok(())
+
+file logger initialization passed!
+
+Log file path: E:\project\codebase-translator\tests\main_integration\output\test_logger.log
+Log file exists: false
+
+Warning: Log file does not exist yet (will be created on first log).
