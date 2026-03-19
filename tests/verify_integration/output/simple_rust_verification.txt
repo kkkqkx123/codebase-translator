@@ -34,8 +34,8 @@ Total matches: 13
 
 Patterns used:
   - comment: 2
-  - string_literal: 8
   - docstring: 3
+  - string_literal: 8
 
 By category:
   - variables: 8

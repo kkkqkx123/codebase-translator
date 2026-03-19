@@ -10,7 +10,7 @@ Translated units: 6
 Cached files: 0
 Skipped units: 0
 Errors: 0
-Duration: 7.23s
+Duration: 6.84s
 
 
 Directory Contents:

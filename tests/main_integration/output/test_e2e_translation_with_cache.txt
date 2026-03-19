@@ -10,7 +10,7 @@ Translated units: 11
 Cached files: 0
 Skipped units: 0
 Errors: 0
-Duration: 11.51s
+Duration: 14.96s
 
 Cache Directory Contents (after first run):
 =============================================
@@ -26,4 +26,4 @@ Translated units: 15
 Cached files: 0
 Skipped units: 0
 Errors: 0
-Duration: 15.41s
+Duration: 14.90s

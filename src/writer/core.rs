@@ -320,20 +320,15 @@ impl TranslationApplier {
         result.push_str(start_marker);
         result.push('\n');
 
-        for (i, line) in lines.iter().enumerate() {
-            // Add base_indent for all lines in block comments
+        // Unified handling: always add newline after each content line
+        // to ensure closing marker is on its own line
+        for line in lines.iter() {
             result.push_str(&format.base_indent);
             if let Some(prefix) = &format.line_prefix {
                 result.push_str(prefix);
             }
             result.push_str(line);
-
-            // Add newline after each line's content
-            // If ends_with_newline is true, add newline after last line's content
-            // If ends_with_newline is false, don't add newline after last line's content
-            if i < lines.len() - 1 || format.ends_with_newline {
-                result.push('\n');
-            }
+            result.push('\n');
         }
 
         // Always put the closing marker on a new line with base_indent
