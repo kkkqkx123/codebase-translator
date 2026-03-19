@@ -89,8 +89,8 @@ impl BinaryCache {
         let project_dir = project_dir.as_ref().to_path_buf();
         let project_fingerprint = util::generate_project_fingerprint(&project_dir)?;
 
-        let cache_dir = util::resolve_cache_dir(&config.mode, &config.directory, &project_dir);
-        let cache_file_path = cache_dir.join("cache.bin");
+        let cache_dir = util::resolve_cache_dir(&config.mode, &project_dir);
+        let cache_file_path = cache_dir.join("translator-cache.bin");
 
         debug!(
             cache_file = %cache_file_path.display(),

@@ -60,6 +60,7 @@ impl WriterConfig {
 #[derive(Debug, Clone)]
 pub struct FileWriter {
     config: Arc<RwLock<WriterConfig>>,
+    project_path: Option<PathBuf>,
 }
 
 impl FileWriter {
@@ -67,6 +68,15 @@ impl FileWriter {
     pub fn new(config: WriterConfig) -> Self {
         Self {
             config: Arc::new(RwLock::new(config)),
+            project_path: None,
+        }
+    }
+
+    /// Create a new async file writer with project path
+    pub fn with_project_path(config: WriterConfig, project_path: PathBuf) -> Self {
+        Self {
+            config: Arc::new(RwLock::new(config)),
+            project_path: Some(project_path),
         }
     }
 
@@ -219,33 +229,52 @@ impl FileWriter {
 
         let config = self.config.read().await;
 
+        // Determine backup directory
+        let backup_base_dir: Option<PathBuf> = if let Some(ref backup_dir) = config.backup_dir {
+            // User specified backup directory
+            Some(backup_dir.clone())
+        } else if let Some(ref project_path) = self.project_path {
+            // Use translator subdirectory in project path
+            Some(project_path.join("translator"))
+        } else {
+            // No backup directory specified, use same directory as original file
+            None
+        };
+
         // Determine backup path
-        let backup_path: PathBuf = if let Some(ref backup_dir) = config.backup_dir {
+        let backup_path: PathBuf = if let Some(ref base_dir) = backup_base_dir {
             // Create backup directory if needed
-            tokio::fs::create_dir_all(backup_dir).await.map_err(|e| {
+            tokio::fs::create_dir_all(base_dir).await.map_err(|e| {
                 TranslateError::Io(format!("Failed to create backup directory: {e}"))
             })?;
 
-            // Preserve relative directory structure
-            let rel_dir = file_path.parent().map(|p| {
-                if let Ok(rel) = p.strip_prefix(".") {
+            // Calculate relative path from project path to file
+            let rel_path = if let Some(ref project_path) = self.project_path {
+                if let Ok(rel) = file_path.strip_prefix(project_path) {
                     rel
                 } else {
-                    p
+                    // If file is not under project path, use just the filename
+                    Path::new(file_path.file_name().unwrap_or_default())
                 }
-            });
-
-            if let Some(rel_dir) = rel_dir {
-                let target_dir = backup_dir.join(rel_dir);
-                tokio::fs::create_dir_all(&target_dir).await.map_err(|e| {
-                    TranslateError::Io(format!("Failed to create backup subdirectory: {e}"))
-                })?;
-                target_dir.join(format!("{}_{}.bak.{}", base, timestamp, ext))
             } else {
-                backup_dir.join(format!("{}_{}.bak.{}", base, timestamp, ext))
-            }
+                // Preserve relative directory structure from file's parent
+                file_path.parent().unwrap_or(Path::new(""))
+            };
+
+            // Create backup directory structure in backup directory
+            let backup_dir = if let Some(parent) = rel_path.parent() {
+                base_dir.join(parent)
+            } else {
+                base_dir.clone()
+            };
+            
+            tokio::fs::create_dir_all(&backup_dir).await.map_err(|e| {
+                TranslateError::Io(format!("Failed to create backup subdirectory: {e}"))
+            })?;
+
+            backup_dir.join(format!("{}_{}.bak.{}", base, timestamp, ext))
         } else {
-            // Same directory as original file
+            // Same directory as original file (fallback)
             file_path
                 .parent()
                 .map(|p| p.join(format!("{}_{}.bak.{}", base, timestamp, ext)))

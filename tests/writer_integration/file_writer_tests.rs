@@ -46,7 +46,7 @@ async fn test_file_writer_with_backup() {
         backup_dir: None,
         ..Default::default()
     };
-    let writer = FileWriter::new(config);
+    let writer = FileWriter::with_project_path(config, temp_path.clone());
 
     let result = writer.write(&file, &units).await;
     assert!(result.is_ok());
@@ -54,9 +54,13 @@ async fn test_file_writer_with_backup() {
     let written_content = read_file_content(&file.path).await;
     assert!(written_content.contains("修改后的"));
 
-    let mut backup_files = tokio::fs::read_dir(&temp_path)
+    // Backup should be in translator subdirectory
+    let translator_dir = temp_path.join("translator");
+    assert!(translator_dir.exists(), "Translator directory should exist");
+
+    let mut backup_files = tokio::fs::read_dir(&translator_dir)
         .await
-        .expect("Failed to read dir");
+        .expect("Failed to read translator dir");
     let mut backup_count = 0;
     while let Ok(Some(entry)) = backup_files.next_entry().await {
         let file_name = entry.file_name().to_string_lossy().to_string();
@@ -64,7 +68,7 @@ async fn test_file_writer_with_backup() {
             backup_count += 1;
         }
     }
-    assert!(backup_count >= 1, "Should have at least one backup file");
+    assert!(backup_count >= 1, "Should have at least one backup file in translator directory");
 }
 
 #[tokio::test]

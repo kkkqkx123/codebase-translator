@@ -33,8 +33,8 @@ fn test_binary_cache_local_mode() {
 
     cache.set(&entry1).unwrap();
 
-    // Cache file should be in project directory
-    let cache_file = temp_dir.path().join(".cache").join("cache.bin");
+    // Cache file should be in translator subdirectory
+    let cache_file = temp_dir.path().join("translator").join("translator-cache.bin");
     assert!(cache_file.exists());
 
     let retrieved = cache.get(&hash1).unwrap();
@@ -66,13 +66,13 @@ fn test_binary_cache_global_mode() {
 
     cache.set(&entry1).unwrap();
 
-    // Cache file should be in global cache directory
+    // Cache file should be in global cache directory under translator subdirectory
     let global_cache_dir = util::get_global_cache_dir();
     let project_id = util::generate_project_id(temp_dir.path());
     let _cache_file = global_cache_dir
         .join(&project_id)
-        .join(".cache")
-        .join("cache.bin");
+        .join("translator")
+        .join("translator-cache.bin");
 
     // The cache file should exist in global directory
     assert!(global_cache_dir.exists());
@@ -239,8 +239,8 @@ fn test_binary_cache_custom_directory() {
 
     cache.set(&entry1).unwrap();
 
-    // Cache file should be in custom directory
-    let cache_file = temp_dir.path().join(custom_dir).join("cache.bin");
+    // Cache file should be in translator subdirectory (directory parameter is now ignored)
+    let cache_file = temp_dir.path().join("translator").join("translator-cache.bin");
     assert!(cache_file.exists());
 
     let retrieved = cache.get(&hash1).unwrap();

@@ -187,7 +187,7 @@ mod workflow_factory {
     #[test]
     fn test_create_writer() {
         let project_config = create_test_project_config();
-        let writer = create_writer(&project_config);
+        let writer = create_writer(&project_config, None);
         assert!(writer.is_ok());
     }
 

@@ -126,7 +126,7 @@ impl TranslationWorkflow {
         let cache = create_cache(&self.project_config.cache, &self.workflow_config.root_path)?;
         let translator = create_translator(&self.global_config, &self.project_config)?;
         let parser = create_parser(&self.project_config)?;
-        let writer = create_writer(&self.project_config)?;
+        let writer = create_writer(&self.project_config, Some(&self.workflow_config.root_path))?;
         let detector = Detector::default();
         let encoder = Encoder::default();
 

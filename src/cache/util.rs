@@ -115,16 +115,15 @@ pub fn get_global_cache_dir() -> PathBuf {
 /// Resolve cache directory path based on cache mode
 pub fn resolve_cache_dir(
     cache_mode: &crate::core::models::CacheMode,
-    cache_directory: &str,
     project_dir: &Path,
 ) -> PathBuf {
     match cache_mode {
         crate::core::models::CacheMode::Global => {
             let global_dir = get_global_cache_dir();
             let project_id = generate_project_id(project_dir);
-            global_dir.join(project_id).join(cache_directory)
+            global_dir.join(project_id).join("translator")
         }
-        crate::core::models::CacheMode::Local => project_dir.join(cache_directory),
+        crate::core::models::CacheMode::Local => project_dir.join("translator"),
     }
 }
 

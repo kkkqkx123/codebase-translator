@@ -22,6 +22,7 @@ use super::{FileWriter, WriterConfig};
 pub struct ConcurrentWriter {
     config: WriterConfig,
     max_concurrent: usize,
+    project_path: Option<PathBuf>,
 }
 
 /// Result of a single file write operation
@@ -43,6 +44,16 @@ impl ConcurrentWriter {
         Self {
             config,
             max_concurrent: max_concurrent.max(1),
+            project_path: None,
+        }
+    }
+
+    /// Create a new concurrent writer with project path
+    pub fn with_project_path(config: WriterConfig, max_concurrent: usize, project_path: PathBuf) -> Self {
+        Self {
+            config,
+            max_concurrent: max_concurrent.max(1),
+            project_path: Some(project_path),
         }
     }
 
@@ -54,6 +65,7 @@ impl ConcurrentWriter {
         let semaphore = Arc::new(Semaphore::new(self.max_concurrent));
         let mut results = Vec::with_capacity(files.len());
         let mut join_set = JoinSet::new();
+        let project_path = self.project_path.clone();
 
         for (file, units) in files {
             let permit = semaphore
@@ -62,11 +74,16 @@ impl ConcurrentWriter {
                 .await
                 .expect("Semaphore should not be closed");
             let config = self.config.clone();
+            let project_path = project_path.clone();
 
             // Use async file I/O via FileWriter
             join_set.spawn(async move {
                 let _permit = permit;
-                let writer = FileWriter::new(config);
+                let writer = if let Some(ref path) = project_path {
+                    FileWriter::with_project_path(config.clone(), path.clone())
+                } else {
+                    FileWriter::new(config.clone())
+                };
                 let path = file.path.clone();
                 let unit_count = units.len();
 
@@ -116,6 +133,7 @@ impl ConcurrentWriter {
         let (result_sender, result_receiver) = mpsc::channel(self.max_concurrent * 2);
         let semaphore = Arc::new(Semaphore::new(self.max_concurrent));
         let config = self.config.clone();
+        let project_path = self.project_path.clone();
 
         tokio::spawn(async move {
             while let Some((file, units)) = file_receiver.recv().await {
@@ -125,11 +143,16 @@ impl ConcurrentWriter {
                 };
                 let sender = result_sender.clone();
                 let writer_config = config.clone();
+                let project_path = project_path.clone();
 
                 // Use async file I/O
                 tokio::spawn(async move {
                     let _permit = permit;
-                    let writer = FileWriter::new(writer_config);
+                    let writer = if let Some(ref path) = project_path {
+                        FileWriter::with_project_path(writer_config.clone(), path.clone())
+                    } else {
+                        FileWriter::new(writer_config.clone())
+                    };
                     let path = file.path.clone();
                     let unit_count = units.len();
 

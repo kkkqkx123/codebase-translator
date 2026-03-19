@@ -24,12 +24,26 @@ impl WriterFactory {
         FileWriter::new(config)
     }
 
+    /// Create a new file writer with project path
+    pub fn create_file_writer_with_path(config: WriterConfig, project_path: std::path::PathBuf) -> FileWriter {
+        FileWriter::with_project_path(config, project_path)
+    }
+
     /// Create a new concurrent writer
     pub fn create_concurrent_writer(
         config: WriterConfig,
         max_concurrent: usize,
     ) -> ConcurrentWriter {
         ConcurrentWriter::new(config, max_concurrent)
+    }
+
+    /// Create a new concurrent writer with project path
+    pub fn create_concurrent_writer_with_path(
+        config: WriterConfig,
+        max_concurrent: usize,
+        project_path: std::path::PathBuf,
+    ) -> ConcurrentWriter {
+        ConcurrentWriter::with_project_path(config, max_concurrent, project_path)
     }
 }
 
