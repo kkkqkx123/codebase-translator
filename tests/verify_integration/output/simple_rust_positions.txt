@@ -1,0 +1,18 @@
+Line 1: comment - // Simple Rust file with comments and strings
+Line 2: comment - // This is a line comment
+Line 3: comment - // Another line comment
+Line 5: comment - /// This is a doc comment
+Line 5: docstring - /// This is a doc comment
+Line 6: comment - /// It spans multiple lines
+Line 6: docstring - /// It spans multiple lines
+Line 7: comment - /// with more documentation
+Line 7: docstring - /// with more documentation
+Line 9: string_literal - "Hello, world!"
+Line 12: string_literal - "This is a string literal"
+Line 13: string_literal - "Error: something went wrong"
+Line 15: string_literal - "Processing data"
+Line 16: string_literal - "Warning: deprecated feature"
+Line 21: string_literal - "Found the answer"
+Line 22: string_literal - "Unknown value"
+Line 26: comment - // Another comment at the end
+Line 28: string_literal - "Helper result"
