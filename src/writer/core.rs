@@ -60,14 +60,13 @@ impl TranslationApplier {
             let line_num = line_idx + 1;
 
             // Check if this line is part of a multiline comment
-            // Use content line count to determine the span, not end_pos.line
             let multiline_unit = multiline_units.iter().find(|u| {
                 if line_num < u.start_pos.line {
                     return false;
                 }
-                let content_line_count = u.content.lines().count();
-                let span = if content_line_count > 0 { content_line_count } else { 1 };
-                line_num < u.start_pos.line + span
+                // Use end_pos.line to determine the span
+                // This works for both with and without format_info
+                line_num <= u.end_pos.line
             });
 
             if let Some(unit) = multiline_unit {
@@ -82,9 +81,7 @@ impl TranslationApplier {
                         };
 
                         // Calculate how many lines this multiline comment spans
-                        // Use the actual content line count to determine how many lines to skip
-                        let content_line_count = unit.content.lines().count();
-                        let line_count = if content_line_count > 0 { content_line_count } else { 1 };
+                        let line_count = (unit.end_pos.line - unit.start_pos.line + 1) as usize;
 
                         // For multiline comments, the formatted text already includes all necessary prefixes
                         // So we should replace the entire comment content, not preserve any prefix
@@ -170,9 +167,37 @@ impl TranslationApplier {
                         translated.clone()
                     };
 
+                    // For comments with line_prefix, we need to preserve the prefix
+                    // The start_pos.column points to the start of the content (after prefix)
+                    // So we should replace from start_pos.column - 1 to end_pos.column - 1
+                    // But we also need to preserve the prefix itself
+                    let (start_char, end_char) = if let Some(format) = &unit.format_info {
+                        if format.line_prefix.is_some() {
+                            // Preserve the prefix by replacing only the content
+                            let prefix_len = format.line_prefix.as_ref().map(|p| p.len()).unwrap_or(0);
+                            let base_indent_len = format.base_indent.len();
+                            (
+                                unit.start_pos.column.saturating_sub(1),
+                                unit.end_pos.column.saturating_sub(1),
+                            )
+                        } else {
+                            // No prefix, replace the entire range
+                            (
+                                unit.start_pos.column.saturating_sub(1),
+                                unit.end_pos.column.saturating_sub(1),
+                            )
+                        }
+                    } else {
+                        // No format info, replace the entire range
+                        (
+                            unit.start_pos.column.saturating_sub(1),
+                            unit.end_pos.column.saturating_sub(1),
+                        )
+                    };
+
                     let replacement = Replacement {
-                        start_char: unit.start_pos.column.saturating_sub(1),
-                        end_char: unit.end_pos.column.saturating_sub(1),
+                        start_char,
+                        end_char,
                         text: formatted_text,
                     };
 
@@ -222,7 +247,7 @@ impl TranslationApplier {
 
         match format.style {
             CommentStyle::Line => {
-                // For line comments, return the text as-is (space is preserved in original line)
+                // For line comments, return the text as-is (prefix is preserved in original line)
                 translated.to_string()
             }
             CommentStyle::BlockSingle => {

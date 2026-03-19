@@ -1,6 +1,0 @@
-fn main() {
-    let message = r#"这是一个 a
-multiline
-string literal"#;
-    println!("{}", message);
-}

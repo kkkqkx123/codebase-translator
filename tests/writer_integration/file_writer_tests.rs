@@ -25,6 +25,9 @@ async fn test_file_writer_basic_write() {
     let written_content = read_file_content(&file.path).await;
     assert!(written_content.contains("你好"));
     assert!(written_content.contains("world"));
+
+    // Write output for inspection
+    write_output("test_file_writer_basic_write", &written_content);
 }
 
 #[tokio::test]
@@ -177,6 +180,9 @@ async fn test_file_writer_with_line_comment_format() {
 
     let written_content = read_file_content(&file.path).await;
     assert!(written_content.contains("    // 这是一个注释"));
+
+    // Write output for inspection
+    write_output("test_file_writer_with_line_comment_format", &written_content);
 }
 
 #[tokio::test]
@@ -315,4 +321,49 @@ async fn test_file_writer_set_backup_mode() {
 
     writer.set_backup_mode(true).await;
     assert_eq!(writer.config().await.unwrap().backup, true);
+}
+
+#[tokio::test]
+async fn test_file_writer_with_rust_fixture() {
+    let temp_dir = create_temp_dir();
+    let temp_path = temp_dir.path().to_path_buf();
+
+    let content = load_fixture("simple_rust.rs");
+    let file = create_test_file(&temp_path, "simple_rust.rs", &content).await;
+
+    let format_info = FormatInfo {
+        style: CommentStyle::Line,
+        base_indent: "".to_string(),
+        line_prefix: Some("// ".to_string()),
+        ends_with_newline: true,
+        is_multiline: false,
+    };
+
+    let mut units = vec![
+        create_translation_unit_with_format("1", "Test file with simple comments", 1, 3, 30, format_info.clone()),
+        create_translation_unit_with_format("2", "This is a line comment", 2, 3, 25, format_info.clone()),
+        create_translation_unit_with_format("3", "Another comment", 4, 6, 22, format_info),
+    ];
+    units[0].set_translated("测试文件，包含简单注释");
+    units[1].set_translated("这是一个行注释");
+    units[2].set_translated("另一个注释");
+
+    let config = WriterConfig::default();
+    let writer = FileWriter::new(config);
+
+    let result = writer.write(&file, &units).await;
+    assert!(result.is_ok());
+
+    let written_content = read_file_content(&file.path).await;
+    
+    // Print for debugging
+    println!("Original content:\n{}", content);
+    println!("Written content:\n{}", written_content);
+    
+    assert!(written_content.contains("// 测试文件，包含简单注释"));
+    assert!(written_content.contains("// 这是一个行注释"));
+    assert!(written_content.contains("// 另一个注释"));
+
+    // Write output for inspection
+    write_output("test_file_writer_with_rust_fixture", &written_content);
 }

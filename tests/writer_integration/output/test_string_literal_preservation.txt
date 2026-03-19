@@ -1,4 +1,0 @@
-fn main() {
-    let message = ""你好世界";
-    println!("{}", message);
-}

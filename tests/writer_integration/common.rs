@@ -1,7 +1,29 @@
 //! Common utilities for writer integration tests
 
 use codebase_translate::core::models::{File, NodeType, Position, TranslationUnit};
+use std::fs;
 use std::path::PathBuf;
+
+const OUTPUT_DIR: &str = "tests/writer_integration/output";
+
+fn ensure_output_dir() {
+    fs::create_dir_all(OUTPUT_DIR).expect("Failed to create output directory");
+}
+
+/// Load fixture file content
+pub fn load_fixture(filename: &str) -> String {
+    let path = PathBuf::from("tests/writer_integration/fixtures").join(filename);
+    fs::read_to_string(&path)
+        .unwrap_or_else(|_| panic!("Failed to read fixture: {}", path.display()))
+}
+
+/// Write test result to output file
+pub fn write_output(filename: &str, content: &str) {
+    ensure_output_dir();
+    let output_path = PathBuf::from(OUTPUT_DIR).join(format!("{}.txt", filename));
+    fs::write(&output_path, content).expect("Failed to write output file");
+    println!("Output written to: {}", output_path.display());
+}
 
 /// Create a test file with given content
 pub async fn create_test_file(dir: &PathBuf, name: &str, content: &str) -> File {

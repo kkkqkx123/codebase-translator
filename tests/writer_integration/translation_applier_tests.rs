@@ -409,11 +409,12 @@ fn test_translation_applier_preserves_line_structure() {
 #[test]
 fn test_translation_applier_multiline_without_format_info() {
     // Test multiline comment handling when format_info is None
-    // When format_info is None, the translated text should include the comment markers
+    // When format_info is None, we rely on end_pos to determine the span
     let content = "/*\nThis is a multi-line comment\nwith multiple lines of text\n*/\nint x = 5;";
 
     // Create a unit that spans lines 1-4 (the multiline comment)
     // Content is the cleaned text (without /* */)
+    // Note: Without format_info, we use end_pos.line - start_pos.line to determine span
     let mut unit = TranslationUnit {
         id: "1".to_string(),
         node_type: NodeType::Comment,
