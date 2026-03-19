@@ -165,7 +165,41 @@ pub enum CommentStyle {
     DocBlock,
 }
 
-/// Format information for preserving comment formatting
+/// String literal style for format preservation
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum StringStyle {
+    /// Double quoted string: "hello"
+    DoubleQuoted,
+    /// Single quoted string: 'hello' (Python/JS)
+    SingleQuoted,
+    /// Raw string: r"hello", r#"hello"#
+    Raw { hash_count: u8 },
+    /// Byte string: b"hello" (Rust)
+    ByteString,
+    /// Formatted string: f"hello {name}" (Python)
+    Formatted,
+    /// Template string: `hello ${name}` (JS)
+    Template,
+    /// Go raw string: `hello`
+    Backtick,
+}
+
+/// Format placeholder type for string literals
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum FormatPlaceholder {
+    /// Python style: %s, %d, %(name)s
+    PythonStyle(String),
+    /// C style: %s, %d
+    CStyle(String),
+    /// Rust style: {}, {name}
+    RustStyle(String),
+    /// Python f-string: {name}
+    FString(String),
+    /// JS template: ${name}
+    JSTemplate(String),
+}
+
+/// Format information for preserving comment and string formatting
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FormatInfo {
     /// The comment style
@@ -179,6 +213,15 @@ pub struct FormatInfo {
     /// Whether this is a multi-line comment (merged from multiple lines)
     #[serde(default)]
     pub is_multiline: bool,
+    /// String literal style (if this is a string)
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub string_style: Option<StringStyle>,
+    /// Format placeholders in the string (if any)
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub placeholders: Option<Vec<FormatPlaceholder>>,
+    /// Original quote character (", ', `)
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub quote_char: Option<char>,
 }
 
 impl FormatInfo {
@@ -190,6 +233,9 @@ impl FormatInfo {
             line_prefix: None,
             ends_with_newline: false,
             is_multiline: false,
+            string_style: None,
+            placeholders: None,
+            quote_char: None,
         }
     }
 
@@ -201,6 +247,9 @@ impl FormatInfo {
             line_prefix: Some(line_prefix.into()),
             ends_with_newline: false,
             is_multiline: true,
+            string_style: None,
+            placeholders: None,
+            quote_char: None,
         }
     }
 
@@ -212,6 +261,9 @@ impl FormatInfo {
             line_prefix: None,
             ends_with_newline: false,
             is_multiline: false,
+            string_style: None,
+            placeholders: None,
+            quote_char: None,
         }
     }
 
@@ -223,6 +275,9 @@ impl FormatInfo {
             line_prefix: Some(line_prefix.into()),
             ends_with_newline: false,
             is_multiline: true,
+            string_style: None,
+            placeholders: None,
+            quote_char: None,
         }
     }
 
@@ -234,6 +289,9 @@ impl FormatInfo {
             line_prefix: Some(line_prefix.into()),
             ends_with_newline: false,
             is_multiline: true,
+            string_style: None,
+            placeholders: None,
+            quote_char: None,
         }
     }
 }

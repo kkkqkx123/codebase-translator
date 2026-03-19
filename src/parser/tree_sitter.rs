@@ -392,6 +392,9 @@ impl TreeSitterParser {
                         line_prefix: Some(prefix.to_string()),
                         ends_with_newline: text.ends_with('\n'),
                         is_multiline: text.contains('\n'),
+                        string_style: None,
+                        placeholders: None,
+                        quote_char: None,
                     };
                     (clean, Some(fmt))
                 } else if capture_name.contains("comment") {
@@ -465,6 +468,9 @@ impl TreeSitterParser {
                         line_prefix,
                         ends_with_newline: text.ends_with('\n'),
                         is_multiline: text.contains('\n'),
+                        string_style: None,
+                        placeholders: None,
+                        quote_char: None,
                     };
                     (clean, Some(fmt))
                 } else {

@@ -1,7 +1,18 @@
 //! String processing utilities
 
-use crate::core::models::{CommentStyle, FormatInfo};
+use crate::core::models::{CommentStyle, FormatInfo, FormatPlaceholder, StringStyle};
 use tracing::trace;
+
+/// Result of cleaning a string literal, including the cleaned text and format info
+#[derive(Debug, Clone)]
+pub struct CleanedString {
+    /// The cleaned text content (without quotes and escapes)
+    pub text: String,
+    /// Format information for preserving the original formatting
+    pub format_info: FormatInfo,
+    /// Extracted format placeholders
+    pub placeholders: Vec<FormatPlaceholder>,
+}
 
 /// Type of comment
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -320,6 +331,9 @@ impl StringProcessor {
                     line_prefix: Some("/// ".to_string()),
                     ends_with_newline: false,
                     is_multiline: false,
+                    string_style: None,
+                    placeholders: None,
+                    quote_char: None,
                 },
             };
         }
@@ -346,6 +360,9 @@ impl StringProcessor {
                     line_prefix: Some("//! ".to_string()),
                     ends_with_newline: false,
                     is_multiline: false,
+                    string_style: None,
+                    placeholders: None,
+                    quote_char: None,
                 },
             };
         }
@@ -400,6 +417,9 @@ impl StringProcessor {
                     line_prefix,
                     ends_with_newline: false,
                     is_multiline: true,
+                    string_style: None,
+                    placeholders: None,
+                    quote_char: None,
                 }
             } else {
                 FormatInfo {
@@ -408,6 +428,9 @@ impl StringProcessor {
                     line_prefix: None,
                     ends_with_newline: false,
                     is_multiline: false,
+                    string_style: None,
+                    placeholders: None,
+                    quote_char: None,
                 }
             };
 
@@ -516,6 +539,177 @@ impl StringProcessor {
         }
 
         result
+    }
+
+    /// Clean string literal and extract format information
+    ///
+    /// This method extracts the pure text content while preserving format information
+    /// needed to reconstruct the original string literal. Note: Only the outermost
+    /// structure is guaranteed to be correct; complex internal structures are left
+    /// to the translator to handle, otherwise code complexity would become unmanageable.
+    ///
+    /// Supports:
+    /// - Regular strings: "hello"
+    /// - Raw strings: r"hello", r#"hello "world""#
+    /// - Byte strings: b"hello"
+    /// - Formatted strings: f"hello {name}"
+    /// - Go raw strings: `hello`
+    pub fn clean_string_literal_with_format(&self, text: &str) -> CleanedString {
+        trace!(text = %text, "Cleaning string literal with format");
+
+        // Extract base indentation
+        let base_indent: String = text.chars().take_while(|c| c.is_whitespace()).collect();
+        let trimmed = text.trim_start();
+
+        // Detect string style and extract content
+        let (string_style, quote_char, content) = self.detect_and_extract_string(trimmed);
+
+        // Process escape sequences (except for raw strings)
+        let cleaned_text = match string_style {
+            StringStyle::Raw { .. } | StringStyle::Backtick => content.to_string(),
+            _ => self.unescape(&content),
+        };
+
+        // Extract format placeholders
+        let placeholders = self.extract_placeholders(&cleaned_text, &string_style);
+
+        // Build format info
+        let format_info = FormatInfo {
+            style: CommentStyle::Line, // Strings use Line as base style
+            base_indent,
+            line_prefix: None,
+            ends_with_newline: false,
+            is_multiline: cleaned_text.contains('\n'),
+            string_style: Some(string_style),
+            placeholders: Some(placeholders.clone()),
+            quote_char: Some(quote_char),
+        };
+
+        trace!(
+            original_len = text.len(),
+            cleaned_len = cleaned_text.len(),
+            style = ?string_style,
+            "String literal cleaned with format"
+        );
+
+        CleanedString {
+            text: cleaned_text,
+            format_info,
+            placeholders,
+        }
+    }
+
+    /// Detect string style and extract content
+    ///
+    /// Returns: (string_style, quote_char, content)
+    fn detect_and_extract_string(&self, text: &str) -> (StringStyle, char, String) {
+        // Check for prefixed strings (r", b", f", etc.)
+        if text.len() >= 2 {
+            let prefix = text.chars().next().unwrap();
+            let second_char = text.chars().nth(1).unwrap();
+
+            match prefix {
+                'r' | 'R' => {
+                    // Raw string: r"...", r#"..."#
+                    let hash_count = text[1..].chars().take_while(|&c| c == '#').count() as u8;
+                    let quote_start = 1 + hash_count as usize;
+                    
+                    if text.chars().nth(quote_start) == Some('"') {
+                        let content_start = quote_start + 1;
+                        let end_pattern = format!("\"{}", "#".repeat(hash_count as usize));
+                        
+                        if let Some(content_end) = text[content_start..].find(&end_pattern) {
+                            let content = text[content_start..content_start + content_end].to_string();
+                            return (StringStyle::Raw { hash_count }, '"', content);
+                        }
+                    }
+                }
+                'b' | 'B' if second_char == '"' || second_char == '\'' => {
+                    // Byte string: b"...", b'...'
+                    let quote = second_char;
+                    let content = text[2..text.len() - 1].to_string();
+                    return (StringStyle::ByteString, quote, content);
+                }
+                'f' | 'F' if second_char == '"' || second_char == '\'' => {
+                    // Formatted string: f"...", f'...'
+                    let quote = second_char;
+                    let content = text[2..text.len() - 1].to_string();
+                    return (StringStyle::Formatted, quote, content);
+                }
+                _ => {}
+            }
+        }
+
+        // Check for backtick strings (Go raw strings or JS template strings)
+        if text.starts_with('`') && text.ends_with('`') {
+            let content = text[1..text.len() - 1].to_string();
+            // Check if it contains ${...} pattern (JS template)
+            if content.contains("${") {
+                return (StringStyle::Template, '`', content);
+            } else {
+                return (StringStyle::Backtick, '`', content);
+            }
+        }
+
+        // Check for single-quoted strings
+        if text.starts_with('\'') && text.ends_with('\'') {
+            let content = text[1..text.len() - 1].to_string();
+            return (StringStyle::SingleQuoted, '\'', content);
+        }
+
+        // Default: double-quoted string
+        let content = if text.len() >= 2 && text.starts_with('"') && text.ends_with('"') {
+            text[1..text.len() - 1].to_string()
+        } else {
+            text.to_string()
+        };
+        (StringStyle::DoubleQuoted, '"', content)
+    }
+
+    /// Extract format placeholders from string content
+    ///
+    /// Note: Only the outermost structure is guaranteed to be correct.
+    /// Complex internal structures are left to the translator to handle.
+    fn extract_placeholders(&self, text: &str, style: &StringStyle) -> Vec<FormatPlaceholder> {
+        let mut placeholders = Vec::new();
+
+        match style {
+            StringStyle::Formatted => {
+                // Python f-string: {name} or {name!r} or {name:.2f}
+                // Note: Simple regex matching, complex nested braces are not handled
+                if let Ok(re) = regex::Regex::new(r"\{([^{}]+)\}") {
+                    for cap in re.captures_iter(text) {
+                        placeholders.push(FormatPlaceholder::FString(cap[1].to_string()));
+                    }
+                }
+            }
+            StringStyle::Template => {
+                // JS template: ${name}
+                if let Ok(re) = regex::Regex::new(r"\$\{([^{}]+)\}") {
+                    for cap in re.captures_iter(text) {
+                        placeholders.push(FormatPlaceholder::JSTemplate(cap[1].to_string()));
+                    }
+                }
+            }
+            _ => {
+                // Check for printf-style placeholders: %s, %d, %f, etc.
+                // Note: Simple pattern matching, complex format specs are not handled
+                if let Ok(re) = regex::Regex::new(r"%[sdifoxXeEcgG%]") {
+                    for mat in re.find_iter(text) {
+                        placeholders.push(FormatPlaceholder::CStyle(mat.as_str().to_string()));
+                    }
+                }
+
+                // Check for Rust-style placeholders: {}
+                if let Ok(re) = regex::Regex::new(r"\{\}") {
+                    for mat in re.find_iter(text) {
+                        placeholders.push(FormatPlaceholder::RustStyle(mat.as_str().to_string()));
+                    }
+                }
+            }
+        }
+
+        placeholders
     }
 
     /// Check if text contains only symbols/whitespace

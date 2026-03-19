@@ -1,0 +1,14 @@
+Go String Format Preservation Test Results
+==================================================
+
+Input: "Hello, world!"
+Expected: Hello, world!
+Got: Hello, world!
+Style: Some(DoubleQuoted)
+Status: PASS
+
+Input: `Hello, world!`
+Expected: Hello, world!
+Got: Hello, world!
+Style: Some(Backtick)
+Status: PASS

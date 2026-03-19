@@ -164,6 +164,9 @@ async fn test_file_writer_with_line_comment_format() {
         line_prefix: Some("// ".to_string()),
         ends_with_newline: false,
         is_multiline: false,
+        string_style: None,
+        placeholders: None,
+        quote_char: None,
     };
 
     let mut units = vec![create_translation_unit_with_format(
@@ -206,6 +209,9 @@ async fn test_file_writer_with_block_comment_format() {
         line_prefix: None,
         ends_with_newline: false,
         is_multiline: false,
+        string_style: None,
+        placeholders: None,
+        quote_char: None,
     };
 
     let mut units = vec![create_translation_unit_with_format(
@@ -242,6 +248,9 @@ async fn test_file_writer_with_multiline_block_comment() {
         line_prefix: Some(" * ".to_string()),
         ends_with_newline: true,
         is_multiline: false,
+        string_style: None,
+        placeholders: None,
+        quote_char: None,
     };
 
     let mut units = vec![create_translation_unit_with_format(
@@ -344,6 +353,9 @@ async fn test_file_writer_with_rust_fixture() {
         line_prefix: Some("// ".to_string()),
         ends_with_newline: true,
         is_multiline: false,
+        string_style: None,
+        placeholders: None,
+        quote_char: None,
     };
 
     let mut units = vec![
@@ -410,6 +422,9 @@ async fn test_file_writer_with_go_fixture() {
         line_prefix: Some("// ".to_string()),
         ends_with_newline: true,
         is_multiline: false,
+        string_style: None,
+        placeholders: None,
+        quote_char: None,
     };
 
     let format_info_line_indented = FormatInfo {
@@ -418,6 +433,9 @@ async fn test_file_writer_with_go_fixture() {
         line_prefix: Some("// ".to_string()),
         ends_with_newline: true,
         is_multiline: false,
+        string_style: None,
+        placeholders: None,
+        quote_char: None,
     };
 
     let format_info_block_multi = FormatInfo {
@@ -426,6 +444,9 @@ async fn test_file_writer_with_go_fixture() {
         line_prefix: None,
         ends_with_newline: true,
         is_multiline: true,
+        string_style: None,
+        placeholders: None,
+        quote_char: None,
     };
 
     let mut units = vec![

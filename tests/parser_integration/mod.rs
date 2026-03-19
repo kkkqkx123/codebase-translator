@@ -2,3 +2,4 @@
 
 pub mod custom_pattern_tests;
 pub mod simple_tests;
+pub mod string_format_tests;

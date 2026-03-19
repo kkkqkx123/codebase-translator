@@ -388,15 +388,17 @@ impl PythonParser {
                         continue;
                     }
 
-                    // Clean the string literal
-                    let text = self.string_processor.clean_string_literal(m.text);
+                    // Clean the string literal with format info
+                    // Note: Only the outermost structure is guaranteed to be correct.
+                    // Complex internal structures are left to the translator to handle.
+                    let cleaned = self.string_processor.clean_string_literal_with_format(m.text);
 
                     // Apply filter
-                    if !self.filter.should_translate(&text) {
+                    if !self.filter.should_translate(&cleaned.text) {
                         debug!(
                             file = %file_path,
                             function = %full_func_name,
-                            text = %text,
+                            text = %cleaned.text,
                             "Function string filtered: content filter"
                         );
                         continue;
@@ -440,12 +442,12 @@ impl PythonParser {
                     };
 
                     // Apply strategy
-                    let ctx = ExtractionContext::new(&text).with_function_name(&full_func_name);
+                    let ctx = ExtractionContext::new(&cleaned.text).with_function_name(&full_func_name);
                     if !self.strategy.should_extract(strategy_node_type, &ctx) {
                         debug!(
                             file = %file_path,
                             function = %full_func_name,
-                            text = %text,
+                            text = %cleaned.text,
                             "Function string filtered: extraction strategy"
                         );
                         continue;
@@ -453,7 +455,9 @@ impl PythonParser {
 
                     let id = format!("{}_func_{}", file_path, match_idx);
                     let node_type = self.strategy.get_node_type(strategy_node_type);
-                    let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
+                    let mut unit = TranslationUnit::new(id, node_type, cleaned.text, m.start_pos, m.end_pos);
+                    // Preserve format info for accurate reconstruction
+                    unit.format_info = Some(cleaned.format_info);
                     units.push(unit);
                     match_idx += 1;
                 }

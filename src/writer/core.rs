@@ -220,6 +220,11 @@ impl TranslationApplier {
 
     /// Format translated text according to the original format
     fn format_translated_text(translated: &str, format: &FormatInfo) -> String {
+        // Check if this is a string literal with format info
+        if let Some(string_style) = &format.string_style {
+            return Self::format_string_literal(translated, format, string_style);
+        }
+
         // Check if this is a multiline comment that needs special handling
         if format.is_multiline {
             return Self::format_multiline_comment(translated, format);
@@ -263,6 +268,60 @@ impl TranslationApplier {
             CommentStyle::DocBlock => {
                 // Block doc comment: /** ... */
                 Self::format_multiline_block_comment(translated, format)
+            }
+        }
+    }
+
+    /// Format a string literal according to its original style
+    ///
+    /// Note: Only the outermost structure is guaranteed to be correct.
+    /// Complex internal structures (like nested braces) are left to the
+    /// translator to handle, otherwise code complexity would become unmanageable.
+    fn format_string_literal(
+        translated: &str,
+        format: &FormatInfo,
+        style: &crate::core::models::StringStyle,
+    ) -> String {
+        use crate::core::models::StringStyle;
+
+        let quote = format.quote_char.unwrap_or('"');
+        let indent = &format.base_indent;
+
+        match style {
+            StringStyle::DoubleQuoted => {
+                // Escape quotes and wrap with quotes
+                // Note: Simple escape handling, complex cases are left to translator
+                let escaped = translated.replace(quote, &format!("\\{}", quote));
+                format!("{}\"{}\"", indent, escaped)
+            }
+            StringStyle::SingleQuoted => {
+                // Single-quoted string
+                let escaped = translated.replace(quote, &format!("\\{}", quote));
+                format!("{}'{}'", indent, escaped)
+            }
+            StringStyle::Raw { hash_count } => {
+                // Reconstruct raw string: r#"..."#
+                let hashes = "#".repeat(*hash_count as usize);
+                format!("{}r{}\"{}\"{}", indent, hashes, translated, hashes)
+            }
+            StringStyle::ByteString => {
+                // Byte string: b"..."
+                let escaped = translated.replace('"', "\\\"");
+                format!("{}b\"{}\"", indent, escaped)
+            }
+            StringStyle::Formatted => {
+                // Formatted string: f"..."
+                // Note: Placeholder preservation is handled separately
+                let escaped = translated.replace('"', "\\\"");
+                format!("{}f\"{}\"", indent, escaped)
+            }
+            StringStyle::Template => {
+                // Template string: `...`
+                format!("{}`{}`", indent, translated)
+            }
+            StringStyle::Backtick => {
+                // Go raw string: `...`
+                format!("{}`{}`", indent, translated)
             }
         }
     }
@@ -409,6 +468,9 @@ mod tests {
                 line_prefix: None,
                 ends_with_newline: false,
                 is_multiline: false,
+                string_style: None,
+                placeholders: None,
+                quote_char: None,
             }),
             pattern_type: None,
             pattern_name: None,
@@ -436,6 +498,9 @@ mod tests {
                 line_prefix: Some("// ".to_string()),
                 ends_with_newline: false,
                 is_multiline: false,
+                string_style: None,
+                placeholders: None,
+                quote_char: None,
             }),
             pattern_type: None,
             pattern_name: None,
@@ -466,6 +531,9 @@ mod tests {
                 line_prefix: None,
                 ends_with_newline: false,
                 is_multiline: false,
+                string_style: None,
+                placeholders: None,
+                quote_char: None,
             }),
             pattern_type: None,
             pattern_name: None,
@@ -495,6 +563,9 @@ mod tests {
                 line_prefix: Some(" * ".to_string()),
                 ends_with_newline: true,
                 is_multiline: false,
+                string_style: None,
+                placeholders: None,
+                quote_char: None,
             }),
             pattern_type: None,
             pattern_name: None,
@@ -527,6 +598,9 @@ mod tests {
                 line_prefix: Some(" * ".to_string()),
                 ends_with_newline: true,
                 is_multiline: false,
+                string_style: None,
+                placeholders: None,
+                quote_char: None,
             }),
             pattern_type: None,
             pattern_name: None,
@@ -558,6 +632,9 @@ mod tests {
                 line_prefix: Some("/// ".to_string()),
                 ends_with_newline: false,
                 is_multiline: false,
+                string_style: None,
+                placeholders: None,
+                quote_char: None,
             }),
             pattern_type: None,
             pattern_name: None,
@@ -587,6 +664,9 @@ mod tests {
                 line_prefix: Some(" * ".to_string()),
                 ends_with_newline: true,
                 is_multiline: true,
+                string_style: None,
+                placeholders: None,
+                quote_char: None,
             }),
             pattern_type: None,
             pattern_name: None,
@@ -617,6 +697,9 @@ mod tests {
                 line_prefix: Some(" * ".to_string()),
                 ends_with_newline: true,
                 is_multiline: false,
+                string_style: None,
+                placeholders: None,
+                quote_char: None,
             }),
             pattern_type: None,
             pattern_name: None,
@@ -671,6 +754,9 @@ mod tests {
                     line_prefix: None,
                     ends_with_newline: false,
                     is_multiline: false,
+                    string_style: None,
+                    placeholders: None,
+                    quote_char: None,
                 }),
                 pattern_type: None,
                 pattern_name: None,
@@ -690,6 +776,9 @@ mod tests {
                     line_prefix: None,
                     ends_with_newline: false,
                     is_multiline: false,
+                    string_style: None,
+                    placeholders: None,
+                    quote_char: None,
                 }),
                 pattern_type: None,
                 pattern_name: None,

@@ -1,0 +1,20 @@
+JavaScript String Format Preservation Test Results
+==================================================
+
+Input: "Hello, world!"
+Expected: Hello, world!
+Got: Hello, world!
+Style: Some(DoubleQuoted)
+Status: PASS
+
+Input: 'Simple text'
+Expected: Simple text
+Got: Simple text
+Style: Some(SingleQuoted)
+Status: PASS
+
+Input: `Hello, ${name}!`
+Expected: Hello, ${name}!
+Got: Hello, ${name}!
+Style: Some(Template)
+Status: PASS

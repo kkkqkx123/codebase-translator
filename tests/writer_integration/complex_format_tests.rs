@@ -26,11 +26,17 @@ async fn test_complex_nested_block_comment() {
         line_prefix: Some(" * ".to_string()),
         ends_with_newline: true,
         is_multiline: false,
+        string_style: None,
+        placeholders: None,
+        quote_char: None,
     };
 
     let mut units = vec![create_translation_unit_with_format(
         "1",
-        "/* Outer comment\n     * /* Inner comment */\n     * More outer comment\n     */",
+        "/* Outer comment
+     * /* Inner comment */
+     * More outer comment
+     */",
         2,
         5,
         67,
@@ -191,6 +197,9 @@ fn main() {
         line_prefix: Some(" * ".to_string()),
         ends_with_newline: true,
         is_multiline: false,
+        string_style: None,
+        placeholders: None,
+        quote_char: None,
     };
 
     let mut units = vec![
@@ -275,6 +284,9 @@ async fn test_indented_block_comment_preservation() {
         line_prefix: Some(" * ".to_string()),
         ends_with_newline: true,
         is_multiline: false,
+        string_style: None,
+        placeholders: None,
+        quote_char: None,
     };
 
     let mut units = vec![create_translation_unit_with_format(
@@ -346,6 +358,9 @@ fn another() -> i32 {
         line_prefix: Some("/// ".to_string()),
         ends_with_newline: false,
         is_multiline: false,
+        string_style: None,
+        placeholders: None,
+        quote_char: None,
     };
 
     let mut units = vec![
@@ -498,6 +513,9 @@ mod example {
         line_prefix: Some("/// ".to_string()),
         ends_with_newline: false,
         is_multiline: false,
+        string_style: None,
+        placeholders: None,
+        quote_char: None,
     };
 
     let mut units = vec![
@@ -583,6 +601,9 @@ fn example() -> i32 {
         line_prefix: Some(" * ".to_string()),
         ends_with_newline: true,
         is_multiline: false,
+        string_style: None,
+        placeholders: None,
+        quote_char: None,
     };
 
     let mut units = vec![create_translation_unit_with_format(

@@ -182,6 +182,9 @@ async fn test_concurrent_writer_mixed_success_failure() {
         line_prefix: Some("/* ".to_string()),
         ends_with_newline: false,
         is_multiline: false,
+        string_style: None,
+        placeholders: None,
+        quote_char: None,
     };
     let units2 = vec![create_translation_unit_with_format(
         "2",
@@ -267,6 +270,9 @@ async fn test_concurrent_writer_with_format_info() {
         line_prefix: Some("// ".to_string()),
         ends_with_newline: false,
         is_multiline: false,
+        string_style: None,
+        placeholders: None,
+        quote_char: None,
     };
 
     let mut units = vec![create_translation_unit_with_format(

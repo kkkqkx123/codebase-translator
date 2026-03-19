@@ -72,6 +72,9 @@ fn test_translation_applier_missing_translation() {
         line_prefix: Some("/* ".to_string()),
         ends_with_newline: false,
         is_multiline: false,
+        string_style: None,
+        placeholders: None,
+        quote_char: None,
     };
     let units = vec![create_translation_unit_with_format(
         "1",
@@ -95,6 +98,9 @@ fn test_translation_applier_line_comment_format() {
         line_prefix: Some("// ".to_string()),
         ends_with_newline: false,
         is_multiline: false,
+        string_style: None,
+        placeholders: None,
+        quote_char: None,
     };
 
     let mut units = vec![create_translation_unit_with_format(
@@ -122,6 +128,9 @@ fn test_translation_applier_block_comment_format() {
         line_prefix: None,
         ends_with_newline: false,
         is_multiline: false,
+        string_style: None,
+        placeholders: None,
+        quote_char: None,
     };
 
     let mut units = vec![create_translation_unit_with_format(
@@ -149,6 +158,9 @@ fn test_translation_applier_multiline_block_comment() {
         line_prefix: Some(" * ".to_string()),
         ends_with_newline: true,
         is_multiline: false,
+        string_style: None,
+        placeholders: None,
+        quote_char: None,
     };
 
     let mut units = vec![create_translation_unit_with_format(
@@ -176,6 +188,9 @@ fn test_translation_applier_doc_outer_comment() {
         line_prefix: Some("/// ".to_string()),
         ends_with_newline: false,
         is_multiline: false,
+        string_style: None,
+        placeholders: None,
+        quote_char: None,
     };
 
     let mut units = vec![create_translation_unit_with_format(
@@ -203,6 +218,9 @@ fn test_translation_applier_doc_block_comment() {
         line_prefix: Some(" * ".to_string()),
         ends_with_newline: true,
         is_multiline: false,
+        string_style: None,
+        placeholders: None,
+        quote_char: None,
     };
 
     let mut units = vec![create_translation_unit_with_format(
@@ -230,6 +248,9 @@ fn test_translation_applier_multiline_translated_text() {
         line_prefix: Some(" * ".to_string()),
         ends_with_newline: true,
         is_multiline: false,
+        string_style: None,
+        placeholders: None,
+        quote_char: None,
     };
 
     let mut units = vec![create_translation_unit_with_format(
@@ -331,6 +352,9 @@ fn test_translation_applier_complex_multiline_format() {
         line_prefix: Some(" * ".to_string()),
         ends_with_newline: true,
         is_multiline: false,
+        string_style: None,
+        placeholders: None,
+        quote_char: None,
     };
 
     let mut units = vec![create_translation_unit_with_format(
@@ -454,6 +478,9 @@ fn test_translation_applier_merged_multiline_doc_comment() {
         line_prefix: Some("/// ".to_string()),
         ends_with_newline: true,
         is_multiline: true, // Marked as multiline (merged)
+        string_style: None,
+        placeholders: None,
+        quote_char: None,
     };
 
     let mut unit = TranslationUnit {
