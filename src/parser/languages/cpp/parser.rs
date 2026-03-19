@@ -17,6 +17,7 @@ use crate::parser::strategy::{
 };
 use crate::parser::tree_sitter::ParserConfig;
 use crate::parser::Parser as ParserTrait;
+use tracing::{debug, error, info, instrument};
 
 /// C++ language parser
 pub struct CppParser {
@@ -65,14 +66,27 @@ impl CppParser {
     }
 
     /// Parse file content into a syntax tree
+    #[instrument(skip(self, content))]
     fn parse_tree(&self, content: &str) -> Result<Tree> {
         let mut parser = Parser::new();
         parser
             .set_language(&tree_sitter_cpp::LANGUAGE.into())
-            .map_err(|e| TranslateError::Parse(format!("Failed to set language: {}", e)))?;
-        parser
-            .parse(content, None)
-            .ok_or_else(|| TranslateError::Parse("Failed to parse file".to_string()))
+            .map_err(|e| {
+                error!(error = %e, "Failed to set C++ language");
+                TranslateError::Parse(format!("Failed to set language: {}", e))
+            })?;
+
+        let tree = parser.parse(content, None).ok_or_else(|| {
+            error!("Failed to parse C++ syntax tree");
+            TranslateError::Parse("Failed to parse file".to_string())
+        })?;
+
+        debug!(
+            root_node = tree.root_node().kind(),
+            "C++ syntax tree parsed successfully"
+        );
+
+        Ok(tree)
     }
 
     /// Extract comments using the core framework
@@ -408,15 +422,40 @@ impl CppParser {
 }
 
 impl ParserTrait for CppParser {
+    #[instrument(skip(self, file))]
     fn parse(&self, file: &File) -> Result<Vec<TranslationUnit>> {
-        let content = file
-            .content_string()
-            .map_err(|e| TranslateError::Parse(format!("Invalid UTF-8 content: {}", e)))?;
+        let start = std::time::Instant::now();
+        let file_path = file.path.to_string_lossy().to_string();
+
+        info!(
+            file = %file_path,
+            size = file.content.len(),
+            "Parsing C++ file"
+        );
+
+        let content = file.content_string().map_err(|e| {
+            error!(file = %file_path, error = %e, "Failed to decode UTF-8 content");
+            TranslateError::Parse(format!("Invalid UTF-8 content: {}", e))
+        })?;
 
         let tree = self.parse_tree(&content)?;
         let file_path = file.path.to_string_lossy().to_string();
 
-        self.extract_units(&tree, &content, &file_path)
+        let units = self.extract_units(&tree, &content, &file_path)?;
+
+        info!(
+            file = %file_path,
+            units = units.len(),
+            comments = units.iter().filter(|u| u.node_type == crate::core::models::NodeType::Comment).count(),
+            docstrings = units.iter().filter(|u| u.node_type == crate::core::models::NodeType::DocString).count(),
+            error_messages = units.iter().filter(|u| u.node_type == crate::core::models::NodeType::ErrorMessage).count(),
+            log_messages = units.iter().filter(|u| u.node_type == crate::core::models::NodeType::LogMessage).count(),
+            format_strings = units.iter().filter(|u| u.node_type == crate::core::models::NodeType::FormatString).count(),
+            duration_ms = start.elapsed().as_millis(),
+            "C++ file parsed successfully"
+        );
+
+        Ok(units)
     }
 
     fn supports(&self, filename: &str) -> bool {

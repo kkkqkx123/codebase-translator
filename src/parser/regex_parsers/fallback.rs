@@ -1,5 +1,7 @@
 //! Generic fallback parser for simple file types
 
+use tracing::{debug, warn};
+
 use crate::core::error::Result;
 use crate::core::models::{File, TranslationUnit};
 use crate::parser::regex::{RegexParser, RegexParserConfig};
@@ -45,6 +47,11 @@ impl FallbackParser {
 
 impl ParserTrait for FallbackParser {
     fn parse(&self, file: &File) -> Result<Vec<TranslationUnit>> {
+        warn!(
+            file = %file.path.display(),
+            reason = "no_tree_sitter_parser",
+            "Using fallback parser"
+        );
         self.inner.parse(file)
     }
 

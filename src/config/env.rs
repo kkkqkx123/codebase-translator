@@ -6,6 +6,7 @@
 use crate::core::error::{Result, TranslateError};
 use regex::Regex;
 use std::path::Path;
+use tracing::debug;
 
 /// Environment variable loader
 pub struct EnvLoader {
@@ -33,11 +34,24 @@ impl EnvLoader {
     /// This loads environment variables from the specified files.
     /// Existing environment variables are not overridden.
     pub fn load(&self) -> Result<()> {
+        debug!(
+            env_files = ?self.env_files,
+            "Loading environment files"
+        );
         for file in &self.env_files {
             if Path::new(file).exists() {
+                debug!(
+                    env_file = %file,
+                    "Loading environment file"
+                );
                 dotenvy::from_path(file).map_err(|e| {
                     TranslateError::Config(format!("Failed to load .env file {}: {}", file, e))
                 })?;
+            } else {
+                debug!(
+                    env_file = %file,
+                    "Environment file not found, skipping"
+                );
             }
         }
         Ok(())
@@ -48,14 +62,27 @@ impl EnvLoader {
     /// This loads environment variables from the specified files,
     /// overriding existing environment variables.
     pub fn load_with_override(&self) -> Result<()> {
+        debug!(
+            env_files = ?self.env_files,
+            "Loading environment files with override"
+        );
         for file in &self.env_files {
             if Path::new(file).exists() {
+                debug!(
+                    env_file = %file,
+                    "Loading environment file with override"
+                );
                 dotenvy::from_path_override(file).map_err(|e| {
                     TranslateError::Config(format!(
                         "Failed to load .env file {} with override: {}",
                         file, e
                     ))
                 })?;
+            } else {
+                debug!(
+                    env_file = %file,
+                    "Environment file not found, skipping"
+                );
             }
         }
         Ok(())
@@ -98,10 +125,20 @@ impl EnvLoader {
     ///
     /// This automatically finds and loads all .env files in the specified directory.
     pub fn load_from_directory(dir: &Path) -> Result<()> {
+        debug!(
+            directory = %dir.display(),
+            "Loading environment files from directory"
+        );
         let env_files = Self::find_env_files_in_directory(dir);
         if !env_files.is_empty() {
+            debug!(
+                env_files = ?env_files,
+                "Found environment files, loading"
+            );
             let loader = Self::new(env_files);
             loader.load()?;
+        } else {
+            debug!("No environment files found in directory");
         }
         Ok(())
     }
@@ -138,16 +175,27 @@ impl Default for EnvLoader {
 /// assert_eq!(result, "hello world");
 /// ```
 pub fn expand_env_vars(input: &str) -> String {
+    debug!(
+        input = %input,
+        "Expanding environment variables"
+    );
     let re = Regex::new(r"\$\{(\w+)\}|\$(\w+)").expect("Invalid regex pattern");
-    re.replace_all(input, |caps: &regex::Captures| {
-        let var_name = caps
-            .get(1)
-            .or_else(|| caps.get(2))
-            .map(|m| m.as_str())
-            .unwrap_or("");
-        std::env::var(var_name).unwrap_or_else(|_| caps[0].to_string())
-    })
-    .to_string()
+    let result = re
+        .replace_all(input, |caps: &regex::Captures| {
+            let var_name = caps
+                .get(1)
+                .or_else(|| caps.get(2))
+                .map(|m| m.as_str())
+                .unwrap_or("");
+            std::env::var(var_name).unwrap_or_else(|_| caps[0].to_string())
+        })
+        .to_string();
+
+    debug!(
+        output = %result,
+        "Environment variables expanded"
+    );
+    result
 }
 
 /// Check if a string contains environment variable placeholders
@@ -170,9 +218,14 @@ pub fn has_env_vars(input: &str) -> bool {
 ///
 /// * `map` - The map to replace placeholders in
 pub fn replace_env_vars_in_map(map: &mut std::collections::HashMap<String, String>) {
+    debug!(
+        map_size = map.len(),
+        "Replacing environment variables in map"
+    );
     for value in map.values_mut() {
         *value = expand_env_vars(value);
     }
+    debug!("Environment variables replaced in map");
 }
 
 /// Replace environment variable placeholders in a nested map
@@ -185,6 +238,10 @@ pub fn replace_env_vars_in_map(map: &mut std::collections::HashMap<String, Strin
 pub fn replace_env_vars_in_nested_map(
     map: &mut std::collections::HashMap<String, serde_json::Value>,
 ) {
+    debug!(
+        map_size = map.len(),
+        "Replacing environment variables in nested map"
+    );
     for value in map.values_mut() {
         match value {
             serde_json::Value::String(s) => {
@@ -220,6 +277,7 @@ pub fn replace_env_vars_in_nested_map(
             _ => {}
         }
     }
+    debug!("Environment variables replaced in nested map");
 }
 
 #[cfg(test)]

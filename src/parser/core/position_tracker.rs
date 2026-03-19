@@ -1,6 +1,7 @@
 //! Position tracking utilities
 
 use crate::core::models::Position;
+use tracing::trace;
 
 /// Position tracker for managing source positions
 #[derive(Debug, Clone)]
@@ -34,10 +35,20 @@ impl PositionTracker {
         } else {
             self.column += 1;
         }
+
+        trace!(
+            line = self.line,
+            column = self.column,
+            offset = self.offset,
+            char = %ch,
+            "Position advanced"
+        );
     }
 
     /// Advance by a string
     pub fn advance_str(&mut self, s: &str) {
+        trace!(str_len = s.len(), "Advancing position by string");
+
         for ch in s.chars() {
             self.advance(ch);
         }

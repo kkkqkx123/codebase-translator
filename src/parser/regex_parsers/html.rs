@@ -1,5 +1,7 @@
 //! HTML/XML parser
 
+use tracing::debug;
+
 use crate::core::error::Result;
 use crate::core::models::{File, TranslationUnit};
 use crate::parser::regex::{RegexParser, RegexParserConfig};
@@ -38,6 +40,11 @@ impl HtmlParser {
 
 impl ParserTrait for HtmlParser {
     fn parse(&self, file: &File) -> Result<Vec<TranslationUnit>> {
+        debug!(
+            format = "html/xml",
+            file = %file.path.display(),
+            "Parsing special format"
+        );
         self.inner.parse(file)
     }
 

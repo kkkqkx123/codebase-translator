@@ -6,6 +6,7 @@ use std::sync::Arc;
 use crate::core::error::TranslateError;
 use crate::reporter::r#trait::{ReportFormat, Reporter};
 use crate::reporter::stats::{SharedStats, TranslationStats};
+use tracing::{debug, info};
 
 #[cfg(feature = "progress")]
 use indicatif::{ProgressBar, ProgressStyle};
@@ -21,6 +22,7 @@ pub struct ProgressReporter {
 
 impl ProgressReporter {
     pub fn new() -> Self {
+        info!("Creating progress reporter");
         #[cfg(feature = "progress")]
         let progress_bar = {
             let bar = ProgressBar::new(0);
@@ -74,6 +76,13 @@ impl ProgressReporter {
                 current_file.as_deref().unwrap_or("Initializing..."),
                 speed
             ));
+
+            debug!(
+                processed = stats.processed_files,
+                total = stats.total_files,
+                speed = speed,
+                "Progress bar updated"
+            );
         }
     }
 
@@ -92,6 +101,11 @@ impl Default for ProgressReporter {
 
 impl Reporter for ProgressReporter {
     fn report_file(&self, path: &Path, units: usize) {
+        debug!(
+            file = %path.display(),
+            units = units,
+            "Reporting file processed"
+        );
         self.set_current_file(path);
         self.stats.record_units(units);
         self.stats.record_processed();
@@ -100,28 +114,40 @@ impl Reporter for ProgressReporter {
     }
 
     fn report_progress(&self, _current: usize, total: usize) {
+        debug!(current = _current, total = total, "Reporting progress");
         self.stats.record_total_files(total);
         #[cfg(feature = "progress")]
         self.update_progress_bar();
     }
 
     fn report_error(&self, error: &TranslateError) {
+        debug!(
+            error = %error,
+            "Reporting error"
+        );
         self.stats.record_failed("unknown", &error.to_string());
     }
 
-    fn report_skipped(&self, _path: &Path) {
+    fn report_skipped(&self, path: &Path) {
+        debug!(
+            file = %path.display(),
+            "Reporting skipped file"
+        );
         self.stats.record_skipped();
     }
 
     fn report_api_call(&self, count: usize) {
+        debug!(count = count, "Reporting API call");
         self.stats.record_api_call(count);
     }
 
     fn report_cache_hit(&self) {
+        debug!("Reporting cache hit");
         self.stats.record_cache_hit();
     }
 
     fn report_cache_miss(&self) {
+        debug!("Reporting cache miss");
         self.stats.record_cache_miss();
     }
 
@@ -131,6 +157,7 @@ impl Reporter for ProgressReporter {
             bar.finish();
         }
 
+        info!("Generating final report");
         let stats = self.stats.get_stats();
 
         match format {
@@ -152,10 +179,16 @@ impl Reporter for ProgressReporter {
     }
 
     fn finalize(&self) {
+        info!("Finalizing progress reporter statistics");
         self.stats.finalize();
     }
 
     fn save_report(&self, path: &Path, format: ReportFormat) -> Result<(), TranslateError> {
+        debug!(
+            path = %path.display(),
+            format = ?format,
+            "Saving report to file"
+        );
         let report = self.final_report(format)?;
 
         if let Some(parent) = path.parent() {
@@ -164,6 +197,10 @@ impl Reporter for ProgressReporter {
 
         std::fs::write(path, report).map_err(|e| TranslateError::Io(e.to_string()))?;
 
+        info!(
+            path = %path.display(),
+            "Report saved successfully"
+        );
         Ok(())
     }
 
@@ -173,6 +210,12 @@ impl Reporter for ProgressReporter {
         template: &str,
         format: ReportFormat,
     ) -> Result<std::path::PathBuf, TranslateError> {
+        debug!(
+            dir = %dir.display(),
+            template = template,
+            format = ?format,
+            "Saving report with template"
+        );
         std::fs::create_dir_all(dir).map_err(|e| TranslateError::Io(e.to_string()))?;
 
         let timestamp = chrono::Utc::now().format("%Y%m%d_%H%M%S");
@@ -187,6 +230,10 @@ impl Reporter for ProgressReporter {
 
         self.save_report(&path, format)?;
 
+        info!(
+            path = %path.display(),
+            "Report saved with template"
+        );
         Ok(path)
     }
 }

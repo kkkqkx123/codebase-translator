@@ -5,6 +5,7 @@ use tree_sitter::{Node, Query, QueryCursor};
 
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::Position;
+use tracing::{debug, error, instrument};
 
 /// Query match result
 #[derive(Debug, Clone)]
@@ -89,6 +90,7 @@ impl QueryExecutor {
     }
 
     /// Execute query and return matches
+    #[instrument(skip(self, root_node, content))]
     pub fn execute<'a>(
         &'a self,
         root_node: &'a Node,
@@ -97,6 +99,11 @@ impl QueryExecutor {
         let mut cursor = QueryCursor::new();
         let capture_names = self.query.capture_names();
         let text_provider: &[u8] = content.as_bytes();
+
+        debug!(
+            query_pattern_count = self.query.pattern_count(),
+            "Executing query"
+        );
 
         let mut matches = Vec::new();
         let mut query_matches = cursor.matches(&self.query, *root_node, text_provider);
@@ -107,11 +114,16 @@ impl QueryExecutor {
 
                 // Apply filter
                 if !self.filter.should_include(capture_name) {
+                    debug!(
+                        capture_name = %capture_name,
+                        "Capture filtered"
+                    );
                     continue;
                 }
 
                 let node = capture.node;
                 let text = node.utf8_text(content.as_bytes()).map_err(|e| {
+                    error!(error = %e, "Failed to get node text");
                     TranslateError::Parse(format!("Failed to get node text: {}", e))
                 })?;
 
@@ -126,6 +138,13 @@ impl QueryExecutor {
                     node.end_byte(),
                 );
 
+                debug!(
+                    capture_name = %capture_name,
+                    node_kind = node.kind(),
+                    text_len = text.len(),
+                    "Found capture"
+                );
+
                 matches.push(QueryMatch {
                     capture_name: capture_name.to_string(),
                     text,
@@ -135,6 +154,8 @@ impl QueryExecutor {
                 });
             }
         }
+
+        debug!(total_matches = matches.len(), "Query execution completed");
 
         Ok(matches)
     }

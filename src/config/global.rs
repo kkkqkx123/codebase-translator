@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use crate::translator::ProviderType;
 
 use super::env::{expand_env_vars, replace_env_vars_in_map, replace_env_vars_in_nested_map};
+use tracing::debug;
 
 /// Global configuration (user-level settings)
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -34,6 +35,12 @@ pub struct GlobalConfig {
 impl GlobalConfig {
     /// Validate the global configuration
     pub fn validate(&mut self) -> Result<(), String> {
+        debug!(
+            provider = %self.provider,
+            enabled_providers = ?self.enabled_providers,
+            "Validating global configuration"
+        );
+
         let valid_providers = ["deeplx", "llm", "tencent"];
 
         let providers = self.get_enabled_providers();
@@ -117,6 +124,7 @@ impl GlobalConfig {
             }
         }
 
+        debug!("Global configuration validated successfully");
         Ok(())
     }
 
@@ -136,6 +144,7 @@ impl GlobalConfig {
     /// - It has no valid API keys
     /// - Model name is empty or invalid
     pub fn filter_invalid_llm_providers(&mut self) {
+        debug!("Filtering invalid LLM providers");
         let mut valid_providers = Vec::new();
 
         for provider in self.llm.providers.drain(..) {
@@ -161,6 +170,11 @@ impl GlobalConfig {
             valid_providers.push(provider);
         }
 
+        debug!(
+            total_providers = self.llm.providers.len(),
+            valid_providers = valid_providers.len(),
+            "LLM providers filtered"
+        );
         self.llm.providers = valid_providers;
     }
 
@@ -195,29 +209,52 @@ impl GlobalConfig {
 
     /// Apply environment variables to configuration
     pub fn apply_env_vars(&mut self) {
+        debug!("Applying environment variables to configuration");
         if let Ok(provider) = std::env::var("TRANSLATOR_PROVIDER") {
             if let Ok(provider_type) = provider.parse::<ProviderType>() {
+                debug!(
+                    env_var = "TRANSLATOR_PROVIDER",
+                    value = %provider,
+                    "Setting provider from environment variable"
+                );
                 self.provider = provider_type;
             }
         }
 
         if let Ok(api_url) = std::env::var("DEEPLX_API_URL") {
+            debug!(
+                env_var = "DEEPLX_API_URL",
+                "Setting DeepLX API URL from environment variable"
+            );
             self.deeplx.api_url = api_url;
         }
         if let Ok(api_key) = std::env::var("DEEPLX_API_KEY") {
+            debug!(
+                env_var = "DEEPLX_API_KEY",
+                "Setting DeepLX API key from environment variable"
+            );
             self.deeplx.api_key = Some(api_key);
         }
 
         if let Ok(secret_id) = std::env::var("TENCENT_SECRET_ID") {
+            debug!(
+                env_var = "TENCENT_SECRET_ID",
+                "Setting Tencent secret ID from environment variable"
+            );
             self.tencent.secret_id = Some(secret_id);
         }
         if let Ok(secret_key) = std::env::var("TENCENT_SECRET_KEY") {
+            debug!(
+                env_var = "TENCENT_SECRET_KEY",
+                "Setting Tencent secret key from environment variable"
+            );
             self.tencent.secret_key = Some(secret_key);
         }
     }
 
     /// Expand environment variables in configuration
     pub fn expand_env_vars(&mut self) {
+        debug!("Expanding environment variables in configuration");
         self.deeplx.api_url = expand_env_vars(&self.deeplx.api_url);
         if let Some(ref mut api_key) = self.deeplx.api_key {
             *api_key = expand_env_vars(api_key);
@@ -257,10 +294,13 @@ impl GlobalConfig {
             replace_env_vars_in_map(&mut provider.extra_headers);
             replace_env_vars_in_nested_map(&mut provider.extra_params);
         }
+
+        debug!("Environment variables expanded successfully");
     }
 
     /// Merge another configuration into this one
     pub fn merge(&mut self, other: GlobalConfig) {
+        debug!("Merging global configuration");
         if other.provider != ProviderType::default() {
             self.provider = other.provider;
         }
@@ -331,6 +371,8 @@ impl GlobalConfig {
         if other.logging.file.is_some() {
             self.logging.file = other.logging.file;
         }
+
+        debug!("Global configuration merged successfully");
     }
 }
 

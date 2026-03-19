@@ -1,5 +1,7 @@
 //! SQL parser
 
+use tracing::debug;
+
 use crate::core::error::Result;
 use crate::core::models::{File, TranslationUnit};
 use crate::parser::regex::{RegexParser, RegexParserConfig};
@@ -33,6 +35,11 @@ impl SqlParser {
 
 impl ParserTrait for SqlParser {
     fn parse(&self, file: &File) -> Result<Vec<TranslationUnit>> {
+        debug!(
+            format = "sql",
+            file = %file.path.display(),
+            "Parsing special format"
+        );
         self.inner.parse(file)
     }
 

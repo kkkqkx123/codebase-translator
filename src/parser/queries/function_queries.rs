@@ -1,11 +1,19 @@
 //! Predefined function call extraction queries
 
+use tracing::debug;
+
 /// Predefined function call queries for various languages
 pub struct FunctionQueries;
 
 impl FunctionQueries {
     /// Build a Rust macro invocation query for specific macros
     pub fn rust_macros(macro_names: &[&str]) -> String {
+        debug!(
+            query_name = "rust_macros",
+            macro_count = macro_names.len(),
+            "Executing query"
+        );
+        
         if macro_names.is_empty() {
             return Self::rust_all_macros().to_string();
         }
@@ -31,6 +39,7 @@ impl FunctionQueries {
 
     /// Query for all Rust macros with string arguments
     pub fn rust_all_macros() -> &'static str {
+        debug!(query_name = "rust_all_macros", "Executing query");
         r#"
 (macro_invocation
   macro: (identifier) @macro_name
@@ -46,6 +55,12 @@ impl FunctionQueries {
 
     /// Build a Go function call query for specific functions
     pub fn go_functions(func_names: &[&str]) -> String {
+        debug!(
+            query_name = "go_functions",
+            function_count = func_names.len(),
+            "Executing query"
+        );
+        
         if func_names.is_empty() {
             return String::new();
         }
@@ -71,6 +86,12 @@ impl FunctionQueries {
 
     /// Build a Python function call query for specific functions
     pub fn python_functions(func_names: &[&str]) -> String {
+        debug!(
+            query_name = "python_functions",
+            function_count = func_names.len(),
+            "Executing query"
+        );
+        
         if func_names.is_empty() {
             return String::new();
         }
@@ -90,6 +111,12 @@ impl FunctionQueries {
 
     /// Build a JavaScript function call query for specific functions
     pub fn javascript_functions(func_names: &[&str]) -> String {
+        debug!(
+            query_name = "javascript_functions",
+            function_count = func_names.len(),
+            "Executing query"
+        );
+        
         if func_names.is_empty() {
             return String::new();
         }
@@ -109,6 +136,12 @@ impl FunctionQueries {
 
     /// Build a Java function call query for specific methods
     pub fn java_functions(func_names: &[&str]) -> String {
+        debug!(
+            query_name = "java_functions",
+            function_count = func_names.len(),
+            "Executing query"
+        );
+        
         if func_names.is_empty() {
             return String::new();
         }

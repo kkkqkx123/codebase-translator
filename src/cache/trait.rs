@@ -1,6 +1,13 @@
 //! Cache trait definition
 //!
 //! This module defines the Cache trait for storing translation results.
+//!
+//! Implementations of this trait should provide appropriate logging for:
+//! - Cache initialization and configuration
+//! - Cache hits and misses
+//! - Cache entry operations (get, set, invalidate)
+//! - Cache maintenance operations (clear, cleanup_orphaned)
+//! - Cache statistics and performance metrics
 
 use std::collections::HashMap;
 

@@ -122,11 +122,7 @@ fn run() -> Result<()> {
     // Initialize logging
     logger::init(&global_config.logging)?;
 
-    info!(
-        name = NAME,
-        version = VERSION,
-        "Starting application"
-    );
+    info!(name = NAME, version = VERSION, "Starting application");
 
     // Override dry run from CLI
     if cli.dry_run {

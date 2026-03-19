@@ -1,5 +1,7 @@
 //! Hash utility functions
 
+use tracing::trace;
+
 use sha2::{Digest, Sha256};
 
 /// Calculate SHA-256 hash for content
@@ -16,6 +18,11 @@ use sha2::{Digest, Sha256};
 /// assert_eq!(hash.len(), 64); // SHA-256 produces 64 hex characters
 /// ```
 pub fn calculate_hash(content: &[u8]) -> String {
+    trace!(
+        content_len = content.len(),
+        "Calculating hash"
+    );
+    
     let mut hasher = Sha256::new();
     hasher.update(content);
     hex::encode(hasher.finalize())
@@ -44,13 +51,20 @@ mod tests {
     fn test_calculate_hash_different_content() {
         let hash1 = calculate_hash(b"content1");
         let hash2 = calculate_hash(b"content2");
-        assert_ne!(hash1, hash2, "Different content should produce different hashes");
+        assert_ne!(
+            hash1, hash2,
+            "Different content should produce different hashes"
+        );
     }
 
     #[test]
     fn test_calculate_hash_empty() {
         let hash = calculate_hash(b"");
-        assert_eq!(hash.len(), 64, "Empty content should still produce 64-char hash");
+        assert_eq!(
+            hash.len(),
+            64,
+            "Empty content should still produce 64-char hash"
+        );
         // SHA-256 of empty string is known
         assert_eq!(
             hash,
@@ -62,6 +76,10 @@ mod tests {
     fn test_calculate_hash_large_content() {
         let content = vec![0u8; 10000];
         let hash = calculate_hash(&content);
-        assert_eq!(hash.len(), 64, "Large content should still produce 64-char hash");
+        assert_eq!(
+            hash.len(),
+            64,
+            "Large content should still produce 64-char hash"
+        );
     }
 }

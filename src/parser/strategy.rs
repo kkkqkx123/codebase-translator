@@ -7,6 +7,7 @@
 use crate::core::models::NodeType;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use tracing::debug;
 
 /// Strategy node type for extraction decisions
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -197,7 +198,7 @@ impl ConfigBasedStrategy {
 
 impl ExtractionStrategy for ConfigBasedStrategy {
     fn should_extract(&self, node_type: StrategyNodeType, _ctx: &ExtractionContext) -> bool {
-        match node_type {
+        let should_extract = match node_type {
             StrategyNodeType::Comment => self.config.comments,
             StrategyNodeType::DocString => self.config.docstrings,
             StrategyNodeType::ErrorMessage => self.config.error_messages,
@@ -208,7 +209,16 @@ impl ExtractionStrategy for ConfigBasedStrategy {
             | StrategyNodeType::MarkdownHeading
             | StrategyNodeType::MarkdownListItem
             | StrategyNodeType::MarkdownTableCell => true,
-        }
+        };
+
+        debug!(
+            node_type = %node_type,
+            should_extract,
+            strategy = "config_based",
+            "Extraction strategy decision"
+        );
+
+        should_extract
     }
 
     fn get_node_type(&self, node_type: StrategyNodeType) -> NodeType {

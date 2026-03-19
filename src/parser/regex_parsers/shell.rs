@@ -1,5 +1,7 @@
 //! Shell script parser
 
+use tracing::debug;
+
 use crate::core::error::Result;
 use crate::core::models::{File, TranslationUnit};
 use crate::parser::regex::{RegexParser, RegexParserConfig};
@@ -43,6 +45,11 @@ impl ShellParser {
 
 impl ParserTrait for ShellParser {
     fn parse(&self, file: &File) -> Result<Vec<TranslationUnit>> {
+        debug!(
+            format = "shell",
+            file = %file.path.display(),
+            "Parsing special format"
+        );
         self.inner.parse(file)
     }
 

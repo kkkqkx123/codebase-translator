@@ -1,5 +1,7 @@
 //! Predefined string extraction queries
 
+use tracing::debug;
+
 /// Predefined string queries for various languages
 pub struct StringQueries;
 
@@ -8,16 +10,19 @@ impl StringQueries {
 
     /// Rust string literal query
     pub fn rust_string() -> &'static str {
+        debug!(query_name = "rust_string", "Executing query");
         "(string_literal) @string"
     }
 
     /// Rust raw string literal query
     pub fn rust_raw_string() -> &'static str {
+        debug!(query_name = "rust_raw_string", "Executing query");
         "(raw_string_literal) @string"
     }
 
     /// Rust all strings query
     pub fn rust_all() -> &'static str {
+        debug!(query_name = "rust_all", "Executing query");
         r#"
 (string_literal) @string
 (raw_string_literal) @string
@@ -26,6 +31,7 @@ impl StringQueries {
 
     /// Rust macro string arguments query
     pub fn rust_macro_strings() -> &'static str {
+        debug!(query_name = "rust_macro_strings", "Executing query");
         r#"
 (macro_invocation
   macro: (identifier) @macro_name
@@ -43,16 +49,19 @@ impl StringQueries {
 
     /// Go interpreted string literal query
     pub fn go_interpreted_string() -> &'static str {
+        debug!(query_name = "go_interpreted_string", "Executing query");
         "(interpreted_string_literal) @string"
     }
 
     /// Go raw string literal query
     pub fn go_raw_string() -> &'static str {
+        debug!(query_name = "go_raw_string", "Executing query");
         "(raw_string_literal) @string"
     }
 
     /// Go all strings query
     pub fn go_all() -> &'static str {
+        debug!(query_name = "go_all", "Executing query");
         r#"
 (interpreted_string_literal) @string
 (raw_string_literal) @string
@@ -63,6 +72,7 @@ impl StringQueries {
 
     /// Python string query
     pub fn python_string() -> &'static str {
+        debug!(query_name = "python_string", "Executing query");
         "(string) @string"
     }
 
@@ -70,6 +80,7 @@ impl StringQueries {
 
     /// JavaScript string query
     pub fn javascript_string() -> &'static str {
+        debug!(query_name = "javascript_string", "Executing query");
         r#"
 (string) @string
 (template_string) @string
@@ -80,6 +91,7 @@ impl StringQueries {
 
     /// Java string literal query
     pub fn java_string() -> &'static str {
+        debug!(query_name = "java_string", "Executing query");
         "(string_literal) @string"
     }
 
@@ -87,6 +99,7 @@ impl StringQueries {
 
     /// C/C++ string literal query
     pub fn c_string() -> &'static str {
+        debug!(query_name = "c_string", "Executing query");
         "(string_literal) @string"
     }
 }

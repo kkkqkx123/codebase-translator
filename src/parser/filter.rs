@@ -7,6 +7,7 @@
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
+use tracing::debug;
 
 /// Filter configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -178,21 +179,41 @@ impl ContentFilter {
     pub fn should_translate(&self, text: &str) -> bool {
         // Empty check
         if text.is_empty() {
+            debug!(text = %text, reason = "empty", "Text filtered");
             return false;
         }
 
         // Length check
         let len = text.len();
         if len < self.config.min_length {
+            debug!(
+                text = %text,
+                length = len,
+                min_length = self.config.min_length,
+                reason = "too_short",
+                "Text filtered"
+            );
             return false;
         }
         if self.config.max_length > 0 && len > self.config.max_length {
+            debug!(
+                text = %text,
+                length = len,
+                max_length = self.config.max_length,
+                reason = "too_long",
+                "Text filtered"
+            );
             return false;
         }
 
         // Exclude keywords check
         for pattern in &self.exclude_keywords_regex {
             if pattern.is_match(text) {
+                debug!(
+                    text = %text,
+                    reason = "excluded_keyword",
+                    "Text filtered"
+                );
                 return false;
             }
         }
@@ -200,6 +221,11 @@ impl ContentFilter {
         // Exclude patterns check
         for pattern in &self.exclude_patterns_regex {
             if pattern.is_match(text) {
+                debug!(
+                    text = %text,
+                    reason = "excluded_pattern",
+                    "Text filtered"
+                );
                 return false;
             }
         }
@@ -208,6 +234,11 @@ impl ContentFilter {
         if !self.include_patterns_regex.is_empty() {
             let included = self.include_patterns_regex.iter().any(|p| p.is_match(text));
             if !included {
+                debug!(
+                    text = %text,
+                    reason = "not_in_include_patterns",
+                    "Text filtered"
+                );
                 return false;
             }
         }
@@ -216,6 +247,11 @@ impl ContentFilter {
         if !self.config.allow_placeholders {
             for pattern in &self.placeholder_regex {
                 if pattern.is_match(text) {
+                    debug!(
+                        text = %text,
+                        reason = "contains_placeholder",
+                        "Text filtered"
+                    );
                     return false;
                 }
             }
@@ -225,6 +261,11 @@ impl ContentFilter {
         if self.config.detect_code_patterns {
             for pattern in &self.code_pattern_regex {
                 if pattern.is_match(text) {
+                    debug!(
+                        text = %text,
+                        reason = "contains_code_pattern",
+                        "Text filtered"
+                    );
                     return false;
                 }
             }
@@ -232,9 +273,15 @@ impl ContentFilter {
 
         // Symbol-only check
         if is_only_symbols(text) {
+            debug!(
+                text = %text,
+                reason = "only_symbols",
+                "Text filtered"
+            );
             return false;
         }
 
+        debug!(text = %text, "Text passed filter");
         true
     }
 

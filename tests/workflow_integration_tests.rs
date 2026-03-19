@@ -48,10 +48,22 @@ mod workflow_integration {
         let workflow_config = WorkflowConfig::from(&project_config);
 
         assert_eq!(workflow_config.root_path, ".");
-        assert_eq!(workflow_config.include_patterns, project_config.include.patterns);
-        assert_eq!(workflow_config.exclude_patterns, project_config.exclude.patterns);
-        assert_eq!(workflow_config.respect_gitignore, project_config.exclude.respect_gitignore);
-        assert_eq!(workflow_config.gitignore_patterns, project_config.exclude.gitignore_patterns);
+        assert_eq!(
+            workflow_config.include_patterns,
+            project_config.include.patterns
+        );
+        assert_eq!(
+            workflow_config.exclude_patterns,
+            project_config.exclude.patterns
+        );
+        assert_eq!(
+            workflow_config.respect_gitignore,
+            project_config.exclude.respect_gitignore
+        );
+        assert_eq!(
+            workflow_config.gitignore_patterns,
+            project_config.exclude.gitignore_patterns
+        );
     }
 
     #[test]
@@ -60,11 +72,8 @@ mod workflow_integration {
         let project_config = create_test_project_config();
         let workflow_config = WorkflowConfig::default();
 
-        let workflow = TranslationWorkflow::new(
-            global_config,
-            project_config,
-            workflow_config.clone(),
-        );
+        let workflow =
+            TranslationWorkflow::new(global_config, project_config, workflow_config.clone());
 
         // Workflow should be created successfully
         assert_eq!(workflow_config.root_path, ".");
@@ -101,14 +110,9 @@ mod workflow_integration {
 }
 
 mod workflow_file_processor {
+    use codebase_translate::config::{global::GlobalConfig, project::ProjectConfig};
     use codebase_translate::workflow::{
-        FileProcessResult, FileProcessor, WorkflowConfig, TranslationWorkflow,
-    };
-    use codebase_translate::{
-        config::{
-            global::GlobalConfig,
-            project::ProjectConfig,
-        },
+        FileProcessResult, FileProcessor, TranslationWorkflow, WorkflowConfig,
     };
 
     fn create_test_project_config() -> ProjectConfig {
@@ -168,11 +172,8 @@ mod workflow_file_processor {
 
 mod workflow_factory {
     use codebase_translate::{
+        config::{global::GlobalConfig, project::ProjectConfig},
         factory::{create_cache, create_parser, create_translator, create_writer},
-        config::{
-            global::GlobalConfig,
-            project::ProjectConfig,
-        },
     };
 
     fn create_test_project_config() -> ProjectConfig {
@@ -236,19 +237,30 @@ mod workflow_utils {
     fn test_calculate_hash_different_content() {
         let hash1 = calculate_hash(b"content1");
         let hash2 = calculate_hash(b"content2");
-        assert_ne!(hash1, hash2, "Different content should produce different hashes");
+        assert_ne!(
+            hash1, hash2,
+            "Different content should produce different hashes"
+        );
     }
 
     #[test]
     fn test_calculate_hash_empty() {
         let hash = calculate_hash(b"");
-        assert_eq!(hash.len(), 64, "Empty content should still produce 64-char hash");
+        assert_eq!(
+            hash.len(),
+            64,
+            "Empty content should still produce 64-char hash"
+        );
     }
 
     #[test]
     fn test_calculate_hash_large_content() {
         let content = vec![0u8; 10000];
         let hash = calculate_hash(&content);
-        assert_eq!(hash.len(), 64, "Large content should still produce 64-char hash");
+        assert_eq!(
+            hash.len(),
+            64,
+            "Large content should still produce 64-char hash"
+        );
     }
 }

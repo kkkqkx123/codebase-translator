@@ -6,6 +6,7 @@ use std::path::Path;
 
 use crate::core::error::TranslateError;
 use crate::reporter::stats::TranslationStats;
+use tracing::debug;
 
 /// Report format
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

@@ -7,6 +7,7 @@ use std::sync::Arc;
 use crate::core::error::TranslateError;
 use crate::reporter::r#trait::{ReportFormat, Reporter};
 use crate::reporter::stats::{SharedStats, TranslationStats};
+use tracing::{debug, info, warn};
 
 #[cfg(feature = "progress")]
 use crate::reporter::progress::ProgressReporter;
@@ -28,6 +29,13 @@ impl DefaultReporter {
         &self,
         stats: &crate::reporter::stats::TranslationStats,
     ) -> Result<String, TranslateError> {
+        info!(
+            files = stats.processed_files,
+            units = stats.translated_units,
+            errors = stats.error_count,
+            "Generating translation report"
+        );
+
         let end_time = stats
             .end_time
             .ok_or_else(|| TranslateError::Parse("Stats should be finalized".to_string()))?;
@@ -108,6 +116,7 @@ impl DefaultReporter {
         &self,
         stats: &crate::reporter::stats::TranslationStats,
     ) -> Result<String, TranslateError> {
+        debug!("Generating JSON report");
         serde_json::to_string_pretty(stats)
             .map_err(|e| TranslateError::Parse(format!("Failed to serialize JSON report: {}", e)))
     }
@@ -120,36 +129,56 @@ impl Default for DefaultReporter {
 }
 
 impl Reporter for DefaultReporter {
-    fn report_file(&self, _path: &Path, units: usize) {
+    fn report_file(&self, path: &Path, units: usize) {
+        debug!(
+            file = %path.display(),
+            units = units,
+            "Reporting file processed"
+        );
         self.stats.record_units(units);
         self.stats.record_processed();
     }
 
     fn report_progress(&self, _current: usize, _total: usize) {
-        // Progress is calculated from stats
+        debug!(current = _current, total = _total, "Reporting progress");
     }
 
     fn report_error(&self, error: &TranslateError) {
+        warn!(
+            error = %error,
+            "Reporting error"
+        );
         self.stats.record_failed("unknown", &error.to_string());
     }
 
-    fn report_skipped(&self, _path: &Path) {
+    fn report_skipped(&self, path: &Path) {
+        debug!(
+            file = %path.display(),
+            "Reporting skipped file"
+        );
         self.stats.record_skipped();
     }
 
     fn report_api_call(&self, count: usize) {
+        debug!(count = count, "Reporting API call");
         self.stats.record_api_call(count);
     }
 
     fn report_cache_hit(&self) {
+        debug!("Reporting cache hit");
         self.stats.record_cache_hit();
     }
 
     fn report_cache_miss(&self) {
+        debug!("Reporting cache miss");
         self.stats.record_cache_miss();
     }
 
     fn final_report(&self, format: ReportFormat) -> Result<String, TranslateError> {
+        debug!(
+            format = ?format,
+            "Generating final report"
+        );
         let stats = self.stats.get_stats();
 
         match format {
@@ -171,10 +200,16 @@ impl Reporter for DefaultReporter {
     }
 
     fn finalize(&self) {
+        info!("Finalizing reporter statistics");
         self.stats.finalize();
     }
 
     fn save_report(&self, path: &Path, format: ReportFormat) -> Result<(), TranslateError> {
+        debug!(
+            path = %path.display(),
+            format = ?format,
+            "Saving report to file"
+        );
         let report = self.final_report(format)?;
 
         if let Some(parent) = path.parent() {
@@ -183,6 +218,10 @@ impl Reporter for DefaultReporter {
 
         std::fs::write(path, report).map_err(|e| TranslateError::Io(e.to_string()))?;
 
+        info!(
+            path = %path.display(),
+            "Report saved successfully"
+        );
         Ok(())
     }
 
@@ -192,6 +231,12 @@ impl Reporter for DefaultReporter {
         template: &str,
         format: ReportFormat,
     ) -> Result<std::path::PathBuf, TranslateError> {
+        debug!(
+            dir = %dir.display(),
+            template = template,
+            format = ?format,
+            "Saving report with template"
+        );
         std::fs::create_dir_all(dir).map_err(|e| TranslateError::Io(e.to_string()))?;
 
         let timestamp = Utc::now().format("%Y%m%d_%H%M%S");
@@ -206,6 +251,10 @@ impl Reporter for DefaultReporter {
 
         self.save_report(&path, format)?;
 
+        info!(
+            path = %path.display(),
+            "Report saved with template"
+        );
         Ok(path)
     }
 }

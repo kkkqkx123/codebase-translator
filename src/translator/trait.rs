@@ -8,6 +8,7 @@ use crate::core::error::Result;
 use crate::translator::deeplx::DeepLXTranslator;
 use crate::translator::llm::LLMTranslator;
 use crate::translator::tencent::TencentTranslator;
+use tracing::{debug, info};
 
 /// Translator trait for translation services
 #[async_trait]
@@ -188,13 +189,20 @@ impl Translator for TranslatorImpl {
 impl TranslatorImpl {
     /// Create a translator from the given configuration
     pub fn from_config(config: &crate::translator::factory::TranslatorConfig) -> Result<Self> {
-        match config.provider {
+        info!(
+            provider = ?config.provider,
+            "Creating translator from configuration"
+        );
+
+        let translator = match config.provider {
             ProviderType::DeepLX => {
+                debug!("Creating DeepLX translator");
                 let deeplx_config = config.deeplx.clone().unwrap_or_default();
                 let translator = DeepLXTranslator::new(deeplx_config)?;
                 Ok(Self::DeepLX(translator))
             }
             ProviderType::LLM => {
+                debug!("Creating LLM translator");
                 let llm_config = config.llm.clone().ok_or_else(|| {
                     crate::core::error::TranslateError::Config(
                         "LLM configuration is required".to_string(),
@@ -204,6 +212,7 @@ impl TranslatorImpl {
                 Ok(Self::LLM(translator))
             }
             ProviderType::Tencent => {
+                debug!("Creating Tencent translator");
                 let tencent_config = config.tencent.clone().ok_or_else(|| {
                     crate::core::error::TranslateError::Config(
                         "Tencent configuration is required".to_string(),
@@ -212,7 +221,14 @@ impl TranslatorImpl {
                 let translator = TencentTranslator::new(tencent_config)?;
                 Ok(Self::Tencent(translator))
             }
-        }
+        };
+
+        info!(
+            provider = ?config.provider,
+            "Translator created successfully"
+        );
+
+        translator
     }
 
     /// Get maximum input characters for this translator implementation

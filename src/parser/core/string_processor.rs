@@ -1,6 +1,7 @@
 //! String processing utilities
 
 use crate::core::models::{CommentStyle, FormatInfo};
+use tracing::trace;
 
 /// Type of comment
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -54,11 +55,25 @@ impl StringProcessor {
         text: &str,
         comment_type: CommentType,
     ) -> CleanedComment {
-        match comment_type {
+        trace!(
+            text = %text,
+            comment_type = ?comment_type,
+            "Cleaning comment"
+        );
+
+        let result = match comment_type {
             CommentType::Line => self.clean_line_comment_with_format(text),
             CommentType::Block => self.clean_block_comment_with_format(text),
             CommentType::Doc => self.clean_doc_comment_with_format(text),
-        }
+        };
+
+        trace!(
+            original_len = text.len(),
+            cleaned_len = result.text.len(),
+            "Comment cleaned"
+        );
+
+        result
     }
 
     /// Clean line comment (// or #)
@@ -412,20 +427,31 @@ impl StringProcessor {
     /// - Regular strings: "hello"
     /// - Raw strings: r"hello", r#"hello "world""#, etc.
     pub fn clean_string_literal(&self, text: &str) -> String {
-        // Handle Go raw strings: `...`
-        if text.starts_with('`') && text.ends_with('`') {
-            let content = &text[1..text.len() - 1];
-            return content.to_string();
-        }
+        trace!(
+            text = %text,
+            "Cleaning string literal"
+        );
 
-        // Handle raw strings: r"...", r#"..."#, r##"..."##, etc.
-        if text.starts_with('r') {
+        let result = if text.starts_with('`') && text.ends_with('`') {
+            // Handle Go raw strings: `...`
+            let content = &text[1..text.len() - 1];
+            content.to_string()
+        } else if text.starts_with('r') {
+            // Handle raw strings: r"...", r#"..."#, r##"..."##, etc.
             self.process_raw_string(text)
         } else {
             // Regular string: remove quotes and unescape
             let text = text.trim_matches('"');
             self.unescape(text)
-        }
+        };
+
+        trace!(
+            original_len = text.len(),
+            cleaned_len = result.len(),
+            "String literal cleaned"
+        );
+
+        result
     }
 
     /// Process raw string literal

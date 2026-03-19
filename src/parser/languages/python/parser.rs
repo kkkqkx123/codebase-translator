@@ -18,6 +18,7 @@ use crate::parser::strategy::{
 };
 use crate::parser::tree_sitter::ParserConfig;
 use crate::parser::Parser as ParserTrait;
+use tracing::{debug, error, info, instrument, warn};
 
 /// Python language parser
 pub struct PythonParser {
@@ -98,29 +99,51 @@ impl PythonParser {
     }
 
     /// Parse file content into a syntax tree
+    #[instrument(skip(self, content))]
     fn parse_tree(&self, content: &str) -> Result<Tree> {
         let mut parser = Parser::new();
         parser
             .set_language(&tree_sitter_python::LANGUAGE.into())
-            .map_err(|e| TranslateError::Parse(format!("Failed to set language: {}", e)))?;
-        parser
-            .parse(content, None)
-            .ok_or_else(|| TranslateError::Parse("Failed to parse file".to_string()))
+            .map_err(|e| {
+                error!(error = %e, "Failed to set Python language");
+                TranslateError::Parse(format!("Failed to set language: {}", e))
+            })?;
+
+        let tree = parser.parse(content, None).ok_or_else(|| {
+            error!("Failed to parse Python syntax tree");
+            TranslateError::Parse("Failed to parse file".to_string())
+        })?;
+
+        debug!(
+            root_node = tree.root_node().kind(),
+            "Python syntax tree parsed successfully"
+        );
+
+        Ok(tree)
     }
 
     /// Extract comments using the core framework
+    #[instrument(skip(self, root_node, content))]
     fn extract_comments(
         &self,
         root_node: &Node,
         content: &str,
         file_path: &str,
     ) -> Result<Vec<TranslationUnit>> {
+        debug!(file = %file_path, "Extracting comments");
+
         let executor = QueryExecutor::from_string(
             &tree_sitter_python::LANGUAGE.into(),
             PythonQueries::all_comments(),
         )?;
 
         let matches = executor.execute(root_node, content)?;
+        debug!(
+            file = %file_path,
+            total_matches = matches.len(),
+            "Comment query executed"
+        );
+
         let mut units = Vec::new();
         let mut match_idx = 0usize;
 
@@ -137,19 +160,41 @@ impl PythonParser {
 
             // Apply length filters
             if text.len() < self.config.min_content_length {
+                debug!(
+                    file = %file_path,
+                    text_len = text.len(),
+                    min_length = self.config.min_content_length,
+                    "Comment filtered: too short"
+                );
                 continue;
             }
             if text.len() > self.config.max_content_length {
+                debug!(
+                    file = %file_path,
+                    text_len = text.len(),
+                    max_length = self.config.max_content_length,
+                    "Comment filtered: too long"
+                );
                 continue;
             }
 
             // Skip if only symbols
             if self.string_processor.is_only_symbols(&text) {
+                debug!(
+                    file = %file_path,
+                    text = %text,
+                    "Comment filtered: only symbols"
+                );
                 continue;
             }
 
             // Apply content filter
             if !self.filter.should_translate(&text) {
+                debug!(
+                    file = %file_path,
+                    text = %text,
+                    "Comment filtered: content filter"
+                );
                 continue;
             }
 
@@ -159,6 +204,11 @@ impl PythonParser {
                 .strategy
                 .should_extract(StrategyNodeType::Comment, &ctx)
             {
+                debug!(
+                    file = %file_path,
+                    text = %text,
+                    "Comment filtered: extraction strategy"
+                );
                 continue;
             }
 
@@ -169,23 +219,38 @@ impl PythonParser {
             match_idx += 1;
         }
 
+        debug!(
+            file = %file_path,
+            extracted_units = units.len(),
+            "Comments extracted"
+        );
+
         Ok(units)
     }
 
     /// Extract docstrings using the core framework
     /// In Python, docstrings are string literals that appear as the first statement in modules, classes, or functions
+    #[instrument(skip(self, root_node, content))]
     fn extract_docstrings(
         &self,
         root_node: &Node,
         content: &str,
         file_path: &str,
     ) -> Result<Vec<TranslationUnit>> {
+        debug!(file = %file_path, "Extracting docstrings");
+
         let executor = QueryExecutor::from_string(
             &tree_sitter_python::LANGUAGE.into(),
             PythonQueries::docstrings(),
         )?;
 
         let matches = executor.execute(root_node, content)?;
+        debug!(
+            file = %file_path,
+            total_matches = matches.len(),
+            "Docstring query executed"
+        );
+
         let mut units = Vec::new();
         let mut match_idx = 0usize;
 
@@ -202,19 +267,41 @@ impl PythonParser {
 
             // Apply length filters
             if text.len() < self.config.min_content_length {
+                debug!(
+                    file = %file_path,
+                    text_len = text.len(),
+                    min_length = self.config.min_content_length,
+                    "Docstring filtered: too short"
+                );
                 continue;
             }
             if text.len() > self.config.max_content_length {
+                debug!(
+                    file = %file_path,
+                    text_len = text.len(),
+                    max_length = self.config.max_content_length,
+                    "Docstring filtered: too long"
+                );
                 continue;
             }
 
             // Skip if only symbols
             if self.string_processor.is_only_symbols(&text) {
+                debug!(
+                    file = %file_path,
+                    text = %text,
+                    "Docstring filtered: only symbols"
+                );
                 continue;
             }
 
             // Apply content filter
             if !self.filter.should_translate(&text) {
+                debug!(
+                    file = %file_path,
+                    text = %text,
+                    "Docstring filtered: content filter"
+                );
                 continue;
             }
 
@@ -224,6 +311,11 @@ impl PythonParser {
                 .strategy
                 .should_extract(StrategyNodeType::DocString, &ctx)
             {
+                debug!(
+                    file = %file_path,
+                    text = %text,
+                    "Docstring filtered: extraction strategy"
+                );
                 continue;
             }
 
@@ -234,22 +326,37 @@ impl PythonParser {
             match_idx += 1;
         }
 
+        debug!(
+            file = %file_path,
+            extracted_units = units.len(),
+            "Docstrings extracted"
+        );
+
         Ok(units)
     }
 
     /// Extract function call strings using the core framework
+    #[instrument(skip(self, root_node, content))]
     fn extract_function_strings(
         &self,
         root_node: &Node,
         content: &str,
         file_path: &str,
     ) -> Result<Vec<TranslationUnit>> {
+        debug!(file = %file_path, "Extracting function strings");
+
         let executor = QueryExecutor::from_string(
             &tree_sitter_python::LANGUAGE.into(),
             PythonQueries::function_call_strings(),
         )?;
 
         let matches = executor.execute(root_node, content)?;
+        debug!(
+            file = %file_path,
+            total_matches = matches.len(),
+            "Function string query executed"
+        );
+
         let mut units = Vec::new();
         let mut match_idx = 0usize;
 
@@ -274,6 +381,10 @@ impl PythonParser {
                     };
 
                     if full_func_name.is_empty() {
+                        debug!(
+                            file = %file_path,
+                            "Function string filtered: empty function name"
+                        );
                         continue;
                     }
 
@@ -282,6 +393,12 @@ impl PythonParser {
 
                     // Apply filter
                     if !self.filter.should_translate(&text) {
+                        debug!(
+                            file = %file_path,
+                            function = %full_func_name,
+                            text = %text,
+                            "Function string filtered: content filter"
+                        );
                         continue;
                     }
 
@@ -289,20 +406,48 @@ impl PythonParser {
                     let strategy_node_type = match self.patterns.classify_function(&full_func_name)
                     {
                         Some(crate::parser::function_patterns::FunctionCategory::Error) => {
+                            debug!(
+                                file = %file_path,
+                                function = %full_func_name,
+                                "Classified as error message"
+                            );
                             StrategyNodeType::ErrorMessage
                         }
                         Some(crate::parser::function_patterns::FunctionCategory::Format) => {
+                            debug!(
+                                file = %file_path,
+                                function = %full_func_name,
+                                "Classified as format string"
+                            );
                             StrategyNodeType::FormatString
                         }
                         Some(crate::parser::function_patterns::FunctionCategory::Log) => {
+                            debug!(
+                                file = %file_path,
+                                function = %full_func_name,
+                                "Classified as log message"
+                            );
                             StrategyNodeType::LogMessage
                         }
-                        _ => continue, // Skip unknown functions
+                        _ => {
+                            debug!(
+                                file = %file_path,
+                                function = %full_func_name,
+                                "Function string filtered: unknown function category"
+                            );
+                            continue;
+                        }
                     };
 
                     // Apply strategy
                     let ctx = ExtractionContext::new(&text).with_function_name(&full_func_name);
                     if !self.strategy.should_extract(strategy_node_type, &ctx) {
+                        debug!(
+                            file = %file_path,
+                            function = %full_func_name,
+                            text = %text,
+                            "Function string filtered: extraction strategy"
+                        );
                         continue;
                     }
 
@@ -315,6 +460,12 @@ impl PythonParser {
                 _ => {}
             }
         }
+
+        debug!(
+            file = %file_path,
+            extracted_units = units.len(),
+            "Function strings extracted"
+        );
 
         Ok(units)
     }
@@ -355,15 +506,40 @@ impl PythonParser {
 }
 
 impl ParserTrait for PythonParser {
+    #[instrument(skip(self, file))]
     fn parse(&self, file: &File) -> Result<Vec<TranslationUnit>> {
-        let content = file
-            .content_string()
-            .map_err(|e| TranslateError::Parse(format!("Invalid UTF-8 content: {}", e)))?;
+        let start = std::time::Instant::now();
+        let file_path = file.path.to_string_lossy().to_string();
+
+        info!(
+            file = %file_path,
+            size = file.content.len(),
+            "Parsing Python file"
+        );
+
+        let content = file.content_string().map_err(|e| {
+            error!(file = %file_path, error = %e, "Failed to decode UTF-8 content");
+            TranslateError::Parse(format!("Invalid UTF-8 content: {}", e))
+        })?;
 
         let tree = self.parse_tree(&content)?;
         let file_path = file.path.to_string_lossy().to_string();
 
-        self.extract_units(&tree, &content, &file_path)
+        let units = self.extract_units(&tree, &content, &file_path)?;
+
+        info!(
+            file = %file_path,
+            units = units.len(),
+            comments = units.iter().filter(|u| u.node_type == crate::core::models::NodeType::Comment).count(),
+            docstrings = units.iter().filter(|u| u.node_type == crate::core::models::NodeType::DocString).count(),
+            error_messages = units.iter().filter(|u| u.node_type == crate::core::models::NodeType::ErrorMessage).count(),
+            log_messages = units.iter().filter(|u| u.node_type == crate::core::models::NodeType::LogMessage).count(),
+            format_strings = units.iter().filter(|u| u.node_type == crate::core::models::NodeType::FormatString).count(),
+            duration_ms = start.elapsed().as_millis(),
+            "Python file parsed successfully"
+        );
+
+        Ok(units)
     }
 
     fn supports(&self, filename: &str) -> bool {

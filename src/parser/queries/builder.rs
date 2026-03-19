@@ -1,5 +1,7 @@
 //! Query builder for constructing tree-sitter queries
 
+use tracing::debug;
+
 use tree_sitter::Language;
 
 use crate::core::error::{Result, TranslateError};
@@ -110,6 +112,12 @@ impl QueryBuilder {
     pub fn build(&self) -> String {
         let mut queries = Vec::new();
 
+        debug!(
+            language = %self.language,
+            pattern_count = self.patterns.len(),
+            "Building query"
+        );
+
         for pattern in &self.patterns {
             match pattern {
                 QueryPattern::LineComments => {
@@ -148,6 +156,11 @@ impl QueryBuilder {
                 }
             }
         }
+
+        debug!(
+            query_count = queries.len(),
+            "Query built successfully"
+        );
 
         queries.join("\n")
     }

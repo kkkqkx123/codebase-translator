@@ -8,12 +8,14 @@
 use std::sync::Arc;
 
 use codebase_translate::config::LLMProviderConfig;
-use codebase_translate::translator::llm::{ProviderPool, ProviderPoolConfig, CapacityProvider, ProviderRouter, RotationStrategy, Provider};
+use codebase_translate::translator::llm::{
+    CapacityProvider, Provider, ProviderPool, ProviderPoolConfig, ProviderRouter, RotationStrategy,
+};
 use codebase_translate::translator::multi::SelectionStrategy;
 use codebase_translate::translator::{
     create_batch_translator, create_translator_from_config, BatchOptions, BatchTranslationService,
-    DeepLXConfig, LimitPolicy, MultiTranslator, ProviderType, TencentConfig,
-    TranslationService, TranslatorConfig, Translator,
+    DeepLXConfig, LimitPolicy, MultiTranslator, ProviderType, TencentConfig, TranslationService,
+    Translator, TranslatorConfig,
 };
 
 // ============================================================================
@@ -194,7 +196,8 @@ fn test_multi_translator_mixed_providers() {
 /// Test multi-translator fails with empty translator list
 #[test]
 fn test_multi_translator_fails_empty() {
-    let result: Result<MultiTranslator, _> = MultiTranslator::new(vec![], SelectionStrategy::RoundRobin, 3);
+    let result: Result<MultiTranslator, _> =
+        MultiTranslator::new(vec![], SelectionStrategy::RoundRobin, 3);
     assert!(result.is_err());
 }
 
@@ -300,7 +303,8 @@ async fn test_provider_pool_weighted_rotation() {
 #[tokio::test]
 async fn test_provider_pool_fails_empty() {
     let configs: Vec<LLMProviderConfig> = vec![];
-    let result: Result<ProviderPool, _> = ProviderPool::new(&configs, ProviderPoolConfig::default()).await;
+    let result: Result<ProviderPool, _> =
+        ProviderPool::new(&configs, ProviderPoolConfig::default()).await;
     assert!(result.is_err());
 }
 
@@ -313,14 +317,15 @@ async fn test_provider_pool_accepts_duplicate_ids() {
     ];
 
     // ProviderPool does not validate duplicate IDs, it just creates the pool
-    let result: Result<ProviderPool, _> = ProviderPool::new(&configs, ProviderPoolConfig::default()).await;
+    let result: Result<ProviderPool, _> =
+        ProviderPool::new(&configs, ProviderPoolConfig::default()).await;
     assert!(result.is_ok(), "ProviderPool should accept duplicate IDs");
-    
+
     // Both providers should be available - verify by getting providers multiple times
     let pool = result.unwrap();
     let provider1 = pool.get_provider().await.expect("Should get provider 1");
     let provider2 = pool.get_provider().await.expect("Should get provider 2");
-    
+
     // Both providers should have the same ID but be different instances
     assert_eq!(provider1.id(), provider2.id());
 }
@@ -594,8 +599,7 @@ fn test_batch_translation_service_creation() {
     })
     .expect("Should create translator");
 
-    let service =
-        BatchTranslationService::new(Arc::new(translator), BatchOptions::default());
+    let service = BatchTranslationService::new(Arc::new(translator), BatchOptions::default());
     assert!(service.is_ok());
 }
 

@@ -13,6 +13,7 @@ use crc32fast::Hasher as Crc32Hasher;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, RwLock};
+use tracing::debug;
 
 const CACHE_MAGIC: &[u8; 8] = b"CBCACHE\x00";
 const CACHE_VERSION: u32 = 1;
@@ -91,6 +92,13 @@ impl BinaryCache {
         let cache_dir = util::resolve_cache_dir(&config.mode, &config.directory, &project_dir);
         let cache_file_path = cache_dir.join("cache.bin");
 
+        debug!(
+            cache_file = %cache_file_path.display(),
+            mode = ?config.mode,
+            enabled = config.enabled,
+            "Creating binary cache"
+        );
+
         let cache = Self {
             config,
             _project_dir: project_dir,
@@ -104,9 +112,13 @@ impl BinaryCache {
         // Load existing cache index
         if let Err(e) = cache.load_index() {
             // Loading failed is not a fatal error, might be first use
-            tracing::warn!("Failed to load cache: {}", e);
+            debug!(
+                error = %e,
+                "Failed to load cache index"
+            );
         }
 
+        debug!("Binary cache initialized successfully");
         Ok(cache)
     }
 
@@ -129,10 +141,17 @@ impl BinaryCache {
 
     /// Load existing cache index
     fn load_index(&self) -> Result<()> {
+        debug!(
+            cache_file = %self.cache_file_path.display(),
+            "Loading cache index"
+        );
         let data_result = std::fs::read(&self.cache_file_path);
         let data = match data_result {
             Ok(d) => d,
-            Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(()),
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                debug!("Cache file not found, starting with empty cache");
+                return Ok(());
+            }
             Err(e) => {
                 return Err(TranslateError::Cache(format!(
                     "Failed to read cache file: {}",
@@ -206,11 +225,14 @@ impl BinaryCache {
             offset += INDEX_ENTRY_SIZE;
         }
 
+        let entry_count = new_index.len();
+
         let mut index_lock = self.index.write().map_err(|_| {
             TranslateError::Lock("Failed to acquire write lock on index".to_string())
         })?;
         *index_lock = new_index;
 
+        debug!(entries = entry_count, "Cache index loaded successfully");
         Ok(())
     }
 
@@ -246,8 +268,11 @@ impl BinaryCache {
         };
 
         if !dirty {
+            debug!("Cache not dirty, skipping save");
             return Ok(());
         }
+
+        debug!("Saving cache to disk");
 
         let pending_snapshot = {
             let pending_lock = self.pending_entries.read().map_err(|_| {
@@ -296,7 +321,11 @@ impl BinaryCache {
             }
         }
 
-        tracing::debug!("save() new_index size: {}", new_index.len());
+        debug!(
+            entries = new_index.len(),
+            data_size = data_buf.len(),
+            "Cache data prepared"
+        );
 
         if new_index.is_empty() {
             return Ok(());
@@ -336,6 +365,7 @@ impl BinaryCache {
         file_buf.extend_from_slice(&data_buf);
         file_buf.extend_from_slice(&index_buf);
 
+        let file_size = file_buf.len();
         let temp_file = format!(
             "{}.tmp.{}",
             self.cache_file_path.display(),
@@ -344,7 +374,7 @@ impl BinaryCache {
                 .unwrap()
                 .as_nanos()
         );
-        std::fs::write(&temp_file, file_buf)
+        std::fs::write(&temp_file, &file_buf)
             .map_err(|e| TranslateError::Cache(format!("Failed to write temp file: {}", e)))?;
         std::fs::rename(&temp_file, &self.cache_file_path)
             .map_err(|e| TranslateError::Cache(format!("Failed to rename cache file: {}", e)))?;
@@ -372,10 +402,20 @@ impl BinaryCache {
             *dirty_lock = false;
         }
 
+        debug!(
+            cache_file = %self.cache_file_path.display(),
+            file_size = file_size,
+            "Cache saved successfully"
+        );
         Ok(())
     }
 
     fn add_entry(&self, entry: &CacheEntry) -> Result<()> {
+        debug!(
+            file_hash = %entry.file_hash,
+            file_path = %entry.file_path,
+            "Adding cache entry"
+        );
         let serialized = rmp_serde::to_vec(entry)
             .map_err(|e| TranslateError::Cache(format!("Failed to serialize entry: {}", e)))?;
 
@@ -389,6 +429,7 @@ impl BinaryCache {
         pending_lock.insert(entry.file_hash.clone(), PendingEntry { data: serialized });
         *dirty_lock = true;
 
+        debug!("Cache entry added successfully");
         Ok(())
     }
 }
@@ -396,8 +437,14 @@ impl BinaryCache {
 impl Cache for BinaryCache {
     fn get(&self, file_hash: &str) -> Result<Option<CacheEntry>> {
         if !self.config.enabled {
+            debug!("Cache disabled, returning None");
             return Ok(None);
         }
+
+        debug!(
+            file_hash = %file_hash,
+            "Getting cache entry"
+        );
 
         let index_entry = {
             let index_lock = self.index.read().map_err(|_| {
@@ -414,30 +461,56 @@ impl Cache for BinaryCache {
             })?;
 
             if cache_entry.project_fingerprint != self.project_fingerprint {
+                debug!(
+                    file_hash = %file_hash,
+                    "Cache entry fingerprint mismatch, returning None"
+                );
                 return Ok(None);
             }
 
+            debug!(
+                file_hash = %file_hash,
+                file_path = %cache_entry.file_path,
+                "Cache entry found"
+            );
             Ok(Some(cache_entry))
         } else {
+            debug!(
+                file_hash = %file_hash,
+                "Cache entry not found"
+            );
             Ok(None)
         }
     }
 
     fn set(&self, entry: &CacheEntry) -> Result<()> {
         if !self.config.enabled {
+            debug!("Cache disabled, skipping set");
             return Ok(());
         }
 
+        debug!(
+            file_hash = %entry.file_hash,
+            file_path = %entry.file_path,
+            "Setting cache entry"
+        );
         self.add_entry(entry)?;
         self.save()?;
 
+        debug!("Cache entry set successfully");
         Ok(())
     }
 
     fn invalidate(&self, file_hash: &str) -> Result<()> {
         if !self.config.enabled {
+            debug!("Cache disabled, skipping invalidate");
             return Ok(());
         }
+
+        debug!(
+            file_hash = %file_hash,
+            "Invalidating cache entry"
+        );
 
         let mut index_lock = self.index.write().map_err(|_| {
             TranslateError::Lock("Failed to acquire write lock on index".to_string())
@@ -453,13 +526,17 @@ impl Cache for BinaryCache {
 
         self.save()?;
 
+        debug!("Cache entry invalidated successfully");
         Ok(())
     }
 
     fn clear(&self) -> Result<()> {
         if !self.config.enabled {
+            debug!("Cache disabled, skipping clear");
             return Ok(());
         }
+
+        debug!("Clearing cache");
 
         match std::fs::remove_file(&self.cache_file_path) {
             Ok(_) => {
@@ -467,6 +544,7 @@ impl Cache for BinaryCache {
                     TranslateError::Lock("Failed to acquire write lock on index".to_string())
                 })?;
                 index_lock.clear();
+                debug!("Cache cleared successfully");
                 Ok(())
             }
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
@@ -474,6 +552,7 @@ impl Cache for BinaryCache {
                     TranslateError::Lock("Failed to acquire write lock on index".to_string())
                 })?;
                 index_lock.clear();
+                debug!("Cache file not found, index cleared");
                 Ok(())
             }
             Err(e) => Err(TranslateError::Cache(format!(
@@ -484,13 +563,19 @@ impl Cache for BinaryCache {
     }
 
     fn close(&self) -> Result<()> {
-        self.save()
+        debug!("Closing cache");
+        self.save()?;
+        debug!("Cache closed successfully");
+        Ok(())
     }
 
     fn list_entries(&self) -> Result<Vec<CacheEntryInfo>> {
         if !self.config.enabled {
+            debug!("Cache disabled, returning empty list");
             return Ok(Vec::new());
         }
+
+        debug!("Listing cache entries");
 
         let hashes: Vec<String> = {
             let index_lock = self.index.read().map_err(|_| {
@@ -509,13 +594,20 @@ impl Cache for BinaryCache {
             }
         }
 
+        debug!(entries = result.len(), "Cache entries listed successfully");
         Ok(result)
     }
 
     fn cleanup_orphaned(&self, existing_hashes: HashMap<String, bool>) -> Result<usize> {
         if !self.config.enabled {
+            debug!("Cache disabled, skipping cleanup");
             return Ok(0);
         }
+
+        debug!(
+            total_entries = existing_hashes.len(),
+            "Cleaning up orphaned cache entries"
+        );
 
         let to_remove: Vec<String> = {
             let index_lock = self.index.read().map_err(|_| {
@@ -529,8 +621,14 @@ impl Cache for BinaryCache {
         };
 
         if to_remove.is_empty() {
+            debug!("No orphaned entries found");
             return Ok(0);
         }
+
+        debug!(
+            orphaned_count = to_remove.len(),
+            "Removing orphaned entries"
+        );
 
         {
             let mut index_lock = self.index.write().map_err(|_| {
@@ -549,11 +647,16 @@ impl Cache for BinaryCache {
 
         self.save()?;
 
+        debug!(
+            removed_count = to_remove.len(),
+            "Orphaned entries cleaned up successfully"
+        );
         Ok(to_remove.len())
     }
 
     fn stats(&self) -> Result<CacheStats> {
         if !self.config.enabled {
+            debug!("Cache disabled, returning empty stats");
             return Ok(CacheStats::default());
         }
 
@@ -573,10 +676,17 @@ impl Cache for BinaryCache {
             }
         };
 
-        Ok(CacheStats {
+        let stats = CacheStats {
             entry_count,
             total_size,
-        })
+        };
+
+        debug!(
+            entry_count = stats.entry_count,
+            total_size = stats.total_size,
+            "Cache stats retrieved successfully"
+        );
+        Ok(stats)
     }
 }
 

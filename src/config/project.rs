@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 use crate::translator::ProviderType;
+use tracing::debug;
 
 /// Project-level configuration
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -35,6 +36,7 @@ pub struct ProjectConfig {
 impl ProjectConfig {
     /// Merge another configuration into this one
     pub fn merge(&mut self, other: ProjectConfig) {
+        debug!("Merging project configuration");
         if !other.translate.source_langs.is_empty() {
             self.translate.source_langs = other.translate.source_langs;
         }
@@ -93,10 +95,19 @@ impl ProjectConfig {
         if !other.extraction.custom_patterns.is_empty() {
             self.extraction.custom_patterns = other.extraction.custom_patterns;
         }
+
+        debug!("Project configuration merged successfully");
     }
 
     /// Validate the project configuration
     pub fn validate(&self) -> Result<(), String> {
+        debug!(
+            provider = %self.translate.provider,
+            target_lang = %self.translate.target_lang,
+            cache_type = %self.cache.cache_type,
+            "Validating project configuration"
+        );
+
         if self.translate.target_lang.is_empty() {
             return Err("target language is required".to_string());
         }
@@ -109,6 +120,7 @@ impl ProjectConfig {
             return Err("cache directory is required".to_string());
         }
 
+        debug!("Project configuration validated successfully");
         Ok(())
     }
 

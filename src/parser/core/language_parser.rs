@@ -15,6 +15,7 @@ use crate::parser::strategy::{
     ExtractionContext, ExtractionStrategy, ExtractionStrategyImpl, StrategyNodeType,
 };
 use crate::parser::tree_sitter::ParserConfig;
+use tracing::{debug, error, instrument};
 
 /// Generic language parser trait
 ///
@@ -37,14 +38,27 @@ pub trait LanguageParser: Send + Sync {
     fn tree_sitter_language(&self) -> Language;
 
     /// Parse content into a syntax tree
+    #[instrument(skip(self, content))]
     fn parse_tree(&self, content: &str) -> Result<Tree> {
         let mut parser = tree_sitter::Parser::new();
         parser
             .set_language(&self.tree_sitter_language())
-            .map_err(|e| TranslateError::Parse(format!("Failed to set language: {}", e)))?;
-        parser
-            .parse(content, None)
-            .ok_or_else(|| TranslateError::Parse("Failed to parse file".to_string()))
+            .map_err(|e| {
+                error!(error = %e, "Failed to set language");
+                TranslateError::Parse(format!("Failed to set language: {}", e))
+            })?;
+
+        let tree = parser.parse(content, None).ok_or_else(|| {
+            error!("Failed to parse syntax tree");
+            TranslateError::Parse("Failed to parse file".to_string())
+        })?;
+
+        debug!(
+            root_node = tree.root_node().kind(),
+            "Syntax tree parsed successfully"
+        );
+
+        Ok(tree)
     }
 
     /// Extract comments using a query

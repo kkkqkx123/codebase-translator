@@ -78,7 +78,11 @@ pub fn create_writer(project_config: &ProjectConfig) -> Result<FileWriter> {
     let writer_config = WriterConfig {
         preview_only: project_config.writer.dry_run,
         backup: project_config.writer.backup,
-        backup_dir: project_config.writer.backup_dir.as_ref().map(std::path::PathBuf::from),
+        backup_dir: project_config
+            .writer
+            .backup_dir
+            .as_ref()
+            .map(std::path::PathBuf::from),
         strict_encoding: false,
     };
 

@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
+use tracing::debug;
 
 /// Cache mode
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -315,10 +316,22 @@ impl TranslationUnit {
         start_pos: Position,
         end_pos: Position,
     ) -> Self {
+        let id_str = id.into();
+        let content_str = content.into();
+
+        debug!(
+            id = %id_str,
+            node_type = %node_type,
+            content_len = content_str.len(),
+            start_line = start_pos.line,
+            end_line = end_pos.line,
+            "Creating translation unit"
+        );
+
         Self {
-            id: id.into(),
+            id: id_str,
             node_type,
-            content: content.into(),
+            content: content_str,
             start_pos,
             end_pos,
             language: None,

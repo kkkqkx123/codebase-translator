@@ -1,4 +1,5 @@
 use thiserror::Error;
+use tracing::warn;
 
 /// Main error type for the translator
 #[derive(Error, Debug)]
@@ -68,12 +69,14 @@ impl Clone for TranslateError {
 
 impl From<std::io::Error> for TranslateError {
     fn from(err: std::io::Error) -> Self {
+        warn!(error = %err, "IO error occurred");
         TranslateError::Io(err.to_string())
     }
 }
 
 impl From<reqwest::Error> for TranslateError {
     fn from(err: reqwest::Error) -> Self {
+        warn!(error = %err, "HTTP error occurred");
         TranslateError::Http(err.to_string())
     }
 }

@@ -1,6 +1,8 @@
 //! TranslationApplier integration tests
 
-use codebase_translate::core::models::{CommentStyle, FormatInfo, NodeType, Position, TranslationUnit};
+use codebase_translate::core::models::{
+    CommentStyle, FormatInfo, NodeType, Position, TranslationUnit,
+};
 use codebase_translate::writer::apply_translations;
 
 use super::common::*;
@@ -431,5 +433,8 @@ fn test_translation_applier_multiline_without_format_info() {
     let modified = result.unwrap();
 
     // The content should be correctly replaced without duplication
-    assert_eq!(modified, content, "Multiline comment without format_info should be correctly replaced");
+    assert_eq!(
+        modified, content,
+        "Multiline comment without format_info should be correctly replaced"
+    );
 }

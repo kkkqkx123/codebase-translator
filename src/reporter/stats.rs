@@ -3,6 +3,7 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::sync::{Arc, RwLock};
+use tracing::{debug, info};
 
 /// Translation statistics
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -56,18 +57,29 @@ impl Default for TranslationStats {
 
 impl TranslationStats {
     pub fn new() -> Self {
+        debug!("Creating new translation statistics");
         Self::default()
     }
 
     pub fn record_processed(&mut self) {
+        debug!(
+            processed = self.processed_files + 1,
+            "Recording file processed"
+        );
         self.processed_files += 1;
     }
 
     pub fn record_skipped(&mut self) {
+        debug!(skipped = self.skipped_files + 1, "Recording file skipped");
         self.skipped_files += 1;
     }
 
     pub fn record_failed(&mut self, file_path: &str, error: &str) {
+        debug!(
+            file = %file_path,
+            error = %error,
+            "Recording file failed"
+        );
         self.failed_files += 1;
         self.error_count += 1;
         self.errors.push(ErrorRecord {
@@ -78,30 +90,61 @@ impl TranslationStats {
     }
 
     pub fn record_total_files(&mut self, count: usize) {
+        debug!(total_files = count, "Recording total files");
         self.total_files = count;
     }
 
     pub fn record_units(&mut self, count: usize) {
+        debug!(
+            units = count,
+            total = self.total_units + count,
+            "Recording translation units"
+        );
         self.total_units += count;
     }
 
     pub fn record_translated(&mut self, count: usize) {
+        debug!(
+            translated = count,
+            total = self.translated_units + count,
+            "Recording translated units"
+        );
         self.translated_units += count;
     }
 
     pub fn record_api_call(&mut self, count: usize) {
+        debug!(
+            api_calls = count,
+            total = self.api_call_count + count,
+            "Recording API calls"
+        );
         self.api_call_count += count;
     }
 
     pub fn record_cache_hit(&mut self) {
+        debug!(cache_hits = self.cache_hit_count + 1, "Recording cache hit");
         self.cache_hit_count += 1;
     }
 
     pub fn record_cache_miss(&mut self) {
+        debug!(
+            cache_misses = self.cache_miss_count + 1,
+            "Recording cache miss"
+        );
         self.cache_miss_count += 1;
     }
 
     pub fn finalize(&mut self) {
+        info!(
+            total_files = self.total_files,
+            processed_files = self.processed_files,
+            total_units = self.total_units,
+            translated_units = self.translated_units,
+            api_calls = self.api_call_count,
+            cache_hits = self.cache_hit_count,
+            cache_misses = self.cache_miss_count,
+            "Finalizing translation statistics"
+        );
         self.end_time = Some(Utc::now());
 
         if let Some(end_time) = self.end_time {
@@ -113,6 +156,12 @@ impl TranslationStats {
                     (self.processed_files as f64) / (self.total_duration_ms as f64 / 1000.0);
             }
         }
+
+        debug!(
+            duration_ms = self.total_duration_ms,
+            avg_speed = self.avg_speed_files_per_sec,
+            "Statistics finalized"
+        );
     }
 
     pub fn has_errors(&self) -> bool {
@@ -150,6 +199,7 @@ pub struct SharedStats {
 
 impl SharedStats {
     pub fn new() -> Self {
+        debug!("Creating new shared statistics");
         Self {
             inner: Arc::new(RwLock::new(TranslationStats::new())),
         }
@@ -242,6 +292,7 @@ impl SharedStats {
     }
 
     pub fn reset(&self) {
+        debug!("Resetting shared statistics");
         if let Ok(mut stats) = self.inner.write() {
             *stats = TranslationStats::new();
         }
