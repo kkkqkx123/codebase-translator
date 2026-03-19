@@ -3,70 +3,76 @@ E2E Translation Test - Python File
 
 Translation completed successfully!
 
-Files processed: 0
-Total files: 0
-Total units: 0
-Translated units: 0
+Files processed: 1
+Total files: 1
+Total units: 6
+Translated units: 6
 Cached units: 0
 Skipped units: 0
-Errors: 2
-Duration: 9.06s
+Errors: 0
+Duration: 6.73s
 
 
 Directory Contents:
 ====================
   .translator [FILE]
+  .translator-cache [DIR]
   simple_python.py [FILE]
 
 
 Translated File Content:
 =========================
-# This is a simple Python file to test the translation function
-# Include Chinese comments and documentation strings
+# This is a simple Python file to test the translation functionality
+# Contains Chinese comments and documentation strings
 
 def add(a, b):
-"""
-    Calculate the sum of two numbers
-
-    Args.
-        a: first number
-        b: second number
-
-    Returns.
-        The sum of the two numbers
-    """
+/// """
+///     Calculate the sum of two numbers
+/// 
+///     Args.
+///         a: first number
+///         b: second number
+/// 
+///     Returns.
+///         The sum of the two numbers
+///     """
     return a + b
 
 def subtract(a, b):
-"""
-    Calculate the difference between two numbers
-
-    Args.
-        a: the subtracted number
-        b: subtracted number
-
-    Returns.
-        Difference between two numbers
-    """
+/// """
+///     Calculate the difference between two numbers
+/// 
+///     Args.
+///         a: the subtracted number
+///         b: subtracted number
+/// 
+///     Returns.
+///         Difference between two numbers
+///     """
     return a - b
 
 class Calculator:
-    """Simple calculator class""""
+    /// """Simple calculator class""""
     
     def __init__(self, name):
-"""
-        Initializing the calculator
-
-        Args.
-            name: Calculator name
-        """
+/// """
+///         Initializing the calculator
+/// 
+///         Args.
+///             name: Calculator name
+///         """
         self.name = name
     
     def get_name(self):
-        """Get Calculator Name""""
+        /// """Get Calculator Name""""
         return self.name
 
 if __name__ == "__main__":
     print("测试翻译功能")
     result = add(10, 20)
     print(f"结果: {result}")
+
+
+Cache Directory Contents:
+==========================
+  cache.bin [FILE]

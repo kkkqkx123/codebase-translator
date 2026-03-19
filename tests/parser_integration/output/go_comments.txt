@@ -1,4 +1,4 @@
-Extracted 6 translation units from go_comments
+Extracted 5 translation units from go_comments
 ==================================================
 
 --- Unit 1 ---
@@ -31,16 +31,10 @@ Content:
 Another comment inside function
 
 --- Unit 5 ---
-ID: test.go_comment_4
+ID: test.go_comment_4_merged
 Type: comment
-Position: Line 17, Column 1 (Offset: 233)
+Position: Line 17, Column 0 (Offset: 230)
 Content:
 greet returns a greeting message
-
---- Unit 6 ---
-ID: test.go_comment_5
-Type: comment
-Position: Line 18, Column 1 (Offset: 269)
-Content:
 name is the person to greet
 

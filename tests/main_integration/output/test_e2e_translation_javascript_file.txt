@@ -3,26 +3,27 @@ E2E Translation Test - JavaScript File
 
 Translation completed successfully!
 
-Files processed: 0
-Total files: 0
-Total units: 0
-Translated units: 0
+Files processed: 1
+Total files: 1
+Total units: 3
+Translated units: 3
 Cached units: 0
 Skipped units: 0
-Errors: 2
-Duration: 5.50s
+Errors: 0
+Duration: 3.50s
 
 
 Directory Contents:
 ====================
   .translator [FILE]
+  .translator-cache [DIR]
   simple_javascript.js [FILE]
 
 
 Translated File Content:
 =========================
-// This is a simple JavaScript file to test the translation functionality
-// Include Chinese comments
+This is a simple JavaScript file to test the translation function
+Includes Chinese comments
 
 /**
  * 计算两个数的和
@@ -44,7 +45,7 @@ function subtract(a, b) {
     return a - b;
 }
 
-// Simple classes
+// simple class
 class Calculator {
     /**
      * 创建计算器实例
@@ -63,7 +64,7 @@ class Calculator {
     }
 }
 
-// Main function
+// main function
 function main() {
     console.log("测试翻译功能");
     const result = add(10, 20);
@@ -71,3 +72,8 @@ function main() {
 }
 
 main();
+
+
+Cache Directory Contents:
+==========================
+  cache.bin [FILE]

@@ -1,0 +1,5 @@
+Project Config Logging Field Test
+================================
+
+ProjectConfig has logging field: false
+Default ProjectConfig has no logging field (as expected)

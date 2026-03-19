@@ -1,36 +1,28 @@
 pattern,type,category,file,line,extracted_text
-comment,Builtin,other,complex_rust.rs,1,// Complex test file with various patterns
-comment,Builtin,other,complex_rust.rs,2,// This file demonstrates different types of extractable content
-comment,Builtin,other,complex_rust.rs,4,/// Module documentation
-docstring,Builtin,other,complex_rust.rs,4,/// Module documentation
-comment,Builtin,other,complex_rust.rs,5,/// This module handles complex data processing
-docstring,Builtin,other,complex_rust.rs,5,/// This module handles complex data processing
-comment,Builtin,other,complex_rust.rs,6,/// with multiple functions and patterns
-docstring,Builtin,other,complex_rust.rs,6,/// with multiple functions and patterns
-comment,Builtin,other,complex_rust.rs,8,/// Function documentation
-docstring,Builtin,other,complex_rust.rs,8,/// Function documentation
-comment,Builtin,other,complex_rust.rs,9,/// This function processes user input
-docstring,Builtin,other,complex_rust.rs,9,/// This function processes user input
-comment,Builtin,other,complex_rust.rs,10,/// and returns a formatted response
-docstring,Builtin,other,complex_rust.rs,10,/// and returns a formatted response
-comment,Builtin,other,complex_rust.rs,15,/// Error handling function
-docstring,Builtin,other,complex_rust.rs,15,/// Error handling function
-comment,Builtin,other,complex_rust.rs,16,/// Returns error messages for validation failures
-docstring,Builtin,other,complex_rust.rs,16,/// Returns error messages for validation failures
+comment,Builtin,other,complex_rust.rs,1,"Complex test file with various patterns
+This file demonstrates different types of extractable content"
+docstring,Builtin,other,complex_rust.rs,4,Module documentation
+docstring,Builtin,other,complex_rust.rs,5,This module handles complex data processing
+docstring,Builtin,other,complex_rust.rs,6,"with multiple functions and patterns
+Function documentation"
+docstring,Builtin,other,complex_rust.rs,9,This function processes user input
+docstring,Builtin,other,complex_rust.rs,10,and returns a formatted response
+docstring,Builtin,other,complex_rust.rs,15,Error handling function
+docstring,Builtin,other,complex_rust.rs,16,Returns error messages for validation failures
 string_literal,Builtin,variables,complex_rust.rs,19,"""Error: input cannot be empty"""
-comment,Builtin,other,complex_rust.rs,26,// Configuration constants
-comment,Builtin,other,complex_rust.rs,30,// Global configuration
-comment,Builtin,other,complex_rust.rs,34,// Initialize logging
+comment,Builtin,other,complex_rust.rs,26,Configuration constants
+comment,Builtin,other,complex_rust.rs,30,Global configuration
+comment,Builtin,other,complex_rust.rs,34,Initialize logging
 string_literal,Builtin,variables,complex_rust.rs,35,"""Application starting"""
-comment,Builtin,other,complex_rust.rs,39,// Process user input
+comment,Builtin,other,complex_rust.rs,39,Process user input
 string_literal,Builtin,variables,complex_rust.rs,40,"""test data"""
-comment,Builtin,other,complex_rust.rs,44,// Validate input
+comment,Builtin,other,complex_rust.rs,44,Validate input
 string_literal,Builtin,variables,complex_rust.rs,46,"""Input validation passed"""
-comment,Builtin,other,complex_rust.rs,50,// Format string with multiple variables
+comment,Builtin,other,complex_rust.rs,50,Format string with multiple variables
 string_literal,Builtin,variables,complex_rust.rs,51,"""success"""
-comment,Builtin,other,complex_rust.rs,55,// Error handling with custom messages
+comment,Builtin,other,complex_rust.rs,55,Error handling with custom messages
 string_literal,Builtin,variables,complex_rust.rs,56,"""Error: operation failed after 3 attempts"""
 string_literal,Builtin,variables,complex_rust.rs,57,"""Warning: deprecated API usage detected"""
-comment,Builtin,other,complex_rust.rs,59,// Complex string with special characters
-comment,Builtin,other,complex_rust.rs,62,// Long string that might need truncation
+comment,Builtin,other,complex_rust.rs,59,Complex string with special characters
+comment,Builtin,other,complex_rust.rs,62,Long string that might need truncation
 string_literal,Builtin,variables,complex_rust.rs,63,"""This is a very long text that should be properly formatted in output without breaking layout and should demonstrate the truncation feature"""

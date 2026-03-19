@@ -24,8 +24,7 @@ fn get_project_root() -> PathBuf {
 fn write_test_output(filename: &str, content: &str) {
     ensure_output_dir();
     let output_path = PathBuf::from(OUTPUT_DIR).join(filename);
-    fs::write(&output_path, content)
-        .expect(&format!("Failed to write output: {}", filename));
+    fs::write(&output_path, content).expect(&format!("Failed to write output: {}", filename));
     println!("Output written to: {}", output_path.display());
 }
 
@@ -36,11 +35,17 @@ fn test_project_config_has_logging_field() {
     output.push_str("================================\n\n");
 
     let config = ProjectConfig::default();
-    output.push_str(&format!("ProjectConfig has logging field: {}\n", config.logging.is_some()));
-    
-    assert!(config.logging.is_none(), "Default ProjectConfig should have no logging config");
+    output.push_str(&format!(
+        "ProjectConfig has logging field: {}\n",
+        config.logging.is_some()
+    ));
+
+    assert!(
+        config.logging.is_none(),
+        "Default ProjectConfig should have no logging config"
+    );
     output.push_str("Default ProjectConfig has no logging field (as expected)\n");
-    
+
     write_test_output("test_project_config_has_logging_field.txt", &output);
 }
 
@@ -51,16 +56,37 @@ fn test_global_config_has_logging_field() {
     output.push_str("===============================\n\n");
 
     let config = GlobalConfig::default();
-    output.push_str(&format!("GlobalConfig logging level: {}\n", config.logging.level));
-    output.push_str(&format!("GlobalConfig logging output: {}\n", config.logging.output));
-    output.push_str(&format!("GlobalConfig logging format: {}\n", config.logging.format));
-    output.push_str(&format!("GlobalConfig logging file: {:?}\n", config.logging.file));
-    
-    assert_eq!(config.logging.level, "info", "Default log level should be info");
-    assert_eq!(config.logging.output, "stdout", "Default output should be stdout");
-    assert_eq!(config.logging.format, "pretty", "Default format should be pretty");
+    output.push_str(&format!(
+        "GlobalConfig logging level: {}\n",
+        config.logging.level
+    ));
+    output.push_str(&format!(
+        "GlobalConfig logging output: {}\n",
+        config.logging.output
+    ));
+    output.push_str(&format!(
+        "GlobalConfig logging format: {}\n",
+        config.logging.format
+    ));
+    output.push_str(&format!(
+        "GlobalConfig logging file: {:?}\n",
+        config.logging.file
+    ));
+
+    assert_eq!(
+        config.logging.level, "info",
+        "Default log level should be info"
+    );
+    assert_eq!(
+        config.logging.output, "stdout",
+        "Default output should be stdout"
+    );
+    assert_eq!(
+        config.logging.format, "pretty",
+        "Default format should be pretty"
+    );
     assert!(config.logging.file.is_none(), "Default file should be None");
-    
+
     output.push_str("\nAll default values are correct!\n");
     write_test_output("test_global_config_has_logging_field.txt", &output);
 }
@@ -73,23 +99,34 @@ fn test_config_with_project_logging() {
 
     let project_root = get_project_root();
     let global_config_path = project_root.join("translator.toml");
-    
+
     if !global_config_path.exists() {
         output.push_str("Skipping test: global config not found\n");
         write_test_output("test_config_with_project_logging.txt", &output);
         return;
     }
 
-    let loader = ConfigLoader::new()
-        .with_global_config(&global_config_path);
+    let loader = ConfigLoader::new().with_global_config(&global_config_path);
 
     let (global_config, project_config) = loader.load().expect("Failed to load configs");
-    
-    output.push_str(&format!("Global config logging level: {}\n", global_config.logging.level));
-    output.push_str(&format!("Global config logging output: {}\n", global_config.logging.output));
-    output.push_str(&format!("Global config logging format: {}\n", global_config.logging.format));
-    output.push_str(&format!("Project config logging: {:?}\n", project_config.logging));
-    
+
+    output.push_str(&format!(
+        "Global config logging level: {}\n",
+        global_config.logging.level
+    ));
+    output.push_str(&format!(
+        "Global config logging output: {}\n",
+        global_config.logging.output
+    ));
+    output.push_str(&format!(
+        "Global config logging format: {}\n",
+        global_config.logging.format
+    ));
+    output.push_str(&format!(
+        "Project config logging: {:?}\n",
+        project_config.logging
+    ));
+
     write_test_output("test_config_with_project_logging.txt", &output);
 }
 
@@ -107,7 +144,7 @@ fn test_config_priority() {
 
     output.push_str("This test verifies that the priority mechanism is implemented.\n");
     output.push_str("The actual priority is enforced in ConfigLoader::load().\n");
-    
+
     write_test_output("test_config_priority.txt", &output);
 }
 
@@ -125,7 +162,7 @@ fn test_env_var_override() {
 
     output.push_str("Environment variables have the highest priority.\n");
     output.push_str("They override both project and global config.\n");
-    
+
     write_test_output("test_env_var_override.txt", &output);
 }
 
@@ -136,8 +173,12 @@ fn test_project_config_file_has_logging() {
     output.push_str("================================\n\n");
 
     let project_root = get_project_root();
-    let fixture_config = project_root.join("tests").join("main_integration").join("fixtures").join(".translator");
-    
+    let fixture_config = project_root
+        .join("tests")
+        .join("main_integration")
+        .join("fixtures")
+        .join(".translator");
+
     if !fixture_config.exists() {
         output.push_str("Skipping test: fixture config not found\n");
         write_test_output("test_project_config_file_has_logging.txt", &output);
@@ -145,15 +186,18 @@ fn test_project_config_file_has_logging() {
     }
 
     let content = fs::read_to_string(&fixture_config).expect("Failed to read fixture config");
-    
+
     output.push_str("Fixture config content:\n");
-    output.push_str(&format!("Has [logging] section: {}\n", content.contains("[logging]")));
-    
+    output.push_str(&format!(
+        "Has [logging] section: {}\n",
+        content.contains("[logging]")
+    ));
+
     if content.contains("[logging]") {
         output.push_str("\nFixture config contains logging section (as expected)\n");
     } else {
         output.push_str("\nWarning: Fixture config does not contain logging section\n");
     }
-    
+
     write_test_output("test_project_config_file_has_logging.txt", &output);
 }

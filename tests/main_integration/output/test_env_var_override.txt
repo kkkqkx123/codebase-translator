@@ -1,0 +1,11 @@
+Environment Variable Override Test
+=================================
+
+Supported environment variables:
+- TRANSLATOR_LOG_LEVEL: Override log level
+- TRANSLATOR_LOG_OUTPUT: Override output target
+- TRANSLATOR_LOG_FORMAT: Override log format
+- TRANSLATOR_LOG_FILE: Override log file path
+
+Environment variables have the highest priority.
+They override both project and global config.

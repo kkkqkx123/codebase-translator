@@ -3,19 +3,20 @@ E2E Translation Test - Multiple Files
 
 Translation completed successfully!
 
-Files processed: 0
-Total files: 0
-Total units: 0
-Translated units: 0
+Files processed: 4
+Total files: 4
+Total units: 28
+Translated units: 28
 Cached units: 0
 Skipped units: 0
-Errors: 5
-Duration: 65.41s
+Errors: 0
+Duration: 30.32s
 
 
 Directory Contents:
 ====================
   .translator [FILE]
+  .translator-cache [DIR]
   simple_javascript.js [FILE]
   simple_markdown.md [FILE]
   simple_python.py [FILE]
@@ -25,9 +26,9 @@ Directory Contents:
 Translated Files:
 ==================
 
---- C:\Users\33530\AppData\Local\Temp\.tmpBGa4wh\simple_javascript.js ---
-// This is a simple JavaScript file to test the translation functionality
-// Include Chinese comments
+--- C:\Users\33530\AppData\Local\Temp\.tmpEoA0A7\simple_javascript.js ---
+This is a simple JavaScript file to test the translation function
+Includes Chinese comments
 
 /**
  * 计算两个数的和
@@ -49,7 +50,7 @@ function subtract(a, b) {
     return a - b;
 }
 
-// Simple classes
+// simple class
 class Calculator {
     /**
      * 创建计算器实例
@@ -68,7 +69,7 @@ class Calculator {
     }
 }
 
-// Main function
+// main function
 function main() {
     console.log("测试翻译功能");
     const result = add(10, 20);
@@ -77,7 +78,7 @@ function main() {
 
 main();
 
---- C:\Users\33530\AppData\Local\Temp\.tmpBGa4wh\simple_markdown.md ---
+--- C:\Users\33530\AppData\Local\Temp\.tmpEoA0A7\simple_markdown.md ---
 # Testing the translation function
 
 这是一个简单的Markdown文件，用于测试翻译功能。
@@ -119,50 +120,50 @@ fn main() {
 - [项目主页](https://github.com/example/translator)
 - [文档](https://docs.example.com)
 
---- C:\Users\33530\AppData\Local\Temp\.tmpBGa4wh\simple_python.py ---
-# This is a simple Python file to test the translation function
-# Include Chinese comments and documentation strings
+--- C:\Users\33530\AppData\Local\Temp\.tmpEoA0A7\simple_python.py ---
+# This is a simple Python file to test the translation functionality
+# Contains Chinese comments and documentation strings
 
 def add(a, b):
-"""
-    Calculate the sum of two numbers
-
-    Args.
-        a: first number
-        b: second number
-
-    Returns.
-        The sum of the two numbers
-    """
+/// """
+///     Calculate the sum of two numbers
+/// 
+///     Args.
+///         a: first number
+///         b: second number
+/// 
+///     Returns.
+///         The sum of the two numbers
+///     """
     return a + b
 
 def subtract(a, b):
-"""
-    Calculate the difference between two numbers
-
-    Args.
-        a: the subtracted number
-        b: subtracted number
-
-    Returns.
-        Difference between two numbers
-    """
+/// """
+///     Calculate the difference between two numbers
+/// 
+///     Args.
+///         a: the subtracted number
+///         b: subtracted number
+/// 
+///     Returns.
+///         Difference between two numbers
+///     """
     return a - b
 
 class Calculator:
-    """Simple calculator class""""
+    /// """Simple calculator class""""
     
     def __init__(self, name):
-"""
-        Initializing the calculator
-
-        Args.
-            name: Calculator name
-        """
+/// """
+///         Initializing the calculator
+/// 
+///         Args.
+///             name: Calculator name
+///         """
         self.name = name
     
     def get_name(self):
-        """Get Calculator Name""""
+        /// """Get Calculator Name""""
         return self.name
 
 if __name__ == "__main__":
@@ -170,47 +171,50 @@ if __name__ == "__main__":
     result = add(10, 20)
     print(f"结果: {result}")
 
---- C:\Users\33530\AppData\Local\Temp\.tmpBGa4wh\simple_rust.rs ---
-// This is a simple Rust file to test the translation functionality
-// Include Chinese comments and document strings
+--- C:\Users\33530\AppData\Local\Temp\.tmpEoA0A7\simple_rust.rs ---
+This is a simple Rust file for testing translation functionality
+Contains Chinese comments and document strings
 
-/// Calculate the sum of two numbers
+/// Calculating the sum of two numbers
 /// # Arguments
-/// * `a` - first digit
-/// # Examples
+/// * `a` - the first number
 /// ```
 /// let result = add(1, 2);
 /// assert_eq!(result, 3);
+/// ```
 pub fn add(a: i32, b: i32) -> i32 {
     a + b
 }
 
-/// Calculate the difference between two numbers
+/// Calculating the difference between two numbers
 /// # Arguments
-/// * `a` - subtracted number
+/// * `a` - the subtracted number
+pub fn subtract(a: i32, b: i32) -> i32 {
     a - b
 }
 
-/// Multiplication
+/// 乘法运算
+pub fn multiply(a: i32, b: i32) -> i32 {
     a * b
 }
 
-// It's a simple structure
+// This is a simple structure
 pub struct Calculator {
-    // Calculator name
+    // Calculator Name
     name: String,
 }
 
 impl Calculator {
 /// Creating a New Calculator Instance
 /// # Arguments
-/// * `name` - name of calculator
+/// * `name` - the name of the calculator
         Calculator {
             name: name.to_string(),
         }
     }
 
-/// Get the name of the calculator
+    /// 获取计算器名称
+    pub fn get_name(&self) -> &str {
         &self.name
     }
 }
@@ -220,3 +224,8 @@ fn main() {
     let result = add(10, 20);
     println!("结果: {}", result);
 }
+
+
+Cache Directory Contents:
+==========================
+  cache.bin [FILE]

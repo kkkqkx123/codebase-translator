@@ -269,8 +269,8 @@ async fn test_concurrent_writer_with_format_info() {
         "1",
         "This is a comment",
         1,
-        8,  // Start after "    // " (1-indexed)
-        25, // End of "This is a comment" (1-indexed, exclusive)
+        5,  // Start at "//" (1-indexed, after base_indent)
+        22, // End of line (1-indexed, exclusive)
         format_info,
     )];
     units[0].set_translated("这是一个注释");

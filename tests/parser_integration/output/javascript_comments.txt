@@ -1,21 +1,15 @@
-Extracted 4 translation units from javascript_comments
+Extracted 3 translation units from javascript_comments
 ==================================================
 
 --- Unit 1 ---
-ID: test.js_comment_0
+ID: test.js_comment_0_merged
 Type: comment
-Position: Line 1, Column 1 (Offset: 0)
+Position: Line 1, Column 0 (Offset: 0)
 Content:
 JavaScript comments for testing
-
---- Unit 2 ---
-ID: test.js_comment_1
-Type: comment
-Position: Line 2, Column 1 (Offset: 35)
-Content:
 This is a single-line comment
 
---- Unit 3 ---
+--- Unit 2 ---
 ID: test.js_comment_2
 Type: comment
 Position: Line 5, Column 1 (Offset: 87)
@@ -23,7 +17,7 @@ Content:
 This is a multi-line comment
 with multiple lines of text
 
---- Unit 4 ---
+--- Unit 3 ---
 ID: test.js_comment_3
 Type: comment
 Position: Line 11, Column 5 (Offset: 180)

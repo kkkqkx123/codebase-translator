@@ -1,0 +1,7 @@
+Project Config File Logging Test
+================================
+
+Fixture config content:
+Has [logging] section: true
+
+Fixture config contains logging section (as expected)

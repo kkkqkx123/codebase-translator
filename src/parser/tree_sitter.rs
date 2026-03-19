@@ -5,8 +5,8 @@
 
 use std::sync::Arc;
 use streaming_iterator::StreamingIterator;
-use tree_sitter::{Language as TSLanguage, Node, Parser, Query, QueryCursor, Tree};
 use tracing::debug;
+use tree_sitter::{Language as TSLanguage, Node, Parser, Query, QueryCursor, Tree};
 
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{CommentStyle, File, FormatInfo, Position, TranslationUnit};
@@ -192,9 +192,17 @@ impl TreeSitterParser {
                 let is_consecutive = unit.start_pos.line == last.end_pos.line + 1;
                 let same_type = unit.node_type == last.node_type;
                 let has_format = unit.format_info.is_some() && last.format_info.is_some();
-                let same_style = has_format &&
-                    unit.format_info.as_ref().unwrap().style == CommentStyle::DocOuter
-                    && last.format_info.as_ref().unwrap().style == CommentStyle::DocOuter;
+                // Support merging DocOuter, DocInner, and Line style comments
+                let same_style = has_format && {
+                    let unit_style = unit.format_info.as_ref().unwrap().style;
+                    let last_style = last.format_info.as_ref().unwrap().style;
+                    // Only merge same style, and only for line-based comments
+                    unit_style == last_style
+                        && matches!(
+                            unit_style,
+                            CommentStyle::DocOuter | CommentStyle::DocInner | CommentStyle::Line
+                        )
+                };
 
                 is_consecutive && same_type && has_format && same_style
             } else {
@@ -251,19 +259,20 @@ impl TreeSitterParser {
 
         // Fix: Adjust start_pos to include the prefix (e.g., "/// ")
         // This ensures the entire comment line is replaced, not just the content after prefix
-        let prefix_len = format_info.line_prefix.as_ref().map(|p| p.len()).unwrap_or(0);
+        let prefix_len = format_info
+            .line_prefix
+            .as_ref()
+            .map(|p| p.len())
+            .unwrap_or(0);
         let merged_start_pos = Position::new(
             first.start_pos.line,
             first.start_pos.column.saturating_sub(prefix_len),
             first.start_pos.offset.saturating_sub(prefix_len),
         );
 
-        // Fix: end_pos should point to the end of the last comment line
-        let merged_end_pos = Position::new(
-            last.start_pos.line,
-            last.start_pos.column + last.content.len(),
-            last.start_pos.offset + last.content.len(),
-        );
+        // Fix: Use the original last unit's end_pos for accurate position
+        // The last unit's end_pos already includes the correct offset including any suffix
+        let merged_end_pos = last.end_pos.clone();
 
         // Create merged unit
         TranslationUnit {
@@ -369,18 +378,22 @@ impl TreeSitterParser {
                 // Determine format info and clean content based on capture name and content
                 let (clean_content, format_info) = if capture_name.contains("docstring") {
                     // Extract base indent (whitespace before the comment)
-                    let base_indent = text.chars().take_while(|c| c.is_whitespace()).collect::<String>();
+                    let base_indent = text
+                        .chars()
+                        .take_while(|c| c.is_whitespace())
+                        .collect::<String>();
                     let prefix = "/// ";
-                    
+
                     // Remove base_indent and prefix from each line
-                    let clean = text.lines()
+                    let clean = text
+                        .lines()
                         .map(|line| {
                             let trimmed = line.strip_prefix(&base_indent).unwrap_or(line);
                             trimmed.strip_prefix(prefix).unwrap_or(trimmed)
                         })
                         .collect::<Vec<_>>()
                         .join("\n");
-                    
+
                     let fmt = FormatInfo {
                         style: CommentStyle::DocOuter,
                         base_indent,
@@ -391,8 +404,11 @@ impl TreeSitterParser {
                     (clean, Some(fmt))
                 } else if capture_name.contains("comment") {
                     // Extract base indent (whitespace before the comment)
-                    let base_indent = text.chars().take_while(|c| c.is_whitespace()).collect::<String>();
-                    
+                    let base_indent = text
+                        .chars()
+                        .take_while(|c| c.is_whitespace())
+                        .collect::<String>();
+
                     // Determine comment style and prefix based on content
                     let (style, prefix) = if text.trim_start().starts_with("///") {
                         (CommentStyle::DocOuter, "/// ")
@@ -410,15 +426,25 @@ impl TreeSitterParser {
                     } else {
                         (CommentStyle::Line, "// ")
                     };
-                    
+
                     // Remove base_indent and prefix from each line
                     let clean = if style == CommentStyle::BlockMulti {
                         // For block comments, extract content between /* and */
                         let start = text.find("/*").map(|i| i + 2).unwrap_or(0);
                         let end = text.rfind("*/").unwrap_or(text.len());
                         let inner = &text[start..end];
-                        inner.lines()
-                            .map(|line| line.trim_start_matches(' ').strip_prefix("* ").unwrap_or(line.trim_start_matches(' ')))
+                        inner
+                            .lines()
+                            .map(|line| {
+                                // Trim leading whitespace (spaces and tabs)
+                                let trimmed = line.trim_start();
+                                // Try to remove leading '*' with optional whitespace
+                                if let Some(after_star) = trimmed.strip_prefix('*') {
+                                    after_star.trim_start()
+                                } else {
+                                    trimmed
+                                }
+                            })
                             .collect::<Vec<_>>()
                             .join("\n")
                             .trim()
@@ -432,7 +458,7 @@ impl TreeSitterParser {
                             .collect::<Vec<_>>()
                             .join("\n")
                     };
-                    
+
                     let line_prefix = if style == CommentStyle::BlockMulti {
                         Some(" * ".to_string())
                     } else if prefix.is_empty() {
@@ -440,7 +466,7 @@ impl TreeSitterParser {
                     } else {
                         Some(prefix.to_string())
                     };
-                    
+
                     let fmt = FormatInfo {
                         style,
                         base_indent,

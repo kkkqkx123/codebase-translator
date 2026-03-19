@@ -3,33 +3,34 @@ E2E Translation Test - Markdown File
 
 Translation completed successfully!
 
-Files processed: 0
-Total files: 0
-Total units: 0
-Translated units: 0
+Files processed: 1
+Total files: 1
+Total units: 8
+Translated units: 8
 Cached units: 0
 Skipped units: 0
-Errors: 2
-Duration: 30.04s
+Errors: 0
+Duration: 8.37s
 
 
 Directory Contents:
 ====================
   .translator [FILE]
+  .translator-cache [DIR]
   simple_markdown.md [FILE]
 
 
 Translated File Content:
 =========================
-# 测试翻译功能
+# Testing the translation function
 
 这是一个简单的Markdown文件，用于测试翻译功能。
 
-## 功能介绍
+#Function
 
 本工具可以自动翻译代码注释和文档字符串。
 
-### 支持的语言
+## Languages supported
 
 - Rust
 - Python
@@ -37,13 +38,13 @@ Translated File Content:
 - Go
 - Java
 
-### 使用方法
+## Usage
 
 1. 配置翻译服务
 2. 运行翻译命令
 3. 查看翻译结果
 
-## 示例
+#typical example
 
 ```rust
 fn main() {
@@ -51,13 +52,18 @@ fn main() {
 }
 ```
 
-## 注意事项
+#caveat
 
 - 请确保API密钥配置正确
 - 翻译结果可能需要人工审核
 - 建议先在小规模代码上测试
 
-## 相关链接
+#Related links
 
 - [项目主页](https://github.com/example/translator)
 - [文档](https://docs.example.com)
+
+
+Cache Directory Contents:
+==========================
+  cache.bin [FILE]

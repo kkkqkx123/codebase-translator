@@ -166,8 +166,8 @@ async fn test_file_writer_with_line_comment_format() {
         "1",
         "This is a comment",
         1,
-        8,  // Start after "    // " (1-indexed)
-        25, // End of "This is a comment" (1-indexed, exclusive)
+        5,  // Start at "//" (1-indexed, after base_indent)
+        22, // End of line (1-indexed, exclusive)
         format_info,
     )];
     units[0].set_translated("这是一个注释");
@@ -182,7 +182,10 @@ async fn test_file_writer_with_line_comment_format() {
     assert!(written_content.contains("    // 这是一个注释"));
 
     // Write output for inspection
-    write_output("test_file_writer_with_line_comment_format", &written_content);
+    write_output(
+        "test_file_writer_with_line_comment_format",
+        &written_content,
+    );
 }
 
 #[tokio::test]
@@ -340,9 +343,30 @@ async fn test_file_writer_with_rust_fixture() {
     };
 
     let mut units = vec![
-        create_translation_unit_with_format("1", "Test file with simple comments", 1, 3, 30, format_info.clone()),
-        create_translation_unit_with_format("2", "This is a line comment", 2, 3, 25, format_info.clone()),
-        create_translation_unit_with_format("3", "Another comment", 4, 6, 22, format_info),
+        create_translation_unit_with_format(
+            "1",
+            "Test file with simple comments",
+            1,
+            1,  // Start at column 1 (beginning of "//")
+            34, // End at column 34 (exclusive, line length is 33)
+            format_info.clone(),
+        ),
+        create_translation_unit_with_format(
+            "2",
+            "This is a line comment",
+            2,
+            1,  // Start at column 1 (beginning of "//")
+            26, // End at column 26 (exclusive, line length is 25)
+            format_info.clone(),
+        ),
+        create_translation_unit_with_format(
+            "3",
+            "Another comment",
+            4,
+            5,  // Start at column 5 (beginning of "//" after indent)
+            23, // End at column 23 (exclusive, line length is 22)
+            format_info,
+        ),
     ];
     units[0].set_translated("测试文件，包含简单注释");
     units[1].set_translated("这是一个行注释");
@@ -355,11 +379,11 @@ async fn test_file_writer_with_rust_fixture() {
     assert!(result.is_ok());
 
     let written_content = read_file_content(&file.path).await;
-    
+
     // Print for debugging
     println!("Original content:\n{}", content);
     println!("Written content:\n{}", written_content);
-    
+
     assert!(written_content.contains("// 测试文件，包含简单注释"));
     assert!(written_content.contains("// 这是一个行注释"));
     assert!(written_content.contains("// 另一个注释"));

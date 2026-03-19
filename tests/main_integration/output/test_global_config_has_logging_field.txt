@@ -1,0 +1,9 @@
+Global Config Logging Field Test
+===============================
+
+GlobalConfig logging level: info
+GlobalConfig logging output: stdout
+GlobalConfig logging format: pretty
+GlobalConfig logging file: None
+
+All default values are correct!

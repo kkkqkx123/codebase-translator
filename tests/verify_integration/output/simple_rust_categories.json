@@ -2,63 +2,21 @@
   "matches": [
     {
       "category": "other",
-      "extracted_text": "// Simple Rust file with comments and strings",
+      "extracted_text": "Simple Rust file with comments and strings\nThis is a line comment\nAnother line comment",
       "file_path": "simple_rust.rs",
       "metadata": {},
       "pattern_name": "comment",
       "pattern_type": "Builtin",
       "position": {
-        "column": 1,
+        "column": 0,
         "line": 1,
         "offset": 0
       },
-      "raw_match": "// Simple Rust file with comments and strings"
+      "raw_match": "// Simple Rust file wit"
     },
     {
       "category": "other",
-      "extracted_text": "// This is a line comment",
-      "file_path": "simple_rust.rs",
-      "metadata": {},
-      "pattern_name": "comment",
-      "pattern_type": "Builtin",
-      "position": {
-        "column": 1,
-        "line": 2,
-        "offset": 46
-      },
-      "raw_match": "// This is a line comment"
-    },
-    {
-      "category": "other",
-      "extracted_text": "// Another line comment",
-      "file_path": "simple_rust.rs",
-      "metadata": {},
-      "pattern_name": "comment",
-      "pattern_type": "Builtin",
-      "position": {
-        "column": 1,
-        "line": 3,
-        "offset": 72
-      },
-      "raw_match": "// Another line comment"
-    },
-    {
-      "category": "other",
-      "extracted_text": "/// This is a doc comment",
-      "file_path": "simple_rust.rs",
-      "metadata": {},
-      "pattern_name": "comment",
-      "pattern_type": "Builtin",
-      "position": {
-        "column": 1,
-        "line": 5,
-        "offset": 97
-      },
-      "raw_match": ""
-    },
-    {
-      "category": "other",
-      "extracted_text": "/// This is a doc comment",
+      "extracted_text": "This is a doc comment",
       "file_path": "simple_rust.rs",
       "metadata": {},
       "pattern_name": "docstring",
@@ -72,21 +30,7 @@
     },
     {
       "category": "other",
-      "extracted_text": "/// It spans multiple lines",
-      "file_path": "simple_rust.rs",
-      "metadata": {},
-      "pattern_name": "comment",
-      "pattern_type": "Builtin",
-      "position": {
-        "column": 1,
-        "line": 6,
-        "offset": 123
-      },
-      "raw_match": ""
-    },
-    {
-      "category": "other",
-      "extracted_text": "/// It spans multiple lines",
+      "extracted_text": "It spans multiple lines",
       "file_path": "simple_rust.rs",
       "metadata": {},
       "pattern_name": "docstring",
@@ -100,21 +44,7 @@
     },
     {
       "category": "other",
-      "extracted_text": "/// with more documentation",
-      "file_path": "simple_rust.rs",
-      "metadata": {},
-      "pattern_name": "comment",
-      "pattern_type": "Builtin",
-      "position": {
-        "column": 1,
-        "line": 7,
-        "offset": 151
-      },
-      "raw_match": ""
-    },
-    {
-      "category": "other",
-      "extracted_text": "/// with more documentation",
+      "extracted_text": "with more documentation",
       "file_path": "simple_rust.rs",
       "metadata": {},
       "pattern_name": "docstring",
@@ -226,7 +156,7 @@
     },
     {
       "category": "other",
-      "extracted_text": "// Another comment at the end",
+      "extracted_text": "Another comment at the end",
       "file_path": "simple_rust.rs",
       "metadata": {},
       "pattern_name": "comment",
@@ -255,21 +185,21 @@
   ],
   "summary": {
     "by_category": {
-      "other": 10,
+      "other": 5,
       "variables": 8
     },
     "by_file_type": {
-      "rs": 18
+      "rs": 13
     },
     "by_pattern_type": {
-      "Builtin": 18
+      "Builtin": 13
     },
     "patterns_used": {
-      "comment": 7,
+      "comment": 2,
       "docstring": 3,
       "string_literal": 8
     },
     "total_files": 1,
-    "total_matches": 18
+    "total_matches": 13
   }
 }

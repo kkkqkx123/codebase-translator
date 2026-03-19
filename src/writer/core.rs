@@ -167,33 +167,13 @@ impl TranslationApplier {
                         translated.clone()
                     };
 
-                    // For comments with line_prefix, we need to preserve the prefix
-                    // The start_pos.column points to the start of the content (after prefix)
-                    // So we should replace from start_pos.column - 1 to end_pos.column - 1
-                    // But we also need to preserve the prefix itself
-                    let (start_char, end_char) = if let Some(format) = &unit.format_info {
-                        if format.line_prefix.is_some() {
-                            // Preserve the prefix by replacing only the content
-                            let prefix_len = format.line_prefix.as_ref().map(|p| p.len()).unwrap_or(0);
-                            let base_indent_len = format.base_indent.len();
-                            (
-                                unit.start_pos.column.saturating_sub(1),
-                                unit.end_pos.column.saturating_sub(1),
-                            )
-                        } else {
-                            // No prefix, replace the entire range
-                            (
-                                unit.start_pos.column.saturating_sub(1),
-                                unit.end_pos.column.saturating_sub(1),
-                            )
-                        }
-                    } else {
-                        // No format info, replace the entire range
-                        (
-                            unit.start_pos.column.saturating_sub(1),
-                            unit.end_pos.column.saturating_sub(1),
-                        )
-                    };
+                    // Calculate replacement range based on format_info
+                    // The unit's position should already account for prefix and indent
+                    // So we use the positions directly
+                    let (start_char, end_char) = (
+                        unit.start_pos.column.saturating_sub(1),
+                        unit.end_pos.column.saturating_sub(1),
+                    );
 
                     let replacement = Replacement {
                         start_char,
@@ -247,8 +227,12 @@ impl TranslationApplier {
 
         match format.style {
             CommentStyle::Line => {
-                // For line comments, return the text as-is (prefix is preserved in original line)
-                translated.to_string()
+                // For line comments, add the prefix if available
+                if let Some(prefix) = &format.line_prefix {
+                    format!("{}{}", prefix, translated)
+                } else {
+                    translated.to_string()
+                }
             }
             CommentStyle::BlockSingle => {
                 // Single-line block comment: /* text */
@@ -260,13 +244,21 @@ impl TranslationApplier {
             }
             CommentStyle::DocOuter => {
                 // Outer doc comment: /// text
-                // The comment prefix is preserved in the original line
-                translated.to_string()
+                // Add the prefix if available
+                if let Some(prefix) = &format.line_prefix {
+                    format!("{}{}", prefix, translated)
+                } else {
+                    translated.to_string()
+                }
             }
             CommentStyle::DocInner => {
                 // Inner doc comment: //! text
-                // The comment prefix is preserved in the original line
-                translated.to_string()
+                // Add the prefix if available
+                if let Some(prefix) = &format.line_prefix {
+                    format!("{}{}", prefix, translated)
+                } else {
+                    translated.to_string()
+                }
             }
             CommentStyle::DocBlock => {
                 // Block doc comment: /** ... */
@@ -285,12 +277,12 @@ impl TranslationApplier {
 
         match format.style {
             CommentStyle::DocOuter | CommentStyle::DocInner => {
-                // For merged doc comments, add prefix and base_indent to each line
+                // For merged doc comments, add prefix to each line
+                // Note: base_indent should NOT be added here as it's already in the original line
                 let prefix = format.line_prefix.as_deref().unwrap_or("");
-                let base_indent = &format.base_indent;
                 lines
                     .iter()
-                    .map(|line| format!("{}{}{}", base_indent, prefix, line))
+                    .map(|line| format!("{}{}", prefix, line))
                     .collect::<Vec<_>>()
                     .join("\n")
             }
@@ -329,6 +321,7 @@ impl TranslationApplier {
         result.push('\n');
 
         for (i, line) in lines.iter().enumerate() {
+            // Add base_indent for all lines in block comments
             result.push_str(&format.base_indent);
             if let Some(prefix) = &format.line_prefix {
                 result.push_str(prefix);
@@ -343,7 +336,7 @@ impl TranslationApplier {
             }
         }
 
-        // Always put the closing marker on a new line
+        // Always put the closing marker on a new line with base_indent
         result.push_str(&format.base_indent);
         result.push_str(" */");
 
@@ -437,8 +430,8 @@ mod tests {
             id: "1".to_string(),
             node_type: NodeType::Comment,
             content: "This is a comment".to_string(),
-            start_pos: Position::new(1, 8, 7),
-            end_pos: Position::new(1, 25, 24),
+            start_pos: Position::new(1, 5, 4), // Start at "//" (after base_indent)
+            end_pos: Position::new(1, 22, 21), // End of line
             language: None,
             should_translate: true,
             translated: None,
@@ -520,12 +513,14 @@ mod tests {
 
     #[test]
     fn test_format_multiline_block_comment_with_indent() {
+        // Note: content should be the cleaned text without indentation
+        // base_indent and line_prefix are stored in format_info
         let content =
             "    /*\n     * This is a\n     * multi-line comment\n     */\n    int x = 5;";
         let mut units = vec![TranslationUnit {
             id: "1".to_string(),
             node_type: NodeType::Comment,
-            content: "    /*\n     * This is a\n     * multi-line comment\n     */".to_string(),
+            content: "This is a\nmulti-line comment".to_string(), // Clean content without markers
             start_pos: Position::new(1, 1, 0),
             end_pos: Position::new(4, 5, 37),
             language: None,
@@ -546,6 +541,7 @@ mod tests {
 
         let result = TranslationApplier::apply_translations(content, &units).unwrap();
         println!("Result: {:?}", result);
+        // After formatting: base_indent (4 spaces) + line_prefix (" * ") = 5 chars before content
         assert!(result.contains("/*\n     * 这是一个\n     * 多行注释\n     */"));
     }
 

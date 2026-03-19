@@ -25,8 +25,7 @@ fn get_project_root() -> PathBuf {
 fn write_test_output(filename: &str, content: &str) {
     ensure_output_dir();
     let output_path = PathBuf::from(OUTPUT_DIR).join(filename);
-    fs::write(&output_path, content)
-        .expect(&format!("Failed to write output: {}", filename));
+    fs::write(&output_path, content).expect(&format!("Failed to write output: {}", filename));
     println!("Output written to: {}", output_path.display());
 }
 
@@ -54,7 +53,12 @@ fn test_logger_parse_level() {
     for (input, expected) in test_cases {
         let level = parse_level(input);
         output.push_str(&format!("parse_level(\"{}\") = {:?}\n", input, level));
-        assert_eq!(format!("{:?}", level), format!("Level({})", expected), "Level mismatch for input: {}", input);
+        assert_eq!(
+            format!("{:?}", level),
+            format!("Level({})", expected),
+            "Level mismatch for input: {}",
+            input
+        );
     }
 
     output.push_str("\nAll level parsing tests passed!\n");
@@ -71,13 +75,13 @@ fn test_logger_validate_config_stdout() {
     };
 
     let result = validate_config(&config);
-    
+
     let mut output = String::new();
     output.push_str("Logger Config Validation Test - stdout\n");
     output.push_str("=====================================\n\n");
     output.push_str(&format!("Config: {:?}\n", config));
     output.push_str(&format!("Validation result: {:?}\n", result));
-    
+
     assert!(result.is_ok(), "stdout config should be valid");
     output.push_str("\nstdout config validation passed!\n");
     write_test_output("test_logger_validate_config_stdout.txt", &output);
@@ -93,13 +97,13 @@ fn test_logger_validate_config_stderr() {
     };
 
     let result = validate_config(&config);
-    
+
     let mut output = String::new();
     output.push_str("Logger Config Validation Test - stderr\n");
     output.push_str("=====================================\n\n");
     output.push_str(&format!("Config: {:?}\n", config));
     output.push_str(&format!("Validation result: {:?}\n", result));
-    
+
     assert!(result.is_ok(), "stderr config should be valid");
     output.push_str("\nstderr config validation passed!\n");
     write_test_output("test_logger_validate_config_stderr.txt", &output);
@@ -109,7 +113,7 @@ fn test_logger_validate_config_stderr() {
 fn test_logger_validate_config_file_with_path() {
     let project_root = get_project_root();
     let log_file = project_root.join("test_log.log");
-    
+
     let config = LoggingConfig {
         level: "info".to_string(),
         output: "file".to_string(),
@@ -118,13 +122,13 @@ fn test_logger_validate_config_file_with_path() {
     };
 
     let result = validate_config(&config);
-    
+
     let mut output = String::new();
     output.push_str("Logger Config Validation Test - file with path\n");
     output.push_str("==============================================\n\n");
     output.push_str(&format!("Config: {:?}\n", config));
     output.push_str(&format!("Validation result: {:?}\n", result));
-    
+
     assert!(result.is_ok(), "file config with path should be valid");
     output.push_str("\nfile config with path validation passed!\n");
     write_test_output("test_logger_validate_config_file_with_path.txt", &output);
@@ -140,14 +144,17 @@ fn test_logger_validate_config_file_without_path() {
     };
 
     let result = validate_config(&config);
-    
+
     let mut output = String::new();
     output.push_str("Logger Config Validation Test - file without path\n");
     output.push_str("===================================================\n\n");
     output.push_str(&format!("Config: {:?}\n", config));
     output.push_str(&format!("Validation result: {:?}\n", result));
-    
-    assert!(result.is_err(), "file config without path should be invalid");
+
+    assert!(
+        result.is_err(),
+        "file config without path should be invalid"
+    );
     output.push_str("\nfile config without path validation passed (correctly rejected)!\n");
     write_test_output("test_logger_validate_config_file_without_path.txt", &output);
 }
@@ -162,19 +169,19 @@ fn test_logger_init_stdout() {
     };
 
     let result = init(&config);
-    
+
     let mut output = String::new();
     output.push_str("Logger Initialization Test - stdout\n");
     output.push_str("=====================================\n\n");
     output.push_str(&format!("Config: {:?}\n", config));
     output.push_str(&format!("Init result: {:?}\n", result));
-    
+
     assert!(result.is_ok(), "stdout logger init should succeed");
     output.push_str("\nstdout logger initialization passed!\n");
-    
+
     output.push_str("\nNote: Logger is now initialized for stdout output.\n");
     output.push_str("Subsequent tests will use this logger.\n");
-    
+
     write_test_output("test_logger_init_stdout.txt", &output);
 }
 
@@ -188,27 +195,31 @@ fn test_logger_init_stderr() {
     };
 
     let result = init(&config);
-    
+
     let mut output = String::new();
     output.push_str("Logger Initialization Test - stderr\n");
     output.push_str("=====================================\n\n");
     output.push_str(&format!("Config: {:?}\n", config));
     output.push_str(&format!("Init result: {:?}\n", result));
-    
+
     assert!(result.is_ok(), "stderr logger init should succeed");
     output.push_str("\nstderr logger initialization passed!\n");
-    
+
     output.push_str("\nNote: Logger is now initialized for stderr output.\n");
     output.push_str("Subsequent tests will use this logger.\n");
-    
+
     write_test_output("test_logger_init_stderr.txt", &output);
 }
 
 #[test]
 fn test_logger_init_file() {
     let project_root = get_project_root();
-    let log_file = project_root.join("tests").join("main_integration").join("output").join("test_logger.log");
-    
+    let log_file = project_root
+        .join("tests")
+        .join("main_integration")
+        .join("output")
+        .join("test_logger.log");
+
     let config = LoggingConfig {
         level: "info".to_string(),
         output: "file".to_string(),
@@ -217,19 +228,19 @@ fn test_logger_init_file() {
     };
 
     let result = init(&config);
-    
+
     let mut output = String::new();
     output.push_str("Logger Initialization Test - file\n");
     output.push_str("===================================\n\n");
     output.push_str(&format!("Config: {:?}\n", config));
     output.push_str(&format!("Init result: {:?}\n", result));
-    
+
     assert!(result.is_ok(), "file logger init should succeed");
     output.push_str("\nfile logger initialization passed!\n");
-    
+
     output.push_str(&format!("\nLog file path: {}\n", log_file.display()));
     output.push_str(&format!("Log file exists: {}\n", log_file.exists()));
-    
+
     if log_file.exists() {
         output.push_str("\nLog file was successfully created!\n");
         if let Ok(content) = fs::read_to_string(&log_file) {
@@ -239,7 +250,7 @@ fn test_logger_init_file() {
     } else {
         output.push_str("\nWarning: Log file does not exist yet (will be created on first log).\n");
     }
-    
+
     write_test_output("test_logger_init_file.txt", &output);
 }
 

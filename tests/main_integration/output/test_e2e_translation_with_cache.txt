@@ -1,0 +1,29 @@
+E2E Translation Test - Cache Behavior
+=====================================
+
+First Translation Run:
+======================
+Files processed: 1
+Total files: 1
+Total units: 11
+Translated units: 11
+Cached units: 0
+Skipped units: 0
+Errors: 0
+Duration: 11.94s
+
+Cache Directory Contents (after first run):
+=============================================
+  cache.bin [FILE]
+
+
+Second Translation Run (should use cache):
+==========================================
+Files processed: 1
+Total files: 1
+Total units: 14
+Translated units: 14
+Cached units: 0
+Skipped units: 0
+Errors: 0
+Duration: 14.84s

@@ -5,12 +5,12 @@ Translation completed successfully!
 
 Files processed: 1
 Total files: 1
-Total units: 12
-Translated units: 12
+Total units: 11
+Translated units: 11
 Cached units: 0
 Skipped units: 0
 Errors: 0
-Duration: 14.98s
+Duration: 11.94s
 
 
 Directory Contents:
@@ -22,18 +22,12 @@ Directory Contents:
 
 Translated File Content:
 =========================
-// This is a simple Rust file to test the translation functionality
-// Include Chinese comments and document strings
+This is a simple Rust file for testing translation functionality
+Contains Chinese comments and document strings
 
-/// /// Calculating the sum of two numbers
-/// /// # Arguments
-/// /// * `a` - first number
-/// 
-/// * `a` - 第一个数字
-/// /// * `b` - second digit
-/// /// # Examples
-/// # Examples
-/// 
+/// Calculating the sum of two numbers
+/// # Arguments
+/// * `a` - the first number
 /// ```
 /// let result = add(1, 2);
 /// assert_eq!(result, 3);
@@ -42,12 +36,9 @@ pub fn add(a: i32, b: i32) -> i32 {
     a + b
 }
 
-/// /// Calculate the difference between two numbers
-/// /// # Arguments
-/// /// * `a` - the subtracted number
-/// 
-/// * `a` - 被减数
-/// * `b` - 减数
+/// Calculating the difference between two numbers
+/// # Arguments
+/// * `a` - the subtracted number
 pub fn subtract(a: i32, b: i32) -> i32 {
     a - b
 }
@@ -57,19 +48,16 @@ pub fn multiply(a: i32, b: i32) -> i32 {
     a * b
 }
 
-// It's a simple structure
+// This is a simple structure
 pub struct Calculator {
-    // Calculator name
+    // Calculator Name
     name: String,
 }
 
 impl Calculator {
-/// /// Create a new instance of the calculator
-/// /// # Arguments
-/// /// * `name` - the name of the calculator
-    /// 
-    /// * `name` - 计算器名称
-    pub fn new(name: &str) -> Self {
+/// Creating a New Calculator Instance
+/// # Arguments
+/// * `name` - the name of the calculator
         Calculator {
             name: name.to_string(),
         }

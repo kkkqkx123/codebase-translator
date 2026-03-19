@@ -1,0 +1,11 @@
+Config Priority Test
+==================
+
+Configuration priority (from high to low):
+1. Environment variables
+2. ProjectConfig.logging
+3. GlobalConfig.logging
+4. Default values
+
+This test verifies that the priority mechanism is implemented.
+The actual priority is enforced in ConfigLoader::load().
