@@ -1,14 +1,14 @@
-// 用于测试的 Rust 注释
+// Rust annotations for testing
 
-// 这是一个单行注释
+// This is a one-line comment
 const VALUE: i32 = 42;
 
 /*
- * 这是一个多行注释
- * 多行文本 */
+ * This is a multi-line comment
+ * Multi-line text */
 
 fn test() -> i32 {
-    // 函数内部的另一个注释
+    // Another comment inside the function
     VALUE
 }
 

@@ -1,24 +1,24 @@
-// # 用于测试的 Python 注释
+// // # Python comments for testing
 
-// # 这是一个单行注释
+// // # It's a one-line comment
 value = 42
 
 /// """
-/// 这是一个多行注释
-/// 包含多行文本
+/// This is a multi-line comment
+/// Contains multiple lines of text
 /// """
 
 def test():
-    // # 函数内部的另一个注释
+    // // # Another comment inside the function
     return value
 
 def greet(name):
 /// """
-///     greet 函数的文档字符串
-///     参数：
-///         name： 要问候的名称
-///     返回 返回 返回 返回值值值值
-///         问候信息
+///     Documentation string for the greet function
+///     parameters:
+///         name: the name to be greeted
+///     return return return value value value value
+///         Greeting message
 ///     """
     return f"Hello, {name}!"
 
