@@ -1,7 +1,7 @@
 use clap::Parser;
 use tracing::info;
 
-use codebase_translate::{
+use crate::{
     config::{global::GlobalConfig, project::ProjectConfig},
     core::error::Result,
     factory::create_cache,

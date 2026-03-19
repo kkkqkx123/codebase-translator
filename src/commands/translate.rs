@@ -1,9 +1,9 @@
 use clap::Parser;
 use tracing::info;
 
-use codebase_translate::{
+use crate::{
     config::{global::GlobalConfig, project::ProjectConfig},
-    core::error::Result,
+    core::error::{Result, TranslateError},
     workflow::TranslationWorkflow,
 };
 
@@ -42,9 +42,9 @@ impl Command for TranslateArgs {
                 langs.split(',').map(|s| s.trim().to_string()).collect();
         }
         if let Some(prov) = &self.provider {
-            project_config.translate.provider = prov.parse().map_err(|e| {
-                codebase_translate::core::error::TranslateError::InvalidArgument(e)
-            })?;
+            project_config.translate.provider = prov
+                .parse()
+                .map_err(|e| TranslateError::InvalidArgument(e))?;
         }
         if let Some(inc) = &self.include {
             project_config.include.patterns =
@@ -65,8 +65,11 @@ impl Command for TranslateArgs {
             "Translation configuration"
         );
 
-        let workflow =
-            TranslationWorkflow::from_configs_with_path(global_config.clone(), project_config, &self.path);
+        let workflow = TranslationWorkflow::from_configs_with_path(
+            global_config.clone(),
+            project_config,
+            &self.path,
+        );
         let _result = workflow.execute()?;
         Ok(())
     }

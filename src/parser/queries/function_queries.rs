@@ -13,7 +13,7 @@ impl FunctionQueries {
             macro_count = macro_names.len(),
             "Executing query"
         );
-        
+
         if macro_names.is_empty() {
             return Self::rust_all_macros().to_string();
         }
@@ -60,7 +60,7 @@ impl FunctionQueries {
             function_count = func_names.len(),
             "Executing query"
         );
-        
+
         if func_names.is_empty() {
             return String::new();
         }
@@ -91,7 +91,7 @@ impl FunctionQueries {
             function_count = func_names.len(),
             "Executing query"
         );
-        
+
         if func_names.is_empty() {
             return String::new();
         }
@@ -116,7 +116,7 @@ impl FunctionQueries {
             function_count = func_names.len(),
             "Executing query"
         );
-        
+
         if func_names.is_empty() {
             return String::new();
         }
@@ -141,7 +141,7 @@ impl FunctionQueries {
             function_count = func_names.len(),
             "Executing query"
         );
-        
+
         if func_names.is_empty() {
             return String::new();
         }

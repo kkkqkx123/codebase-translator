@@ -18,11 +18,8 @@ use sha2::{Digest, Sha256};
 /// assert_eq!(hash.len(), 64); // SHA-256 produces 64 hex characters
 /// ```
 pub fn calculate_hash(content: &[u8]) -> String {
-    trace!(
-        content_len = content.len(),
-        "Calculating hash"
-    );
-    
+    trace!(content_len = content.len(), "Calculating hash");
+
     let mut hasher = Sha256::new();
     hasher.update(content);
     hex::encode(hasher.finalize())

@@ -2,14 +2,13 @@ use clap::{Parser as ClapParser, Subcommand};
 use tracing::info;
 
 use codebase_translate::{
+    commands::{cache, init, translate, validate, verify, Command},
     config::loader::ConfigLoader,
     core::error::Result,
     logger,
+    workflow::TranslationWorkflow,
     NAME, VERSION,
 };
-
-mod commands;
-use commands::{cache, init, translate, validate, Command};
 
 /// Codebase Translate - Automatic code comment translator
 #[derive(ClapParser)]
@@ -51,6 +50,9 @@ enum Commands {
 
     /// Validate configuration
     Validate(validate::ValidateArgs),
+
+    /// Verify extraction rules
+    Verify(verify::VerifyArgs),
 }
 
 /// Main entry point - synchronous
@@ -90,6 +92,7 @@ fn run() -> Result<()> {
         Some(Commands::Init(args)) => args.execute(&global_config, &project_config)?,
         Some(Commands::Cache(args)) => args.execute(&global_config, &project_config)?,
         Some(Commands::Validate(args)) => args.execute(&global_config, &project_config)?,
+        Some(Commands::Verify(args)) => args.execute(&global_config, &project_config)?,
         None => {
             info!("No command specified, translating current directory");
             info!(
@@ -97,11 +100,7 @@ fn run() -> Result<()> {
                 "Default translation target"
             );
             let workflow =
-                codebase_translate::workflow::TranslationWorkflow::from_configs_with_path(
-                    global_config,
-                    project_config,
-                    ".",
-                );
+                TranslationWorkflow::from_configs_with_path(global_config, project_config, ".");
             workflow.execute()?;
         }
     }

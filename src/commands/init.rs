@@ -1,9 +1,9 @@
 use clap::Parser;
 use tracing::info;
 
-use codebase_translate::{
+use crate::{
     config::{global::GlobalConfig, loader::ConfigLoader, project::ProjectConfig},
-    core::error::Result,
+    core::error::{Result, TranslateError},
 };
 
 use super::Command;
@@ -18,7 +18,11 @@ pub struct InitArgs {
 }
 
 impl Command for InitArgs {
-    fn execute(&self, _global_config: &GlobalConfig, _project_config: &ProjectConfig) -> Result<()> {
+    fn execute(
+        &self,
+        _global_config: &GlobalConfig,
+        _project_config: &ProjectConfig,
+    ) -> Result<()> {
         let loader = ConfigLoader::new();
 
         if self.global {
@@ -49,9 +53,7 @@ fn init_global_config(_loader: &ConfigLoader, force: bool) -> Result<()> {
             p
         })
         .ok_or_else(|| {
-            codebase_translate::core::error::TranslateError::Config(
-                "Could not determine config directory".to_string(),
-            )
+            TranslateError::Config("Could not determine config directory".to_string())
         })?;
 
     if config_path.exists() && !force {

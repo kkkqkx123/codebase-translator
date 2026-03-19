@@ -157,10 +157,7 @@ impl QueryBuilder {
             }
         }
 
-        debug!(
-            query_count = queries.len(),
-            "Query built successfully"
-        );
+        debug!(query_count = queries.len(), "Query built successfully");
 
         queries.join("\n")
     }

@@ -1,9 +1,9 @@
 use clap::Parser;
 use tracing::info;
 
-use codebase_translate::{
+use crate::{
     config::{global::GlobalConfig, project::ProjectConfig},
-    core::error::Result,
+    core::error::{Result, TranslateError},
     translator::ProviderType,
 };
 
@@ -24,7 +24,7 @@ impl Command for ValidateArgs {
 
 fn validate_config(global: &GlobalConfig, project: &ProjectConfig) -> Result<()> {
     if project.translate.target_lang.is_empty() {
-        return Err(codebase_translate::core::error::TranslateError::Config(
+        return Err(TranslateError::Config(
             "Target language cannot be empty".to_string(),
         ));
     }
@@ -35,14 +35,14 @@ fn validate_config(global: &GlobalConfig, project: &ProjectConfig) -> Result<()>
         }
         ProviderType::LLM => {
             if global.llm.providers.is_empty() {
-                return Err(codebase_translate::core::error::TranslateError::Config(
+                return Err(TranslateError::Config(
                     "No LLM providers configured".to_string(),
                 ));
             }
         }
         ProviderType::Tencent => {
             if global.tencent.secret_id.is_none() || global.tencent.secret_key.is_none() {
-                return Err(codebase_translate::core::error::TranslateError::Config(
+                return Err(TranslateError::Config(
                     "Tencent Cloud requires secret_id and secret_key".to_string(),
                 ));
             }

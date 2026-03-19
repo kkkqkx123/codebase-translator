@@ -4,6 +4,7 @@
 //! documentation strings, and error messages within codebases.
 
 pub mod cache;
+pub mod commands;
 pub mod config;
 pub mod core;
 pub mod encoding;
