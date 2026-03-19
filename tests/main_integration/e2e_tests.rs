@@ -229,8 +229,8 @@ fn test_e2e_translation_rust_file() {
                 workflow_result.stats.translated_units
             ));
             output.push_str(&format!(
-                "Cached units: {}\n",
-                workflow_result.stats.cached_units
+                "Cached files: {}\n",
+                workflow_result.stats.cached_files
             ));
             output.push_str(&format!(
                 "Skipped units: {}\n",
@@ -337,8 +337,8 @@ fn test_e2e_translation_python_file() {
                 workflow_result.stats.translated_units
             ));
             output.push_str(&format!(
-                "Cached units: {}\n",
-                workflow_result.stats.cached_units
+                "Cached files: {}\n",
+                workflow_result.stats.cached_files
             ));
             output.push_str(&format!(
                 "Skipped units: {}\n",
@@ -445,8 +445,8 @@ fn test_e2e_translation_javascript_file() {
                 workflow_result.stats.translated_units
             ));
             output.push_str(&format!(
-                "Cached units: {}\n",
-                workflow_result.stats.cached_units
+                "Cached files: {}\n",
+                workflow_result.stats.cached_files
             ));
             output.push_str(&format!(
                 "Skipped units: {}\n",
@@ -553,8 +553,8 @@ fn test_e2e_translation_markdown_file() {
                 workflow_result.stats.translated_units
             ));
             output.push_str(&format!(
-                "Cached units: {}\n",
-                workflow_result.stats.cached_units
+                "Cached files: {}\n",
+                workflow_result.stats.cached_files
             ));
             output.push_str(&format!(
                 "Skipped units: {}\n",
@@ -661,8 +661,8 @@ fn test_e2e_translation_multiple_files() {
                 workflow_result.stats.translated_units
             ));
             output.push_str(&format!(
-                "Cached units: {}\n",
-                workflow_result.stats.cached_units
+                "Cached files: {}\n",
+                workflow_result.stats.cached_files
             ));
             output.push_str(&format!(
                 "Skipped units: {}\n",
@@ -773,8 +773,8 @@ fn test_e2e_translation_with_cache() {
                 workflow_result.stats.translated_units
             ));
             output.push_str(&format!(
-                "Cached units: {}\n",
-                workflow_result.stats.cached_units
+                "Cached files: {}\n",
+                workflow_result.stats.cached_files
             ));
             output.push_str(&format!(
                 "Skipped units: {}\n",
@@ -832,8 +832,8 @@ fn test_e2e_translation_with_cache() {
                 workflow_result.stats.translated_units
             ));
             output.push_str(&format!(
-                "Cached units: {}\n",
-                workflow_result.stats.cached_units
+                "Cached files: {}\n",
+                workflow_result.stats.cached_files
             ));
             output.push_str(&format!(
                 "Skipped units: {}\n",

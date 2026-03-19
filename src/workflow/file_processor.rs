@@ -24,9 +24,9 @@ pub struct FileProcessResult {
     pub total_units: usize,
     /// Number of units that were translated
     pub translated_units: usize,
-    /// Number of units from cache
-    pub cached_units: usize,
-    /// Number of units skipped
+    /// Number of files from cache (cache hit)
+    pub cached_files: usize,
+    /// Number of units skipped (should_translate = false)
     pub skipped_units: usize,
     /// Number of errors
     pub errors: usize,
@@ -39,7 +39,7 @@ impl FileProcessResult {
     pub fn merge(&mut self, other: &FileProcessResult) {
         self.total_units += other.total_units;
         self.translated_units += other.translated_units;
-        self.cached_units += other.cached_units;
+        self.cached_files += other.cached_files;
         self.skipped_units += other.skipped_units;
         self.errors += other.errors;
     }
@@ -51,7 +51,7 @@ impl From<FileProcessResult> for TranslationStats {
             total_files: 1,
             total_units: result.total_units,
             translated_units: result.translated_units,
-            cached_units: result.cached_units,
+            cached_files: result.cached_files,
             skipped_units: result.skipped_units,
             errors: result.errors,
         }
@@ -131,7 +131,7 @@ impl<'a> FileProcessor<'a> {
 
                 if all_translated {
                     debug!("File already translated, skipping");
-                    result.cached_units = units.len();
+                    result.cached_files = 1;
                     return Ok(result);
                 } else {
                     debug!("Cache invalid: file not fully translated, re-translating");
@@ -239,7 +239,7 @@ mod tests {
         let mut result1 = FileProcessResult {
             total_units: 10,
             translated_units: 5,
-            cached_units: 3,
+            cached_files: 1,
             skipped_units: 2,
             errors: 0,
             was_written: true,
@@ -248,7 +248,7 @@ mod tests {
         let result2 = FileProcessResult {
             total_units: 8,
             translated_units: 4,
-            cached_units: 2,
+            cached_files: 1,
             skipped_units: 2,
             errors: 1,
             was_written: false,
@@ -258,7 +258,7 @@ mod tests {
 
         assert_eq!(result1.total_units, 18);
         assert_eq!(result1.translated_units, 9);
-        assert_eq!(result1.cached_units, 5);
+        assert_eq!(result1.cached_files, 2);
         assert_eq!(result1.skipped_units, 4);
         assert_eq!(result1.errors, 1);
         assert!(result1.was_written); // Should remain true
@@ -270,7 +270,7 @@ mod tests {
 
         assert_eq!(result.total_units, 0);
         assert_eq!(result.translated_units, 0);
-        assert_eq!(result.cached_units, 0);
+        assert_eq!(result.cached_files, 0);
         assert_eq!(result.skipped_units, 0);
         assert_eq!(result.errors, 0);
         assert!(!result.was_written);

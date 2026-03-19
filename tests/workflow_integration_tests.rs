@@ -103,7 +103,7 @@ mod workflow_integration {
         assert_eq!(result.stats.total_files, 0);
         assert_eq!(result.stats.total_units, 0);
         assert_eq!(result.stats.translated_units, 0);
-        assert_eq!(result.stats.cached_units, 0);
+        assert_eq!(result.stats.cached_files, 0);
         assert_eq!(result.stats.skipped_units, 0);
         assert_eq!(result.stats.errors, 0);
     }
@@ -133,7 +133,7 @@ mod workflow_file_processor {
 
         assert_eq!(result.total_units, 0);
         assert_eq!(result.translated_units, 0);
-        assert_eq!(result.cached_units, 0);
+        assert_eq!(result.cached_files, 0);
         assert_eq!(result.skipped_units, 0);
         assert_eq!(result.errors, 0);
         assert!(!result.was_written);
@@ -144,7 +144,7 @@ mod workflow_file_processor {
         let mut result1 = FileProcessResult {
             total_units: 10,
             translated_units: 5,
-            cached_units: 3,
+            cached_files: 1,
             skipped_units: 2,
             errors: 0,
             was_written: true,
@@ -153,7 +153,7 @@ mod workflow_file_processor {
         let result2 = FileProcessResult {
             total_units: 8,
             translated_units: 4,
-            cached_units: 2,
+            cached_files: 1,
             skipped_units: 2,
             errors: 1,
             was_written: false,
@@ -163,7 +163,7 @@ mod workflow_file_processor {
 
         assert_eq!(result1.total_units, 18);
         assert_eq!(result1.translated_units, 9);
-        assert_eq!(result1.cached_units, 5);
+        assert_eq!(result1.cached_files, 2);
         assert_eq!(result1.skipped_units, 4);
         assert_eq!(result1.errors, 1);
         assert!(result1.was_written); // Should remain true

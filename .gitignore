@@ -1,5 +1,6 @@
 **/*.zip
 **/*.exe
+**/*.bin
 go.sum
 .env
 tests/hurl

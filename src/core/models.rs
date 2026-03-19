@@ -482,8 +482,8 @@ pub struct TranslationStats {
     pub total_units: usize,
     /// Units translated (not from cache)
     pub translated_units: usize,
-    /// Units from cache
-    pub cached_units: usize,
+    /// Files from cache (cache hit)
+    pub cached_files: usize,
     /// Units skipped (should_translate = false)
     pub skipped_units: usize,
     /// Errors encountered
@@ -496,7 +496,7 @@ impl TranslationStats {
         self.total_files += other.total_files;
         self.total_units += other.total_units;
         self.translated_units += other.translated_units;
-        self.cached_units += other.cached_units;
+        self.cached_files += other.cached_files;
         self.skipped_units += other.skipped_units;
         self.errors += other.errors;
     }

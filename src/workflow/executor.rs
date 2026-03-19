@@ -181,13 +181,17 @@ impl TranslationWorkflow {
         );
         info!(
             total_files = result.stats.total_files,
+            cached_files = result.stats.cached_files,
+            processed_files = result.stats.total_files - result.stats.cached_files,
+            "Files"
+        );
+        info!(
             total_units = result.stats.total_units,
             translated_units = result.stats.translated_units,
-            cached_units = result.stats.cached_units,
             skipped_units = result.stats.skipped_units,
-            errors = result.stats.errors,
-            "Translation summary"
+            "Units"
         );
+        info!(errors = result.stats.errors, "Errors");
         info!("========================================");
 
         Ok(result)
