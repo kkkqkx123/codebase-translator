@@ -1,6 +1,6 @@
 use rayon::prelude::*;
 use std::path::{Path, PathBuf};
-use tracing::{debug, instrument, warn};
+use tracing::{debug, warn};
 
 use crate::encoding::error::Error;
 use crate::encoding::types::{DetectorConfig, EncodingResult, EncodingType, Result};

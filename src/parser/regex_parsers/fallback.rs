@@ -1,6 +1,6 @@
 //! Generic fallback parser for simple file types
 
-use tracing::{debug, warn};
+use tracing::warn;
 
 use crate::core::error::Result;
 use crate::core::models::{File, TranslationUnit};

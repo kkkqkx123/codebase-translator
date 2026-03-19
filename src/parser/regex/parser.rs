@@ -1,7 +1,7 @@
 //! Regex-based parser implementation
 
 use regex::Regex;
-use tracing::{debug, info, instrument, warn};
+use tracing::{debug, info, warn};
 
 use crate::core::error::Result;
 use crate::core::models::{File, NodeType, TranslationUnit};
