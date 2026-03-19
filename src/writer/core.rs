@@ -335,6 +335,8 @@ mod tests {
             should_translate: true,
             translated: None,
             format_info: None,
+            pattern_type: None,
+            pattern_name: None,
         }];
 
         units[0].set_translated("你好");
@@ -357,6 +359,8 @@ mod tests {
             should_translate: true,
             translated: None,
             format_info: None,
+            pattern_type: None,
+            pattern_name: None,
         }];
 
         units[0].set_translated("你好");
@@ -384,6 +388,8 @@ mod tests {
                 ends_with_newline: false,
                 is_multiline: false,
             }),
+            pattern_type: None,
+            pattern_name: None,
         }];
 
         let result = TranslationApplier::apply_translations("content", &units);
@@ -409,6 +415,8 @@ mod tests {
                 ends_with_newline: false,
                 is_multiline: false,
             }),
+            pattern_type: None,
+            pattern_name: None,
         }];
 
         units[0].set_translated("这是一个注释");
@@ -437,6 +445,8 @@ mod tests {
                 ends_with_newline: false,
                 is_multiline: false,
             }),
+            pattern_type: None,
+            pattern_name: None,
         }];
 
         units[0].set_translated("这是一个注释");
@@ -464,6 +474,8 @@ mod tests {
                 ends_with_newline: true,
                 is_multiline: false,
             }),
+            pattern_type: None,
+            pattern_name: None,
         }];
 
         units[0].set_translated("这是一个\n多行注释");
@@ -492,6 +504,8 @@ mod tests {
                 ends_with_newline: true,
                 is_multiline: false,
             }),
+            pattern_type: None,
+            pattern_name: None,
         }];
 
         units[0].set_translated("这是一个\n多行注释");
@@ -520,6 +534,8 @@ mod tests {
                 ends_with_newline: false,
                 is_multiline: false,
             }),
+            pattern_type: None,
+            pattern_name: None,
         }];
 
         units[0].set_translated("/// 这是一个文档注释");
@@ -547,6 +563,8 @@ mod tests {
                 ends_with_newline: true,
                 is_multiline: true,
             }),
+            pattern_type: None,
+            pattern_name: None,
         }];
 
         units[0].set_translated("这是一个\n文档注释");
@@ -575,6 +593,8 @@ mod tests {
                 ends_with_newline: true,
                 is_multiline: false,
             }),
+            pattern_type: None,
+            pattern_name: None,
         }];
 
         units[0].set_translated("第一行\n第二行");
@@ -596,6 +616,8 @@ mod tests {
             should_translate: true,
             translated: None,
             format_info: None,
+            pattern_type: None,
+            pattern_name: None,
         }];
 
         units[0].set_translated("你好");
@@ -625,6 +647,8 @@ mod tests {
                     ends_with_newline: false,
                     is_multiline: false,
                 }),
+                pattern_type: None,
+                pattern_name: None,
             },
             TranslationUnit {
                 id: "2".to_string(),
@@ -642,6 +666,8 @@ mod tests {
                     ends_with_newline: false,
                     is_multiline: false,
                 }),
+                pattern_type: None,
+                pattern_name: None,
             },
         ];
 

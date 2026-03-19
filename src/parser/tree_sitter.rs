@@ -257,6 +257,8 @@ impl TreeSitterParser {
             should_translate: true,
             translated: None,
             format_info: Some(format_info),
+            pattern_type: None,
+            pattern_name: None,
         }
     }
 

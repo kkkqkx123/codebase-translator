@@ -359,6 +359,8 @@ mod tests {
             should_translate: true,
             translated: None,
             format_info: None,
+            pattern_type: None,
+            pattern_name: None,
         }];
 
         units[0].set_translated("你好");
@@ -390,6 +392,8 @@ mod tests {
             should_translate: true,
             translated: None,
             format_info: None,
+            pattern_type: None,
+            pattern_name: None,
         }];
 
         units[0].set_translated("你好");

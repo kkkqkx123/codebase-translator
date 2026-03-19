@@ -424,6 +424,8 @@ fn test_translation_applier_multiline_without_format_info() {
         should_translate: true,
         translated: None,
         format_info: None, // No format info
+        pattern_type: None,
+        pattern_name: None,
     };
     // When format_info is None, the translated text should include the full formatted comment
     unit.set_translated("/*\nThis is a multi-line comment\nwith multiple lines of text\n*/");

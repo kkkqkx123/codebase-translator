@@ -1,25 +1,7 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 
-use crate::core::models::{NodeType, Position, TranslationUnit};
-
-/// Pattern type classification
-#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub enum PatternType {
-    Builtin,
-    CustomRegex,
-    StateMachine,
-}
-
-impl std::fmt::Display for PatternType {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            PatternType::Builtin => write!(f, "Builtin"),
-            PatternType::CustomRegex => write!(f, "CustomRegex"),
-            PatternType::StateMachine => write!(f, "StateMachine"),
-        }
-    }
-}
+use crate::core::models::{NodeType, PatternType, Position, TranslationUnit};
 
 /// A verified match from extraction rules
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -96,10 +78,8 @@ impl MatchCollector {
     }
 
     fn extract_pattern_name(unit: &TranslationUnit) -> String {
-        if unit.id.starts_with("custom:") {
-            unit.id.split(':').nth(1).unwrap_or("unknown").to_string()
-        } else if unit.id.starts_with("state_machine:") {
-            unit.id.split(':').nth(1).unwrap_or("unknown").to_string()
+        if let Some(name) = &unit.pattern_name {
+            name.clone()
         } else {
             match unit.node_type {
                 NodeType::Comment => "comment".to_string(),
@@ -113,13 +93,7 @@ impl MatchCollector {
     }
 
     fn determine_pattern_type(unit: &TranslationUnit) -> PatternType {
-        if unit.id.starts_with("custom:") {
-            PatternType::CustomRegex
-        } else if unit.id.starts_with("state_machine:") {
-            PatternType::StateMachine
-        } else {
-            PatternType::Builtin
-        }
+        unit.pattern_type.unwrap_or(PatternType::Builtin)
     }
 
     fn extract_category(unit: &TranslationUnit) -> String {

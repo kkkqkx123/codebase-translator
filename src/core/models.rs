@@ -282,6 +282,30 @@ impl std::fmt::Display for NodeType {
     }
 }
 
+/// Pattern type classification for extraction rules
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum PatternType {
+    Builtin,
+    CustomRegex,
+    StateMachine,
+}
+
+impl std::fmt::Display for PatternType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            PatternType::Builtin => write!(f, "Builtin"),
+            PatternType::CustomRegex => write!(f, "CustomRegex"),
+            PatternType::StateMachine => write!(f, "StateMachine"),
+        }
+    }
+}
+
+impl Default for PatternType {
+    fn default() -> Self {
+        Self::Builtin
+    }
+}
+
 /// A unit of text that can be translated
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TranslationUnit {
@@ -305,6 +329,12 @@ pub struct TranslationUnit {
     /// Format information for preserving comment formatting
     #[serde(skip_serializing_if = "Option::is_none")]
     pub format_info: Option<FormatInfo>,
+    /// Pattern type (if extracted by custom pattern)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pattern_type: Option<PatternType>,
+    /// Pattern name (if extracted by custom pattern)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pattern_name: Option<String>,
 }
 
 impl TranslationUnit {
@@ -338,6 +368,8 @@ impl TranslationUnit {
             should_translate: true,
             translated: None,
             format_info: None,
+            pattern_type: None,
+            pattern_name: None,
         }
     }
 
@@ -360,6 +392,33 @@ impl TranslationUnit {
             should_translate: true,
             translated: None,
             format_info: Some(format_info),
+            pattern_type: None,
+            pattern_name: None,
+        }
+    }
+
+    /// Create a new translation unit with pattern info
+    pub fn new_with_pattern(
+        id: impl Into<String>,
+        node_type: NodeType,
+        content: impl Into<String>,
+        start_pos: Position,
+        end_pos: Position,
+        pattern_type: PatternType,
+        pattern_name: impl Into<String>,
+    ) -> Self {
+        Self {
+            id: id.into(),
+            node_type,
+            content: content.into(),
+            start_pos,
+            end_pos,
+            language: None,
+            should_translate: true,
+            translated: None,
+            format_info: None,
+            pattern_type: Some(pattern_type),
+            pattern_name: Some(pattern_name.into()),
         }
     }
 

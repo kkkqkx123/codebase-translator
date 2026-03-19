@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use crate::core::error::{Result, TranslateError};
-use crate::core::models::{File, TranslationUnit};
+use crate::core::models::{File, PatternType, TranslationUnit};
 use crate::parser::filter::ContentFilter;
 use crate::parser::regex::custom_pattern_matcher::CustomPatternMatcher;
 use crate::parser::regex::state_machine::StateMachineMatcher;
@@ -304,12 +304,14 @@ impl ParserCoordinator {
                                 custom_units.len()
                             );
 
-                            let unit = TranslationUnit::new(
+                            let unit = TranslationUnit::new_with_pattern(
                                 id,
                                 crate::core::models::NodeType::StringLiteral,
                                 text.clone(),
                                 m.start_pos,
                                 m.end_pos,
+                                PatternType::CustomRegex,
+                                matcher.name.clone(),
                             );
                             custom_units.push(unit);
                         }
@@ -359,12 +361,14 @@ impl ParserCoordinator {
                                 sm_units.len()
                             );
 
-                            let unit = TranslationUnit::new(
+                            let unit = TranslationUnit::new_with_pattern(
                                 id,
                                 crate::core::models::NodeType::StringLiteral,
                                 text.clone(),
                                 m.start_pos,
                                 m.end_pos,
+                                PatternType::StateMachine,
+                                matcher.name.clone(),
                             );
                             sm_units.push(unit);
                         }
