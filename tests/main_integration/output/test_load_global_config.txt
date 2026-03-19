@@ -1,0 +1,6 @@
+Global Config Loaded:
+====================
+Enabled Providers: ["deeplx", "llm"]
+DeepLX URL: https://api.deeplx.org
+Logging Level: info
+Logging Format: console

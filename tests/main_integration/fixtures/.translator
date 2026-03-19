@@ -1,0 +1,75 @@
+# Translator 项目配置文件 - E2E测试专用
+#
+# 本配置文件用于端到端测试，验证完整的翻译工作流程
+
+# 翻译语言配置
+[translate]
+source_langs = ["AUTO"]       # 自动检测源语言
+target_lang = "EN"            # 目标语言：英语
+
+# 包含文件模式
+[include]
+patterns = [
+    "**/*.rs",
+    "**/*.py",
+    "**/*.js",
+    "**/*.md",
+]
+
+# 排除文件模式
+[exclude]
+patterns = [
+    "vendor/**",
+    "node_modules/**",
+    "target/**",
+]
+respect_gitignore = true
+
+# 过滤配置
+[filter]
+exclude_keywords = [
+    "TODO",
+    "FIXME",
+    "NOTE",
+]
+exclude_patterns = [
+    'https?://[^\s]+',
+]
+include_patterns = []
+min_length = 0
+max_length = 0
+allow_placeholders = false
+detect_code_patterns = true
+
+# 缓存配置
+[cache]
+enabled = true
+directory = ".translator-cache"
+
+# 写入配置
+[writer]
+preview_only = false         # 实际修改文件
+backup = false               # 不创建备份文件（测试环境）
+
+# 字符串字面量提取配置
+[parser.extraction.string_literals]
+enabled = false               # 测试时不提取字符串字面量
+
+[parser.extraction.string_literals.categories]
+error_handling = true
+output = false
+variables = false
+properties = false
+
+# 提取配置
+[extraction]
+comments = true              # 提取注释
+doc_strings = true           # 提取文档字符串
+error_messages = true        # 提取错误消息
+format_strings = true        # 提取格式化字符串
+
+# 编码检测配置
+[encoding]
+detect_encodings = ["UTF-8"]
+min_confidence = 0.7
+convert_to_utf8 = true

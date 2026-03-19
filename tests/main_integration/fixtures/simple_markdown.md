@@ -1,0 +1,40 @@
+# 测试翻译功能
+
+这是一个简单的Markdown文件，用于测试翻译功能。
+
+## 功能介绍
+
+本工具可以自动翻译代码注释和文档字符串。
+
+### 支持的语言
+
+- Rust
+- Python
+- JavaScript
+- Go
+- Java
+
+### 使用方法
+
+1. 配置翻译服务
+2. 运行翻译命令
+3. 查看翻译结果
+
+## 示例
+
+```rust
+fn main() {
+    println!("Hello, World!");
+}
+```
+
+## 注意事项
+
+- 请确保API密钥配置正确
+- 翻译结果可能需要人工审核
+- 建议先在小规模代码上测试
+
+## 相关链接
+
+- [项目主页](https://github.com/example/translator)
+- [文档](https://docs.example.com)

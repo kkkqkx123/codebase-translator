@@ -9,6 +9,8 @@ use codebase_translate::config::{global::GlobalConfig, loader::ConfigLoader};
 use std::path::PathBuf;
 use tempfile::TempDir;
 
+pub mod main_integration;
+
 /// Get the project root directory
 fn get_project_root() -> PathBuf {
     PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap_or_else(|_| ".".to_string()))

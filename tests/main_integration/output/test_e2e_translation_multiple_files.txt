@@ -1,0 +1,222 @@
+E2E Translation Test - Multiple Files
+=====================================
+
+Translation completed successfully!
+
+Files processed: 0
+Total files: 0
+Total units: 0
+Translated units: 0
+Cached units: 0
+Skipped units: 0
+Errors: 5
+Duration: 65.41s
+
+
+Directory Contents:
+====================
+  .translator [FILE]
+  simple_javascript.js [FILE]
+  simple_markdown.md [FILE]
+  simple_python.py [FILE]
+  simple_rust.rs [FILE]
+
+
+Translated Files:
+==================
+
+--- C:\Users\33530\AppData\Local\Temp\.tmpBGa4wh\simple_javascript.js ---
+// This is a simple JavaScript file to test the translation functionality
+// Include Chinese comments
+
+/**
+ * 计算两个数的和
+ * @param {number} a - 第一个数字
+ * @param {number} b - 第二个数字
+ * @returns {number} 两个数的和
+ */
+function add(a, b) {
+    return a + b;
+}
+
+/**
+ * 计算两个数的差
+ * @param {number} a - 被减数
+ * @param {number} b - 减数
+ * @returns {number} 两个数的差
+ */
+function subtract(a, b) {
+    return a - b;
+}
+
+// Simple classes
+class Calculator {
+    /**
+     * 创建计算器实例
+     * @param {string} name - 计算器名称
+     */
+    constructor(name) {
+        this.name = name;
+    }
+    
+    /**
+     * 获取计算器名称
+     * @returns {string} 计算器名称
+     */
+    getName() {
+        return this.name;
+    }
+}
+
+// Main function
+function main() {
+    console.log("测试翻译功能");
+    const result = add(10, 20);
+    console.log(`结果: ${result}`);
+}
+
+main();
+
+--- C:\Users\33530\AppData\Local\Temp\.tmpBGa4wh\simple_markdown.md ---
+# Testing the translation function
+
+这是一个简单的Markdown文件，用于测试翻译功能。
+
+#Function
+
+本工具可以自动翻译代码注释和文档字符串。
+
+## Languages supported
+
+- Rust
+- Python
+- JavaScript
+- Go
+- Java
+
+## Usage
+
+1. 配置翻译服务
+2. 运行翻译命令
+3. 查看翻译结果
+
+#typical example
+
+```rust
+fn main() {
+    println!("Hello, World!");
+}
+```
+
+#caveat
+
+- 请确保API密钥配置正确
+- 翻译结果可能需要人工审核
+- 建议先在小规模代码上测试
+
+#Related links
+
+- [项目主页](https://github.com/example/translator)
+- [文档](https://docs.example.com)
+
+--- C:\Users\33530\AppData\Local\Temp\.tmpBGa4wh\simple_python.py ---
+# This is a simple Python file to test the translation function
+# Include Chinese comments and documentation strings
+
+def add(a, b):
+"""
+    Calculate the sum of two numbers
+
+    Args.
+        a: first number
+        b: second number
+
+    Returns.
+        The sum of the two numbers
+    """
+    return a + b
+
+def subtract(a, b):
+"""
+    Calculate the difference between two numbers
+
+    Args.
+        a: the subtracted number
+        b: subtracted number
+
+    Returns.
+        Difference between two numbers
+    """
+    return a - b
+
+class Calculator:
+    """Simple calculator class""""
+    
+    def __init__(self, name):
+"""
+        Initializing the calculator
+
+        Args.
+            name: Calculator name
+        """
+        self.name = name
+    
+    def get_name(self):
+        """Get Calculator Name""""
+        return self.name
+
+if __name__ == "__main__":
+    print("测试翻译功能")
+    result = add(10, 20)
+    print(f"结果: {result}")
+
+--- C:\Users\33530\AppData\Local\Temp\.tmpBGa4wh\simple_rust.rs ---
+// This is a simple Rust file to test the translation functionality
+// Include Chinese comments and document strings
+
+/// Calculate the sum of two numbers
+/// # Arguments
+/// * `a` - first digit
+/// # Examples
+/// ```
+/// let result = add(1, 2);
+/// assert_eq!(result, 3);
+pub fn add(a: i32, b: i32) -> i32 {
+    a + b
+}
+
+/// Calculate the difference between two numbers
+/// # Arguments
+/// * `a` - subtracted number
+    a - b
+}
+
+/// Multiplication
+    a * b
+}
+
+// It's a simple structure
+pub struct Calculator {
+    // Calculator name
+    name: String,
+}
+
+impl Calculator {
+/// Creating a New Calculator Instance
+/// # Arguments
+/// * `name` - name of calculator
+        Calculator {
+            name: name.to_string(),
+        }
+    }
+
+/// Get the name of the calculator
+        &self.name
+    }
+}
+
+fn main() {
+    println!("测试翻译功能");
+    let result = add(10, 20);
+    println!("结果: {}", result);
+}
