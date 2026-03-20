@@ -3,7 +3,7 @@
 //! This module contains logic for applying translations to file content,
 //! with support for different file types (generic and markdown).
 
-use crate::core::error::{Result, TranslateError};
+use crate::core::error::{Result};
 use crate::core::models::TranslationUnit;
 
 /// Applies translations to file content
@@ -28,18 +28,18 @@ impl TranslationApplier {
 
         let line_ending = super::file::detect_line_ending(content);
         let normalized_content = content.replace("\r\n", "\n");
-        
+
         // First, handle multi-line merged units by replacing raw_match directly
         let mut result = normalized_content;
         let multiline_units: Vec<&TranslationUnit> = units
             .iter()
             .filter(|u| u.raw_match.is_some() && u.raw_match.as_ref().unwrap().contains('\n'))
             .collect();
-        
+
         // Sort multiline units by position in reverse order to avoid offset issues
         let mut sorted_multiline: Vec<&TranslationUnit> = multiline_units;
         sorted_multiline.sort_by(|a, b| b.start_pos.offset.cmp(&a.start_pos.offset));
-        
+
         for unit in sorted_multiline {
             if let (Some(raw_match), Some(translated)) = (&unit.raw_match, &unit.translated) {
                 // For multiline units, replace the entire raw_match with formatted translation
@@ -47,7 +47,7 @@ impl TranslationApplier {
                 result = result.replace(raw_match.as_str(), &formatted);
             }
         }
-        
+
         // Then handle single-line units line by line
         let lines: Vec<&str> = result.split('\n').collect();
         let mut unit_map: std::collections::HashMap<usize, Vec<&TranslationUnit>> =
@@ -58,7 +58,7 @@ impl TranslationApplier {
             if unit.raw_match.is_some() && unit.raw_match.as_ref().unwrap().contains('\n') {
                 continue;
             }
-            
+
             if unit.start_pos.line >= 1 {
                 unit_map.entry(unit.start_pos.line).or_default().push(unit);
             }
@@ -93,12 +93,13 @@ impl TranslationApplier {
     fn format_multiline_translation(raw_match: &str, translated: &str) -> String {
         let raw_lines: Vec<&str> = raw_match.lines().collect();
         let translated_lines: Vec<&str> = translated.lines().collect();
-        
+
         // Check if this is a block comment (starts with /* or /**)
-        let is_block_comment = raw_lines.first()
+        let is_block_comment = raw_lines
+            .first()
             .map(|line| line.trim().starts_with("/*"))
             .unwrap_or(false);
-        
+
         if is_block_comment {
             // For block comments, we need to preserve the structure
             // Extract content lines (lines between /* and */)
@@ -110,13 +111,13 @@ impl TranslationApplier {
                     content_lines.push((i, *line));
                 }
             }
-            
+
             let mut result = String::new();
             let mut translated_idx = 0;
-            
+
             for (i, raw_line) in raw_lines.iter().enumerate() {
                 let trimmed = raw_line.trim();
-                
+
                 if trimmed == "/*" || trimmed == "/**" {
                     // First line marker
                     result.push_str(raw_line);
@@ -152,12 +153,12 @@ impl TranslationApplier {
                         translated_idx += 1;
                     }
                 }
-                
+
                 if i < raw_lines.len() - 1 {
                     result.push('\n');
                 }
             }
-            
+
             result
         } else {
             // Non-block comment: simpler case
@@ -193,7 +194,7 @@ impl TranslationApplier {
     fn extract_comment_prefix(line: &str) -> String {
         let trimmed = line.trim_start();
         let leading_whitespace = &line[..(line.len() - trimmed.len())];
-        
+
         if trimmed.starts_with("///") {
             format!("{}/// ", leading_whitespace)
         } else if trimmed.starts_with("//!") {
@@ -321,20 +322,20 @@ impl TranslationApplier {
         // This handles cases where extracted text has comment markers removed
         let raw_lines: Vec<&str> = raw_match.lines().collect();
         let extracted_lines: Vec<&str> = extracted.lines().collect();
-        
+
         if raw_lines.len() == extracted_lines.len() {
             let mut result = String::new();
             let mut extracted_idx = 0;
-            
+
             for (i, raw_line) in raw_lines.iter().enumerate() {
                 if extracted_idx < extracted_lines.len() {
                     let extracted_line = extracted_lines[extracted_idx];
-                    
+
                     // Try to find extracted_line in raw_line
                     if let Some(pos) = raw_line.find(extracted_line) {
                         let before = &raw_line[..pos];
                         let after = &raw_line[pos + extracted_line.len()..];
-                        
+
                         // For multi-line translations, split translated text by lines
                         let translated_lines: Vec<&str> = translated.lines().collect();
                         if translated_lines.len() == extracted_lines.len() {
@@ -343,13 +344,13 @@ impl TranslationApplier {
                             // If translated text doesn't have same line count, use as-is
                             result.push_str(&format!("{}{}{}", before, translated, after));
                         }
-                        
+
                         extracted_idx += 1;
                     } else {
                         // Can't find extracted line, keep raw line as-is
                         result.push_str(raw_line);
                     }
-                    
+
                     if i < raw_lines.len() - 1 {
                         result.push('\n');
                     }
@@ -360,7 +361,7 @@ impl TranslationApplier {
                     }
                 }
             }
-            
+
             return result;
         }
 

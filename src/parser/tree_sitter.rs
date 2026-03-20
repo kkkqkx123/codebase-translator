@@ -9,12 +9,12 @@ use tree_sitter::{Language as TSLanguage, Node, Parser, Query, QueryCursor, Tree
 
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, Position, TranslationUnit};
+use crate::parser::core::{CommentType, StringProcessor};
 use crate::parser::filter::ContentFilter;
 use crate::parser::strategy::{
     ExtractionContext, ExtractionStrategy, ExtractionStrategyImpl, StrategyNodeType,
 };
 use crate::parser::Parser as ParserTrait;
-use crate::parser::core::{StringProcessor, CommentType};
 
 /// Language configuration for tree-sitter
 #[derive(Debug, Clone)]
@@ -248,7 +248,7 @@ impl TreeSitterParser {
         } else {
             current.start_pos.column - prev.start_pos.column
         };
-        
+
         // Allow small column differences (up to 4 spaces) but not large ones
         // This prevents merging comments from different nesting levels
         column_diff <= 4
@@ -291,7 +291,12 @@ impl TreeSitterParser {
         };
 
         // Create merged unit
-        let merged_id = format!("{}_merged_{}_{}", first.id.split('_').next().unwrap_or(&first.id), first.node_type, first.start_pos.offset);
+        let merged_id = format!(
+            "{}_merged_{}_{}",
+            first.id.split('_').next().unwrap_or(&first.id),
+            first.node_type,
+            first.start_pos.offset
+        );
         let mut merged_unit = TranslationUnit::new_with_pattern(
             merged_id,
             first.node_type.clone(),
@@ -354,7 +359,10 @@ impl TreeSitterParser {
                     StrategyNodeType::Comment => {
                         // Detect comment type and clean accordingly
                         let trimmed = node_text.trim();
-                        if trimmed.starts_with("///") || trimmed.starts_with("//!") || trimmed.starts_with("/**") {
+                        if trimmed.starts_with("///")
+                            || trimmed.starts_with("//!")
+                            || trimmed.starts_with("/**")
+                        {
                             processor.clean_comment(trimmed, CommentType::Doc)
                         } else if trimmed.starts_with("/*") {
                             processor.clean_comment(trimmed, CommentType::Block)

@@ -77,7 +77,7 @@ The project includes a comprehensive test suite utilising Rust's standard testin
 ## Workflow
 
 ```
-Scan directory → Detect encoding → Check cache → Parse file → Batch translation → Write back to file → Update cache
+Scan directory → Check cache → Detect encoding → Parse file → Batch translation → Write back to file → Update cache
 ```
 
 ## Translation Providers

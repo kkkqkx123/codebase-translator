@@ -41,6 +41,7 @@ pub struct CacheEntryInfo {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CacheConfig {
     /// Whether cache is enabled
+    #[serde(default = "default_cache_enabled")]
     pub enabled: bool,
     /// Cache mode: local or global
     #[serde(default)]
@@ -51,10 +52,20 @@ pub struct CacheConfig {
     /// Cache format: json or binary (default binary)
     #[serde(default = "default_cache_format")]
     pub format: String,
+    /// Max cache age in days (0 or None = no limit)
+    #[serde(default)]
+    pub max_age_days: Option<u32>,
+    /// Max cache size in MB (0 or None = no limit)
+    #[serde(default)]
+    pub max_size_mb: Option<u32>,
+}
+
+fn default_cache_enabled() -> bool {
+    true
 }
 
 fn default_cache_dir() -> String {
-    ".translator-cache".to_string()
+    ".translator".to_string()
 }
 
 fn default_cache_format() -> String {
@@ -64,10 +75,12 @@ fn default_cache_format() -> String {
 impl Default for CacheConfig {
     fn default() -> Self {
         Self {
-            enabled: true,
+            enabled: default_cache_enabled(),
             mode: CacheMode::Local,
             directory: default_cache_dir(),
             format: default_cache_format(),
+            max_age_days: None,
+            max_size_mb: None,
         }
     }
 }

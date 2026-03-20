@@ -718,6 +718,8 @@ mod tests {
             mode: crate::core::models::CacheMode::Local,
             directory: ".cache".to_string(),
             format: "binary".to_string(),
+            max_age_days: None,
+            max_size_mb: None,
         };
 
         let cache = BinaryCache::new(config, temp_dir.path()).unwrap();
@@ -760,6 +762,8 @@ mod tests {
             mode: crate::core::models::CacheMode::Local,
             directory: ".cache".to_string(),
             format: "binary".to_string(),
+            max_age_days: None,
+            max_size_mb: None,
         };
 
         let cache = BinaryCache::new(config, temp_dir.path()).unwrap();
@@ -785,6 +789,8 @@ mod tests {
             mode: crate::core::models::CacheMode::Local,
             directory: ".cache".to_string(),
             format: "binary".to_string(),
+            max_age_days: None,
+            max_size_mb: None,
         };
 
         let cache = BinaryCache::new(config, temp_dir.path()).unwrap();

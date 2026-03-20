@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 use crate::config::global::LoggingConfig;
+use crate::core::models::CacheConfig;
 use crate::translator::ProviderType;
 use tracing::debug;
 
@@ -70,11 +71,11 @@ impl ProjectConfig {
         }
         self.filter.allow_placeholders = other.filter.allow_placeholders;
         self.filter.detect_code_patterns = other.filter.detect_code_patterns;
-        if !other.cache.cache_dir.is_empty() {
-            self.cache.cache_dir = other.cache.cache_dir;
+        if !other.cache.directory.is_empty() {
+            self.cache.directory = other.cache.directory;
         }
-        if !other.cache.cache_type.is_empty() {
-            self.cache.cache_type = other.cache.cache_type;
+        if !other.cache.format.is_empty() {
+            self.cache.format = other.cache.format;
         }
         if other.writer.dry_run {
             self.writer.dry_run = other.writer.dry_run;
@@ -108,7 +109,7 @@ impl ProjectConfig {
         debug!(
             provider = %self.translate.provider,
             target_lang = %self.translate.target_lang,
-            cache_type = %self.cache.cache_type,
+            cache_format = %self.cache.format,
             "Validating project configuration"
         );
 
@@ -120,7 +121,7 @@ impl ProjectConfig {
             return Err("target language cannot be AUTO".to_string());
         }
 
-        if self.cache.cache_dir.is_empty() {
+        if self.cache.directory.is_empty() {
             return Err("cache directory is required".to_string());
         }
 
@@ -230,42 +231,6 @@ pub struct LanguageSettings {
     pub doc_patterns: Vec<String>,
 }
 
-/// Cache configuration
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CacheConfig {
-    /// Cache type: "file", "binary", "none"
-    #[serde(default = "default_cache_type")]
-    pub cache_type: String,
-    /// Cache directory
-    #[serde(default = "default_cache_dir")]
-    pub cache_dir: String,
-    /// Cache file name (for file cache)
-    #[serde(default = "default_cache_file")]
-    pub cache_file: String,
-    /// Binary cache file name
-    #[serde(default = "default_binary_cache_file")]
-    pub binary_cache_file: String,
-    /// Max cache age in days (0 = no limit)
-    #[serde(default)]
-    pub max_age_days: u32,
-    /// Max cache size in MB (0 = no limit)
-    #[serde(default)]
-    pub max_size_mb: u32,
-}
-
-impl Default for CacheConfig {
-    fn default() -> Self {
-        Self {
-            cache_type: default_cache_type(),
-            cache_dir: default_cache_dir(),
-            cache_file: default_cache_file(),
-            binary_cache_file: default_binary_cache_file(),
-            max_age_days: 0,
-            max_size_mb: 0,
-        }
-    }
-}
-
 /// Writer configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WriterConfig {
@@ -313,22 +278,6 @@ fn default_include_patterns() -> Vec<String> {
         "**/*.py".to_string(),
         "**/*.rs".to_string(),
     ]
-}
-
-fn default_cache_type() -> String {
-    "file".to_string()
-}
-
-fn default_cache_dir() -> String {
-    ".translator".to_string()
-}
-
-fn default_cache_file() -> String {
-    "translation_cache.json".to_string()
-}
-
-fn default_binary_cache_file() -> String {
-    "translation_cache.bin".to_string()
 }
 
 fn default_batch_size() -> usize {
@@ -835,8 +784,9 @@ mod tests {
         let config = ProjectConfig::default();
         assert_eq!(config.translate.target_lang, "en");
         assert_eq!(config.translate.source_langs, vec!["AUTO"]);
-        assert_eq!(config.cache.cache_type, "file");
-        assert_eq!(config.cache.cache_dir, ".translator");
+        assert_eq!(config.cache.format, "binary");
+        assert_eq!(config.cache.directory, ".translator");
+        assert!(config.cache.enabled);
         assert!(!config.writer.dry_run);
         assert!(config.writer.backup);
     }
@@ -893,7 +843,7 @@ mod tests {
         assert!(invalid_config.validate().is_err());
 
         invalid_config.translate.target_lang = "en".to_string();
-        invalid_config.cache.cache_dir = "".to_string();
+        invalid_config.cache.directory = "".to_string();
         assert!(invalid_config.validate().is_err());
     }
 

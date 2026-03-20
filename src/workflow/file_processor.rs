@@ -102,6 +102,22 @@ impl<'a> FileProcessor<'a> {
 
         let content = std::fs::read(file_path)?;
 
+        let file_hash = calculate_hash(&content);
+
+        let cached_entry = self.cache.get(&file_hash)?;
+
+        if let Some(entry) = cached_entry {
+            if entry.is_valid(modified_time) && entry.is_translated {
+                debug!("Cache hit - file already translated, skipping");
+                result.cached_files = 1;
+                return Ok(result);
+            } else {
+                debug!("Cache expired or file modified, re-translating");
+            }
+        } else {
+            debug!("Cache miss, translating file");
+        }
+
         let encoding_result = self.detector.detect_bytes(&content)?;
         let encoding = encoding_result.encoding;
 
@@ -114,34 +130,6 @@ impl<'a> FileProcessor<'a> {
         } else {
             content.clone()
         };
-
-        let file_hash = calculate_hash(&utf8_content);
-
-        let cached_entry = self.cache.get(&file_hash)?;
-
-        if let Some(entry) = cached_entry {
-            if entry.is_valid(modified_time) && entry.is_translated {
-                debug!("Cache hit, verifying file translation status");
-
-                let file = File::new(file_path.to_path_buf(), utf8_content.clone(), "UTF-8");
-                let units = self.parser.parse_file(&file)?;
-                result.total_units = units.len();
-
-                let all_translated = units.iter().all(|u| u.translated.is_some());
-
-                if all_translated {
-                    debug!("File already translated, skipping");
-                    result.cached_files = 1;
-                    return Ok(result);
-                } else {
-                    debug!("Cache invalid: file not fully translated, re-translating");
-                }
-            } else {
-                debug!("Cache expired or file modified, re-translating");
-            }
-        } else {
-            debug!("Cache miss, translating file");
-        }
 
         let file = File::new(file_path.to_path_buf(), utf8_content.clone(), "UTF-8");
         let mut units = self.parser.parse_file(&file)?;
@@ -219,7 +207,7 @@ impl<'a> FileProcessor<'a> {
             &file_hash,
             file_path.to_string_lossy(),
             modified_time,
-            &self.project_config.cache.cache_type,
+            &self.project_config.cache.mode.to_string(),
             "",
         );
         cache_entry.mark_as_translated();

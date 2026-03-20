@@ -3,8 +3,8 @@
 ## Summary
 
 - **Total Errors**: 0
-- **Total Warnings**: 8
-- **Total Issues**: 8
+- **Total Warnings**: 1
+- **Total Issues**: 1
 - **Unique Error Patterns**: 0
 - **Unique Warning Patterns**: 1
 - **Files with Issues**: 1
@@ -15,27 +15,24 @@
 
 ## Warning Statistics
 
-**Total Warnings**: 8
+**Total Warnings**: 1
 
 ### Warning Type Breakdown
 
-- **warning**: 8 warnings
+- **warning**: 1 warnings
 
 ### Files with Warnings (Top 10)
 
-- `src\cache\binary.rs`: 8 warnings
+- `src\writer\core.rs`: 1 warnings
 
 ## Detailed Warning Categorization
 
-### warning: call to `.clone()` on a reference in this situation does nothing: help: remove this redundant call
+### warning: unused import: `TranslateError`
 
-**Total Occurrences**: 8  
+**Total Occurrences**: 1  
 **Unique Files**: 1
 
-#### `src\cache\binary.rs`: 8 occurrences
+#### `src\writer\core.rs`: 1 occurrences
 
-- Line 614: call to `.clone()` on a reference in this situation does nothing: help: remove this redundant call
-- Line 623: call to `.clone()` on a reference in this situation does nothing: help: remove this redundant call
-- Line 659: call to `.clone()` on a reference in this situation does nothing: help: remove this redundant call
-- ... 5 more occurrences in this file
+- Line 6: unused import: `TranslateError`
 

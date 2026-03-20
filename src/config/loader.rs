@@ -301,7 +301,8 @@ target_lang = "zh"
 source_langs = ["en"]
 
 [cache]
-cache_type = "file"
+enabled = true
+directory = ".translator"
 "#;
 
         std::fs::write(&config_path, config_content).expect("Failed to write config file");
@@ -313,7 +314,8 @@ cache_type = "file"
 
         assert_eq!(config.translate.target_lang, "zh");
         assert_eq!(config.translate.source_langs, vec!["en"]);
-        assert_eq!(config.cache.cache_type, "file");
+        assert!(config.cache.enabled);
+        assert_eq!(config.cache.directory, ".translator");
     }
 
     #[test]

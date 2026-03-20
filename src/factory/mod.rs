@@ -7,7 +7,7 @@ use crate::{
     cache::Cache,
     config::{global::GlobalConfig, project::ProjectConfig},
     core::error::Result,
-    core::models::{CacheConfig as CoreCacheConfig, CacheMode},
+    core::models::CacheConfig,
     parser::coordinator::ParserCoordinator,
     parser::tree_sitter::ParserConfig,
     translator::factory::TranslatorConfig,
@@ -16,26 +16,8 @@ use crate::{
 };
 
 /// Create cache instance
-pub fn create_cache(
-    cache_config: &crate::config::project::CacheConfig,
-    project_path: &str,
-) -> Result<Box<dyn Cache>> {
-    let cache_dir = std::path::PathBuf::from(project_path).join(&cache_config.cache_dir);
-
-    // Create a core CacheConfig from project CacheConfig
-    let core_cache_config = CoreCacheConfig {
-        enabled: cache_config.cache_type != "none",
-        mode: CacheMode::Local,
-        directory: cache_dir.to_string_lossy().to_string(),
-        format: cache_config.cache_type.clone(),
-    };
-
-    let cache: Box<dyn Cache> = match cache_config.cache_type.as_str() {
-        "file" | "json" => Box::new(BinaryCache::new(core_cache_config, project_path)?),
-        "binary" => Box::new(BinaryCache::new(core_cache_config, project_path)?),
-        _ => Box::new(BinaryCache::new(core_cache_config, project_path)?),
-    };
-
+pub fn create_cache(cache_config: &CacheConfig, project_path: &str) -> Result<Box<dyn Cache>> {
+    let cache = Box::new(BinaryCache::new(cache_config.clone(), project_path)?);
     Ok(cache)
 }
 
