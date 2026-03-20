@@ -10,7 +10,7 @@ Translated units: 6
 Cached files: 0
 Skipped units: 0
 Errors: 0
-Duration: 6.60s
+Duration: 6.68s
 
 
 Directory Contents:
@@ -26,45 +26,45 @@ Translated File Content:
 # Contains Chinese comments and document strings
 
 def add(a, b):
-    """
-    计算两个数的和
+    Compute the sum of two numbers
     
-    Args:
-        a: 第一个数字
-        b: 第二个数字
+        Args.
+            a: first number
+                b: second number
+        
+        Returns.
+            The sum of the two numbers
+        
     
-    Returns:
-        两个数的和
-    """
     return a + b
 
 def subtract(a, b):
-    """
-    计算两个数的差
+    Compute the difference between two numbers
     
-    Args:
-        a: 被减数
-        b: 减数
+        Args.
+            a: subtracted number
+                b: subtracted number
+        
+        Returns.
+            Difference between two numbers
+        
     
-    Returns:
-        两个数的差
-    """
     return a - b
 
 class Calculator:
-    """简单的计算器类"""
+    """Simple Calculator Class"""
     
     def __init__(self, name):
-        """
-        初始化计算器
+        Initializing the Calculator
         
-        Args:
-            name: 计算器名称
-        """
+                Args.
+                    name: Calculator name
+            
+        
         self.name = name
     
     def get_name(self):
-        """获取计算器名称"""
+        """Get Calculator Name"""
         return self.name
 
 if __name__ == "__main__":

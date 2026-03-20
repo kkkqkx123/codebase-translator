@@ -4,7 +4,7 @@
 //! translation, caching, and writing.
 
 use crate::{
-    cache::{Cache, CacheEntry},
+    cache::{binary::BinaryCache, Cache, CacheEntry},
     config::project::ProjectConfig,
     core::error::Result,
     core::models::{File, TranslationStats},
@@ -60,7 +60,7 @@ impl From<FileProcessResult> for TranslationStats {
 
 /// Processor for individual files
 pub struct FileProcessor<'a> {
-    cache: &'a Box<dyn Cache>,
+    cache: &'a BinaryCache,
     translator: &'a TranslationService,
     parser: &'a ParserCoordinator,
     writer: &'a FileWriter,
@@ -72,7 +72,7 @@ pub struct FileProcessor<'a> {
 impl<'a> FileProcessor<'a> {
     /// Create a new file processor
     pub fn new(
-        cache: &'a Box<dyn Cache>,
+        cache: &'a BinaryCache,
         translator: &'a TranslationService,
         parser: &'a ParserCoordinator,
         writer: &'a FileWriter,

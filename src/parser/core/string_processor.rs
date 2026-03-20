@@ -117,12 +117,13 @@ impl StringProcessor {
         if text.starts_with("///") {
             return text
                 .lines()
-                .map(|line| {
+                .filter_map(|line| {
                     let trimmed = line.trim_start();
+                    // Only process lines that start with ///
+                    // Skip lines that don't start with /// (e.g., code lines)
                     trimmed
                         .strip_prefix("///")
                         .map(|s| s.trim_start())
-                        .unwrap_or(trimmed)
                 })
                 .collect::<Vec<_>>()
                 .join("\n");
@@ -132,12 +133,13 @@ impl StringProcessor {
         if text.starts_with("//!") {
             return text
                 .lines()
-                .map(|line| {
+                .filter_map(|line| {
                     let trimmed = line.trim_start();
+                    // Only process lines that start with //!
+                    // Skip lines that don't start with //! (e.g., code lines)
                     trimmed
                         .strip_prefix("//!")
                         .map(|s| s.trim_start())
-                        .unwrap_or(trimmed)
                 })
                 .collect::<Vec<_>>()
                 .join("\n");
@@ -389,5 +391,26 @@ mod tests {
         assert!(processor.is_only_symbols("   "));
         assert!(!processor.is_only_symbols("hello"));
         assert!(!processor.is_only_symbols("hello world"));
+    }
+
+    #[test]
+    fn test_clean_doc_comment_with_extra_lines() {
+        let processor = StringProcessor::new();
+
+        // Test case: tree-sitter returns node text that includes code lines
+        // This should only extract the doc comment content, not the code
+        let text = "/// 乘法运算\npub fn multiply(a: i32, b: i32) -> i32 {";
+        let result = processor.clean_doc_comment(text);
+        assert_eq!(result, "乘法运算", "Should only extract doc comment, not code lines");
+
+        // Test with multiple doc comment lines followed by code
+        let text2 = "/// 第一行\n/// 第二行\npub fn add(a: i32, b: i32) -> i32 {";
+        let result2 = processor.clean_doc_comment(text2);
+        assert_eq!(result2, "第一行\n第二行", "Should extract all doc comment lines, not code");
+
+        // Test with inner doc comment
+        let text3 = "//! 模块文档\npub mod my_module;";
+        let result3 = processor.clean_doc_comment(text3);
+        assert_eq!(result3, "模块文档", "Should only extract inner doc comment");
     }
 }

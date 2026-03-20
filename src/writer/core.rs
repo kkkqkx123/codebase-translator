@@ -94,13 +94,16 @@ impl TranslationApplier {
         let raw_lines: Vec<&str> = raw_match.lines().collect();
         let translated_lines: Vec<&str> = translated.lines().collect();
 
+        // Check if raw_match ends with newline - we need to preserve this
+        let ends_with_newline = raw_match.ends_with('\n');
+
         // Check if this is a block comment (starts with /* or /**)
         let is_block_comment = raw_lines
             .first()
             .map(|line| line.trim().starts_with("/*"))
             .unwrap_or(false);
 
-        if is_block_comment {
+        let mut result = if is_block_comment {
             // For block comments, we need to preserve the structure
             // Extract content lines (lines between /* and */)
             let mut content_lines: Vec<(usize, &str)> = Vec::new();
@@ -187,7 +190,14 @@ impl TranslationApplier {
                 }
                 result
             }
+        };
+
+        // Preserve trailing newline if raw_match had one
+        if ends_with_newline && !result.ends_with('\n') {
+            result.push('\n');
         }
+
+        result
     }
 
     /// Extract comment prefix from a line (e.g., "// ", "/// ", "* ", "/* ")
@@ -212,6 +222,13 @@ impl TranslationApplier {
         } else {
             leading_whitespace.to_string()
         }
+    }
+
+    /// Convert byte position to character position in a string
+    fn byte_to_char_pos(s: &str, byte_pos: usize) -> usize {
+        s.char_indices()
+            .take_while(|(pos, _)| *pos < byte_pos)
+            .count()
     }
 
     /// Apply translations to a single line
@@ -240,17 +257,28 @@ impl TranslationApplier {
 
                     let (start_char, end_char) = if let Some(raw_match) = &unit.raw_match {
                         if let Some(pos) = line.find(raw_match) {
-                            (pos, pos + raw_match.len())
+                            // pos is byte position, convert to char position
+                            let start = Self::byte_to_char_pos(line, pos);
+                            let end = Self::byte_to_char_pos(line, pos + raw_match.len());
+                            (start, end)
                         } else {
+                            // column positions from tree-sitter are byte-based
+                            // convert to char positions
+                            let start_col = unit.start_pos.column.saturating_sub(1);
+                            let end_col = unit.end_pos.column.saturating_sub(1);
                             (
-                                unit.start_pos.column.saturating_sub(1),
-                                unit.end_pos.column.saturating_sub(1),
+                                Self::byte_to_char_pos(line, start_col),
+                                Self::byte_to_char_pos(line, end_col),
                             )
                         }
                     } else {
+                        // column positions from tree-sitter are byte-based
+                        // convert to char positions
+                        let start_col = unit.start_pos.column.saturating_sub(1);
+                        let end_col = unit.end_pos.column.saturating_sub(1);
                         (
-                            unit.start_pos.column.saturating_sub(1),
-                            unit.end_pos.column.saturating_sub(1),
+                            Self::byte_to_char_pos(line, start_col),
+                            Self::byte_to_char_pos(line, end_col),
                         )
                     };
 
@@ -311,10 +339,11 @@ impl TranslationApplier {
     fn replace_in_raw_match(raw_match: &str, extracted: &str, translated: &str) -> String {
         // First try direct match
         if let Some(pos) = raw_match.find(extracted) {
-            let start = pos;
-            let end = start + extracted.len();
-            let before = &raw_match[..start];
-            let after = &raw_match[end..];
+            // pos is byte position, need to convert to char position for slicing
+            let start_byte = pos;
+            let end_byte = pos + extracted.len();
+            let before = &raw_match[..start_byte];
+            let after = &raw_match[end_byte..];
             return format!("{}{}{}", before, translated, after);
         }
 
@@ -652,5 +681,333 @@ mod tests {
         let result = TranslationApplier::apply_translations(content, &units).unwrap();
         assert!(result.contains("// 第一个注释"));
         assert!(result.contains("// 第二个注释"));
+    }
+
+    #[test]
+    fn test_apply_translations_with_chinese_content() {
+        // Test case for the bug: byte position vs char position mismatch
+        // When raw_match contains Chinese characters, the byte length is different from char length
+        let content = "    /// 获取计算器名称\n    pub fn get_name(&self) -> &str {";
+        let mut units = vec![TranslationUnit {
+            id: "1".to_string(),
+            node_type: NodeType::DocString,
+            content: "获取计算器名称".to_string(),
+            // Byte positions: 4 spaces (4) + /// (3) + space (1) + 获取计算器名称 (24) = 32 bytes
+            // Char positions: 4 spaces (4) + /// (3) + space (1) + 获取计算器名称 (8) = 16 chars
+            start_pos: Position::new(1, 9, 8),   // column is byte-based from tree-sitter
+            end_pos: Position::new(1, 33, 32),    // column is byte-based from tree-sitter
+            language: None,
+            should_translate: true,
+            translated: None,
+            pattern_type: None,
+            pattern_name: None,
+            raw_match: Some("    /// 获取计算器名称".to_string()),
+        }];
+
+        units[0].set_translated("Get Calculator Name");
+
+        let result = TranslationApplier::apply_translations(content, &units).unwrap();
+        // The translation should replace the Chinese text correctly
+        assert!(result.contains("/// Get Calculator Name"));
+        // The next line should remain intact (not merged)
+        assert!(result.contains("\n    pub fn get_name(&self) -> &str {"));
+    }
+
+    #[test]
+    fn test_apply_translations_with_chinese_content_fallback_to_column() {
+        // Test case where raw_match is not found in line, fallback to column positions
+        // This simulates the actual E2E scenario where raw_match might not match exactly
+        let content = "    /// 获取计算器名称\n    pub fn get_name(&self) -> &str {";
+        let mut units = vec![TranslationUnit {
+            id: "1".to_string(),
+            node_type: NodeType::DocString,
+            content: "获取计算器名称".to_string(),
+            // Simulate tree-sitter byte positions (1-based column)
+            // Line: "    /// 获取计算器名称"
+            // Bytes: 4 spaces + 3 /// + 1 space + 24 Chinese = 32 bytes
+            // Content "获取计算器名称" starts at byte 9 (4+3+1+1, 1-based)
+            // Content "获取计算器名称" ends at byte 33 (4+3+1+24+1, 1-based)
+            start_pos: Position::new(1, 9, 8),   // column 9 = byte 8 (0-based offset)
+            end_pos: Position::new(1, 33, 32),    // column 33 = byte 32 (0-based offset)
+            language: None,
+            should_translate: true,
+            translated: None,
+            pattern_type: None,
+            pattern_name: None,
+            // Use different raw_match to force fallback to column positions
+            raw_match: Some("/// 获取计算器名称".to_string()),
+        }];
+
+        units[0].set_translated("/// Get Calculator Name");
+
+        let result = TranslationApplier::apply_translations(content, &units).unwrap();
+        println!("Result: {:?}", result);
+        // The translation should replace the Chinese text correctly
+        assert!(result.contains("/// Get Calculator Name"), "Expected translation not found in: {}", result);
+        // The next line should remain intact (not merged)
+        assert!(result.contains("\n    pub fn get_name(&self) -> &str {"), "Next line was merged incorrectly");
+    }
+
+    #[test]
+    fn test_chinese_content_line_merging_issue() {
+        // Reproduce the exact issue from E2E test:
+        // Original: "/// 乘法运算\npub fn multiply(a: i32, b: i32) -> i32 {"
+        // Expected: "/// multiplication\npub fn multiply(a: i32, b: i32) -> i32 {"
+        // Actual (bug): "/// multiplicationpub fn multiply(a: i32, b: i32) -> i32 {"
+        
+        let content = "/// 乘法运算\npub fn multiply(a: i32, b: i32) -> i32 {\n    a * b\n}";
+        
+        let mut units = vec![TranslationUnit {
+            id: "1".to_string(),
+            node_type: NodeType::DocString,
+            content: "乘法运算".to_string(),
+            // Line: "/// 乘法运算"
+            // Bytes: /// (3) + space (1) + 乘法运算 (12) = 16 bytes
+            // Content starts at column 5 (after "/// ")
+            // Content ends at column 17 (after content)
+            start_pos: Position::new(1, 5, 4),
+            end_pos: Position::new(1, 17, 16),
+            language: None,
+            should_translate: true,
+            translated: None,
+            pattern_type: None,
+            pattern_name: None,
+            raw_match: Some("/// 乘法运算".to_string()),
+        }];
+        
+        units[0].set_translated("multiplication");
+        
+        let result = TranslationApplier::apply_translations(content, &units).unwrap();
+        
+        println!("Original:\n{}", content);
+        println!("\nResult:\n{}", result);
+        
+        // The key assertion: translation should be on its own line
+        assert!(result.contains("/// multiplication\n"), 
+                "Translation should end with newline. Result: {:?}", result);
+        assert!(result.contains("pub fn multiply(a: i32, b: i32) -> i32 {"),
+                "Function should be on separate line. Result: {:?}", result);
+        
+        // Make sure they are NOT merged
+        assert!(!result.contains("multiplicationpub fn"),
+                "Lines should not be merged! Result: {:?}", result);
+    }
+
+    #[test]
+    fn test_chinese_content_with_actual_parser_positions() {
+        // This test simulates the actual positions returned by tree-sitter parser
+        // The key difference is that tree-sitter returns byte positions for columns
+        // For "/// 乘法运算":
+        // - /// is at bytes 0-2
+        // - space is at byte 3
+        // - 乘法运算 is at bytes 4-15 (4 chars * 3 bytes each)
+        // Total: 16 bytes, 8 chars
+        // 
+        // If tree-sitter returns start_pos.column = 1 (start of line),
+        // and end_pos.column = 17 (1-based byte position after the line),
+        // then the replacement range would be the entire line.
+        
+        let content = "/// 乘法运算\npub fn multiply(a: i32, b: i32) -> i32 {";
+        
+        // Simulate what tree-sitter might return
+        let mut units = vec![TranslationUnit {
+            id: "1".to_string(),
+            node_type: NodeType::DocString,
+            content: "乘法运算".to_string(),
+            // Tree-sitter might return positions for the entire line including prefix
+            // If start_pos.column = 1 (start of line, 1-based byte position)
+            // and end_pos.column = 17 (end of line + 1, 1-based byte position)
+            start_pos: Position::new(1, 1, 0),   // column 1 = byte 0
+            end_pos: Position::new(1, 17, 16),    // column 17 = byte 16
+            language: None,
+            should_translate: true,
+            translated: None,
+            pattern_type: None,
+            pattern_name: None,
+            raw_match: Some("/// 乘法运算".to_string()),
+        }];
+        
+        units[0].set_translated("/// multiplication");
+        
+        let result = TranslationApplier::apply_translations(content, &units).unwrap();
+        
+        println!("Test with actual parser positions:");
+        println!("Original:\n{}", content);
+        println!("\nResult:\n{}", result);
+        
+        // Check the result
+        assert!(result.contains("/// multiplication\n"), 
+                "Translation should have newline. Result: {:?}", result);
+        assert!(!result.contains("multiplicationpub fn"),
+                "Lines should not be merged! Result: {:?}", result);
+    }
+
+    #[test]
+    fn test_raw_match_with_newline() {
+        // This test simulates the case where raw_match contains a newline
+        // but end_pos doesn't include it (due to query_executor adjustment)
+        // This can happen when tree-sitter returns a node that includes newline
+        // but end_pos is adjusted to exclude it
+        
+        let content = "/// 乘法运算\npub fn multiply(a: i32, b: i32) -> i32 {";
+        
+        // Simulate the problematic case:
+        // - raw_match includes newline: "/// 乘法运算\n"
+        // - but end_pos points to end of line without newline
+        let mut units = vec![TranslationUnit {
+            id: "1".to_string(),
+            node_type: NodeType::DocString,
+            content: "乘法运算".to_string(),
+            // Positions for the line without newline
+            start_pos: Position::new(1, 1, 0),
+            end_pos: Position::new(1, 17, 16),  // End of "/// 乘法运算" without newline
+            language: None,
+            should_translate: true,
+            translated: None,
+            pattern_type: None,
+            pattern_name: None,
+            // raw_match includes newline (this is the bug!)
+            raw_match: Some("/// 乘法运算\n".to_string()),
+        }];
+        
+        units[0].set_translated("multiplication");
+        
+        let result = TranslationApplier::apply_translations(content, &units).unwrap();
+        
+        println!("Test with raw_match containing newline:");
+        println!("Original:\n{}", content);
+        println!("\nResult:\n{}", result);
+        
+        // The result should NOT merge lines
+        assert!(!result.contains("multiplicationpub fn"),
+                "Lines should not be merged! Result: {:?}", result);
+    }
+
+    #[test]
+    fn test_translated_with_trailing_newline() {
+        // This test checks if the bug is caused by translated text containing trailing newline
+        let content = "/// 乘法运算\npub fn multiply(a: i32, b: i32) -> i32 {";
+        
+        let mut units = vec![TranslationUnit {
+            id: "1".to_string(),
+            node_type: NodeType::DocString,
+            content: "乘法运算".to_string(),
+            start_pos: Position::new(1, 5, 4),
+            end_pos: Position::new(1, 17, 16),
+            language: None,
+            should_translate: true,
+            translated: None,
+            pattern_type: None,
+            pattern_name: None,
+            raw_match: Some("/// 乘法运算".to_string()),
+        }];
+        
+        units[0].set_translated("multiplication\n");
+        
+        let result = TranslationApplier::apply_translations(content, &units).unwrap();
+        
+        println!("Test with translated containing trailing newline:");
+        println!("Original:\n{}", content);
+        println!("\nResult:\n{}", result);
+        
+        if result.contains("multiplicationpub fn") {
+            panic!("Lines merged! Result: {:?}", result);
+        }
+    }
+
+    #[test]
+    fn test_raw_match_with_crlf() {
+        let content = "/// 乘法运算\r\npub fn multiply(a: i32, b: i32) -> i32 {";
+        
+        let mut units = vec![TranslationUnit {
+            id: "1".to_string(),
+            node_type: NodeType::DocString,
+            content: "乘法运算".to_string(),
+            start_pos: Position::new(1, 5, 4),
+            end_pos: Position::new(1, 18, 17),
+            language: None,
+            should_translate: true,
+            translated: None,
+            pattern_type: None,
+            pattern_name: None,
+            raw_match: Some("/// 乘法运算\r".to_string()),
+        }];
+        
+        units[0].set_translated("multiplication");
+        
+        let result = TranslationApplier::apply_translations(content, &units).unwrap();
+        
+        if result.contains("multiplicationpub fn") {
+            panic!("Lines merged! Result: {:?}", result);
+        }
+    }
+
+    #[test]
+    fn test_content_with_newline() {
+        let content = "/// 乘法运算\npub fn multiply(a: i32, b: i32) -> i32 {";
+        
+        let mut units = vec![TranslationUnit {
+            id: "1".to_string(),
+            node_type: NodeType::DocString,
+            content: "乘法运算\npub fn multiply".to_string(),
+            start_pos: Position::new(1, 5, 4),
+            end_pos: Position::new(2, 40, 60),
+            language: None,
+            should_translate: true,
+            translated: None,
+            pattern_type: None,
+            pattern_name: None,
+            raw_match: Some("/// 乘法运算\npub fn multiply".to_string()),
+        }];
+        
+        units[0].set_translated("multiplication\npub fn multiply");
+        
+        let result = TranslationApplier::apply_translations(content, &units).unwrap();
+        
+        println!("Test with content containing newline:");
+        println!("Original:\n{}", content);
+        println!("\nResult:\n{}", result);
+        
+        if result.contains("multiplicationpub fn") {
+            println!("\n*** FOUND THE BUG! ***");
+        }
+    }
+
+    #[test]
+    fn test_translated_with_extra_content() {
+        // This test checks if the bug is caused by translated containing extra content
+        // raw_match = "/// 乘法运算"
+        // content = "乘法运算"
+        // translated = "multiplicationpub fn multiply" (incorrectly includes next line)
+        
+        let content = "/// 乘法运算\npub fn multiply(a: i32, b: i32) -> i32 {";
+        
+        let mut units = vec![TranslationUnit {
+            id: "1".to_string(),
+            node_type: NodeType::DocString,
+            content: "乘法运算".to_string(),
+            start_pos: Position::new(1, 5, 4),
+            end_pos: Position::new(1, 17, 16),
+            language: None,
+            should_translate: true,
+            translated: None,
+            pattern_type: None,
+            pattern_name: None,
+            raw_match: Some("/// 乘法运算".to_string()),
+        }];
+        
+        // If translator incorrectly returns "multiplicationpub fn multiply"
+        units[0].set_translated("multiplicationpub fn multiply");
+        
+        let result = TranslationApplier::apply_translations(content, &units).unwrap();
+        
+        println!("Test with translated containing extra content:");
+        println!("Original:\n{}", content);
+        println!("\nResult:\n{}", result);
+        
+        // This should cause the merged output
+        if result.contains("multiplicationpub fn") {
+            panic!("*** FOUND THE BUG! *** The translator returned extra content! Result: {:?}", result);
+        }
     }
 }

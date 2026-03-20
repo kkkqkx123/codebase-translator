@@ -10,16 +10,16 @@ Translated units: 9
 Cached files: 0
 Skipped units: 0
 Errors: 0
-Duration: 9.75s
+Duration: 9.85s
 
 
 Second Translation Run (should use cache):
 ==========================================
 Files processed: 1
 Total files: 1
-Total units: 9
-Translated units: 9
+Total units: 7
+Translated units: 7
 Cached files: 0
 Skipped units: 0
 Errors: 0
-Duration: 9.32s
+Duration: 7.33s

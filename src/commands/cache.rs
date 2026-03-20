@@ -2,6 +2,7 @@ use clap::Parser;
 use tracing::info;
 
 use crate::{
+    cache::Cache,
     config::{global::GlobalConfig, project::ProjectConfig},
     core::error::Result,
     factory::create_cache,

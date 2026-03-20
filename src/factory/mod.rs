@@ -6,7 +6,6 @@ use tracing::{debug, info};
 
 use crate::{
     cache::binary::BinaryCache,
-    cache::Cache,
     config::{global::GlobalConfig, project::ProjectConfig},
     core::error::Result,
     core::models::CacheConfig,
@@ -18,13 +17,13 @@ use crate::{
 };
 
 /// Create cache instance
-pub fn create_cache(cache_config: &CacheConfig, project_path: &str) -> Result<Box<dyn Cache>> {
+pub fn create_cache(cache_config: &CacheConfig, project_path: &str) -> Result<BinaryCache> {
     info!(
         cache_type = %cache_config.mode,
         cache_dir = %project_path,
         "Creating cache instance"
     );
-    let cache = Box::new(BinaryCache::new(cache_config.clone(), project_path)?);
+    let cache = BinaryCache::new(cache_config.clone(), project_path)?;
     debug!("Cache instance created successfully");
     Ok(cache)
 }

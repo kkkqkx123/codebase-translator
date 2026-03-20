@@ -10,7 +10,7 @@ Translated units: 9
 Cached files: 0
 Skipped units: 0
 Errors: 0
-Duration: 9.91s
+Duration: 9.90s
 
 
 Directory Contents:
@@ -52,14 +52,14 @@ pub fn subtract(a: i32, b: i32) -> i32 {
     a - b
 }
 
-/// 乘法运算
+/// multiplication
 pub fn multiply(a: i32, b: i32) -> i32 {
     a * b
 }
 
-// 这是一个简单的结构体
+// This is a simple structure
 pub struct Calculator {
-    // 计算器名称
+    // Calculator Name
     name: String,
 }
 
@@ -75,7 +75,7 @@ impl Calculator {
         }
     }
 
-    /// 获取计算器名称
+    /// Get Calculator Name
     pub fn get_name(&self) -> &str {
         &self.name
     }
