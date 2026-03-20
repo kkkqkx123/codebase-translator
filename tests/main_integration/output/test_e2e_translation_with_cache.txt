@@ -5,25 +5,21 @@ First Translation Run:
 ======================
 Files processed: 1
 Total files: 1
-Total units: 11
-Translated units: 11
+Total units: 9
+Translated units: 9
 Cached files: 0
 Skipped units: 0
 Errors: 0
-Duration: 14.96s
-
-Cache Directory Contents (after first run):
-=============================================
-  cache.bin [FILE]
+Duration: 9.75s
 
 
 Second Translation Run (should use cache):
 ==========================================
 Files processed: 1
 Total files: 1
-Total units: 15
-Translated units: 15
+Total units: 9
+Translated units: 9
 Cached files: 0
 Skipped units: 0
 Errors: 0
-Duration: 14.90s
+Duration: 9.32s

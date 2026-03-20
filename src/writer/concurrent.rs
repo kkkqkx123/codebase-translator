@@ -11,7 +11,7 @@ use std::sync::Arc;
 
 use tokio::sync::{mpsc, Semaphore};
 use tokio::task::JoinSet;
-use tracing::error;
+use tracing::{debug, error, info};
 
 use crate::core::models::{File, TranslationUnit};
 
@@ -66,6 +66,12 @@ impl ConcurrentWriter {
     /// Note: This method uses async file I/O operations via FileWriter
     /// for better performance with concurrent writes.
     pub async fn write_files(&self, files: Vec<(File, Vec<TranslationUnit>)>) -> Vec<WriteResult> {
+        info!(
+            files_count = files.len(),
+            max_concurrent = self.max_concurrent,
+            "Starting concurrent file writes"
+        );
+
         let semaphore = Arc::new(Semaphore::new(self.max_concurrent));
         let mut results = Vec::with_capacity(files.len());
         let mut join_set = JoinSet::new();
@@ -92,18 +98,32 @@ impl ConcurrentWriter {
                 let unit_count = units.len();
 
                 match writer.write(&file, &units).await {
-                    Ok(()) => WriteResult {
-                        path,
-                        success: true,
-                        error: None,
-                        units_written: unit_count,
-                    },
-                    Err(e) => WriteResult {
-                        path,
-                        success: false,
-                        error: Some(format!("{}", e)),
-                        units_written: 0,
-                    },
+                    Ok(()) => {
+                        debug!(
+                            file = %path.display(),
+                            units_written = unit_count,
+                            "File written successfully"
+                        );
+                        WriteResult {
+                            path,
+                            success: true,
+                            error: None,
+                            units_written: unit_count,
+                        }
+                    }
+                    Err(e) => {
+                        error!(
+                            file = %path.display(),
+                            error = %e,
+                            "Failed to write file"
+                        );
+                        WriteResult {
+                            path,
+                            success: false,
+                            error: Some(format!("{}", e)),
+                            units_written: 0,
+                        }
+                    }
                 }
             });
         }
@@ -122,6 +142,15 @@ impl ConcurrentWriter {
                 }
             }
         }
+
+        let stats = ConcurrentWriteStats::from_results(&results);
+        info!(
+            total_files = stats.total_files,
+            success_count = stats.success_count,
+            failure_count = stats.failure_count,
+            success_rate = stats.success_rate(),
+            "Concurrent write completed"
+        );
 
         results
     }

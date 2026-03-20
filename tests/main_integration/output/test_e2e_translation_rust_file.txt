@@ -5,19 +5,19 @@ Translation completed successfully!
 
 Files processed: 1
 Total files: 1
-Total units: 11
-Translated units: 11
+Total units: 9
+Translated units: 9
 Cached files: 0
 Skipped units: 0
 Errors: 0
-Duration: 12.45s
+Duration: 9.91s
 
 
 Directory Contents:
 ====================
   .translator [FILE]
-  .translator-cache [DIR]
   simple_rust.rs [FILE]
+  translator [DIR]
 
 
 Translated File Content:
@@ -25,9 +25,15 @@ Translated File Content:
 // This is a simple Rust file for testing translation functionality
 // Contains Chinese comments and document strings
 
-/// Calculating the sum of two numbers
+/// 计算两个数的和
+/// 
 /// # Arguments
-/// * `a` - the first number
+/// 
+/// * `a` - 第一个数字
+/// * `b` - 第二个数字
+/// 
+/// # Examples
+/// 
 /// ```
 /// let result = add(1, 2);
 /// assert_eq!(result, 3);
@@ -36,9 +42,12 @@ pub fn add(a: i32, b: i32) -> i32 {
     a + b
 }
 
-/// Calculating the difference between two numbers
+/// 计算两个数的差
+/// 
 /// # Arguments
-/// * `a` - the subtracted number
+/// 
+/// * `a` - 被减数
+/// * `b` - 减数
 pub fn subtract(a: i32, b: i32) -> i32 {
     a - b
 }
@@ -48,16 +57,19 @@ pub fn multiply(a: i32, b: i32) -> i32 {
     a * b
 }
 
-// This is a simple structure
+// 这是一个简单的结构体
 pub struct Calculator {
-    // Calculator Name
+    // 计算器名称
     name: String,
 }
 
 impl Calculator {
-/// Creating a New Calculator Instance
-/// # Arguments
-/// * `name` - the name of the calculator
+    /// 创建新的计算器实例
+    /// 
+    /// # Arguments
+    /// 
+    /// * `name` - 计算器名称
+    pub fn new(name: &str) -> Self {
         Calculator {
             name: name.to_string(),
         }
@@ -74,8 +86,3 @@ fn main() {
     let result = add(10, 20);
     println!("结果: {}", result);
 }
-
-
-Cache Directory Contents:
-==========================
-  cache.bin [FILE]

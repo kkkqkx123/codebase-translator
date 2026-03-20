@@ -10,14 +10,14 @@ Translated units: 3
 Cached files: 0
 Skipped units: 0
 Errors: 0
-Duration: 3.61s
+Duration: 3.48s
 
 
 Directory Contents:
 ====================
   .translator [FILE]
-  .translator-cache [DIR]
   simple_javascript.js [FILE]
+  translator [DIR]
 
 
 Translated File Content:
@@ -45,7 +45,7 @@ function subtract(a, b) {
     return a - b;
 }
 
-// simple class
+// 简单的类
 class Calculator {
     /**
      * 创建计算器实例
@@ -64,7 +64,7 @@ class Calculator {
     }
 }
 
-// main function
+// 主函数
 function main() {
     console.log("测试翻译功能");
     const result = add(10, 20);
@@ -72,8 +72,3 @@ function main() {
 }
 
 main();
-
-
-Cache Directory Contents:
-==========================
-  cache.bin [FILE]

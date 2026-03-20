@@ -108,23 +108,33 @@ impl<'a> FileProcessor<'a> {
 
         if let Some(entry) = cached_entry {
             if entry.is_valid(modified_time) && entry.is_translated {
-                debug!("Cache hit - file already translated, skipping");
+                info!(
+                    file = %file_path.display(),
+                    "Cache hit - file already translated"
+                );
                 result.cached_files = 1;
                 return Ok(result);
             } else {
-                debug!("Cache expired or file modified, re-translating");
+                debug!(
+                    file = %file_path.display(),
+                    "Cache expired or file modified, re-translating"
+                );
             }
         } else {
-            debug!("Cache miss, translating file");
+            debug!(
+                file = %file_path.display(),
+                "Cache miss"
+            );
         }
 
         let encoding_result = self.detector.detect_bytes(&content)?;
         let encoding = encoding_result.encoding;
 
         let utf8_content = if encoding != "UTF-8" {
-            debug!(
+            info!(
+                file = %file_path.display(),
                 original_encoding = %encoding,
-                "Converting to UTF-8"
+                "Converting encoding to UTF-8"
             );
             self.encoder.to_utf8(&content, &encoding)?.into_bytes()
         } else {
@@ -134,6 +144,13 @@ impl<'a> FileProcessor<'a> {
         let file = File::new(file_path.to_path_buf(), utf8_content.clone(), "UTF-8");
         let mut units = self.parser.parse_file(&file)?;
         result.total_units = units.len();
+
+        info!(
+            file = %file_path.display(),
+            total_units = result.total_units,
+            translatable_units = units.iter().filter(|u| u.should_translate).count(),
+            "File parsed"
+        );
 
         if units.is_empty() {
             debug!("No translatable content found");
@@ -156,9 +173,23 @@ impl<'a> FileProcessor<'a> {
 
         debug!(units_count = texts.len(), "Translating units");
 
+        if num_to_translate > 0 {
+            info!(
+                file = %file_path.display(),
+                units_to_translate = num_to_translate,
+                "Translating units"
+            );
+        }
+
         let translated_texts = self
             .translator
             .translate_batch(&texts, &self.project_config.translate.target_lang)?;
+
+        info!(
+            file = %file_path.display(),
+            translated_units = translated_texts.len(),
+            "Translation completed"
+        );
 
         let mut translate_idx = 0;
         for unit in units.iter_mut() {
@@ -186,11 +217,22 @@ impl<'a> FileProcessor<'a> {
         }
 
         if !self.project_config.writer.dry_run {
+            info!(
+                file = %file_path.display(),
+                "Writing file"
+            );
             let rt = tokio::runtime::Runtime::new()?;
             rt.block_on(async { self.writer.write(&file, &units).await })?;
+            info!(
+                file = %file_path.display(),
+                "File written successfully"
+            );
             result.was_written = true;
         } else {
-            info!("Dry run mode - not writing changes");
+            info!(
+                file = %file_path.display(),
+                "Dry run mode - skipping file write"
+            );
             for unit in &units {
                 if let Some(translated) = &unit.translated {
                     info!(
@@ -212,7 +254,18 @@ impl<'a> FileProcessor<'a> {
         );
         cache_entry.mark_as_translated();
 
+        debug!(
+            file = %file_path.display(),
+            "Updating cache"
+        );
         self.cache.set(&cache_entry)?;
+
+        info!(
+            file = %file_path.display(),
+            total_units = result.total_units,
+            translated_units = result.translated_units,
+            "File processing completed"
+        );
 
         Ok(result)
     }

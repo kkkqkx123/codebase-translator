@@ -27,103 +27,46 @@ Raw Match:
 
 
 --- Unit 3 ---
-ID: test.rs_merged_doc_string_34
+ID: test.rs_doc_string_3
 Type: doc_string
-Position: Line 3, Column 1 (Offset: 34)
+Position: Line 12, Column 9 (Offset: 263)
 Content:
-This is a module-level documentation comment
-This is a struct documentation comment
-Field documentation
 Creates a new Example instance
 Raw Match:
-/// This is a module-level documentation comment
-
-/// This is a struct documentation comment
-
-/// Field documentation
-
 /// Creates a new Example instance
 
 
 --- Unit 4 ---
-ID: test.rs_merged_doc_string_34
+ID: test.rs_doc_string_4
 Type: doc_string
-Position: Line 3, Column 1 (Offset: 34)
+Position: Line 17, Column 9 (Offset: 396)
 Content:
-This is a module-level documentation comment
-This is a struct documentation comment
-Field documentation
-Creates a new Example instance
 Returns the value
 Raw Match:
-/// This is a module-level documentation comment
-
-/// This is a struct documentation comment
-
-/// Field documentation
-
-/// Creates a new Example instance
-
 /// Returns the value
 
 
 --- Unit 5 ---
-ID: test.rs_merged_doc_string_34
+ID: test.rs_merged_doc_string_501
 Type: doc_string
-Position: Line 3, Column 1 (Offset: 34)
+Position: Line 24, Column 1 (Offset: 501)
 Content:
-This is a module-level documentation comment
-This is a struct documentation comment
-Field documentation
-Creates a new Example instance
-Returns the value
 Function documentation
 # Arguments
 Raw Match:
-/// This is a module-level documentation comment
-
-/// This is a struct documentation comment
-
-/// Field documentation
-
-/// Creates a new Example instance
-
-/// Returns the value
-
 /// Function documentation
 
 /// # Arguments
 
 
 --- Unit 6 ---
-ID: test.rs_merged_doc_string_34
+ID: test.rs_merged_doc_string_590
 Type: doc_string
-Position: Line 3, Column 1 (Offset: 34)
+Position: Line 30, Column 1 (Offset: 590)
 Content:
-This is a module-level documentation comment
-This is a struct documentation comment
-Field documentation
-Creates a new Example instance
-Returns the value
-Function documentation
-# Arguments
 # Returns
 A greeting message
 Raw Match:
-/// This is a module-level documentation comment
-
-/// This is a struct documentation comment
-
-/// Field documentation
-
-/// Creates a new Example instance
-
-/// Returns the value
-
-/// Function documentation
-
-/// # Arguments
-
 /// # Returns
 
 /// A greeting message

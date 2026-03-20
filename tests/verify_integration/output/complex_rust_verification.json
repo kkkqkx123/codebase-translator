@@ -5,7 +5,7 @@
       "extracted_text": "Complex test file with various patterns\nThis file demonstrates different types of extractable content",
       "file_path": "complex_rust.rs",
       "metadata": {},
-      "pattern_name": "comment",
+      "pattern_name": "",
       "pattern_type": "Builtin",
       "position": {
         "column": 1,
@@ -16,10 +16,10 @@
     },
     {
       "category": "other",
-      "extracted_text": "Module documentation",
+      "extracted_text": "Module documentation\nThis module handles complex data processing\nwith multiple functions and patterns\nFunction documentation\nThis function processes user input\nand returns a formatted response",
       "file_path": "complex_rust.rs",
       "metadata": {},
-      "pattern_name": "docstring",
+      "pattern_name": "",
       "pattern_type": "Builtin",
       "position": {
         "column": 1,
@@ -30,66 +30,10 @@
     },
     {
       "category": "other",
-      "extracted_text": "This module handles complex data processing",
+      "extracted_text": "Error handling function\nReturns error messages for validation failures",
       "file_path": "complex_rust.rs",
       "metadata": {},
-      "pattern_name": "docstring",
-      "pattern_type": "Builtin",
-      "position": {
-        "column": 1,
-        "line": 5,
-        "offset": 134
-      },
-      "raw_match": ""
-    },
-    {
-      "category": "other",
-      "extracted_text": "with multiple functions and patterns\nFunction documentation",
-      "file_path": "complex_rust.rs",
-      "metadata": {},
-      "pattern_name": "docstring",
-      "pattern_type": "Builtin",
-      "position": {
-        "column": 1,
-        "line": 6,
-        "offset": 182
-      },
-      "raw_match": ""
-    },
-    {
-      "category": "other",
-      "extracted_text": "This function processes user input",
-      "file_path": "complex_rust.rs",
-      "metadata": {},
-      "pattern_name": "docstring",
-      "pattern_type": "Builtin",
-      "position": {
-        "column": 5,
-        "line": 9,
-        "offset": 279
-      },
-      "raw_match": "    /// This function processes user input"
-    },
-    {
-      "category": "other",
-      "extracted_text": "and returns a formatted response",
-      "file_path": "complex_rust.rs",
-      "metadata": {},
-      "pattern_name": "docstring",
-      "pattern_type": "Builtin",
-      "position": {
-        "column": 5,
-        "line": 10,
-        "offset": 322
-      },
-      "raw_match": "    /// and returns a formatted response"
-    },
-    {
-      "category": "other",
-      "extracted_text": "Error handling function",
-      "file_path": "complex_rust.rs",
-      "metadata": {},
-      "pattern_name": "docstring",
+      "pattern_name": "",
       "pattern_type": "Builtin",
       "position": {
         "column": 5,
@@ -99,25 +43,11 @@
       "raw_match": "    /// Error handling function"
     },
     {
-      "category": "other",
-      "extracted_text": "Returns error messages for validation failures",
-      "file_path": "complex_rust.rs",
-      "metadata": {},
-      "pattern_name": "docstring",
-      "pattern_type": "Builtin",
-      "position": {
-        "column": 5,
-        "line": 16,
-        "offset": 492
-      },
-      "raw_match": "    /// Returns error messages for validation failures"
-    },
-    {
       "category": "variables",
       "extracted_text": "\"Error: input cannot be empty\"",
       "file_path": "complex_rust.rs",
       "metadata": {},
-      "pattern_name": "string_literal",
+      "pattern_name": "rust",
       "pattern_type": "Builtin",
       "position": {
         "column": 17,
@@ -131,7 +61,7 @@
       "extracted_text": "Configuration constants",
       "file_path": "complex_rust.rs",
       "metadata": {},
-      "pattern_name": "comment",
+      "pattern_name": "rust",
       "pattern_type": "Builtin",
       "position": {
         "column": 1,
@@ -145,7 +75,7 @@
       "extracted_text": "Global configuration",
       "file_path": "complex_rust.rs",
       "metadata": {},
-      "pattern_name": "comment",
+      "pattern_name": "rust",
       "pattern_type": "Builtin",
       "position": {
         "column": 1,
@@ -159,7 +89,7 @@
       "extracted_text": "Initialize logging",
       "file_path": "complex_rust.rs",
       "metadata": {},
-      "pattern_name": "comment",
+      "pattern_name": "rust",
       "pattern_type": "Builtin",
       "position": {
         "column": 5,
@@ -173,7 +103,7 @@
       "extracted_text": "\"Application starting\"",
       "file_path": "complex_rust.rs",
       "metadata": {},
-      "pattern_name": "string_literal",
+      "pattern_name": "rust",
       "pattern_type": "Builtin",
       "position": {
         "column": 16,
@@ -187,7 +117,7 @@
       "extracted_text": "Process user input",
       "file_path": "complex_rust.rs",
       "metadata": {},
-      "pattern_name": "comment",
+      "pattern_name": "rust",
       "pattern_type": "Builtin",
       "position": {
         "column": 5,
@@ -201,7 +131,7 @@
       "extracted_text": "\"test data\"",
       "file_path": "complex_rust.rs",
       "metadata": {},
-      "pattern_name": "string_literal",
+      "pattern_name": "rust",
       "pattern_type": "Builtin",
       "position": {
         "column": 22,
@@ -215,7 +145,7 @@
       "extracted_text": "Validate input",
       "file_path": "complex_rust.rs",
       "metadata": {},
-      "pattern_name": "comment",
+      "pattern_name": "rust",
       "pattern_type": "Builtin",
       "position": {
         "column": 5,
@@ -229,7 +159,7 @@
       "extracted_text": "\"Input validation passed\"",
       "file_path": "complex_rust.rs",
       "metadata": {},
-      "pattern_name": "string_literal",
+      "pattern_name": "rust",
       "pattern_type": "Builtin",
       "position": {
         "column": 30,
@@ -243,7 +173,7 @@
       "extracted_text": "Format string with multiple variables",
       "file_path": "complex_rust.rs",
       "metadata": {},
-      "pattern_name": "comment",
+      "pattern_name": "rust",
       "pattern_type": "Builtin",
       "position": {
         "column": 5,
@@ -257,7 +187,7 @@
       "extracted_text": "\"success\"",
       "file_path": "complex_rust.rs",
       "metadata": {},
-      "pattern_name": "string_literal",
+      "pattern_name": "rust",
       "pattern_type": "Builtin",
       "position": {
         "column": 18,
@@ -271,7 +201,7 @@
       "extracted_text": "Error handling with custom messages",
       "file_path": "complex_rust.rs",
       "metadata": {},
-      "pattern_name": "comment",
+      "pattern_name": "rust",
       "pattern_type": "Builtin",
       "position": {
         "column": 5,
@@ -285,7 +215,7 @@
       "extracted_text": "\"Error: operation failed after 3 attempts\"",
       "file_path": "complex_rust.rs",
       "metadata": {},
-      "pattern_name": "string_literal",
+      "pattern_name": "rust",
       "pattern_type": "Builtin",
       "position": {
         "column": 21,
@@ -299,7 +229,7 @@
       "extracted_text": "\"Warning: deprecated API usage detected\"",
       "file_path": "complex_rust.rs",
       "metadata": {},
-      "pattern_name": "string_literal",
+      "pattern_name": "rust",
       "pattern_type": "Builtin",
       "position": {
         "column": 23,
@@ -313,7 +243,7 @@
       "extracted_text": "Complex string with special characters",
       "file_path": "complex_rust.rs",
       "metadata": {},
-      "pattern_name": "comment",
+      "pattern_name": "rust",
       "pattern_type": "Builtin",
       "position": {
         "column": 5,
@@ -327,7 +257,7 @@
       "extracted_text": "Long string that might need truncation",
       "file_path": "complex_rust.rs",
       "metadata": {},
-      "pattern_name": "comment",
+      "pattern_name": "rust",
       "pattern_type": "Builtin",
       "position": {
         "column": 5,
@@ -341,7 +271,7 @@
       "extracted_text": "\"This is a very long text that should be properly formatted in output without breaking layout and should demonstrate the truncation feature\"",
       "file_path": "complex_rust.rs",
       "metadata": {},
-      "pattern_name": "string_literal",
+      "pattern_name": "rust",
       "pattern_type": "Builtin",
       "position": {
         "column": 21,
@@ -353,21 +283,20 @@
   ],
   "summary": {
     "by_category": {
-      "other": 17,
+      "other": 12,
       "variables": 8
     },
     "by_file_type": {
-      "rs": 25
+      "rs": 20
     },
     "by_pattern_type": {
-      "Builtin": 25
+      "Builtin": 20
     },
     "patterns_used": {
-      "comment": 10,
-      "docstring": 7,
-      "string_literal": 8
+      "": 3,
+      "rust": 17
     },
     "total_files": 1,
-    "total_matches": 25
+    "total_matches": 20
   }
 }

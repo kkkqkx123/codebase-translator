@@ -5,7 +5,7 @@
       "extracted_text": "Simple Rust file with comments and strings\nThis is a line comment\nAnother line comment",
       "file_path": "simple_rust.rs",
       "metadata": {},
-      "pattern_name": "comment",
+      "pattern_name": "",
       "pattern_type": "Builtin",
       "position": {
         "column": 1,
@@ -16,10 +16,10 @@
     },
     {
       "category": "other",
-      "extracted_text": "This is a doc comment",
+      "extracted_text": "This is a doc comment\nIt spans multiple lines\nwith more documentation",
       "file_path": "simple_rust.rs",
       "metadata": {},
-      "pattern_name": "docstring",
+      "pattern_name": "",
       "pattern_type": "Builtin",
       "position": {
         "column": 1,
@@ -29,39 +29,11 @@
       "raw_match": ""
     },
     {
-      "category": "other",
-      "extracted_text": "It spans multiple lines",
-      "file_path": "simple_rust.rs",
-      "metadata": {},
-      "pattern_name": "docstring",
-      "pattern_type": "Builtin",
-      "position": {
-        "column": 1,
-        "line": 6,
-        "offset": 123
-      },
-      "raw_match": ""
-    },
-    {
-      "category": "other",
-      "extracted_text": "with more documentation",
-      "file_path": "simple_rust.rs",
-      "metadata": {},
-      "pattern_name": "docstring",
-      "pattern_type": "Builtin",
-      "position": {
-        "column": 1,
-        "line": 7,
-        "offset": 151
-      },
-      "raw_match": ""
-    },
-    {
       "category": "variables",
       "extracted_text": "\"Hello, world!\"",
       "file_path": "simple_rust.rs",
       "metadata": {},
-      "pattern_name": "string_literal",
+      "pattern_name": "rust",
       "pattern_type": "Builtin",
       "position": {
         "column": 14,
@@ -75,7 +47,7 @@
       "extracted_text": "\"This is a string literal\"",
       "file_path": "simple_rust.rs",
       "metadata": {},
-      "pattern_name": "string_literal",
+      "pattern_name": "rust",
       "pattern_type": "Builtin",
       "position": {
         "column": 19,
@@ -89,7 +61,7 @@
       "extracted_text": "\"Error: something went wrong\"",
       "file_path": "simple_rust.rs",
       "metadata": {},
-      "pattern_name": "string_literal",
+      "pattern_name": "rust",
       "pattern_type": "Builtin",
       "position": {
         "column": 21,
@@ -103,7 +75,7 @@
       "extracted_text": "\"Processing data\"",
       "file_path": "simple_rust.rs",
       "metadata": {},
-      "pattern_name": "string_literal",
+      "pattern_name": "rust",
       "pattern_type": "Builtin",
       "position": {
         "column": 16,
@@ -117,7 +89,7 @@
       "extracted_text": "\"Warning: deprecated feature\"",
       "file_path": "simple_rust.rs",
       "metadata": {},
-      "pattern_name": "string_literal",
+      "pattern_name": "rust",
       "pattern_type": "Builtin",
       "position": {
         "column": 16,
@@ -131,7 +103,7 @@
       "extracted_text": "\"Found the answer\"",
       "file_path": "simple_rust.rs",
       "metadata": {},
-      "pattern_name": "string_literal",
+      "pattern_name": "rust",
       "pattern_type": "Builtin",
       "position": {
         "column": 24,
@@ -145,7 +117,7 @@
       "extracted_text": "\"Unknown value\"",
       "file_path": "simple_rust.rs",
       "metadata": {},
-      "pattern_name": "string_literal",
+      "pattern_name": "rust",
       "pattern_type": "Builtin",
       "position": {
         "column": 23,
@@ -159,7 +131,7 @@
       "extracted_text": "Another comment at the end",
       "file_path": "simple_rust.rs",
       "metadata": {},
-      "pattern_name": "comment",
+      "pattern_name": "rust",
       "pattern_type": "Builtin",
       "position": {
         "column": 1,
@@ -173,7 +145,7 @@
       "extracted_text": "\"Helper result\"",
       "file_path": "simple_rust.rs",
       "metadata": {},
-      "pattern_name": "string_literal",
+      "pattern_name": "rust",
       "pattern_type": "Builtin",
       "position": {
         "column": 18,
@@ -185,21 +157,20 @@
   ],
   "summary": {
     "by_category": {
-      "other": 5,
+      "other": 3,
       "variables": 8
     },
     "by_file_type": {
-      "rs": 13
+      "rs": 11
     },
     "by_pattern_type": {
-      "Builtin": 13
+      "Builtin": 11
     },
     "patterns_used": {
-      "comment": 2,
-      "docstring": 3,
-      "string_literal": 8
+      "": 2,
+      "rust": 9
     },
     "total_files": 1,
-    "total_matches": 13
+    "total_matches": 11
   }
 }

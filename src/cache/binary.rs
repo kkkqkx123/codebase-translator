@@ -13,7 +13,7 @@ use crc32fast::Hasher as Crc32Hasher;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, RwLock};
-use tracing::debug;
+use tracing::{debug, info};
 
 const CACHE_MAGIC: &[u8; 8] = b"CBCACHE\x00";
 const CACHE_VERSION: u32 = 1;
@@ -92,7 +92,7 @@ impl BinaryCache {
         let cache_dir = util::resolve_cache_dir(&config.mode, &project_dir);
         let cache_file_path = cache_dir.join("translator-cache.bin");
 
-        debug!(
+        info!(
             cache_file = %cache_file_path.display(),
             mode = ?config.mode,
             enabled = config.enabled,
@@ -604,7 +604,7 @@ impl Cache for BinaryCache {
             return Ok(0);
         }
 
-        debug!(
+        info!(
             total_entries = existing_hashes.len(),
             "Cleaning up orphaned cache entries"
         );
@@ -647,7 +647,7 @@ impl Cache for BinaryCache {
 
         self.save()?;
 
-        debug!(
+        info!(
             removed_count = to_remove.len(),
             "Orphaned entries cleaned up successfully"
         );

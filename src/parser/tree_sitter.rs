@@ -309,6 +309,9 @@ impl TreeSitterParser {
         merged_unit.raw_match = merged_raw_match;
         merged_unit.language = first.language.clone();
 
+        // Clear the group after merging
+        group.clear();
+
         merged_unit
     }
 
@@ -444,8 +447,9 @@ impl TreeSitterParser {
                 );
                 unit.raw_match = Some(node_text.to_string());
                 units.push(unit);
+                
+                match_idx += 1;
             }
-            match_idx += 1;
         }
 
         Ok(units)

@@ -11,7 +11,7 @@ Raw Match:
 // Rust macros for testing
 
 --- Unit 2 ---
-ID: test.rs_string_literal_1
+ID: test.rs_string_literal_0
 Type: string_literal
 Position: Line 15, Column 10 (Offset: 218)
 Content:
@@ -20,7 +20,7 @@ Raw Match:
 "Application started"
 
 --- Unit 3 ---
-ID: test.rs_string_literal_3
+ID: test.rs_string_literal_1
 Type: string_literal
 Position: Line 17, Column 12 (Offset: 290)
 Content:
@@ -29,7 +29,7 @@ Raw Match:
 "Something went wrong"
 
 --- Unit 4 ---
-ID: test.rs_string_literal_4
+ID: test.rs_string_literal_2
 Type: string_literal
 Position: Line 19, Column 14 (Offset: 333)
 Content:

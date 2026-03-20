@@ -39,94 +39,40 @@ with multiple lines of text
 """
 
 --- Unit 4 ---
-ID: test.py_merged_doc_string_75
-Type: doc_string
+ID: test.py_string_literal_0
+Type: string_literal
 Position: Line 6, Column 1 (Offset: 75)
 Content:
-This is a multi-line comment
-with multiple lines of text
-This is a multi-line comment
-with multiple lines of text
 """
 This is a multi-line comment
 with multiple lines of text
 """
 Raw Match:
-"""
-This is a multi-line comment
-with multiple lines of text
-"""
-"""
-This is a multi-line comment
-with multiple lines of text
-"""
 """
 This is a multi-line comment
 with multiple lines of text
 """
 
 --- Unit 5 ---
-ID: test.py_merged_doc_string_75
-Type: doc_string
-Position: Line 6, Column 1 (Offset: 75)
+ID: test.py_comment_2
+Type: comment
+Position: Line 12, Column 5 (Offset: 157)
 Content:
-This is a multi-line comment
-with multiple lines of text
-This is a multi-line comment
-with multiple lines of text
-"""
-This is a multi-line comment
-with multiple lines of text
-"""
 Another comment inside function
 Raw Match:
-"""
-This is a multi-line comment
-with multiple lines of text
-"""
-"""
-This is a multi-line comment
-with multiple lines of text
-"""
-"""
-This is a multi-line comment
-with multiple lines of text
-"""
 # Another comment inside function
 
 --- Unit 6 ---
-ID: test.py_merged_doc_string_75
+ID: test.py_doc_string_2
 Type: doc_string
-Position: Line 6, Column 1 (Offset: 75)
+Position: Line 16, Column 5 (Offset: 230)
 Content:
-This is a multi-line comment
-with multiple lines of text
-This is a multi-line comment
-with multiple lines of text
-"""
-This is a multi-line comment
-with multiple lines of text
-"""
-Another comment inside function
 Documentation string for greet function
     Args:
         name: The name to greet
     Returns:
         A greeting message
 Raw Match:
-"""
-This is a multi-line comment
-with multiple lines of text
-"""
-"""
-This is a multi-line comment
-with multiple lines of text
-"""
-"""
-This is a multi-line comment
-with multiple lines of text
-"""
-# Another comment inside function
 """
     Documentation string for greet function
     Args:
@@ -136,24 +82,10 @@ with multiple lines of text
     """
 
 --- Unit 7 ---
-ID: test.py_merged_doc_string_75
-Type: doc_string
-Position: Line 6, Column 1 (Offset: 75)
+ID: test.py_string_literal_1
+Type: string_literal
+Position: Line 16, Column 5 (Offset: 230)
 Content:
-This is a multi-line comment
-with multiple lines of text
-This is a multi-line comment
-with multiple lines of text
-"""
-This is a multi-line comment
-with multiple lines of text
-"""
-Another comment inside function
-Documentation string for greet function
-    Args:
-        name: The name to greet
-    Returns:
-        A greeting message
 """
     Documentation string for greet function
     Args:
@@ -162,26 +94,6 @@ Documentation string for greet function
         A greeting message
     """
 Raw Match:
-"""
-This is a multi-line comment
-with multiple lines of text
-"""
-"""
-This is a multi-line comment
-with multiple lines of text
-"""
-"""
-This is a multi-line comment
-with multiple lines of text
-"""
-# Another comment inside function
-"""
-    Documentation string for greet function
-    Args:
-        name: The name to greet
-    Returns:
-        A greeting message
-    """
 """
     Documentation string for greet function
     Args:
@@ -191,242 +103,38 @@ with multiple lines of text
     """
 
 --- Unit 8 ---
-ID: test.py_merged_doc_string_75
+ID: test.py_doc_string_3
 Type: doc_string
-Position: Line 6, Column 1 (Offset: 75)
+Position: Line 26, Column 5 (Offset: 417)
 Content:
-This is a multi-line comment
-with multiple lines of text
-This is a multi-line comment
-with multiple lines of text
-"""
-This is a multi-line comment
-with multiple lines of text
-"""
-Another comment inside function
-Documentation string for greet function
-    Args:
-        name: The name to greet
-    Returns:
-        A greeting message
-"""
-    Documentation string for greet function
-    Args:
-        name: The name to greet
-    Returns:
-        A greeting message
-    """
 Example class for testing
 Raw Match:
-"""
-This is a multi-line comment
-with multiple lines of text
-"""
-"""
-This is a multi-line comment
-with multiple lines of text
-"""
-"""
-This is a multi-line comment
-with multiple lines of text
-"""
-# Another comment inside function
-"""
-    Documentation string for greet function
-    Args:
-        name: The name to greet
-    Returns:
-        A greeting message
-    """
-"""
-    Documentation string for greet function
-    Args:
-        name: The name to greet
-    Returns:
-        A greeting message
-    """
 """Example class for testing"""
 
 --- Unit 9 ---
-ID: test.py_merged_doc_string_75
-Type: doc_string
-Position: Line 6, Column 1 (Offset: 75)
+ID: test.py_string_literal_2
+Type: string_literal
+Position: Line 26, Column 5 (Offset: 417)
 Content:
-This is a multi-line comment
-with multiple lines of text
-This is a multi-line comment
-with multiple lines of text
-"""
-This is a multi-line comment
-with multiple lines of text
-"""
-Another comment inside function
-Documentation string for greet function
-    Args:
-        name: The name to greet
-    Returns:
-        A greeting message
-"""
-    Documentation string for greet function
-    Args:
-        name: The name to greet
-    Returns:
-        A greeting message
-    """
-Example class for testing
 """Example class for testing"""
 Raw Match:
-"""
-This is a multi-line comment
-with multiple lines of text
-"""
-"""
-This is a multi-line comment
-with multiple lines of text
-"""
-"""
-This is a multi-line comment
-with multiple lines of text
-"""
-# Another comment inside function
-"""
-    Documentation string for greet function
-    Args:
-        name: The name to greet
-    Returns:
-        A greeting message
-    """
-"""
-    Documentation string for greet function
-    Args:
-        name: The name to greet
-    Returns:
-        A greeting message
-    """
-"""Example class for testing"""
 """Example class for testing"""
 
 --- Unit 10 ---
-ID: test.py_merged_doc_string_75
+ID: test.py_doc_string_4
 Type: doc_string
-Position: Line 6, Column 1 (Offset: 75)
+Position: Line 29, Column 9 (Offset: 484)
 Content:
-This is a multi-line comment
-with multiple lines of text
-This is a multi-line comment
-with multiple lines of text
-"""
-This is a multi-line comment
-with multiple lines of text
-"""
-Another comment inside function
-Documentation string for greet function
-    Args:
-        name: The name to greet
-    Returns:
-        A greeting message
-"""
-    Documentation string for greet function
-    Args:
-        name: The name to greet
-    Returns:
-        A greeting message
-    """
-Example class for testing
-"""Example class for testing"""
 Method documentation
 Raw Match:
-"""
-This is a multi-line comment
-with multiple lines of text
-"""
-"""
-This is a multi-line comment
-with multiple lines of text
-"""
-"""
-This is a multi-line comment
-with multiple lines of text
-"""
-# Another comment inside function
-"""
-    Documentation string for greet function
-    Args:
-        name: The name to greet
-    Returns:
-        A greeting message
-    """
-"""
-    Documentation string for greet function
-    Args:
-        name: The name to greet
-    Returns:
-        A greeting message
-    """
-"""Example class for testing"""
-"""Example class for testing"""
 """Method documentation"""
 
 --- Unit 11 ---
-ID: test.py_merged_doc_string_75
-Type: doc_string
-Position: Line 6, Column 1 (Offset: 75)
+ID: test.py_string_literal_3
+Type: string_literal
+Position: Line 29, Column 9 (Offset: 484)
 Content:
-This is a multi-line comment
-with multiple lines of text
-This is a multi-line comment
-with multiple lines of text
-"""
-This is a multi-line comment
-with multiple lines of text
-"""
-Another comment inside function
-Documentation string for greet function
-    Args:
-        name: The name to greet
-    Returns:
-        A greeting message
-"""
-    Documentation string for greet function
-    Args:
-        name: The name to greet
-    Returns:
-        A greeting message
-    """
-Example class for testing
-"""Example class for testing"""
-Method documentation
 """Method documentation"""
 Raw Match:
-"""
-This is a multi-line comment
-with multiple lines of text
-"""
-"""
-This is a multi-line comment
-with multiple lines of text
-"""
-"""
-This is a multi-line comment
-with multiple lines of text
-"""
-# Another comment inside function
-"""
-    Documentation string for greet function
-    Args:
-        name: The name to greet
-    Returns:
-        A greeting message
-    """
-"""
-    Documentation string for greet function
-    Args:
-        name: The name to greet
-    Returns:
-        A greeting message
-    """
-"""Example class for testing"""
-"""Example class for testing"""
-"""Method documentation"""
 """Method documentation"""
 

@@ -2,6 +2,8 @@
 //!
 //! Provides factory functions for creating cache, translator, parser, and writer instances.
 
+use tracing::{debug, info};
+
 use crate::{
     cache::binary::BinaryCache,
     cache::Cache,
@@ -17,7 +19,13 @@ use crate::{
 
 /// Create cache instance
 pub fn create_cache(cache_config: &CacheConfig, project_path: &str) -> Result<Box<dyn Cache>> {
+    info!(
+        cache_type = %cache_config.mode,
+        cache_dir = %project_path,
+        "Creating cache instance"
+    );
     let cache = Box::new(BinaryCache::new(cache_config.clone(), project_path)?);
+    debug!("Cache instance created successfully");
     Ok(cache)
 }
 
@@ -26,6 +34,11 @@ pub fn create_translator(
     global_config: &GlobalConfig,
     project_config: &ProjectConfig,
 ) -> Result<TranslationService> {
+    info!(
+        provider = %project_config.translate.provider,
+        "Creating translator instance"
+    );
+
     let translator_config = TranslatorConfig {
         provider: project_config.translate.provider,
         deeplx: Some(crate::translator::common::DeepLXConfig {
@@ -38,11 +51,20 @@ pub fn create_translator(
         tencent: None,
     };
 
-    TranslationService::new(translator_config)
+    let translator = TranslationService::new(translator_config)?;
+    debug!("Translator instance created successfully");
+    Ok(translator)
 }
 
 /// Create parser coordinator
 pub fn create_parser(project_config: &ProjectConfig) -> Result<ParserCoordinator> {
+    info!(
+        extract_comments = project_config.extraction.comments,
+        extract_docstrings = project_config.extraction.doc_strings,
+        extract_strings = project_config.extraction.format_strings,
+        "Creating parser coordinator"
+    );
+
     let parser_config = ParserConfig {
         extract_comments: project_config.extraction.comments,
         extract_docstrings: project_config.extraction.doc_strings,
@@ -52,7 +74,9 @@ pub fn create_parser(project_config: &ProjectConfig) -> Result<ParserCoordinator
         trim_content: true,
     };
 
-    ParserCoordinator::from_project_config(parser_config, project_config)
+    let parser = ParserCoordinator::from_project_config(parser_config, project_config)?;
+    debug!("Parser coordinator created successfully");
+    Ok(parser)
 }
 
 /// Create file writer
@@ -60,6 +84,12 @@ pub fn create_writer(
     project_config: &ProjectConfig,
     project_path: Option<&str>,
 ) -> Result<FileWriter> {
+    info!(
+        dry_run = project_config.writer.dry_run,
+        backup = project_config.writer.backup,
+        "Creating file writer"
+    );
+
     let writer_config = WriterConfig {
         preview_only: project_config.writer.dry_run,
         backup: project_config.writer.backup,
@@ -73,14 +103,17 @@ pub fn create_writer(
 
     writer_config.validate()?;
 
-    if let Some(path) = project_path {
-        Ok(FileWriter::with_project_path(
+    let writer = if let Some(path) = project_path {
+        FileWriter::with_project_path(
             writer_config,
             std::path::PathBuf::from(path),
-        ))
+        )
     } else {
-        Ok(FileWriter::new(writer_config))
-    }
+        FileWriter::new(writer_config)
+    };
+
+    debug!("File writer created successfully");
+    Ok(writer)
 }
 
 #[cfg(test)]

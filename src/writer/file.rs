@@ -116,6 +116,12 @@ impl FileWriter {
 
     /// Write preview of translations (without modifying file)
     fn write_preview(&self, file: &File, units: &[TranslationUnit]) -> Result<()> {
+        info!(
+            file = %file.path.display(),
+            units_count = units.len(),
+            "Previewing translations"
+        );
+
         println!("\n=== File: {} ===", file.path.display());
 
         for unit in units {
@@ -160,6 +166,12 @@ impl FileWriter {
         // Create temporary file
         let temp_path = file_path.with_extension("tmp");
 
+        debug!(
+            file = %file_path.display(),
+            temp_file = %temp_path.display(),
+            "Creating temporary file"
+        );
+
         // Write to temporary file
         if let Err(e) = tokio::fs::write(&temp_path, modified_content).await {
             error!(
@@ -174,6 +186,10 @@ impl FileWriter {
         }
 
         // Preserve metadata
+        debug!(
+            file = %file_path.display(),
+            "Preserving file metadata"
+        );
         if let Err(e) = self.preserve_metadata(file_path, &temp_path).await {
             error!(
                 file = %file_path.display(),
@@ -187,6 +203,10 @@ impl FileWriter {
         }
 
         // Atomic rename
+        debug!(
+            file = %file_path.display(),
+            "Performing atomic rename"
+        );
         if let Err(e) = tokio::fs::rename(&temp_path, file_path).await {
             error!(
                 file = %file_path.display(),
@@ -283,6 +303,12 @@ impl FileWriter {
 
         // Get original file info for metadata
         let src_info = tokio::fs::metadata(file_path).await.ok();
+
+        info!(
+            file = %file_path.display(),
+            backup = %backup_path.display(),
+            "Creating backup"
+        );
 
         // Write backup content with original permissions
         let perm = src_info.as_ref().map(|m| m.permissions());

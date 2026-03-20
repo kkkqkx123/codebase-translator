@@ -13,38 +13,24 @@ Raw Match:
 // This is a single-line comment
 
 --- Unit 2 ---
-ID: test.js_merged_comment_0
+ID: test.js_comment_2
 Type: comment
-Position: Line 1, Column 1 (Offset: 0)
+Position: Line 5, Column 1 (Offset: 87)
 Content:
-JavaScript comments for testing
-This is a single-line comment
 This is a multi-line comment
 with multiple lines of text
 Raw Match:
-// JavaScript comments for testing
-// This is a single-line comment
 /*
  * This is a multi-line comment
  * with multiple lines of text
  */
 
 --- Unit 3 ---
-ID: test.js_merged_comment_0
+ID: test.js_comment_3
 Type: comment
-Position: Line 1, Column 1 (Offset: 0)
+Position: Line 11, Column 5 (Offset: 180)
 Content:
-JavaScript comments for testing
-This is a single-line comment
-This is a multi-line comment
-with multiple lines of text
 Another comment inside function
 Raw Match:
-// JavaScript comments for testing
-// This is a single-line comment
-/*
- * This is a multi-line comment
- * with multiple lines of text
- */
 // Another comment inside function
 

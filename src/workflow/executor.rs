@@ -12,7 +12,7 @@ use crate::{
     scanner::FSScanner,
     workflow::file_processor::FileProcessor,
 };
-use tracing::{debug, error, info};
+use tracing::{debug, info, warn};
 
 /// Configuration for the translation workflow
 #[derive(Debug, Clone)]
@@ -111,12 +111,24 @@ impl TranslationWorkflow {
         let mut result = WorkflowResult::default();
 
         info!(
+            root_path = %self.workflow_config.root_path,
+            include_patterns = self.workflow_config.include_patterns.len(),
+            exclude_patterns = self.workflow_config.exclude_patterns.len(),
+            respect_gitignore = self.workflow_config.respect_gitignore,
+            follow_symlinks = self.workflow_config.follow_symlinks,
+            "Starting translation workflow"
+        );
+
+        info!(
             path = %self.workflow_config.root_path,
             "Step 1: Scanning directory"
         );
 
         let files = self.scan_files()?;
-        debug!(files_count = files.len(), "Directory scan completed");
+        info!(
+            files_count = files.len(),
+            "File scan completed"
+        );
 
         if files.is_empty() {
             info!("No files found to translate");
@@ -160,10 +172,10 @@ impl TranslationWorkflow {
                     result.files_processed += 1;
                 }
                 Err(e) => {
-                    error!(
+                    warn!(
                         error = %e,
                         file = %file_entry.path.display(),
-                        "Failed to process file"
+                        "Failed to process file, continuing"
                     );
                     result.stats.errors += 1;
                 }
@@ -172,6 +184,12 @@ impl TranslationWorkflow {
 
         let elapsed = start_time.elapsed();
         result.duration_secs = elapsed.as_secs_f64();
+
+        info!(
+            duration_ms = elapsed.as_millis(),
+            files_processed = result.files_processed,
+            "Workflow execution completed"
+        );
 
         // Print summary
         info!("========================================");

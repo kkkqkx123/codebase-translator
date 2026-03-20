@@ -100,7 +100,7 @@ Raw Match:
 // Chinese comment with English words
 
 --- Unit 11 ---
-ID: test.rs_string_literal_4
+ID: test.rs_string_literal_3
 Type: string_literal
 Position: Line 33, Column 20 (Offset: 621)
 Content:
@@ -122,19 +122,13 @@ Raw Match:
 
 
 --- Unit 13 ---
-ID: test.rs_merged_doc_string_670
+ID: test.rs_merged_doc_string_801
 Type: doc_string
-Position: Line 37, Column 1 (Offset: 670)
+Position: Line 43, Column 1 (Offset: 801)
 Content:
-English documentation comment
-@param value - The value to process
 中文文档注释
 @param value - 要处理的值
 Raw Match:
-/// English documentation comment
-
-/// @param value - The value to process
-
 /// 中文文档注释
 
 /// @param value - 要处理的值

@@ -4,6 +4,6 @@ Source Langs: ["AUTO"]
 Target Lang: EN
 Include Patterns: ["**/*.rs", "**/*.py", "**/*.js", "**/*.md"]
 Exclude Patterns: ["vendor/**", "node_modules/**", "target/**"]
-Cache Type: file
-Cache Directory: .translator-cache
+Cache Enabled: true
+Cache Directory: .translator
 Backup Enabled: false

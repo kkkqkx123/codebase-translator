@@ -7,9 +7,7 @@ Chinese-only content (to be translated zh->en):
 3: [string_literal] "这是中文输出"
 4: [string_literal] "Hello 世界"
 5: [string_literal] "你好 World"
-6: [doc_string] English documentation comment
-@param value - The value to process
-中文文档注释
+6: [doc_string] 中文文档注释
 @param value - 要处理的值
 
 
