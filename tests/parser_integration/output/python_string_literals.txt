@@ -6,6 +6,8 @@ ID: test.py_comment_0
 Type: comment
 Position: Line 1, Column 1 (Offset: 0)
 Content:
+Python string literals for testing
+Raw Match:
 # Python string literals for testing
 
 --- Unit 2 ---
@@ -14,12 +16,16 @@ Type: string_literal
 Position: Line 3, Column 11 (Offset: 48)
 Content:
 "Hello, world!"
+Raw Match:
+"Hello, world!"
 
 --- Unit 3 ---
 ID: test.py_string_literal_1
 Type: string_literal
 Position: Line 4, Column 12 (Offset: 75)
 Content:
+"Welcome to the application"
+Raw Match:
 "Welcome to the application"
 
 --- Unit 4 ---
@@ -28,6 +34,8 @@ Type: string_literal
 Position: Line 5, Column 13 (Offset: 116)
 Content:
 "An error occurred while processing"
+Raw Match:
+"An error occurred while processing"
 
 --- Unit 5 ---
 ID: test.py_string_literal_3
@@ -35,11 +43,15 @@ Type: string_literal
 Position: Line 11, Column 11 (Offset: 224)
 Content:
 "Error: operation failed"
+Raw Match:
+"Error: operation failed"
 
 --- Unit 6 ---
 ID: test.py_string_literal_4
 Type: string_literal
 Position: Line 15, Column 21 (Offset: 311)
 Content:
+"Example class"
+Raw Match:
 "Example class"
 

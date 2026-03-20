@@ -14,6 +14,7 @@ use crate::parser::strategy::{
     ExtractionContext, ExtractionStrategy, ExtractionStrategyImpl, StrategyNodeType,
 };
 use crate::parser::Parser as ParserTrait;
+use crate::parser::core::{StringProcessor, CommentType};
 
 /// Language configuration for tree-sitter
 #[derive(Debug, Clone)]
@@ -234,8 +235,23 @@ impl TreeSitterParser {
         }
 
         // Check if they are on consecutive or adjacent lines
-        let line_gap = current.start_pos.line - prev.end_pos.line;
-        line_gap <= 1
+        // Use saturating_sub to prevent overflow
+        let line_gap = current.start_pos.line.saturating_sub(prev.end_pos.line);
+        if line_gap > 1 {
+            return false;
+        }
+
+        // Check if they have the same indentation level (similar column position)
+        // This prevents merging comments from different code blocks
+        let column_diff = if prev.start_pos.column > current.start_pos.column {
+            prev.start_pos.column - current.start_pos.column
+        } else {
+            current.start_pos.column - prev.start_pos.column
+        };
+        
+        // Allow small column differences (up to 4 spaces) but not large ones
+        // This prevents merging comments from different nesting levels
+        column_diff <= 4
     }
 
     /// Merge a group of consecutive units into a single unit
@@ -332,11 +348,44 @@ impl TreeSitterParser {
                     TranslateError::Parse(format!("Failed to get node text: {}", e))
                 })?;
 
+                // Clean comment markers based on node type
+                let processor = StringProcessor::new();
+                let cleaned_text = match strategy_node_type {
+                    StrategyNodeType::Comment => {
+                        // Detect comment type and clean accordingly
+                        let trimmed = node_text.trim();
+                        if trimmed.starts_with("///") || trimmed.starts_with("//!") || trimmed.starts_with("/**") {
+                            processor.clean_comment(trimmed, CommentType::Doc)
+                        } else if trimmed.starts_with("/*") {
+                            processor.clean_comment(trimmed, CommentType::Block)
+                        } else if trimmed.starts_with("//") || trimmed.starts_with("#") {
+                            processor.clean_comment(trimmed, CommentType::Line)
+                        } else {
+                            node_text.to_string()
+                        }
+                    }
+                    StrategyNodeType::DocString => {
+                        // Clean doc comment markers
+                        let trimmed = node_text.trim();
+                        if trimmed.starts_with("///") || trimmed.starts_with("//!") {
+                            processor.clean_comment(trimmed, CommentType::Doc)
+                        } else if trimmed.starts_with("/**") {
+                            processor.clean_comment(trimmed, CommentType::Doc)
+                        } else if trimmed.starts_with("\"\"\"") || trimmed.starts_with("'''") {
+                            // Python-style docstrings
+                            processor.clean_string_literal(trimmed)
+                        } else {
+                            node_text.to_string()
+                        }
+                    }
+                    _ => node_text.to_string(),
+                };
+
                 // Apply filters
                 let text = if self.config.trim_content {
-                    node_text.trim()
+                    cleaned_text.trim().to_string()
                 } else {
-                    node_text
+                    cleaned_text
                 };
 
                 if text.len() < self.config.min_content_length {
@@ -348,17 +397,17 @@ impl TreeSitterParser {
                 }
 
                 // Skip if only symbols/whitespace
-                if is_only_symbols(text) {
+                if is_only_symbols(&text) {
                     continue;
                 }
 
                 // Apply content filter
-                if !self.filter.should_translate(text) {
+                if !self.filter.should_translate(&text) {
                     continue;
                 }
 
                 // Apply extraction strategy
-                let ctx = ExtractionContext::new(text);
+                let ctx = ExtractionContext::new(&text);
                 if !self.strategy.should_extract(strategy_node_type, &ctx) {
                     continue;
                 }

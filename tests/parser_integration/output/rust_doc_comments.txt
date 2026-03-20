@@ -7,43 +7,125 @@ Type: comment
 Position: Line 1, Column 1 (Offset: 0)
 Content:
 Rust doc comments for testing
+Raw Match:
+// Rust doc comments for testing
 
 --- Unit 2 ---
-ID: test.rs_doc_string_0_merged
+ID: test.rs_merged_doc_string_34
 Type: doc_string
 Position: Line 3, Column 1 (Offset: 34)
 Content:
 This is a module-level documentation comment
 This is a struct documentation comment
 Field documentation
+Raw Match:
+/// This is a module-level documentation comment
+
+/// This is a struct documentation comment
+
+/// Field documentation
+
 
 --- Unit 3 ---
-ID: test.rs_doc_string_3
+ID: test.rs_merged_doc_string_34
 Type: doc_string
-Position: Line 12, Column 9 (Offset: 263)
+Position: Line 3, Column 1 (Offset: 34)
 Content:
+This is a module-level documentation comment
+This is a struct documentation comment
+Field documentation
 Creates a new Example instance
+Raw Match:
+/// This is a module-level documentation comment
+
+/// This is a struct documentation comment
+
+/// Field documentation
+
+/// Creates a new Example instance
+
 
 --- Unit 4 ---
-ID: test.rs_doc_string_4
+ID: test.rs_merged_doc_string_34
 Type: doc_string
-Position: Line 17, Column 9 (Offset: 396)
+Position: Line 3, Column 1 (Offset: 34)
 Content:
+This is a module-level documentation comment
+This is a struct documentation comment
+Field documentation
+Creates a new Example instance
 Returns the value
+Raw Match:
+/// This is a module-level documentation comment
+
+/// This is a struct documentation comment
+
+/// Field documentation
+
+/// Creates a new Example instance
+
+/// Returns the value
+
 
 --- Unit 5 ---
-ID: test.rs_doc_string_5_merged
+ID: test.rs_merged_doc_string_34
 Type: doc_string
-Position: Line 24, Column 1 (Offset: 501)
+Position: Line 3, Column 1 (Offset: 34)
 Content:
+This is a module-level documentation comment
+This is a struct documentation comment
+Field documentation
+Creates a new Example instance
+Returns the value
 Function documentation
 # Arguments
+Raw Match:
+/// This is a module-level documentation comment
+
+/// This is a struct documentation comment
+
+/// Field documentation
+
+/// Creates a new Example instance
+
+/// Returns the value
+
+/// Function documentation
+
+/// # Arguments
+
 
 --- Unit 6 ---
-ID: test.rs_doc_string_11_merged
+ID: test.rs_merged_doc_string_34
 Type: doc_string
-Position: Line 30, Column 1 (Offset: 590)
+Position: Line 3, Column 1 (Offset: 34)
 Content:
+This is a module-level documentation comment
+This is a struct documentation comment
+Field documentation
+Creates a new Example instance
+Returns the value
+Function documentation
+# Arguments
 # Returns
 A greeting message
+Raw Match:
+/// This is a module-level documentation comment
+
+/// This is a struct documentation comment
+
+/// Field documentation
+
+/// Creates a new Example instance
+
+/// Returns the value
+
+/// Function documentation
+
+/// # Arguments
+
+/// # Returns
+
+/// A greeting message
+
 

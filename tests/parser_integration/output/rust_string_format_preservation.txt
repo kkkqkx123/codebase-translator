@@ -4,23 +4,19 @@ Rust String Format Preservation Test Results
 Input: "Hello, world!"
 Expected: Hello, world!
 Got: Hello, world!
-Style: Some(DoubleQuoted)
 Status: PASS
 
 Input: r"Hello, world!"
 Expected: Hello, world!
 Got: Hello, world!
-Style: Some(Raw { hash_count: 0 })
 Status: PASS
 
 Input: r#"Hello, "world"!"#
 Expected: Hello, "world"!
 Got: Hello, "world"!
-Style: Some(Raw { hash_count: 1 })
 Status: PASS
 
 Input: b"Hello, world!"
 Expected: Hello, world!
 Got: Hello, world!
-Style: Some(ByteString)
 Status: PASS

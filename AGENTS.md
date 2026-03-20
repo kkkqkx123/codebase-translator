@@ -40,25 +40,44 @@ Codebase Translate is a command-line tool developed in **Rust** that automatical
 ## Command Execution
 
 **Quality Verify**
+
 ```shell
+# complie check (similat to cargo check, but more readable)
+analyze_cargo # (Encapsulate `cargo test --lib` and provide detailed, classified complie report)
+
+# lint
 cargo clippy --all-targets --all-features
-cargo fmt --check
+
+# format
+cargo fmt
 ```
 
-**Build**
-```shell
-cargo build --release
-```
+## Testing
 
-**Test**
-```shell
-cargo test --all
-```
+The project includes a comprehensive test suite utilising Rust's standard testing framework:
+
+1. **Running tests**:
+
+   ```shell
+   cargo test # Run all tests
+   cargo test --lib -- --nocapture # Run lib tests
+   cargo test <test_name> # Run specific test(s) matching pattern
+   cargo test --test <integration_test_file> # Run specific integration test
+   ```
+
+   It is not recommended to run all tests in one time.
+
+2. **Test organization**:
+   - Unit tests: Located in the same file as the code being tested, marked with `#[cfg(test)]`
+   - Unit tests when original file is too large: Add individual test.rs, and add it to `mod.rs`
+   - Integration tests: Located in the `tests/` directory
+   - Benchmarks: Located in the `benches/` directory
+
 
 ## Workflow
 
 ```
-Scan directory → Detect encoding → Parse file → Check cache → Batch translation → Write back to file → Update cache
+Scan directory → Detect encoding → Check cache → Parse file → Batch translation → Write back to file → Update cache
 ```
 
 ## Translation Providers

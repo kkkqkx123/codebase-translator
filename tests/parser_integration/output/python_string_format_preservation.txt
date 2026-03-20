@@ -4,23 +4,19 @@ Python String Format Preservation Test Results
 Input: "Hello, world!"
 Expected: Hello, world!
 Got: Hello, world!
-Style: Some(DoubleQuoted)
 Status: PASS
 
 Input: 'Simple text'
 Expected: Simple text
 Got: Simple text
-Style: Some(SingleQuoted)
 Status: PASS
 
 Input: f"Hello, {name}!"
 Expected: Hello, {name}!
 Got: Hello, {name}!
-Style: Some(Formatted)
 Status: PASS
 
 Input: r"Hello\nWorld"
 Expected: Hello\nWorld
 Got: Hello\nWorld
-Style: Some(Raw { hash_count: 0 })
 Status: PASS

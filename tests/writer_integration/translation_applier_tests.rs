@@ -117,19 +117,24 @@ fn test_translation_applier_block_comment_format() {
 fn test_translation_applier_multiline_block_comment() {
     let content = "/*\n * Line 1\n * Line 2\n */\nint x = 5;";
 
+    // content should be cleaned (without comment markers)
+    // raw_match preserves the original format
+    // translated is just the translation without markers
     let mut units = vec![create_translation_unit_with_raw_match(
         "1",
-        "/*\n * Line 1\n * Line 2\n */",
+        "Line 1\nLine 2",
         "/*\n * Line 1\n * Line 2\n */",
         1,
         1,
         22,
     )];
-    units[0].set_translated("/*\n * 第一行\n * 第二行\n */");
+    units[0].set_translated("第一行\n第二行");
 
     let result = apply_translations(content, &units);
     assert!(result.is_ok());
     let modified = result.unwrap();
+    println!("Expected: /*\n * 第一行\n * 第二行\n */");
+    println!("Got: {}", modified);
     assert!(modified.contains("/*\n * 第一行\n * 第二行\n */"));
 }
 
@@ -157,35 +162,43 @@ fn test_translation_applier_doc_outer_comment() {
 fn test_translation_applier_doc_block_comment() {
     let content = "/**\n * This is a doc comment\n */\npub fn foo() {}";
 
+    // content should be cleaned (without comment markers)
+    // raw_match preserves the original format
+    // translated is just the translation without markers
     let mut units = vec![create_translation_unit_with_raw_match(
         "1",
-        "/**\n * This is a doc comment\n */",
+        "This is a doc comment",
         "/**\n * This is a doc comment\n */",
         1,
         1,
         4,
     )];
-    units[0].set_translated("/**\n * 这是一个\n * 文档注释\n */");
+    units[0].set_translated("这是一个文档注释");
 
     let result = apply_translations(content, &units);
     assert!(result.is_ok());
     let modified = result.unwrap();
-    assert!(modified.contains("/**\n * 这是一个\n * 文档注释\n */"));
+    println!("Expected: /**\n * 这是一个文档注释\n */");
+    println!("Got: {}", modified);
+    assert!(modified.contains("/**\n * 这是一个文档注释\n */"));
 }
 
 #[test]
 fn test_translation_applier_multiline_translated_text() {
     let content = "/*\n * Line 1\n * Line 2\n */\nint x = 5;";
 
+    // content should be cleaned (without comment markers)
+    // raw_match preserves the original format
+    // translated is just the translation without markers
     let mut units = vec![create_translation_unit_with_raw_match(
         "1",
-        "/*\n * Line 1\n * Line 2\n */",
+        "Line 1\nLine 2",
         "/*\n * Line 1\n * Line 2\n */",
         1,
         1,
         22,
     )];
-    units[0].set_translated("/*\n * 第一行\n * 第二行\n */");
+    units[0].set_translated("第一行\n第二行");
 
     let result = apply_translations(content, &units);
     assert!(result.is_ok());
@@ -271,15 +284,18 @@ fn test_translation_applier_should_translate_false() {
 fn test_translation_applier_complex_multiline_format() {
     let content = "    /*\n     * Line 1\n     * Line 2\n     */\n    int x = 5;";
 
+    // content should be cleaned (without comment markers)
+    // raw_match preserves the original format
+    // translated is just the translation without markers
     let mut units = vec![create_translation_unit_with_raw_match(
         "1",
-        "    /*\n     * Line 1\n     * Line 2\n     */",
+        "Line 1\nLine 2",
         "    /*\n     * Line 1\n     * Line 2\n     */",
         1,
         1,
         37,
     )];
-    units[0].set_translated("    /*\n     * 第一行\n     * 第二行\n     */");
+    units[0].set_translated("第一行\n第二行");
 
     let result = apply_translations(content, &units);
     assert!(result.is_ok());

@@ -1,4 +1,4 @@
-Extracted 15 translation units from language_filter_rust
+Extracted 13 translation units from language_filter_rust
 ==================================================
 
 --- Unit 1 ---
@@ -7,6 +7,8 @@ Type: comment
 Position: Line 1, Column 1 (Offset: 0)
 Content:
 Mixed content Rust file for language filtering tests
+Raw Match:
+// Mixed content Rust file for language filtering tests
 
 --- Unit 2 ---
 ID: test.rs_comment_1
@@ -14,6 +16,8 @@ Type: comment
 Position: Line 3, Column 1 (Offset: 57)
 Content:
 This is an English comment
+Raw Match:
+// This is an English comment
 
 --- Unit 3 ---
 ID: test.rs_comment_2
@@ -21,6 +25,8 @@ Type: comment
 Position: Line 6, Column 1 (Offset: 119)
 Content:
 这是一个中文注释
+Raw Match:
+// 这是一个中文注释
 
 --- Unit 4 ---
 ID: test.rs_comment_3
@@ -29,6 +35,11 @@ Position: Line 9, Column 1 (Offset: 180)
 Content:
 Multi-line English comment
 with multiple lines
+Raw Match:
+/*
+ * Multi-line English comment
+ * with multiple lines
+ */
 
 --- Unit 5 ---
 ID: test.rs_comment_4
@@ -37,12 +48,19 @@ Position: Line 14, Column 1 (Offset: 241)
 Content:
 多行中文注释
 包含多行内容
+Raw Match:
+/*
+ * 多行中文注释
+ * 包含多行内容
+ */
 
 --- Unit 6 ---
 ID: test.rs_string_literal_0
 Type: string_literal
 Position: Line 20, Column 14 (Offset: 330)
 Content:
+"This is English output"
+Raw Match:
 "This is English output"
 
 --- Unit 7 ---
@@ -51,6 +69,8 @@ Type: string_literal
 Position: Line 24, Column 14 (Offset: 397)
 Content:
 "这是中文输出"
+Raw Match:
+"这是中文输出"
 
 --- Unit 8 ---
 ID: test.rs_comment_5
@@ -58,12 +78,16 @@ Type: comment
 Position: Line 28, Column 5 (Offset: 449)
 Content:
 English comment with some Chinese words
+Raw Match:
+// English comment with some Chinese words
 
 --- Unit 9 ---
 ID: test.rs_string_literal_2
 Type: string_literal
 Position: Line 29, Column 19 (Offset: 510)
 Content:
+"Hello 世界"
+Raw Match:
 "Hello 世界"
 
 --- Unit 10 ---
@@ -72,6 +96,8 @@ Type: comment
 Position: Line 32, Column 5 (Offset: 564)
 Content:
 Chinese comment with English words
+Raw Match:
+// Chinese comment with English words
 
 --- Unit 11 ---
 ID: test.rs_string_literal_4
@@ -79,32 +105,38 @@ Type: string_literal
 Position: Line 33, Column 20 (Offset: 621)
 Content:
 "你好 World"
+Raw Match:
+"你好 World"
 
 --- Unit 12 ---
-ID: test.rs_doc_string_0
+ID: test.rs_merged_doc_string_670
 Type: doc_string
 Position: Line 37, Column 1 (Offset: 670)
 Content:
 English documentation comment
+@param value - The value to process
+Raw Match:
+/// English documentation comment
+
+/// @param value - The value to process
+
 
 --- Unit 13 ---
-ID: test.rs_doc_string_1
+ID: test.rs_merged_doc_string_670
 Type: doc_string
-Position: Line 38, Column 1 (Offset: 704)
+Position: Line 37, Column 1 (Offset: 670)
 Content:
+English documentation comment
 @param value - The value to process
-
---- Unit 14 ---
-ID: test.rs_doc_string_2
-Type: doc_string
-Position: Line 43, Column 1 (Offset: 801)
-Content:
 中文文档注释
-
---- Unit 15 ---
-ID: test.rs_doc_string_3
-Type: doc_string
-Position: Line 44, Column 1 (Offset: 824)
-Content:
 @param value - 要处理的值
+Raw Match:
+/// English documentation comment
+
+/// @param value - The value to process
+
+/// 中文文档注释
+
+/// @param value - 要处理的值
+
 

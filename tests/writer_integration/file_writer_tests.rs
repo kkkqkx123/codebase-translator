@@ -223,15 +223,18 @@ async fn test_file_writer_with_multiline_block_comment() {
     let content = "/*\n * Line 1\n * Line 2\n */\nint x = 5;";
     let file = create_test_file(&temp_path, "test_multiline_comment.rs", content).await;
 
+    // content should be cleaned (without comment markers)
+    // raw_match preserves the original format
+    // translated is just the translation without markers
     let mut units = vec![create_translation_unit_with_raw_match(
         "1",
-        "/*\n * Line 1\n * Line 2\n */",
+        "Line 1\nLine 2",
         "/*\n * Line 1\n * Line 2\n */",
         1,
         1,
         22,
     )];
-    units[0].set_translated("/*\n * 第一行\n * 第二行\n */");
+    units[0].set_translated("第一行\n第二行");
 
     let config = WriterConfig::default();
     let writer = FileWriter::new(config);

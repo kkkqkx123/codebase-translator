@@ -2,25 +2,49 @@ Extracted 3 translation units from javascript_comments
 ==================================================
 
 --- Unit 1 ---
-ID: test.js_comment_0_merged
+ID: test.js_merged_comment_0
 Type: comment
 Position: Line 1, Column 1 (Offset: 0)
 Content:
 JavaScript comments for testing
 This is a single-line comment
+Raw Match:
+// JavaScript comments for testing
+// This is a single-line comment
 
 --- Unit 2 ---
-ID: test.js_comment_2
+ID: test.js_merged_comment_0
 Type: comment
-Position: Line 5, Column 1 (Offset: 87)
+Position: Line 1, Column 1 (Offset: 0)
 Content:
+JavaScript comments for testing
+This is a single-line comment
 This is a multi-line comment
 with multiple lines of text
+Raw Match:
+// JavaScript comments for testing
+// This is a single-line comment
+/*
+ * This is a multi-line comment
+ * with multiple lines of text
+ */
 
 --- Unit 3 ---
-ID: test.js_comment_3
+ID: test.js_merged_comment_0
 Type: comment
-Position: Line 11, Column 5 (Offset: 180)
+Position: Line 1, Column 1 (Offset: 0)
 Content:
+JavaScript comments for testing
+This is a single-line comment
+This is a multi-line comment
+with multiple lines of text
 Another comment inside function
+Raw Match:
+// JavaScript comments for testing
+// This is a single-line comment
+/*
+ * This is a multi-line comment
+ * with multiple lines of text
+ */
+// Another comment inside function
 

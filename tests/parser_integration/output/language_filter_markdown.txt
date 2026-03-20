@@ -7,6 +7,8 @@ Type: comment
 Position: Line 1, Column 3 (Offset: 2)
 Content:
 Mixed Content Markdown
+Raw Match:
+# Mixed Content Markdown
 
 --- Unit 2 ---
 ID: test.md_comment_1
@@ -14,6 +16,9 @@ Type: comment
 Position: Line 5, Column 2 (Offset: 87)
 Content:
 Introduction
+Raw Match:
+
+## Introduction
 
 --- Unit 3 ---
 ID: test.md_comment_2
@@ -21,6 +26,9 @@ Type: comment
 Position: Line 9, Column 2 (Offset: 156)
 Content:
 Features
+Raw Match:
+
+## Features
 
 --- Unit 4 ---
 ID: test.md_comment_3
@@ -28,6 +36,9 @@ Type: comment
 Position: Line 15, Column 2 (Offset: 272)
 Content:
 Code Examples
+Raw Match:
+
+## Code Examples
 
 --- Unit 5 ---
 ID: test.md_string_5
@@ -35,6 +46,8 @@ Type: format_string
 Position: Line 19, Column 15 (Offset: 324)
 Content:
 Hello, world!
+Raw Match:
+"Hello, world!"
 
 --- Unit 6 ---
 ID: test.md_string_6
@@ -42,6 +55,8 @@ Type: format_string
 Position: Line 25, Column 15 (Offset: 384)
 Content:
 你好，世界！
+Raw Match:
+"你好，世界！"
 
 --- Unit 7 ---
 ID: test.md_comment_4
@@ -49,4 +64,7 @@ Type: comment
 Position: Line 29, Column 2 (Offset: 414)
 Content:
 Conclusion
+Raw Match:
+
+## Conclusion
 

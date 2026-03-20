@@ -55,6 +55,9 @@ fn write_units_to_file(filename: &str, units: &[TranslationUnit]) {
             unit.start_pos.line, unit.start_pos.column, unit.start_pos.offset
         ));
         output.push_str(&format!("Content:\n{}\n", unit.content));
+        if let Some(raw) = &unit.raw_match {
+            output.push_str(&format!("Raw Match:\n{}\n", raw));
+        }
         output.push_str("\n");
     }
 

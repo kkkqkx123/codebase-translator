@@ -7,6 +7,8 @@ Type: comment
 Position: Line 1, Column 1 (Offset: 0)
 Content:
 Go comments for testing
+Raw Match:
+// Go comments for testing
 
 --- Unit 2 ---
 ID: test.go_comment_1
@@ -14,6 +16,8 @@ Type: comment
 Position: Line 4, Column 1 (Offset: 41)
 Content:
 This is a single-line comment
+Raw Match:
+// This is a single-line comment
 
 --- Unit 3 ---
 ID: test.go_comment_2
@@ -22,6 +26,11 @@ Position: Line 7, Column 1 (Offset: 92)
 Content:
 This is a multi-line comment
 with multiple lines of text
+Raw Match:
+/*
+This is a multi-line comment
+with multiple lines of text
+*/
 
 --- Unit 4 ---
 ID: test.go_comment_3
@@ -29,12 +38,17 @@ Type: comment
 Position: Line 13, Column 5 (Offset: 178)
 Content:
 Another comment inside function
+Raw Match:
+// Another comment inside function
 
 --- Unit 5 ---
-ID: test.go_comment_4_merged
+ID: test.go_merged_comment_233
 Type: comment
 Position: Line 17, Column 1 (Offset: 233)
 Content:
 greet returns a greeting message
 name is the person to greet
+Raw Match:
+// greet returns a greeting message
+// name is the person to greet
 

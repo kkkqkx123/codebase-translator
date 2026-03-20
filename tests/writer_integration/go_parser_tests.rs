@@ -101,8 +101,8 @@ async fn test_go_end_to_end_write() {
     let temp_dir = create_temp_dir();
     let temp_path = temp_dir.path().to_path_buf();
 
+    // Use non-consecutive comments to avoid merging
     let content = r#"// Test file with simple comments
-// This is a line comment
 package main
 
 // This is a single-line comment
@@ -114,8 +114,8 @@ func test() int {
 }
 
 // greet returns a greeting message
-// name is the person to greet
 func greet(name string) string {
+    // name is the person to greet
     return fmt.Sprintf("Hello, %s!", name)
 }
 "#;
@@ -139,14 +139,14 @@ func greet(name string) string {
     }
 
     // Step 2: Set translations
+    // Note: content field is now cleaned (without comment markers)
     for unit in &mut units {
         match unit.content.as_str() {
-            "// Test file with simple comments" => unit.set_translated("// 测试文件，包含简单注释"),
-            "// This is a line comment" => unit.set_translated("// 这是一个行注释"),
-            "// This is a single-line comment" => unit.set_translated("// 这是一个单行注释"),
-            "// Another comment inside function" => unit.set_translated("// 函数内部的另一个注释"),
-            "// greet returns a greeting message" => unit.set_translated("// greet 返回问候信息"),
-            "// name is the person to greet" => unit.set_translated("// name 是要问候的人"),
+            "Test file with simple comments" => unit.set_translated("测试文件，包含简单注释"),
+            "This is a single-line comment" => unit.set_translated("这是一个单行注释"),
+            "Another comment inside function" => unit.set_translated("函数内部的另一个注释"),
+            "greet returns a greeting message" => unit.set_translated("greet 返回问候信息"),
+            "name is the person to greet" => unit.set_translated("name 是要问候的人"),
             _ => {}
         }
     }
@@ -169,24 +169,20 @@ func greet(name string) string {
         "Line 1 comment should have // prefix"
     );
     assert!(
-        written_content.contains("// 这是一个行注释"),
-        "Line 2 comment should have // prefix"
-    );
-    assert!(
         written_content.contains("// 这是一个单行注释"),
         "Line 5 comment should have // prefix"
     );
     assert!(
         written_content.contains("// 函数内部的另一个注释"),
-        "Line 13 comment should have // prefix"
+        "Line 10 comment should have // prefix"
     );
     assert!(
         written_content.contains("// greet 返回问候信息"),
-        "Line 17 comment should have // prefix"
+        "Line 13 comment should have // prefix"
     );
     assert!(
         written_content.contains("// name 是要问候的人"),
-        "Line 18 comment should have // prefix"
+        "Line 15 comment should have // prefix"
     );
 
     // Write output for inspection

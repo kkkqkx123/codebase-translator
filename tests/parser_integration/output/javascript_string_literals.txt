@@ -7,12 +7,16 @@ Type: comment
 Position: Line 1, Column 1 (Offset: 0)
 Content:
 JavaScript string literals for testing
+Raw Match:
+// JavaScript string literals for testing
 
 --- Unit 2 ---
 ID: test.js_string_literal_0
 Type: string_literal
 Position: Line 2, Column 17 (Offset: 58)
 Content:
+"Hello, world!"
+Raw Match:
 "Hello, world!"
 
 --- Unit 3 ---
@@ -21,11 +25,15 @@ Type: string_literal
 Position: Line 3, Column 18 (Offset: 92)
 Content:
 "Welcome to the application"
+Raw Match:
+"Welcome to the application"
 
 --- Unit 4 ---
 ID: test.js_string_literal_2
 Type: string_literal
 Position: Line 4, Column 19 (Offset: 140)
 Content:
+"An error occurred while processing"
+Raw Match:
 "An error occurred while processing"
 
