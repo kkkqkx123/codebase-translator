@@ -1,4 +1,4 @@
-Extracted 9 translation units
+Extracted 8 translation units
 ==================================================
 
 --- Unit 1 ---
@@ -134,15 +134,3 @@ Raw Match:
 /// 获取计算器名称
 
 Should Translate: true
-
---- Unit 9 ---
-ID: simple_rust.rs_string_literal_0
-Type: StringLiteral
-Position: Line 61, Column 14 (Offset: 1034)
-End Position: Line 61, Column 34 (Offset: 1054)
-Content:
-"测试翻译功能"
-Raw Match:
-"测试翻译功能"
-Should Translate: true
-

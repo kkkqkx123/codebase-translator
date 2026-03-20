@@ -1,4 +1,4 @@
-Extracted 6 translation units from rust_doc_comments
+Extracted 5 translation units from rust_doc_comments
 ==================================================
 
 --- Unit 1 ---
@@ -20,11 +20,8 @@ This is a struct documentation comment
 Field documentation
 Raw Match:
 /// This is a module-level documentation comment
-
 /// This is a struct documentation comment
-
 /// Field documentation
-
 
 --- Unit 3 ---
 ID: test.rs_doc_string_3
@@ -52,23 +49,22 @@ Type: doc_string
 Position: Line 24, Column 1 (Offset: 501)
 Content:
 Function documentation
+
 # Arguments
-Raw Match:
-/// Function documentation
 
-/// # Arguments
+* `name` - A name to greet
 
-
---- Unit 6 ---
-ID: test.rs_merged_doc_string_590
-Type: doc_string
-Position: Line 30, Column 1 (Offset: 590)
-Content:
 # Returns
+
 A greeting message
 Raw Match:
+/// Function documentation
+/// 
+/// # Arguments
+/// 
+/// * `name` - A name to greet
+/// 
 /// # Returns
-
+/// 
 /// A greeting message
-
 

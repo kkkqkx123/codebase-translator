@@ -400,22 +400,32 @@ impl TreeSitterParser {
                     cleaned_text
                 };
 
-                if text.len() < self.config.min_content_length {
-                    continue;
-                }
+                // For doc comments, preserve empty lines (e.g., "/// ") for proper merging
+                // Check if original text is a doc comment marker with empty content
+                let is_doc_empty_line = {
+                    let trimmed = node_text.trim();
+                    (trimmed == "///" || trimmed == "//!" || trimmed.starts_with("/// ") || trimmed.starts_with("//! "))
+                        && strategy_node_type == StrategyNodeType::DocString
+                };
 
-                if text.len() > self.config.max_content_length {
-                    continue;
-                }
+                if !is_doc_empty_line {
+                    if text.len() < self.config.min_content_length {
+                        continue;
+                    }
 
-                // Skip if only symbols/whitespace
-                if is_only_symbols(&text) {
-                    continue;
-                }
+                    if text.len() > self.config.max_content_length {
+                        continue;
+                    }
 
-                // Apply content filter
-                if !self.filter.should_translate(&text) {
-                    continue;
+                    // Skip if only symbols/whitespace
+                    if is_only_symbols(&text) {
+                        continue;
+                    }
+
+                    // Apply content filter
+                    if !self.filter.should_translate(&text) {
+                        continue;
+                    }
                 }
 
                 // Apply extraction strategy

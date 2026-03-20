@@ -117,9 +117,7 @@ English documentation comment
 @param value - The value to process
 Raw Match:
 /// English documentation comment
-
 /// @param value - The value to process
-
 
 --- Unit 13 ---
 ID: test.rs_merged_doc_string_801
@@ -130,7 +128,5 @@ Content:
 @param value - 要处理的值
 Raw Match:
 /// 中文文档注释
-
 /// @param value - 要处理的值
-
 

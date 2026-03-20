@@ -100,55 +100,58 @@ Raw Match:
 - 要么将整个代码块作为一个单元保留
 - 要么跳过代码块内的内容，只翻译说明文字
 
-## 修复建议
+## 修复方案
 
-### 方案 1: 改进空行判断
+### 修复内容
+
+**文件**: `src/parser/tree_sitter.rs`
+
+**问题**: 空文档注释行（如 `/// `）被过滤逻辑错误地排除
+
+**修复**: 在过滤逻辑中添加特殊处理，保留文档注释中的空行：
 
 ```rust
-// 当前逻辑
-if line.trim().is_empty() { ... }
+// For doc comments, preserve empty lines (e.g., "/// ") for proper merging
+// Check if original text is a doc comment marker with empty content
+let is_doc_empty_line = {
+    let trimmed = node_text.trim();
+    (trimmed == "///" || trimmed == "//!" || trimmed.starts_with("/// ") || trimmed.starts_with("//! "))
+        && strategy_node_type == StrategyNodeType::DocString
+};
 
-// 改进逻辑
-fn is_empty_line(line: &str, comment_prefix: &str) -> bool {
-    let content = line.trim_start_matches(comment_prefix).trim();
-    content.is_empty() && !line.trim().starts_with(comment_prefix.trim())
+if !is_doc_empty_line {
+    // Apply normal filtering logic
+    if text.len() < self.config.min_content_length { continue; }
+    if text.len() > self.config.max_content_length { continue; }
+    if is_only_symbols(&text) { continue; }
+    if !self.filter.should_translate(&text) { continue; }
 }
 ```
 
-### 方案 2: 保留带标记的空行
+### 修复效果
 
-在合并连续注释时，保留 `/// ` 这样的行：
-
-```rust
-// 合并时保留所有带注释标记的行
-if line.trim().starts_with("///") || line.trim().starts_with("//!") {
-    // 保留该行，即使内容为空
-}
+**修复前**:
+```
+Content: "创建新的计算器实例\n# Arguments"
+Raw Match: "/// 创建新的计算器实例\n/// # Arguments"
 ```
 
-### 方案 3: 识别代码块
-
-在文档注释中识别代码块标记（```），跳过代码块内的内容：
-
-```rust
-fn extract_doc_content(lines: &[&str]) -> Vec<(bool, String)> {
-    let mut in_code_block = false;
-    let mut result = Vec::new();
-    
-    for line in lines {
-        let trimmed = line.trim();
-        if trimmed.starts_with("/// ```") {
-            in_code_block = !in_code_block;
-            result.push((false, line.to_string())); // 标记为不翻译
-        } else if in_code_block {
-            result.push((false, line.to_string())); // 代码块内不翻译
-        } else {
-            result.push((true, line.to_string()));  // 可以翻译
-        }
-    }
-    result
-}
+**修复后**:
 ```
+Content: "创建新的计算器实例\n\n# Arguments\n\n* `name` - 计算器名称"
+Raw Match: "/// 创建新的计算器实例\n/// \n/// # Arguments\n/// \n/// * `name` - 计算器名称"
+```
+
+### 代码示例处理
+
+代码示例现在被正确地合并到同一个文档注释单元中，而不是被拆分为多个单元：
+
+**修复前**:
+- Unit 1: `# Examples`
+- Unit 2: `assert_eq!(result, 3);`
+
+**修复后**:
+- Unit 1: `# Examples\n\n```\nlet result = add(1, 2);\nassert_eq!(result, 3);\n```'
 
 ## 相关文件
 
