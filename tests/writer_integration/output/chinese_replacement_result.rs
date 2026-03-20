@@ -1,33 +1,9 @@
-E2E Translation Test - Rust File
-=================================
-
-Translation completed successfully!
-
-Files processed: 1
-Total files: 1
-Total units: 9
-Translated units: 9
-Cached files: 0
-Skipped units: 0
-Errors: 0
-Duration: 9.99s
-
-
-Directory Contents:
-====================
-  .translator [FILE]
-  simple_rust.rs [FILE]
-  translator [DIR]
-
-
-Translated File Content:
-=========================
 // This is a simple Rust file for testing translation functionality
-// Contains Chinese comments and document strings
+// Contains Chinese comments and doc strings
 
-/// 计算两个数的和
+/// Calculate the sum of two numbers
+# Arguments
 /// 
-/// # Arguments
 /// 
 /// * `a` - 第一个数字
 /// * `b` - 第二个数字
@@ -57,9 +33,9 @@ pub fn multiply(a: i32, b: i32) -> i32 {
     a * b
 }
 
-// This is a simple structure
+// 这是一个简单的结构体
 pub struct Calculator {
-    // Calculator Name
+    // 计算器名称
     name: String,
 }
 
@@ -75,14 +51,14 @@ impl Calculator {
         }
     }
 
-    /// Get Calculator Name
+        /// Get Calculator Name
     pub fn get_name(&self) -> &str {
         &self.name
     }
 }
 
 fn main() {
-    println!("测试翻译功能");
+    println!("Test translation function");
     let result = add(10, 20);
     println!("结果: {}", result);
 }

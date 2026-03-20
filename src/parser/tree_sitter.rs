@@ -278,11 +278,12 @@ impl TreeSitterParser {
             .join("\n");
 
         // Merge raw_match with newlines
+        // Note: Each raw_match already ends with a newline, so we need to trim before joining
         let merged_raw_match: Option<String> = if group.iter().all(|u| u.raw_match.is_some()) {
             Some(
                 group
                     .iter()
-                    .map(|u| u.raw_match.as_ref().unwrap().as_str())
+                    .map(|u| u.raw_match.as_ref().unwrap().trim_end_matches('\n'))
                     .collect::<Vec<_>>()
                     .join("\n"),
             )

@@ -108,7 +108,7 @@ impl StringProcessor {
     /// For line-based doc comments (/// and //!), processes each line separately
     /// to preserve newlines while removing the doc comment markers.
     /// For block doc comments (/**), delegates to block comment cleaning.
-    fn clean_doc_comment(&self, text: &str) -> String {
+    pub fn clean_doc_comment(&self, text: &str) -> String {
         let text = text
             .trim_start()
             .trim_end_matches(|c: char| c.is_whitespace() && c != '\n');
@@ -412,5 +412,56 @@ mod tests {
         let text3 = "//! 模块文档\npub mod my_module;";
         let result3 = processor.clean_doc_comment(text3);
         assert_eq!(result3, "模块文档", "Should only extract inner doc comment");
+    }
+
+    #[test]
+    fn test_multiline_outer_doc_comment() {
+        let processor = StringProcessor::new();
+
+        // Standard multiline outer doc comment
+        let text = "/// 第一行\n/// 第二行\n/// 第三行";
+        let result = processor.clean_doc_comment(text);
+        assert_eq!(result, "第一行\n第二行\n第三行");
+    }
+
+    #[test]
+    fn test_multiline_inner_doc_comment() {
+        let processor = StringProcessor::new();
+
+        // Standard multiline inner doc comment
+        let text = "//! 模块文档第一行\n//! 模块文档第二行";
+        let result = processor.clean_doc_comment(text);
+        assert_eq!(result, "模块文档第一行\n模块文档第二行");
+    }
+
+    #[test]
+    fn test_multiline_doc_with_empty_lines() {
+        let processor = StringProcessor::new();
+
+        // Multiline doc with empty lines (common in Rust documentation)
+        let text = "/// 标题\n/// \n/// 内容描述";
+        let result = processor.clean_doc_comment(text);
+        // Empty lines after stripping /// should be preserved
+        assert_eq!(result, "标题\n\n内容描述");
+    }
+
+    #[test]
+    fn test_multiline_doc_with_code_example() {
+        let processor = StringProcessor::new();
+
+        // Doc comment with code example (markdown code block)
+        let text = "/// 示例代码\n/// ```\n/// let x = 1;\n/// ```";
+        let result = processor.clean_doc_comment(text);
+        assert_eq!(result, "示例代码\n```\nlet x = 1;\n```");
+    }
+
+    #[test]
+    fn test_multiline_doc_with_trailing_newline() {
+        let processor = StringProcessor::new();
+
+        // Multiline doc with trailing newline (from tree-sitter)
+        let text = "/// 第一行\n/// 第二行\n";
+        let result = processor.clean_doc_comment(text);
+        assert_eq!(result, "第一行\n第二行");
     }
 }
