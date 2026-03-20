@@ -58,7 +58,9 @@ region = "ap-guangzhou"
 
 fn create_test_files(temp_dir: &PathBuf) -> Result<Vec<PathBuf>> {
     let files = vec![
-        ("test1.rs", r#"
+        (
+            "test1.rs",
+            r#"
 //! 这是测试文件 1
 //! 包含中文注释
 
@@ -66,16 +68,22 @@ fn main() {
     println!("Hello, World!");
     // 这是一个打印语句
 }
-"#),
-        ("test2.py", r#"
+"#,
+        ),
+        (
+            "test2.py",
+            r#"
 # 这是测试文件 2
 # Python 代码示例
 
 def hello():
     print("Hello, World!")
     # 打印问候语
-"#),
-        ("test3.md", r#"
+"#,
+        ),
+        (
+            "test3.md",
+            r#"
 # 测试文档
 
 这是一个测试文档，包含中文内容。
@@ -85,7 +93,8 @@ def hello():
 - 功能一
 - 功能二
 - 功能三
-"#),
+"#,
+        ),
     ];
 
     let mut created_files = Vec::new();
@@ -203,8 +212,14 @@ fn test_reporter_finalization() -> Result<()> {
     workflow.execute()?;
 
     let stats = reporter.get_stats();
-    assert!(stats.end_time.is_some(), "Should have end time after finalization");
-    assert!(stats.total_duration_ms > 0, "Should have duration after finalization");
+    assert!(
+        stats.end_time.is_some(),
+        "Should have end time after finalization"
+    );
+    assert!(
+        stats.total_duration_ms > 0,
+        "Should have duration after finalization"
+    );
 
     Ok(())
 }
@@ -257,14 +272,26 @@ fn test_reporter_save_report() -> Result<()> {
     workflow.execute()?;
 
     let report_path = temp_dir_path.join("report.txt");
-    reporter.save_report(&report_path, codebase_translate::reporter::ReportFormat::Text)?;
+    reporter.save_report(
+        &report_path,
+        codebase_translate::reporter::ReportFormat::Text,
+    )?;
 
     assert!(report_path.exists(), "Report file should be created");
 
     let report_content = fs::read_to_string(&report_path)?;
-    assert!(report_content.contains("Translation Report"), "Report should contain title");
-    assert!(report_content.contains("Files:"), "Report should contain files section");
-    assert!(report_content.contains("Translation Units:"), "Report should contain units section");
+    assert!(
+        report_content.contains("Translation Report"),
+        "Report should contain title"
+    );
+    assert!(
+        report_content.contains("Files:"),
+        "Report should contain files section"
+    );
+    assert!(
+        report_content.contains("Translation Units:"),
+        "Report should contain units section"
+    );
 
     Ok(())
 }
@@ -299,7 +326,10 @@ fn test_reporter_save_report_with_template() -> Result<()> {
     )?;
 
     assert!(saved_path.exists(), "Report file should be created");
-    assert!(saved_path.starts_with(&output_dir), "Report should be in output directory");
+    assert!(
+        saved_path.starts_with(&output_dir),
+        "Report should be in output directory"
+    );
 
     Ok(())
 }
@@ -369,7 +399,10 @@ fn test_reporter_empty_directory() -> Result<()> {
 
     let result = workflow.execute()?;
 
-    assert_eq!(result.files_processed, 0, "Should process 0 files in empty directory");
+    assert_eq!(
+        result.files_processed, 0,
+        "Should process 0 files in empty directory"
+    );
 
     let stats = reporter.get_stats();
     assert_eq!(stats.total_files, 0);
