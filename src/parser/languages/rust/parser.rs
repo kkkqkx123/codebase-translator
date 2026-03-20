@@ -46,58 +46,52 @@ impl RustParser {
     }
 
     /// Clean comment text by removing Rust comment markers
-    /// Returns CleanedComment with format information for proper reconstruction.
     fn clean_comment_text(&self, text: &str) -> CleanedComment {
         let trimmed = text.trim();
 
         // Handle outer doc comments: ///
         if trimmed.starts_with("///") {
-            return self
+            let cleaned = self
                 .string_processor
-                .clean_comment_with_format(trimmed, CommentType::Doc);
+                .clean_comment(trimmed, CommentType::Doc);
+            return CleanedComment { text: cleaned };
         }
 
         // Handle inner doc comments: //!
         if trimmed.starts_with("//!") {
-            return self
+            let cleaned = self
                 .string_processor
-                .clean_comment_with_format(trimmed, CommentType::Doc);
+                .clean_comment(trimmed, CommentType::Doc);
+            return CleanedComment { text: cleaned };
         }
 
         // Handle block doc comments: /**
         if trimmed.starts_with("/**") {
-            return self
+            let cleaned = self
                 .string_processor
-                .clean_comment_with_format(trimmed, CommentType::Doc);
+                .clean_comment(trimmed, CommentType::Doc);
+            return CleanedComment { text: cleaned };
         }
 
         // Handle regular line comments: //
         if trimmed.starts_with("//") {
-            return self
+            let cleaned = self
                 .string_processor
-                .clean_comment_with_format(trimmed, CommentType::Line);
+                .clean_comment(trimmed, CommentType::Line);
+            return CleanedComment { text: cleaned };
         }
 
         // Handle block comments: /* */
         if trimmed.starts_with("/*") {
-            return self
+            let cleaned = self
                 .string_processor
-                .clean_comment_with_format(trimmed, CommentType::Block);
+                .clean_comment(trimmed, CommentType::Block);
+            return CleanedComment { text: cleaned };
         }
 
         // Return as-is if no markers found
         CleanedComment {
             text: trimmed.to_string(),
-            format_info: crate::core::models::FormatInfo {
-                style: crate::core::models::CommentStyle::Line,
-                base_indent: String::new(),
-                line_prefix: None,
-                ends_with_newline: false,
-                is_multiline: false,
-                string_style: None,
-                placeholders: None,
-                quote_char: None,
-            },
         }
     }
 
@@ -181,8 +175,16 @@ impl RustParser {
 
             let id = format!("{}_comment_{}", file_path, match_idx);
             let node_type = self.strategy.get_node_type(StrategyNodeType::Comment);
-            let mut unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
-            unit.format_info = Some(cleaned.format_info);
+            let mut unit = TranslationUnit::new_with_pattern(
+                id,
+                node_type,
+                text,
+                m.start_pos,
+                m.end_pos,
+                crate::core::models::PatternType::Builtin,
+                "rust",
+            );
+            unit.raw_match = Some(m.text.to_string());
             units.push(unit);
             match_idx += 1;
         }
@@ -246,8 +248,16 @@ impl RustParser {
 
             let id = format!("{}_docstring_{}", file_path, match_idx);
             let node_type = self.strategy.get_node_type(StrategyNodeType::DocString);
-            let mut unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
-            unit.format_info = Some(cleaned.format_info);
+            let mut unit = TranslationUnit::new_with_pattern(
+                id,
+                node_type,
+                text,
+                m.start_pos,
+                m.end_pos,
+                crate::core::models::PatternType::Builtin,
+                "rust",
+            );
+            unit.raw_match = Some(m.text.to_string());
             units.push(unit);
             match_idx += 1;
         }
@@ -284,15 +294,11 @@ impl RustParser {
                         continue;
                     }
 
-                    // Clean the string literal with format info
-                    // Note: Only the outermost structure is guaranteed to be correct.
-                    // Complex internal structures are left to the translator to handle.
-                    let cleaned = self
-                        .string_processor
-                        .clean_string_literal_with_format(m.text);
+                    // Clean the string literal
+                    let cleaned = self.string_processor.clean_string_literal(m.text);
 
                     // Apply filter
-                    if !self.filter.should_translate(&cleaned.text) {
+                    if !self.filter.should_translate(&cleaned) {
                         continue;
                     }
 
@@ -314,18 +320,23 @@ impl RustParser {
                     };
 
                     // Apply strategy
-                    let ctx =
-                        ExtractionContext::new(&cleaned.text).with_function_name(&current_macro);
+                    let ctx = ExtractionContext::new(&cleaned).with_function_name(&current_macro);
                     if !self.strategy.should_extract(strategy_node_type, &ctx) {
                         continue;
                     }
 
                     let id = format!("{}_macro_{}", file_path, match_idx);
                     let node_type = self.strategy.get_node_type(strategy_node_type);
-                    let mut unit =
-                        TranslationUnit::new(id, node_type, cleaned.text, m.start_pos, m.end_pos);
-                    // Preserve format info for accurate reconstruction
-                    unit.format_info = Some(cleaned.format_info);
+                    let mut unit = TranslationUnit::new_with_pattern(
+                        id,
+                        node_type,
+                        cleaned,
+                        m.start_pos,
+                        m.end_pos,
+                        crate::core::models::PatternType::Builtin,
+                        "rust",
+                    );
+                    unit.raw_match = Some(m.text.to_string());
                     units.push(unit);
                     match_idx += 1;
                 }

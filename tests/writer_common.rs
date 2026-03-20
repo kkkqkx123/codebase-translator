@@ -75,21 +75,20 @@ pub fn create_translation_unit(
         language: None,
         should_translate: true,
         translated: None,
-        format_info: None,
         pattern_type: None,
         pattern_name: None,
-        raw_match: None,
+        raw_match: Some(content.to_string()),
     }
 }
 
-/// Create a translation unit with format info
-pub fn create_translation_unit_with_format(
+/// Create a translation unit with raw match
+pub fn create_translation_unit_with_raw_match(
     id: &str,
     content: &str,
+    raw_match: &str,
     line: usize,
     start_col: usize,
     end_col: usize,
-    format_info: codebase_translate::core::models::FormatInfo,
 ) -> TranslationUnit {
     TranslationUnit {
         id: id.to_string(),
@@ -100,10 +99,9 @@ pub fn create_translation_unit_with_format(
         language: None,
         should_translate: true,
         translated: None,
-        format_info: Some(format_info),
         pattern_type: None,
         pattern_name: None,
-        raw_match: None,
+        raw_match: Some(raw_match.to_string()),
     }
 }
 

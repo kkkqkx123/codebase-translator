@@ -1,8 +1,6 @@
 //! TranslationApplier integration tests
 
-use codebase_translate::core::models::{
-    CommentStyle, FormatInfo, NodeType, Position, TranslationUnit,
-};
+use codebase_translate::core::models::{NodeType, Position, TranslationUnit};
 use codebase_translate::writer::apply_translations;
 
 use super::common::*;
@@ -66,50 +64,26 @@ fn test_translation_applier_empty_units() {
 #[test]
 fn test_translation_applier_missing_translation() {
     let content = "Hello world";
-    let format_info = FormatInfo {
-        style: CommentStyle::BlockSingle,
-        base_indent: "".to_string(),
-        line_prefix: Some("/* ".to_string()),
-        ends_with_newline: false,
-        is_multiline: false,
-        string_style: None,
-        placeholders: None,
-        quote_char: None,
-    };
-    let units = vec![create_translation_unit_with_format(
-        "1",
-        "Hello",
-        1,
-        1,
-        6,
-        format_info,
+    let units = vec![create_translation_unit_with_raw_match(
+        "1", "Hello", "Hello", 1, 1, 6,
     )];
 
     let result = apply_translations(content, &units);
-    assert!(result.is_err());
+    assert!(result.is_ok());
+    assert_eq!(result.unwrap(), content);
 }
 
 #[test]
 fn test_translation_applier_line_comment_format() {
     let content = "    // This is a comment\nint x = 5;";
-    let format_info = FormatInfo {
-        style: CommentStyle::Line,
-        base_indent: "    ".to_string(),
-        line_prefix: Some("// ".to_string()),
-        ends_with_newline: false,
-        is_multiline: false,
-        string_style: None,
-        placeholders: None,
-        quote_char: None,
-    };
 
-    let mut units = vec![create_translation_unit_with_format(
+    let mut units = vec![create_translation_unit_with_raw_match(
         "1",
         "This is a comment",
+        "    // This is a comment",
         1,
-        5,  // Start at "//" (1-indexed, after base_indent)
-        22, // End of line (1-indexed, exclusive)
-        format_info,
+        5,
+        22,
     )];
     units[0].set_translated("这是一个注释");
 
@@ -122,26 +96,16 @@ fn test_translation_applier_line_comment_format() {
 #[test]
 fn test_translation_applier_block_comment_format() {
     let content = "/* This is a comment */\nint x = 5;";
-    let format_info = FormatInfo {
-        style: CommentStyle::BlockSingle,
-        base_indent: "".to_string(),
-        line_prefix: None,
-        ends_with_newline: false,
-        is_multiline: false,
-        string_style: None,
-        placeholders: None,
-        quote_char: None,
-    };
 
-    let mut units = vec![create_translation_unit_with_format(
+    let mut units = vec![create_translation_unit_with_raw_match(
         "1",
+        "/* This is a comment */",
         "/* This is a comment */",
         1,
         1,
         22,
-        format_info,
     )];
-    units[0].set_translated("这是一个注释");
+    units[0].set_translated("/* 这是一个注释 */");
 
     let result = apply_translations(content, &units);
     assert!(result.is_ok());
@@ -152,26 +116,16 @@ fn test_translation_applier_block_comment_format() {
 #[test]
 fn test_translation_applier_multiline_block_comment() {
     let content = "/*\n * Line 1\n * Line 2\n */\nint x = 5;";
-    let format_info = FormatInfo {
-        style: CommentStyle::BlockMulti,
-        base_indent: "".to_string(),
-        line_prefix: Some(" * ".to_string()),
-        ends_with_newline: true,
-        is_multiline: false,
-        string_style: None,
-        placeholders: None,
-        quote_char: None,
-    };
 
-    let mut units = vec![create_translation_unit_with_format(
+    let mut units = vec![create_translation_unit_with_raw_match(
         "1",
+        "/*\n * Line 1\n * Line 2\n */",
         "/*\n * Line 1\n * Line 2\n */",
         1,
         1,
         22,
-        format_info,
     )];
-    units[0].set_translated("第一行\n第二行");
+    units[0].set_translated("/*\n * 第一行\n * 第二行\n */");
 
     let result = apply_translations(content, &units);
     assert!(result.is_ok());
@@ -182,24 +136,14 @@ fn test_translation_applier_multiline_block_comment() {
 #[test]
 fn test_translation_applier_doc_outer_comment() {
     let content = "/// This is a doc comment\npub fn foo() {}";
-    let format_info = FormatInfo {
-        style: CommentStyle::DocOuter,
-        base_indent: "".to_string(),
-        line_prefix: Some("/// ".to_string()),
-        ends_with_newline: false,
-        is_multiline: false,
-        string_style: None,
-        placeholders: None,
-        quote_char: None,
-    };
 
-    let mut units = vec![create_translation_unit_with_format(
+    let mut units = vec![create_translation_unit_with_raw_match(
         "1",
+        "/// This is a doc comment",
         "/// This is a doc comment",
         1,
         1,
         24,
-        format_info,
     )];
     units[0].set_translated("/// 这是一个文档注释");
 
@@ -212,26 +156,16 @@ fn test_translation_applier_doc_outer_comment() {
 #[test]
 fn test_translation_applier_doc_block_comment() {
     let content = "/**\n * This is a doc comment\n */\npub fn foo() {}";
-    let format_info = FormatInfo {
-        style: CommentStyle::DocBlock,
-        base_indent: "".to_string(),
-        line_prefix: Some(" * ".to_string()),
-        ends_with_newline: true,
-        is_multiline: false,
-        string_style: None,
-        placeholders: None,
-        quote_char: None,
-    };
 
-    let mut units = vec![create_translation_unit_with_format(
+    let mut units = vec![create_translation_unit_with_raw_match(
         "1",
+        "/**\n * This is a doc comment\n */",
         "/**\n * This is a doc comment\n */",
         1,
         1,
-        4, // End of line 3 (exclusive), where " */" is at positions 1-3
-        format_info,
+        4,
     )];
-    units[0].set_translated("这是一个\n文档注释");
+    units[0].set_translated("/**\n * 这是一个\n * 文档注释\n */");
 
     let result = apply_translations(content, &units);
     assert!(result.is_ok());
@@ -242,26 +176,16 @@ fn test_translation_applier_doc_block_comment() {
 #[test]
 fn test_translation_applier_multiline_translated_text() {
     let content = "/*\n * Line 1\n * Line 2\n */\nint x = 5;";
-    let format_info = FormatInfo {
-        style: CommentStyle::BlockMulti,
-        base_indent: "".to_string(),
-        line_prefix: Some(" * ".to_string()),
-        ends_with_newline: true,
-        is_multiline: false,
-        string_style: None,
-        placeholders: None,
-        quote_char: None,
-    };
 
-    let mut units = vec![create_translation_unit_with_format(
+    let mut units = vec![create_translation_unit_with_raw_match(
         "1",
+        "/*\n * Line 1\n * Line 2\n */",
         "/*\n * Line 1\n * Line 2\n */",
         1,
         1,
         22,
-        format_info,
     )];
-    units[0].set_translated("第一行\n第二行");
+    units[0].set_translated("/*\n * 第一行\n * 第二行\n */");
 
     let result = apply_translations(content, &units);
     assert!(result.is_ok());
@@ -270,7 +194,7 @@ fn test_translation_applier_multiline_translated_text() {
 }
 
 #[test]
-fn test_translation_applier_without_format_info() {
+fn test_translation_applier_without_raw_match() {
     let content = "Hello world\nThis is a test";
     let mut units = vec![create_translation_unit("1", "Hello", 1, 1, 6)];
     units[0].set_translated("你好");
@@ -346,26 +270,16 @@ fn test_translation_applier_should_translate_false() {
 #[test]
 fn test_translation_applier_complex_multiline_format() {
     let content = "    /*\n     * Line 1\n     * Line 2\n     */\n    int x = 5;";
-    let format_info = FormatInfo {
-        style: CommentStyle::BlockMulti,
-        base_indent: "    ".to_string(),
-        line_prefix: Some(" * ".to_string()),
-        ends_with_newline: true,
-        is_multiline: false,
-        string_style: None,
-        placeholders: None,
-        quote_char: None,
-    };
 
-    let mut units = vec![create_translation_unit_with_format(
+    let mut units = vec![create_translation_unit_with_raw_match(
         "1",
+        "    /*\n     * Line 1\n     * Line 2\n     */",
         "    /*\n     * Line 1\n     * Line 2\n     */",
         1,
         1,
         37,
-        format_info,
     )];
-    units[0].set_translated("第一行\n第二行");
+    units[0].set_translated("    /*\n     * 第一行\n     * 第二行\n     */");
 
     let result = apply_translations(content, &units);
     assert!(result.is_ok());
@@ -431,40 +345,33 @@ fn test_translation_applier_preserves_line_structure() {
 }
 
 #[test]
-fn test_translation_applier_multiline_without_format_info() {
-    // Test multiline comment handling when format_info is None
-    // When format_info is None, we rely on end_pos to determine the span
+fn test_translation_applier_multiline_with_raw_match() {
+    // Test multiline comment handling with raw_match
     let content = "/*\nThis is a multi-line comment\nwith multiple lines of text\n*/\nint x = 5;";
 
-    // Create a unit that spans lines 1-4 (the multiline comment)
-    // Content is the cleaned text (without /* */)
-    // Note: Without format_info, we use end_pos.line - start_pos.line to determine span
+    // Create a unit for line 2 only
     let mut unit = TranslationUnit {
         id: "1".to_string(),
         node_type: NodeType::Comment,
-        content: "This is a multi-line comment\nwith multiple lines of text".to_string(),
-        start_pos: Position::new(1, 1, 0),
-        end_pos: Position::new(4, 3, 0), // Ends at line 4, column 3 (after */)
+        content: "This is a multi-line comment".to_string(),
+        start_pos: Position::new(2, 1, 0),
+        end_pos: Position::new(2, 25, 0),
         language: None,
         should_translate: true,
         translated: None,
-        format_info: None, // No format info
         pattern_type: None,
         pattern_name: None,
-        raw_match: None,
+        raw_match: Some("This is a multi-line comment".to_string()),
     };
-    // When format_info is None, the translated text should include the full formatted comment
-    unit.set_translated("/*\nThis is a multi-line comment\nwith multiple lines of text\n*/");
+    unit.set_translated("这是一个多行注释");
 
     let result = apply_translations(content, &[unit]);
     assert!(result.is_ok());
     let modified = result.unwrap();
 
-    // The content should be correctly replaced without duplication
-    assert_eq!(
-        modified, content,
-        "Multiline comment without format_info should be correctly replaced"
-    );
+    // The content should be correctly replaced
+    assert!(modified.contains("/*\n这是一个多行注释\nwith multiple lines of text\n*/"));
+    assert!(modified.contains("int x = 5;"));
 }
 
 #[test]
@@ -472,35 +379,54 @@ fn test_translation_applier_merged_multiline_doc_comment() {
     // Test merged multiline doc comment (simulating what happens after parser merges consecutive lines)
     let content = "/// Line 1\n/// Line 2\n/// Line 3\npub fn foo() {}";
 
-    // This simulates a merged unit from the parser
-    let format_info = FormatInfo {
-        style: CommentStyle::DocOuter,
-        base_indent: "".to_string(),
-        line_prefix: Some("/// ".to_string()),
-        ends_with_newline: true,
-        is_multiline: true, // Marked as multiline (merged)
-        string_style: None,
-        placeholders: None,
-        quote_char: None,
-    };
-
-    let mut unit = TranslationUnit {
+    // This simulates a merged unit from the parser - but since we're using raw_match,
+    // we need to create separate units for each line
+    let mut unit1 = TranslationUnit {
         id: "1".to_string(),
         node_type: NodeType::DocString,
-        content: "Line 1\nLine 2\nLine 3".to_string(), // Merged content without prefixes
-        start_pos: Position::new(1, 5, 0),             // Line 1, column 5 (after "/// ")
-        end_pos: Position::new(3, 10, 0),              // Line 3, column 10
+        content: "Line 1".to_string(),
+        start_pos: Position::new(1, 5, 0),
+        end_pos: Position::new(1, 10, 0),
         language: None,
         should_translate: true,
         translated: None,
-        format_info: Some(format_info),
         pattern_type: None,
         pattern_name: None,
-        raw_match: None,
+        raw_match: Some("Line 1".to_string()),
     };
-    unit.set_translated("第一行\n第二行\n第三行");
+    unit1.set_translated("第一行");
 
-    let result = apply_translations(content, &[unit]);
+    let mut unit2 = TranslationUnit {
+        id: "2".to_string(),
+        node_type: NodeType::DocString,
+        content: "Line 2".to_string(),
+        start_pos: Position::new(2, 5, 0),
+        end_pos: Position::new(2, 10, 0),
+        language: None,
+        should_translate: true,
+        translated: None,
+        pattern_type: None,
+        pattern_name: None,
+        raw_match: Some("Line 2".to_string()),
+    };
+    unit2.set_translated("第二行");
+
+    let mut unit3 = TranslationUnit {
+        id: "3".to_string(),
+        node_type: NodeType::DocString,
+        content: "Line 3".to_string(),
+        start_pos: Position::new(3, 5, 0),
+        end_pos: Position::new(3, 10, 0),
+        language: None,
+        should_translate: true,
+        translated: None,
+        pattern_type: None,
+        pattern_name: None,
+        raw_match: Some("Line 3".to_string()),
+    };
+    unit3.set_translated("第三行");
+
+    let result = apply_translations(content, &[unit1, unit2, unit3]);
     assert!(result.is_ok());
     let modified = result.unwrap();
 

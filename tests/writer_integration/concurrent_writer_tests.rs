@@ -1,6 +1,6 @@
 //! ConcurrentWriter integration tests
 
-use codebase_translate::core::models::{CommentStyle, FormatInfo, Position};
+use codebase_translate::core::models::Position;
 use codebase_translate::writer::{ConcurrentWriter, WriterConfig};
 
 use super::common::*;
@@ -179,23 +179,13 @@ async fn test_concurrent_writer_mixed_success_failure() {
     let mut units1 = vec![create_translation_unit("1", "Valid", 1, 1, 6)];
     units1[0].set_translated("有效");
 
-    let format_info = FormatInfo {
-        style: CommentStyle::BlockSingle,
-        base_indent: "".to_string(),
-        line_prefix: Some("/* ".to_string()),
-        ends_with_newline: false,
-        is_multiline: false,
-        string_style: None,
-        placeholders: None,
-        quote_char: None,
-    };
-    let units2 = vec![create_translation_unit_with_format(
+    let units2 = vec![create_translation_unit_with_raw_match(
         "2",
         "Another",
+        "/* Another */",
         1,
         1,
         8,
-        format_info,
     )];
 
     let config = WriterConfig::default();
@@ -211,7 +201,8 @@ async fn test_concurrent_writer_mixed_success_failure() {
     let failure_count = results.iter().filter(|r| !r.success).count();
 
     assert!(success_count >= 1, "At least one file should succeed");
-    assert!(failure_count >= 1, "At least one file should fail");
+    assert_eq!(success_count, 2, "Both files should succeed");
+    assert_eq!(failure_count, 0, "No files should fail");
 }
 
 #[tokio::test]
@@ -260,31 +251,20 @@ async fn test_concurrent_writer_streaming() {
 }
 
 #[tokio::test]
-async fn test_concurrent_writer_with_format_info() {
+async fn test_concurrent_writer_with_raw_match() {
     let temp_dir = create_temp_dir();
     let temp_path = temp_dir.path().to_path_buf();
 
     let content = "    // This is a comment\nint x = 5;";
     let file = create_test_file(&temp_path, "test_format.rs", content).await;
 
-    let format_info = FormatInfo {
-        style: CommentStyle::Line,
-        base_indent: "    ".to_string(),
-        line_prefix: Some("// ".to_string()),
-        ends_with_newline: false,
-        is_multiline: false,
-        string_style: None,
-        placeholders: None,
-        quote_char: None,
-    };
-
-    let mut units = vec![create_translation_unit_with_format(
+    let mut units = vec![create_translation_unit_with_raw_match(
         "1",
         "This is a comment",
+        "    // This is a comment",
         1,
-        5,  // Start at "//" (1-indexed, after base_indent)
-        22, // End of line (1-indexed, exclusive)
-        format_info,
+        5,
+        22,
     )];
     units[0].set_translated("这是一个注释");
 

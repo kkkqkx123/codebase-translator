@@ -1,6 +1,5 @@
 //! Go parser integration tests for writer
 
-use codebase_translate::core::models::{CommentStyle, FormatInfo};
 use codebase_translate::parser::filter::{ContentFilter, FilterConfig};
 use codebase_translate::parser::strategy::{
     ConfigBasedStrategy, ExtractionConfig, ExtractionStrategyImpl,
@@ -22,7 +21,7 @@ fn create_test_filter() -> std::sync::Arc<ContentFilter> {
 }
 
 #[tokio::test]
-async fn test_go_parser_extracts_comments_with_format_info() {
+async fn test_go_parser_extracts_comments_with_raw_match() {
     let config = ParserConfig::default();
     let strategy = create_test_strategy();
     let filter = create_test_filter();
@@ -70,26 +69,22 @@ func greet(name string) string {
             "  Position: line {}, col {} - line {}, col {}",
             unit.start_pos.line, unit.start_pos.column, unit.end_pos.line, unit.end_pos.column
         );
-        if let Some(fmt) = &unit.format_info {
-            println!(
-                "  Format: style={:?}, prefix={:?}, base_indent={:?}",
-                fmt.style, fmt.line_prefix, fmt.base_indent
-            );
+        if let Some(raw) = &unit.raw_match {
+            println!("  Raw match: {:?}", raw);
         } else {
-            println!("  Format: None");
+            println!("  Raw match: None");
         }
     }
 
-    // Check that units have format_info
+    // Check that units have raw_match
     assert!(!units.is_empty(), "Should have extracted units");
 
     for unit in &units {
         assert!(
-            unit.format_info.is_some(),
-            "Unit '{}' should have format_info",
+            unit.raw_match.is_some(),
+            "Unit '{}' should have raw_match",
             unit.content
         );
-        let fmt = unit.format_info.as_ref().unwrap();
 
         // Check that start_pos.column is valid (1-indexed, should be >= 1)
         assert!(
@@ -98,16 +93,6 @@ func greet(name string) string {
             unit.content,
             unit.start_pos.column
         );
-
-        // Line comments should have Line style and // prefix
-        if fmt.style == CommentStyle::Line {
-            assert_eq!(
-                fmt.line_prefix,
-                Some("// ".to_string()),
-                "Unit '{}' should have '// ' prefix",
-                unit.content
-            );
-        }
     }
 }
 
@@ -148,29 +133,21 @@ func greet(name string) string {
     println!("Extracted {} units:", units.len());
     for (i, unit) in units.iter().enumerate() {
         println!("Unit {}: content={:?}", i, unit.content);
-        if let Some(fmt) = &unit.format_info {
-            println!(
-                "  Format: style={:?}, prefix={:?}",
-                fmt.style, fmt.line_prefix
-            );
+        if let Some(raw) = &unit.raw_match {
+            println!("  Raw match: {:?}", raw);
         }
     }
 
     // Step 2: Set translations
     for unit in &mut units {
-        // Handle merged comments (multiline content with \n)
-        if unit.content.contains('\n') {
-            if unit.content.starts_with("Test file with simple comments") {
-                unit.set_translated("测试文件，包含简单注释\n这是一个行注释");
-            } else if unit.content.starts_with("greet returns") {
-                unit.set_translated("greet 返回问候信息\nname 是要问候的人");
-            }
-        } else {
-            match unit.content.as_str() {
-                "This is a single-line comment" => unit.set_translated("这是一个单行注释"),
-                "Another comment inside function" => unit.set_translated("函数内部的另一个注释"),
-                _ => {}
-            }
+        match unit.content.as_str() {
+            "// Test file with simple comments" => unit.set_translated("// 测试文件，包含简单注释"),
+            "// This is a line comment" => unit.set_translated("// 这是一个行注释"),
+            "// This is a single-line comment" => unit.set_translated("// 这是一个单行注释"),
+            "// Another comment inside function" => unit.set_translated("// 函数内部的另一个注释"),
+            "// greet returns a greeting message" => unit.set_translated("// greet 返回问候信息"),
+            "// name is the person to greet" => unit.set_translated("// name 是要问候的人"),
+            _ => {}
         }
     }
 

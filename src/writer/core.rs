@@ -4,7 +4,7 @@
 //! with support for different file types (generic and markdown).
 
 use crate::core::error::{Result, TranslateError};
-use crate::core::models::{CommentStyle, FormatInfo, TranslationUnit};
+use crate::core::models::TranslationUnit;
 
 /// Applies translations to file content
 pub struct TranslationApplier;
@@ -23,33 +23,16 @@ impl TranslationApplier {
             return Ok(content.to_string());
         }
 
-        Self::validate_translations(units)?;
-
         let line_ending = super::file::detect_line_ending(content);
         let normalized_content = content.replace("\r\n", "\n");
         let lines: Vec<&str> = normalized_content.split('\n').collect();
 
-        // Separate multiline and single-line units
-        let mut multiline_units: Vec<&TranslationUnit> = Vec::new();
         let mut unit_map: std::collections::HashMap<usize, Vec<&TranslationUnit>> =
             std::collections::HashMap::new();
 
         for unit in units {
             if unit.start_pos.line >= 1 {
-                // Check if this is a multiline unit:
-                // 1. If format_info is set, use its is_multiline flag
-                // 2. Otherwise, check if start and end positions are on different lines
-                let is_multiline = unit
-                    .format_info
-                    .as_ref()
-                    .map(|f| f.is_multiline)
-                    .unwrap_or_else(|| unit.start_pos.line != unit.end_pos.line);
-
-                if is_multiline {
-                    multiline_units.push(unit);
-                } else {
-                    unit_map.entry(unit.start_pos.line).or_default().push(unit);
-                }
+                unit_map.entry(unit.start_pos.line).or_default().push(unit);
             }
         }
 
@@ -59,58 +42,6 @@ impl TranslationApplier {
         while line_idx < lines.len() {
             let line_num = line_idx + 1;
 
-            // Check if this line is part of a multiline comment
-            let multiline_unit = multiline_units.iter().find(|u| {
-                if line_num < u.start_pos.line {
-                    return false;
-                }
-                // Use end_pos.line to determine the span
-                // This works for both with and without format_info
-                line_num <= u.end_pos.line
-            });
-
-            if let Some(unit) = multiline_unit {
-                // This line is part of a multiline comment
-                if line_num == unit.start_pos.line {
-                    // First line of multiline comment - apply the full replacement
-                    if let Some(translated) = &unit.translated {
-                        // Use direct replacement strategy if raw_match is available
-                        let formatted = if let Some(_raw_match) = &unit.raw_match {
-                            // Direct replacement: replace the entire raw match with translated text
-                            translated.clone()
-                        } else if let Some(format) = &unit.format_info {
-                            // Format-based replacement: use format_info to reconstruct
-                            Self::format_translated_text(translated, format)
-                        } else {
-                            // Fallback: use translated text directly
-                            translated.clone()
-                        };
-
-                        // Calculate how many lines this multiline comment spans
-                        let line_count = (unit.end_pos.line - unit.start_pos.line + 1) as usize;
-
-                        // For multiline comments, the formatted text already includes all necessary prefixes
-                        // So we should replace the entire comment content, not preserve any prefix
-                        // The formatted text includes the full comment with all prefixes
-                        builder.push_str(&formatted);
-
-                        // Add line ending after the multiline comment (only if not the last line of file)
-                        if line_idx + line_count < lines.len() {
-                            builder.push_str(line_ending);
-                        }
-
-                        // Skip the remaining lines of this multiline comment
-                        line_idx += line_count;
-                        continue;
-                    }
-                } else {
-                    // Skip intermediate lines of multiline comment
-                    line_idx += 1;
-                    continue;
-                }
-            }
-
-            // Regular single-line processing
             if let Some(line_units) = unit_map.get(&line_num) {
                 builder.push_str(&Self::apply_translations_to_line(
                     lines[line_idx],
@@ -128,24 +59,6 @@ impl TranslationApplier {
         }
 
         Ok(builder)
-    }
-
-    /// Validate that all translatable units have been translated
-    fn validate_translations(units: &[TranslationUnit]) -> Result<()> {
-        let untranslated: Vec<&str> = units
-            .iter()
-            .filter(|u| u.should_translate && u.translated.is_none() && u.format_info.is_some())
-            .map(|u| u.id.as_str())
-            .collect();
-
-        if !untranslated.is_empty() {
-            return Err(TranslateError::Translation(format!(
-                "Missing translations for units: {}",
-                untranslated.join(", ")
-            )));
-        }
-
-        Ok(())
     }
 
     /// Apply translations to a single line
@@ -166,34 +79,33 @@ impl TranslationApplier {
             .filter(|unit| unit.should_translate)
             .filter_map(|unit| {
                 unit.translated.as_ref().map(|translated| {
-                    // Use direct replacement strategy if raw_match is available
-                    // This is for regex-based extraction where boundaries are arbitrary
-                    let formatted_text = if let Some(_raw_match) = &unit.raw_match {
-                        // Direct replacement: replace the entire raw match with translated text
-                        translated.clone()
-                    } else if let Some(format) = &unit.format_info {
-                        // Format-based replacement: use format_info to reconstruct
-                        Self::format_translated_text(translated, format)
+                    let formatted_text = if let Some(raw_match) = &unit.raw_match {
+                        Self::replace_in_raw_match(raw_match, &unit.content, translated)
                     } else {
-                        // Fallback: use translated text directly
                         translated.clone()
                     };
 
-                    // Calculate replacement range based on format_info
-                    // The unit's position should already account for prefix and indent
-                    // So we use the positions directly
-                    let (start_char, end_char) = (
-                        unit.start_pos.column.saturating_sub(1),
-                        unit.end_pos.column.saturating_sub(1),
-                    );
+                    let (start_char, end_char) = if let Some(raw_match) = &unit.raw_match {
+                        if let Some(pos) = line.find(raw_match) {
+                            (pos, pos + raw_match.len())
+                        } else {
+                            (
+                                unit.start_pos.column.saturating_sub(1),
+                                unit.end_pos.column.saturating_sub(1),
+                            )
+                        }
+                    } else {
+                        (
+                            unit.start_pos.column.saturating_sub(1),
+                            unit.end_pos.column.saturating_sub(1),
+                        )
+                    };
 
-                    let replacement = Replacement {
+                    Replacement {
                         start_char,
                         end_char,
                         text: formatted_text,
-                    };
-
-                    replacement
+                    }
                 })
             })
             .collect();
@@ -230,183 +142,44 @@ impl TranslationApplier {
         result
     }
 
-    /// Format translated text according to the original format
-    fn format_translated_text(translated: &str, format: &FormatInfo) -> String {
-        // Check if this is a string literal with format info
-        if let Some(string_style) = &format.string_style {
-            return Self::format_string_literal(translated, format, string_style);
-        }
-
-        // Check if this is a multiline comment that needs special handling
-        if format.is_multiline {
-            return Self::format_multiline_comment(translated, format);
-        }
-
-        match format.style {
-            CommentStyle::Line => {
-                // For line comments, add the prefix if available
-                if let Some(prefix) = &format.line_prefix {
-                    format!("{}{}", prefix, translated)
-                } else {
-                    translated.to_string()
-                }
-            }
-            CommentStyle::BlockSingle => {
-                // Single-line block comment: /* text */
-                format!("/* {} */", translated)
-            }
-            CommentStyle::BlockMulti => {
-                // Multi-line block comment with preserved formatting
-                Self::format_multiline_block_comment(translated, format)
-            }
-            CommentStyle::DocOuter => {
-                // Outer doc comment: /// text
-                // Add the prefix if available
-                if let Some(prefix) = &format.line_prefix {
-                    format!("{}{}", prefix, translated)
-                } else {
-                    translated.to_string()
-                }
-            }
-            CommentStyle::DocInner => {
-                // Inner doc comment: //! text
-                // Add the prefix if available
-                if let Some(prefix) = &format.line_prefix {
-                    format!("{}{}", prefix, translated)
-                } else {
-                    translated.to_string()
-                }
-            }
-            CommentStyle::DocBlock => {
-                // Block doc comment: /** ... */
-                Self::format_multiline_block_comment(translated, format)
-            }
-        }
-    }
-
-    /// Format a string literal according to its original style
+    /// Replace extracted text within raw match with translated text
     ///
-    /// Note: Only the outermost structure is guaranteed to be correct.
-    /// Complex internal structures (like nested braces) are left to the
-    /// translator to handle, otherwise code complexity would become unmanageable.
-    fn format_string_literal(
-        translated: &str,
-        format: &FormatInfo,
-        style: &crate::core::models::StringStyle,
-    ) -> String {
-        use crate::core::models::StringStyle;
+    /// This is used for regex/state machine extraction where we need to preserve
+    /// the original format (prefixes, function calls, etc.) and only replace
+    /// the extracted content.
+    ///
+    /// # Arguments
+    /// * `raw_match` - The complete matched text including format markers
+    /// * `extracted` - The extracted text that was translated
+    /// * `translated` - The translated text to insert
+    ///
+    /// # Returns
+    /// The raw match with the extracted text replaced by translated text
+    fn replace_in_raw_match(raw_match: &str, extracted: &str, translated: &str) -> String {
+        // Find the position of extracted text in raw match
+        // Use the first occurrence if there are multiple
+        if let Some(pos) = raw_match.find(extracted) {
+            let start = pos;
+            let end = start + extracted.len();
 
-        let quote = format.quote_char.unwrap_or('"');
-        let indent = &format.base_indent;
+            // Build the result by combining:
+            // 1. The part before the extracted text
+            // 2. The translated text
+            // 3. The part after the extracted text
+            let before = &raw_match[..start];
+            let after = &raw_match[end..];
 
-        match style {
-            StringStyle::DoubleQuoted => {
-                // Escape quotes and wrap with quotes
-                // Note: Simple escape handling, complex cases are left to translator
-                let escaped = translated.replace(quote, &format!("\\{}", quote));
-                format!("{}\"{}\"", indent, escaped)
-            }
-            StringStyle::SingleQuoted => {
-                // Single-quoted string
-                let escaped = translated.replace(quote, &format!("\\{}", quote));
-                format!("{}'{}'", indent, escaped)
-            }
-            StringStyle::Raw { hash_count } => {
-                // Reconstruct raw string: r#"..."#
-                let hashes = "#".repeat(*hash_count as usize);
-                format!("{}r{}\"{}\"{}", indent, hashes, translated, hashes)
-            }
-            StringStyle::ByteString => {
-                // Byte string: b"..."
-                let escaped = translated.replace('"', "\\\"");
-                format!("{}b\"{}\"", indent, escaped)
-            }
-            StringStyle::Formatted => {
-                // Formatted string: f"..."
-                // Note: Placeholder preservation is handled separately
-                let escaped = translated.replace('"', "\\\"");
-                format!("{}f\"{}\"", indent, escaped)
-            }
-            StringStyle::Template => {
-                // Template string: `...`
-                format!("{}`{}`", indent, translated)
-            }
-            StringStyle::Backtick => {
-                // Go raw string: `...`
-                format!("{}`{}`", indent, translated)
-            }
-        }
-    }
-
-    /// Format a multiline comment (merged from multiple lines)
-    fn format_multiline_comment(translated: &str, format: &FormatInfo) -> String {
-        let lines: Vec<&str> = translated.lines().collect();
-
-        if lines.is_empty() {
-            return String::new();
-        }
-
-        match format.style {
-            CommentStyle::DocOuter | CommentStyle::DocInner | CommentStyle::Line => {
-                // For merged doc comments and line comments, add prefix to each line
-                // Note: base_indent should NOT be added here as it's already in the original line
-                let prefix = format.line_prefix.as_deref().unwrap_or("");
-                lines
-                    .iter()
-                    .map(|line| format!("{}{}", prefix, line))
-                    .collect::<Vec<_>>()
-                    .join("\n")
-            }
-            CommentStyle::BlockMulti | CommentStyle::DocBlock => {
-                // For block comments, use the existing multiline block comment formatter
-                Self::format_multiline_block_comment(translated, format)
-            }
-            _ => {
-                // For other styles, just join with newlines
-                lines.join("\n")
-            }
-        }
-    }
-
-    /// Format a multi-line block comment with proper indentation and prefixes
-    fn format_multiline_block_comment(translated: &str, format: &FormatInfo) -> String {
-        let lines: Vec<&str> = translated.lines().collect();
-
-        if lines.len() == 1 {
-            // Single line - use simple format
-            let start_marker = if format.style == CommentStyle::DocBlock {
-                "/**"
-            } else {
-                "/*"
-            };
-            return format!("{} {} */", start_marker, translated);
-        }
-
-        let mut result = String::new();
-        let start_marker = if format.style == CommentStyle::DocBlock {
-            "/**"
+            format!("{}{}{}", before, translated, after)
         } else {
-            "/*"
-        };
-        result.push_str(start_marker);
-        result.push('\n');
-
-        // Unified handling: always add newline after each content line
-        // to ensure closing marker is on its own line
-        for line in lines.iter() {
-            result.push_str(&format.base_indent);
-            if let Some(prefix) = &format.line_prefix {
-                result.push_str(prefix);
-            }
-            result.push_str(line);
-            result.push('\n');
+            // If extracted text is not found in raw match, log a warning
+            // and return the raw match as-is (don't break the file)
+            tracing::warn!(
+                raw_match = %raw_match,
+                extracted = %extracted,
+                "Extracted text not found in raw match, skipping replacement"
+            );
+            raw_match.to_string()
         }
-
-        // Always put the closing marker on a new line with base_indent
-        result.push_str(&format.base_indent);
-        result.push_str(" */");
-
-        result
     }
 }
 
@@ -427,10 +200,9 @@ mod tests {
             language: None,
             should_translate: true,
             translated: None,
-            format_info: None,
             pattern_type: None,
             pattern_name: None,
-            raw_match: None,
+            raw_match: Some("Hello".to_string()),
         }];
 
         units[0].set_translated("你好");
@@ -452,10 +224,9 @@ mod tests {
             language: None,
             should_translate: true,
             translated: None,
-            format_info: None,
             pattern_type: None,
             pattern_name: None,
-            raw_match: None,
+            raw_match: Some("Hello".to_string()),
         }];
 
         units[0].set_translated("你好");
@@ -466,66 +237,25 @@ mod tests {
     }
 
     #[test]
-    fn test_validate_translations_missing() {
-        let units = vec![TranslationUnit {
-            id: "1".to_string(),
-            node_type: NodeType::Comment,
-            content: "Hello".to_string(),
-            start_pos: Position::new(1, 1, 0),
-            end_pos: Position::new(1, 6, 5),
-            language: None,
-            should_translate: true,
-            translated: None,
-            format_info: Some(FormatInfo {
-                style: CommentStyle::Line,
-                base_indent: String::new(),
-                line_prefix: None,
-                ends_with_newline: false,
-                is_multiline: false,
-                string_style: None,
-                placeholders: None,
-                quote_char: None,
-            }),
-            pattern_type: None,
-            pattern_name: None,
-            raw_match: None,
-        }];
-
-        let result = TranslationApplier::apply_translations("content", &units);
-        assert!(result.is_err());
-    }
-
-    #[test]
     fn test_format_line_comment() {
         let content = "    // This is a comment\nint x = 5;";
         let mut units = vec![TranslationUnit {
             id: "1".to_string(),
             node_type: NodeType::Comment,
             content: "This is a comment".to_string(),
-            start_pos: Position::new(1, 5, 4), // Start at "//" (after base_indent)
-            end_pos: Position::new(1, 22, 21), // End of line
+            start_pos: Position::new(1, 5, 4),
+            end_pos: Position::new(1, 22, 21),
             language: None,
             should_translate: true,
             translated: None,
-            format_info: Some(FormatInfo {
-                style: CommentStyle::Line,
-                base_indent: "    ".to_string(),
-                line_prefix: Some("// ".to_string()),
-                ends_with_newline: false,
-                is_multiline: false,
-                string_style: None,
-                placeholders: None,
-                quote_char: None,
-            }),
             pattern_type: None,
             pattern_name: None,
-            raw_match: None,
+            raw_match: Some("    // This is a comment".to_string()),
         }];
 
         units[0].set_translated("这是一个注释");
 
         let result = TranslationApplier::apply_translations(content, &units).unwrap();
-        println!("Result: {:?}", result);
         assert!(result.contains("    // 这是一个注释"));
     }
 
@@ -541,22 +271,12 @@ mod tests {
             language: None,
             should_translate: true,
             translated: None,
-            format_info: Some(FormatInfo {
-                style: CommentStyle::BlockSingle,
-                base_indent: "".to_string(),
-                line_prefix: None,
-                ends_with_newline: false,
-                is_multiline: false,
-                string_style: None,
-                placeholders: None,
-                quote_char: None,
-            }),
             pattern_type: None,
             pattern_name: None,
-            raw_match: None,
+            raw_match: Some("/* This is a comment */".to_string()),
         }];
 
-        units[0].set_translated("这是一个注释");
+        units[0].set_translated("/* 这是一个注释 */");
 
         let result = TranslationApplier::apply_translations(content, &units).unwrap();
         assert!(result.contains("/* 这是一个注释 */"));
@@ -574,22 +294,12 @@ mod tests {
             language: None,
             should_translate: true,
             translated: None,
-            format_info: Some(FormatInfo {
-                style: CommentStyle::BlockMulti,
-                base_indent: "".to_string(),
-                line_prefix: Some(" * ".to_string()),
-                ends_with_newline: true,
-                is_multiline: false,
-                string_style: None,
-                placeholders: None,
-                quote_char: None,
-            }),
             pattern_type: None,
             pattern_name: None,
-            raw_match: None,
+            raw_match: Some("/*\n * This is a\n * multi-line comment\n */".to_string()),
         }];
 
-        units[0].set_translated("这是一个\n多行注释");
+        units[0].set_translated("/*\n * 这是一个\n * 多行注释\n */");
 
         let result = TranslationApplier::apply_translations(content, &units).unwrap();
         assert!(result.contains("/*\n * 这是一个\n * 多行注释\n */"));
@@ -597,40 +307,26 @@ mod tests {
 
     #[test]
     fn test_format_multiline_block_comment_with_indent() {
-        // Note: content should be the cleaned text without indentation
-        // base_indent and line_prefix are stored in format_info
         let content =
             "    /*\n     * This is a\n     * multi-line comment\n     */\n    int x = 5;";
         let mut units = vec![TranslationUnit {
             id: "1".to_string(),
             node_type: NodeType::Comment,
-            content: "This is a\nmulti-line comment".to_string(), // Clean content without markers
-            start_pos: Position::new(1, 1, 0),
-            end_pos: Position::new(4, 5, 37),
+            content: "This is a".to_string(),
+            start_pos: Position::new(2, 9, 0),
+            end_pos: Position::new(2, 17, 0),
             language: None,
             should_translate: true,
             translated: None,
-            format_info: Some(FormatInfo {
-                style: CommentStyle::BlockMulti,
-                base_indent: "    ".to_string(),
-                line_prefix: Some(" * ".to_string()),
-                ends_with_newline: true,
-                is_multiline: false,
-                string_style: None,
-                placeholders: None,
-                quote_char: None,
-            }),
             pattern_type: None,
             pattern_name: None,
-            raw_match: None,
+            raw_match: Some("This is a".to_string()),
         }];
 
-        units[0].set_translated("这是一个\n多行注释");
+        units[0].set_translated("这是一个");
 
         let result = TranslationApplier::apply_translations(content, &units).unwrap();
-        println!("Result: {:?}", result);
-        // After formatting: base_indent (4 spaces) + line_prefix (" * ") = 5 chars before content
-        assert!(result.contains("/*\n     * 这是一个\n     * 多行注释\n     */"));
+        assert!(result.contains("    /*\n     * 这是一个\n     * multi-line comment\n     */"));
     }
 
     #[test]
@@ -645,19 +341,9 @@ mod tests {
             language: None,
             should_translate: true,
             translated: None,
-            format_info: Some(FormatInfo {
-                style: CommentStyle::DocOuter,
-                base_indent: "".to_string(),
-                line_prefix: Some("/// ".to_string()),
-                ends_with_newline: false,
-                is_multiline: false,
-                string_style: None,
-                placeholders: None,
-                quote_char: None,
-            }),
             pattern_type: None,
             pattern_name: None,
-            raw_match: None,
+            raw_match: Some("/// This is a doc comment".to_string()),
         }];
 
         units[0].set_translated("/// 这是一个文档注释");
@@ -678,25 +364,14 @@ mod tests {
             language: None,
             should_translate: true,
             translated: None,
-            format_info: Some(FormatInfo {
-                style: CommentStyle::DocBlock,
-                base_indent: "".to_string(),
-                line_prefix: Some(" * ".to_string()),
-                ends_with_newline: true,
-                is_multiline: true,
-                string_style: None,
-                placeholders: None,
-                quote_char: None,
-            }),
             pattern_type: None,
             pattern_name: None,
-            raw_match: None,
+            raw_match: Some("/**\n * This is a doc comment\n */".to_string()),
         }];
 
-        units[0].set_translated("这是一个\n文档注释");
+        units[0].set_translated("/**\n * 这是一个\n * 文档注释\n */");
 
         let result = TranslationApplier::apply_translations(content, &units).unwrap();
-        println!("Result: {:?}", result);
         assert!(result.contains("/**\n * 这是一个\n * 文档注释\n */"));
     }
 
@@ -712,29 +387,19 @@ mod tests {
             language: None,
             should_translate: true,
             translated: None,
-            format_info: Some(FormatInfo {
-                style: CommentStyle::BlockMulti,
-                base_indent: "".to_string(),
-                line_prefix: Some(" * ".to_string()),
-                ends_with_newline: true,
-                is_multiline: false,
-                string_style: None,
-                placeholders: None,
-                quote_char: None,
-            }),
             pattern_type: None,
             pattern_name: None,
-            raw_match: None,
+            raw_match: Some("/*\n * Line 1\n * Line 2\n */".to_string()),
         }];
 
-        units[0].set_translated("第一行\n第二行");
+        units[0].set_translated("/*\n * 第一行\n * 第二行\n */");
 
         let result = TranslationApplier::apply_translations(content, &units).unwrap();
         assert!(result.contains("/*\n * 第一行\n * 第二行\n */"));
     }
 
     #[test]
-    fn test_format_without_format_info() {
+    fn test_format_with_raw_match() {
         let content = "Hello world\nThis is a test";
         let mut units = vec![TranslationUnit {
             id: "1".to_string(),
@@ -745,10 +410,9 @@ mod tests {
             language: None,
             should_translate: true,
             translated: None,
-            format_info: None,
             pattern_type: None,
             pattern_name: None,
-            raw_match: None,
+            raw_match: Some("Hello".to_string()),
         }];
 
         units[0].set_translated("你好");
@@ -771,19 +435,9 @@ mod tests {
                 language: None,
                 should_translate: true,
                 translated: None,
-                format_info: Some(FormatInfo {
-                    style: CommentStyle::Line,
-                    base_indent: "    ".to_string(),
-                    line_prefix: None,
-                    ends_with_newline: false,
-                    is_multiline: false,
-                    string_style: None,
-                    placeholders: None,
-                    quote_char: None,
-                }),
                 pattern_type: None,
                 pattern_name: None,
-                raw_match: None,
+                raw_match: Some("    // First comment".to_string()),
             },
             TranslationUnit {
                 id: "2".to_string(),
@@ -794,19 +448,9 @@ mod tests {
                 language: None,
                 should_translate: true,
                 translated: None,
-                format_info: Some(FormatInfo {
-                    style: CommentStyle::Line,
-                    base_indent: "    ".to_string(),
-                    line_prefix: None,
-                    ends_with_newline: false,
-                    is_multiline: false,
-                    string_style: None,
-                    placeholders: None,
-                    quote_char: None,
-                }),
                 pattern_type: None,
                 pattern_name: None,
-                raw_match: None,
+                raw_match: Some("    // Second comment".to_string()),
             },
         ];
 

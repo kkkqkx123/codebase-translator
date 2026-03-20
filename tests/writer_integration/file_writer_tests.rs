@@ -1,6 +1,6 @@
 //! FileWriter integration tests
 
-use codebase_translate::core::models::{CommentStyle, FormatInfo, NodeType, Position};
+use codebase_translate::core::models::{NodeType, Position};
 use codebase_translate::writer::{FileWriter, WriterConfig};
 
 use super::common::*;
@@ -161,24 +161,13 @@ async fn test_file_writer_with_line_comment_format() {
     let content = "    // This is a comment\nint x = 5;";
     let file = create_test_file(&temp_path, "test_line_comment.rs", content).await;
 
-    let format_info = FormatInfo {
-        style: CommentStyle::Line,
-        base_indent: "    ".to_string(),
-        line_prefix: Some("// ".to_string()),
-        ends_with_newline: false,
-        is_multiline: false,
-        string_style: None,
-        placeholders: None,
-        quote_char: None,
-    };
-
-    let mut units = vec![create_translation_unit_with_format(
+    let mut units = vec![create_translation_unit_with_raw_match(
         "1",
         "This is a comment",
+        "    // This is a comment",
         1,
-        5,  // Start at "//" (1-indexed, after base_indent)
-        22, // End of line (1-indexed, exclusive)
-        format_info,
+        5,
+        22,
     )];
     units[0].set_translated("这是一个注释");
 
@@ -206,26 +195,15 @@ async fn test_file_writer_with_block_comment_format() {
     let content = "/* This is a comment */\nint x = 5;";
     let file = create_test_file(&temp_path, "test_block_comment.rs", content).await;
 
-    let format_info = FormatInfo {
-        style: CommentStyle::BlockSingle,
-        base_indent: "".to_string(),
-        line_prefix: None,
-        ends_with_newline: false,
-        is_multiline: false,
-        string_style: None,
-        placeholders: None,
-        quote_char: None,
-    };
-
-    let mut units = vec![create_translation_unit_with_format(
+    let mut units = vec![create_translation_unit_with_raw_match(
         "1",
+        "/* This is a comment */",
         "/* This is a comment */",
         1,
         1,
         22,
-        format_info,
     )];
-    units[0].set_translated("这是一个注释");
+    units[0].set_translated("/* 这是一个注释 */");
 
     let config = WriterConfig::default();
     let writer = FileWriter::new(config);
@@ -245,26 +223,15 @@ async fn test_file_writer_with_multiline_block_comment() {
     let content = "/*\n * Line 1\n * Line 2\n */\nint x = 5;";
     let file = create_test_file(&temp_path, "test_multiline_comment.rs", content).await;
 
-    let format_info = FormatInfo {
-        style: CommentStyle::BlockMulti,
-        base_indent: "".to_string(),
-        line_prefix: Some(" * ".to_string()),
-        ends_with_newline: true,
-        is_multiline: false,
-        string_style: None,
-        placeholders: None,
-        quote_char: None,
-    };
-
-    let mut units = vec![create_translation_unit_with_format(
+    let mut units = vec![create_translation_unit_with_raw_match(
         "1",
+        "/*\n * Line 1\n * Line 2\n */",
         "/*\n * Line 1\n * Line 2\n */",
         1,
         1,
         22,
-        format_info,
     )];
-    units[0].set_translated("第一行\n第二行");
+    units[0].set_translated("/*\n * 第一行\n * 第二行\n */");
 
     let config = WriterConfig::default();
     let writer = FileWriter::new(config);
@@ -350,46 +317,35 @@ async fn test_file_writer_with_rust_fixture() {
     let content = load_fixture("simple_rust.rs");
     let file = create_test_file(&temp_path, "simple_rust.rs", &content).await;
 
-    let format_info = FormatInfo {
-        style: CommentStyle::Line,
-        base_indent: "".to_string(),
-        line_prefix: Some("// ".to_string()),
-        ends_with_newline: true,
-        is_multiline: false,
-        string_style: None,
-        placeholders: None,
-        quote_char: None,
-    };
-
     let mut units = vec![
-        create_translation_unit_with_format(
+        create_translation_unit_with_raw_match(
             "1",
             "Test file with simple comments",
+            "// Test file with simple comments",
             1,
-            1,  // Start at column 1 (beginning of "//")
-            34, // End at column 34 (exclusive, line length is 33)
-            format_info.clone(),
+            1,
+            34,
         ),
-        create_translation_unit_with_format(
+        create_translation_unit_with_raw_match(
             "2",
             "This is a line comment",
+            "// This is a line comment",
             2,
-            1,  // Start at column 1 (beginning of "//")
-            26, // End at column 26 (exclusive, line length is 25)
-            format_info.clone(),
+            1,
+            26,
         ),
-        create_translation_unit_with_format(
+        create_translation_unit_with_raw_match(
             "3",
             "Another comment",
+            "    // Another comment",
             4,
-            5,  // Start at column 5 (beginning of "//" after indent)
-            23, // End at column 23 (exclusive, line length is 22)
-            format_info,
+            5,
+            23,
         ),
     ];
-    units[0].set_translated("测试文件，包含简单注释");
-    units[1].set_translated("这是一个行注释");
-    units[2].set_translated("另一个注释");
+    units[0].set_translated("// 测试文件，包含简单注释");
+    units[1].set_translated("// 这是一个行注释");
+    units[2].set_translated("    // 另一个注释");
 
     let config = WriterConfig::default();
     let writer = FileWriter::new(config);
@@ -419,111 +375,71 @@ async fn test_file_writer_with_go_fixture() {
     let content = load_fixture("simple_go.go");
     let file = create_test_file(&temp_path, "simple_go.go", &content).await;
 
-    let format_info_line = FormatInfo {
-        style: CommentStyle::Line,
-        base_indent: "".to_string(),
-        line_prefix: Some("// ".to_string()),
-        ends_with_newline: true,
-        is_multiline: false,
-        string_style: None,
-        placeholders: None,
-        quote_char: None,
-    };
-
-    let format_info_line_indented = FormatInfo {
-        style: CommentStyle::Line,
-        base_indent: "    ".to_string(),
-        line_prefix: Some("// ".to_string()),
-        ends_with_newline: true,
-        is_multiline: false,
-        string_style: None,
-        placeholders: None,
-        quote_char: None,
-    };
-
-    let format_info_block_multi = FormatInfo {
-        style: CommentStyle::BlockMulti,
-        base_indent: "".to_string(),
-        line_prefix: None,
-        ends_with_newline: true,
-        is_multiline: true,
-        string_style: None,
-        placeholders: None,
-        quote_char: None,
-    };
-
     let mut units = vec![
-        // Line 1: // Test file with simple comments (len=33)
-        create_translation_unit_with_format(
+        create_translation_unit_with_raw_match(
             "1",
             "Test file with simple comments",
+            "// Test file with simple comments",
             1,
-            1,  // Start at column 1 (beginning of "//")
-            34, // End at column 34 (exclusive, line length is 33)
-            format_info_line.clone(),
+            1,
+            34,
         ),
-        // Line 2: // This is a line comment (len=25)
-        create_translation_unit_with_format(
+        create_translation_unit_with_raw_match(
             "2",
             "This is a line comment",
+            "// This is a line comment",
             2,
-            1,  // Start at column 1
-            26, // End at column 26 (exclusive, line length is 25)
-            format_info_line.clone(),
+            1,
+            26,
         ),
-        // Line 5: // This is a single-line comment (len=32)
-        create_translation_unit_with_format(
+        create_translation_unit_with_raw_match(
             "3",
             "This is a single-line comment",
+            "// This is a single-line comment",
             5,
-            1,  // Start at column 1
-            33, // End at column 33 (exclusive, line length is 32)
-            format_info_line.clone(),
+            1,
+            33,
         ),
-        // Line 8-11: /* multi-line comment */ (lines 8-11 in 1-indexed)
-        create_translation_unit_with_format(
+        create_translation_unit_with_raw_match(
             "4",
             "This is a multi-line comment\nwith multiple lines of text",
-            8, // Start line (1-indexed)
-            1, // Start at column 1 (beginning of "/*")
-            3, // End line (1-indexed) - line 11 with "*/"
-            format_info_block_multi.clone(),
+            "/*\nThis is a multi-line comment\nwith multiple lines of text\n*/",
+            8,
+            1,
+            3,
         ),
-        // Line 14: // Another comment inside function (len=38, indent=4)
-        create_translation_unit_with_format(
+        create_translation_unit_with_raw_match(
             "5",
             "Another comment inside function",
+            "    // Another comment inside function",
             14,
-            5,  // Start at column 5 (after indent of 4 spaces, 1-indexed)
-            39, // End at column 39 (exclusive, line length is 38)
-            format_info_line_indented.clone(),
+            5,
+            39,
         ),
-        // Line 18: // greet returns a greeting message (len=35)
-        create_translation_unit_with_format(
+        create_translation_unit_with_raw_match(
             "6",
             "greet returns a greeting message",
+            "// greet returns a greeting message",
             18,
-            1,  // Start at column 1
-            36, // End at column 36 (exclusive, line length is 35)
-            format_info_line.clone(),
+            1,
+            36,
         ),
-        // Line 19: // name is the person to greet (len=30)
-        create_translation_unit_with_format(
+        create_translation_unit_with_raw_match(
             "7",
             "name is the person to greet",
+            "// name is the person to greet",
             19,
-            1,  // Start at column 1
-            31, // End at column 31 (exclusive, line length is 30)
-            format_info_line.clone(),
+            1,
+            31,
         ),
     ];
-    units[0].set_translated("测试文件，包含简单注释");
-    units[1].set_translated("这是一个行注释");
-    units[2].set_translated("这是一个单行注释");
-    units[3].set_translated("这是一个多行注释\n包含多行文本");
-    units[4].set_translated("函数内部的另一个注释");
-    units[5].set_translated("greet 返回问候信息");
-    units[6].set_translated("name 是要问候的人");
+    units[0].set_translated("// 测试文件，包含简单注释");
+    units[1].set_translated("// 这是一个行注释");
+    units[2].set_translated("// 这是一个单行注释");
+    units[3].set_translated("/*\n这是一个多行注释\n包含多行文本\n*/");
+    units[4].set_translated("    // 函数内部的另一个注释");
+    units[5].set_translated("// greet 返回问候信息");
+    units[6].set_translated("// name 是要问候的人");
 
     let config = WriterConfig::default();
     let writer = FileWriter::new(config);
@@ -557,6 +473,10 @@ async fn test_file_writer_with_go_fixture() {
     assert!(
         written_content.contains("// greet 返回问候信息"),
         "Line 17 comment should have // prefix"
+    );
+    assert!(
+        written_content.contains("// name 是要问候的人"),
+        "Line 18 comment should have // prefix"
     );
     assert!(
         written_content.contains("// name 是要问候的人"),

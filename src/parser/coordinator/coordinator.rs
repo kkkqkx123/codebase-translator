@@ -304,7 +304,7 @@ impl ParserCoordinator {
                                 custom_units.len()
                             );
 
-                            let unit = TranslationUnit::new_with_pattern(
+                            let mut unit = TranslationUnit::new_with_pattern(
                                 id,
                                 crate::core::models::NodeType::StringLiteral,
                                 text.clone(),
@@ -313,6 +313,7 @@ impl ParserCoordinator {
                                 PatternType::CustomRegex,
                                 matcher.name.clone(),
                             );
+                            unit.raw_match = Some(m.raw_content);
                             custom_units.push(unit);
                         }
                     }
@@ -361,7 +362,7 @@ impl ParserCoordinator {
                                 sm_units.len()
                             );
 
-                            let unit = TranslationUnit::new_with_pattern(
+                            let mut unit = TranslationUnit::new_with_pattern(
                                 id,
                                 crate::core::models::NodeType::StringLiteral,
                                 text.clone(),
@@ -370,6 +371,7 @@ impl ParserCoordinator {
                                 PatternType::StateMachine,
                                 matcher.name.clone(),
                             );
+                            unit.raw_match = Some(m.raw_content);
                             sm_units.push(unit);
                         }
                     }

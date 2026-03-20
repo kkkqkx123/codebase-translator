@@ -145,157 +145,6 @@ impl Default for Position {
     }
 }
 
-/// Comment style for format preservation
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-pub enum CommentStyle {
-    /// Line comment: // or #
-    Line,
-    /// Single-line block comment: /* ... */
-    BlockSingle,
-    /// Multi-line block comment:
-    /// /*
-    ///  * ...
-    ///  */
-    BlockMulti,
-    /// Outer doc comment: ///
-    DocOuter,
-    /// Inner doc comment: //!
-    DocInner,
-    /// Block doc comment: /** ... */
-    DocBlock,
-}
-
-/// String literal style for format preservation
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-pub enum StringStyle {
-    /// Double quoted string: "hello"
-    DoubleQuoted,
-    /// Single quoted string: 'hello' (Python/JS)
-    SingleQuoted,
-    /// Raw string: r"hello", r#"hello"#
-    Raw { hash_count: u8 },
-    /// Byte string: b"hello" (Rust)
-    ByteString,
-    /// Formatted string: f"hello {name}" (Python)
-    Formatted,
-    /// Template string: `hello ${name}` (JS)
-    Template,
-    /// Go raw string: `hello`
-    Backtick,
-}
-
-/// Format placeholder type for string literals
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub enum FormatPlaceholder {
-    /// Python style: %s, %d, %(name)s
-    PythonStyle(String),
-    /// C style: %s, %d
-    CStyle(String),
-    /// Rust style: {}, {name}
-    RustStyle(String),
-    /// Python f-string: {name}
-    FString(String),
-    /// JS template: ${name}
-    JSTemplate(String),
-}
-
-/// Format information for preserving comment and string formatting
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct FormatInfo {
-    /// The comment style
-    pub style: CommentStyle,
-    /// Base indentation (spaces/tabs before comment start)
-    pub base_indent: String,
-    /// Line prefix within the comment (e.g., " * " for Javadoc)
-    pub line_prefix: Option<String>,
-    /// Whether the comment ends with a newline
-    pub ends_with_newline: bool,
-    /// Whether this is a multi-line comment (merged from multiple lines)
-    #[serde(default)]
-    pub is_multiline: bool,
-    /// String literal style (if this is a string)
-    #[serde(skip_serializing_if = "Option::is_none", default)]
-    pub string_style: Option<StringStyle>,
-    /// Format placeholders in the string (if any)
-    #[serde(skip_serializing_if = "Option::is_none", default)]
-    pub placeholders: Option<Vec<FormatPlaceholder>>,
-    /// Original quote character (", ', `)
-    #[serde(skip_serializing_if = "Option::is_none", default)]
-    pub quote_char: Option<char>,
-}
-
-impl FormatInfo {
-    /// Create new format info for a line comment
-    pub fn line_comment(indent: impl Into<String>) -> Self {
-        Self {
-            style: CommentStyle::Line,
-            base_indent: indent.into(),
-            line_prefix: None,
-            ends_with_newline: false,
-            is_multiline: false,
-            string_style: None,
-            placeholders: None,
-            quote_char: None,
-        }
-    }
-
-    /// Create new format info for a multi-line block comment
-    pub fn block_multi(indent: impl Into<String>, line_prefix: impl Into<String>) -> Self {
-        Self {
-            style: CommentStyle::BlockMulti,
-            base_indent: indent.into(),
-            line_prefix: Some(line_prefix.into()),
-            ends_with_newline: false,
-            is_multiline: true,
-            string_style: None,
-            placeholders: None,
-            quote_char: None,
-        }
-    }
-
-    /// Create new format info for a single-line block comment
-    pub fn block_single(indent: impl Into<String>) -> Self {
-        Self {
-            style: CommentStyle::BlockSingle,
-            base_indent: indent.into(),
-            line_prefix: None,
-            ends_with_newline: false,
-            is_multiline: false,
-            string_style: None,
-            placeholders: None,
-            quote_char: None,
-        }
-    }
-
-    /// Create new format info for a multi-line comment (merged from multiple lines)
-    pub fn multiline_block(indent: impl Into<String>, line_prefix: impl Into<String>) -> Self {
-        Self {
-            style: CommentStyle::BlockMulti,
-            base_indent: indent.into(),
-            line_prefix: Some(line_prefix.into()),
-            ends_with_newline: false,
-            is_multiline: true,
-            string_style: None,
-            placeholders: None,
-            quote_char: None,
-        }
-    }
-
-    /// Create new format info for a multi-line doc comment
-    pub fn multiline_doc_block(indent: impl Into<String>, line_prefix: impl Into<String>) -> Self {
-        Self {
-            style: CommentStyle::DocBlock,
-            base_indent: indent.into(),
-            line_prefix: Some(line_prefix.into()),
-            ends_with_newline: false,
-            is_multiline: true,
-            string_style: None,
-            placeholders: None,
-            quote_char: None,
-        }
-    }
-}
-
 /// Type of node that can be translated
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum NodeType {
@@ -384,9 +233,6 @@ pub struct TranslationUnit {
     /// Translated content (filled after translation)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub translated: Option<String>,
-    /// Format information for preserving comment formatting
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub format_info: Option<FormatInfo>,
     /// Pattern type (if extracted by custom pattern)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pattern_type: Option<PatternType>,
@@ -429,32 +275,6 @@ impl TranslationUnit {
             language: None,
             should_translate: true,
             translated: None,
-            format_info: None,
-            pattern_type: None,
-            pattern_name: None,
-            raw_match: None,
-        }
-    }
-
-    /// Create a new translation unit with format info
-    pub fn new_with_format(
-        id: impl Into<String>,
-        node_type: NodeType,
-        content: impl Into<String>,
-        start_pos: Position,
-        end_pos: Position,
-        format_info: FormatInfo,
-    ) -> Self {
-        Self {
-            id: id.into(),
-            node_type,
-            content: content.into(),
-            start_pos,
-            end_pos,
-            language: None,
-            should_translate: true,
-            translated: None,
-            format_info: Some(format_info),
             pattern_type: None,
             pattern_name: None,
             raw_match: None,
@@ -480,7 +300,6 @@ impl TranslationUnit {
             language: None,
             should_translate: true,
             translated: None,
-            format_info: None,
             pattern_type: Some(pattern_type),
             pattern_name: Some(pattern_name.into()),
             raw_match: None,

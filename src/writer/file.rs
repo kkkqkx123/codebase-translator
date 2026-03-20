@@ -387,10 +387,9 @@ mod tests {
             language: None,
             should_translate: true,
             translated: None,
-            format_info: None,
             pattern_type: None,
             pattern_name: None,
-            raw_match: None,
+            raw_match: Some("Hello".to_string()),
         }];
 
         units[0].set_translated("你好");
@@ -421,10 +420,9 @@ mod tests {
             language: None,
             should_translate: true,
             translated: None,
-            format_info: None,
             pattern_type: None,
             pattern_name: None,
-            raw_match: None,
+            raw_match: Some("Hello".to_string()),
         }];
 
         units[0].set_translated("你好");

@@ -8,7 +8,7 @@ use streaming_iterator::StreamingIterator;
 use tree_sitter::{Language as TSLanguage, Node, Parser, Query, QueryCursor, Tree};
 
 use crate::core::error::{Result, TranslateError};
-use crate::core::models::{CommentStyle, File, FormatInfo, Position, TranslationUnit};
+use crate::core::models::{File, Position, TranslationUnit};
 use crate::parser::filter::ContentFilter;
 use crate::parser::strategy::{
     ExtractionContext, ExtractionStrategy, ExtractionStrategyImpl, StrategyNodeType,
@@ -169,14 +169,17 @@ impl TreeSitterParser {
         // Sort by position for consistent ordering
         units.sort_by(|a, b| a.start_pos.offset.cmp(&b.start_pos.offset));
 
-        // Merge consecutive multi-line comments
-        let merged_units = self.merge_multiline_comments(units);
+        // Merge consecutive docstring/comment units
+        let merged_units = Self::merge_consecutive_units(units);
 
         Ok(merged_units)
     }
 
-    /// Merge consecutive multi-line comments into single units
-    fn merge_multiline_comments(&self, units: Vec<TranslationUnit>) -> Vec<TranslationUnit> {
+    /// Merge consecutive units of the same type
+    ///
+    /// This merges consecutive docstring or comment lines into a single unit
+    /// to preserve context and improve translation quality.
+    fn merge_consecutive_units(units: Vec<TranslationUnit>) -> Vec<TranslationUnit> {
         if units.is_empty() {
             return units;
         }
@@ -185,101 +188,107 @@ impl TreeSitterParser {
         let mut current_group: Vec<TranslationUnit> = Vec::new();
 
         for unit in units {
-            // Check if this unit can be merged with the current group
-            let can_merge = if let Some(last) = current_group.last() {
-                // Check if they are on consecutive lines
-                let is_consecutive = unit.start_pos.line == last.end_pos.line + 1;
-                let same_type = unit.node_type == last.node_type;
-                let has_format = unit.format_info.is_some() && last.format_info.is_some();
-                // Support merging DocOuter, DocInner, and Line style comments
-                let same_style = has_format && {
-                    let unit_style = unit.format_info.as_ref().unwrap().style;
-                    let last_style = last.format_info.as_ref().unwrap().style;
-                    // Only merge same style, and only for line-based comments
-                    unit_style == last_style
-                        && matches!(
-                            unit_style,
-                            CommentStyle::DocOuter | CommentStyle::DocInner | CommentStyle::Line
-                        )
-                };
-
-                is_consecutive && same_type && has_format && same_style
-            } else {
-                false
-            };
-
-            if can_merge {
+            if current_group.is_empty() {
                 current_group.push(unit);
             } else {
-                // Process the current group
-                if !current_group.is_empty() {
+                let last = &current_group[current_group.len() - 1];
+
+                // Check if this unit should be merged with the previous one
+                let should_merge = Self::should_merge_units(last, &unit);
+
+                if should_merge {
+                    current_group.push(unit);
+                } else {
+                    // Finalize the current group
                     if current_group.len() > 1 {
-                        merged.push(self.merge_comment_group(current_group));
+                        merged.push(Self::merge_group(&mut current_group));
                     } else {
-                        merged.push(current_group.into_iter().next().unwrap());
+                        merged.push(current_group.remove(0));
                     }
-                    current_group = Vec::new();
+                    current_group.push(unit);
                 }
-                current_group.push(unit);
             }
         }
 
-        // Process the last group
-        if !current_group.is_empty() {
-            if current_group.len() > 1 {
-                merged.push(self.merge_comment_group(current_group));
-            } else {
-                merged.push(current_group.into_iter().next().unwrap());
-            }
+        // Don't forget to last group
+        if current_group.len() > 1 {
+            merged.push(Self::merge_group(&mut current_group));
+        } else if !current_group.is_empty() {
+            merged.push(current_group.remove(0));
         }
 
         merged
     }
 
-    /// Merge a group of consecutive comments into a single unit
-    fn merge_comment_group(&self, mut group: Vec<TranslationUnit>) -> TranslationUnit {
-        // Sort by line number
-        group.sort_by(|a, b| a.start_pos.line.cmp(&b.start_pos.line));
+    /// Check if two units should be merged
+    fn should_merge_units(prev: &TranslationUnit, current: &TranslationUnit) -> bool {
+        // Must be the same type
+        if prev.node_type != current.node_type {
+            return false;
+        }
 
-        // Create merged content
-        let merged_content: String = group
+        // Only merge docstrings and comments
+        match prev.node_type {
+            crate::core::models::NodeType::DocString | crate::core::models::NodeType::Comment => {}
+            _ => return false,
+        }
+
+        // Check if they are on consecutive or adjacent lines
+        let line_gap = current.start_pos.line - prev.end_pos.line;
+        line_gap <= 1
+    }
+
+    /// Merge a group of consecutive units into a single unit
+    fn merge_group(group: &mut Vec<TranslationUnit>) -> TranslationUnit {
+        if group.is_empty() {
+            panic!("Cannot merge empty group");
+        }
+
+        if group.len() == 1 {
+            return group.remove(0);
+        }
+
+        // Sort by position to ensure correct order
+        group.sort_by(|a, b| a.start_pos.offset.cmp(&b.start_pos.offset));
+
+        let first = &group[0];
+        let last = &group[group.len() - 1];
+
+        // Merge content with newlines
+        let merged_content = group
             .iter()
             .map(|u| u.content.as_str())
             .collect::<Vec<_>>()
             .join("\n");
 
-        // Get the first and last positions
-        let first = &group[0];
-        let last = &group[group.len() - 1];
-
-        // Update format info to mark as multiline
-        let mut format_info = first.format_info.clone().unwrap();
-        format_info.is_multiline = true;
-
-        // Fix: Use the first unit's start_pos directly
-        // The first.start_pos already points to the beginning of the comment (including prefix like "// ")
-        // We should NOT subtract prefix_len because start_pos.column is 1-indexed and already includes the prefix
-        let merged_start_pos = first.start_pos.clone();
-
-        // Fix: Use the original last unit's end_pos for accurate position
-        // The last unit's end_pos already includes the correct offset including any suffix
-        let merged_end_pos = last.end_pos.clone();
+        // Merge raw_match with newlines
+        let merged_raw_match: Option<String> = if group.iter().all(|u| u.raw_match.is_some()) {
+            Some(
+                group
+                    .iter()
+                    .map(|u| u.raw_match.as_ref().unwrap().as_str())
+                    .collect::<Vec<_>>()
+                    .join("\n"),
+            )
+        } else {
+            None
+        };
 
         // Create merged unit
-        TranslationUnit {
-            id: format!("{}_merged", first.id),
-            node_type: first.node_type,
-            content: merged_content,
-            start_pos: merged_start_pos,
-            end_pos: merged_end_pos,
-            language: first.language.clone(),
-            should_translate: true,
-            translated: None,
-            format_info: Some(format_info),
-            pattern_type: None,
-            pattern_name: None,
-            raw_match: None,
-        }
+        let merged_id = format!("{}_merged_{}_{}", first.id.split('_').next().unwrap_or(&first.id), first.node_type, first.start_pos.offset);
+        let mut merged_unit = TranslationUnit::new_with_pattern(
+            merged_id,
+            first.node_type.clone(),
+            merged_content,
+            first.start_pos.clone(),
+            last.end_pos.clone(),
+            crate::core::models::PatternType::Builtin,
+            String::new(),
+        );
+        merged_unit.raw_match = merged_raw_match;
+        merged_unit.language = first.language.clone();
+
+        merged_unit
     }
 
     /// Extract units using a tree-sitter query
@@ -367,128 +376,16 @@ impl TreeSitterParser {
                     node.end_byte(),
                 );
 
-                // Determine format info and clean content based on capture name and content
-                let (clean_content, format_info) = if capture_name.contains("docstring") {
-                    // Extract base indent (whitespace before the comment)
-                    let base_indent = text
-                        .chars()
-                        .take_while(|c| c.is_whitespace())
-                        .collect::<String>();
-                    let prefix = "/// ";
-
-                    // Remove base_indent and prefix from each line
-                    let clean = text
-                        .lines()
-                        .map(|line| {
-                            let trimmed = line.strip_prefix(&base_indent).unwrap_or(line);
-                            trimmed.strip_prefix(prefix).unwrap_or(trimmed)
-                        })
-                        .collect::<Vec<_>>()
-                        .join("\n");
-
-                    let fmt = FormatInfo {
-                        style: CommentStyle::DocOuter,
-                        base_indent,
-                        line_prefix: Some(prefix.to_string()),
-                        ends_with_newline: text.ends_with('\n'),
-                        is_multiline: text.contains('\n'),
-                        string_style: None,
-                        placeholders: None,
-                        quote_char: None,
-                    };
-                    (clean, Some(fmt))
-                } else if capture_name.contains("comment") {
-                    // Extract base indent (whitespace before the comment)
-                    let base_indent = text
-                        .chars()
-                        .take_while(|c| c.is_whitespace())
-                        .collect::<String>();
-
-                    // Determine comment style and prefix based on content
-                    let (style, prefix) = if text.trim_start().starts_with("///") {
-                        (CommentStyle::DocOuter, "/// ")
-                    } else if text.trim_start().starts_with("//!") {
-                        (CommentStyle::DocInner, "//! ")
-                    } else if text.trim_start().starts_with("//") {
-                        (CommentStyle::Line, "// ")
-                    } else if text.trim_start().starts_with("/*") {
-                        // For block comments, we need special handling
-                        if text.contains('\n') {
-                            (CommentStyle::BlockMulti, "")
-                        } else {
-                            (CommentStyle::BlockSingle, "")
-                        }
-                    } else {
-                        (CommentStyle::Line, "// ")
-                    };
-
-                    // Remove base_indent and prefix from each line
-                    let clean = if style == CommentStyle::BlockMulti {
-                        // For block comments, extract content between /* and */
-                        let start = text.find("/*").map(|i| i + 2).unwrap_or(0);
-                        let end = text.rfind("*/").unwrap_or(text.len());
-                        let inner = &text[start..end];
-                        inner
-                            .lines()
-                            .map(|line| {
-                                // Trim leading whitespace (spaces and tabs)
-                                let trimmed = line.trim_start();
-                                // Try to remove leading '*' with optional whitespace
-                                if let Some(after_star) = trimmed.strip_prefix('*') {
-                                    after_star.trim_start()
-                                } else {
-                                    trimmed
-                                }
-                            })
-                            .collect::<Vec<_>>()
-                            .join("\n")
-                            .trim()
-                            .to_string()
-                    } else {
-                        text.lines()
-                            .map(|line| {
-                                let trimmed = line.strip_prefix(&base_indent).unwrap_or(line);
-                                trimmed.strip_prefix(prefix).unwrap_or(trimmed)
-                            })
-                            .collect::<Vec<_>>()
-                            .join("\n")
-                    };
-
-                    let line_prefix = if style == CommentStyle::BlockMulti {
-                        Some(" * ".to_string())
-                    } else if prefix.is_empty() {
-                        None
-                    } else {
-                        Some(prefix.to_string())
-                    };
-
-                    let fmt = FormatInfo {
-                        style,
-                        base_indent,
-                        line_prefix,
-                        ends_with_newline: text.ends_with('\n'),
-                        is_multiline: text.contains('\n'),
-                        string_style: None,
-                        placeholders: None,
-                        quote_char: None,
-                    };
-                    (clean, Some(fmt))
-                } else {
-                    (text.to_string(), None)
-                };
-
-                let unit = if let Some(fmt) = format_info {
-                    TranslationUnit::new_with_format(
-                        id,
-                        node_type,
-                        clean_content,
-                        start_pos,
-                        end_pos,
-                        fmt,
-                    )
-                } else {
-                    TranslationUnit::new(id, node_type, clean_content, start_pos, end_pos)
-                };
+                let mut unit = TranslationUnit::new_with_pattern(
+                    id,
+                    node_type,
+                    text.to_string(),
+                    start_pos,
+                    end_pos,
+                    crate::core::models::PatternType::Builtin,
+                    self.language_config.name.clone(),
+                );
+                unit.raw_match = Some(node_text.to_string());
                 units.push(unit);
             }
             match_idx += 1;

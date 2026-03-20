@@ -46,43 +46,35 @@ impl JavaScriptParser {
     }
 
     /// Clean comment text by removing JavaScript comment markers
-    /// Returns CleanedComment with format information for proper reconstruction.
     fn clean_comment_text(&self, text: &str) -> CleanedComment {
         let trimmed = text.trim();
 
         // Handle JSDoc comments: /**
         if trimmed.starts_with("/**") {
-            return self
+            let cleaned = self
                 .string_processor
-                .clean_comment_with_format(trimmed, CommentType::Doc);
+                .clean_comment(trimmed, CommentType::Doc);
+            return CleanedComment { text: cleaned };
         }
 
         // Handle block comments: /*
         if trimmed.starts_with("/*") {
-            return self
+            let cleaned = self
                 .string_processor
-                .clean_comment_with_format(trimmed, CommentType::Block);
+                .clean_comment(trimmed, CommentType::Block);
+            return CleanedComment { text: cleaned };
         }
 
         // Handle line comments: //
         if trimmed.starts_with("//") {
-            return self
+            let cleaned = self
                 .string_processor
-                .clean_comment_with_format(trimmed, CommentType::Line);
+                .clean_comment(trimmed, CommentType::Line);
+            return CleanedComment { text: cleaned };
         }
 
         CleanedComment {
             text: trimmed.to_string(),
-            format_info: crate::core::models::FormatInfo {
-                style: crate::core::models::CommentStyle::Line,
-                base_indent: String::new(),
-                line_prefix: None,
-                ends_with_newline: false,
-                is_multiline: false,
-                string_style: None,
-                placeholders: None,
-                quote_char: None,
-            },
         }
     }
 
@@ -166,8 +158,16 @@ impl JavaScriptParser {
 
             let id = format!("{}_comment_{}", file_path, match_idx);
             let node_type = self.strategy.get_node_type(StrategyNodeType::Comment);
-            let mut unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
-            unit.format_info = Some(cleaned.format_info);
+            let mut unit = TranslationUnit::new_with_pattern(
+                id,
+                node_type,
+                text,
+                m.start_pos,
+                m.end_pos,
+                crate::core::models::PatternType::Builtin,
+                "javascript",
+            );
+            unit.raw_match = Some(m.text.to_string());
             units.push(unit);
             match_idx += 1;
         }
@@ -231,8 +231,16 @@ impl JavaScriptParser {
 
             let id = format!("{}_jsdoc_{}", file_path, match_idx);
             let node_type = self.strategy.get_node_type(StrategyNodeType::DocString);
-            let mut unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
-            unit.format_info = Some(cleaned.format_info);
+            let mut unit = TranslationUnit::new_with_pattern(
+                id,
+                node_type,
+                text,
+                m.start_pos,
+                m.end_pos,
+                crate::core::models::PatternType::Builtin,
+                "javascript",
+            );
+            unit.raw_match = Some(m.text.to_string());
             units.push(unit);
             match_idx += 1;
         }

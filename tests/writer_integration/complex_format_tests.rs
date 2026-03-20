@@ -1,6 +1,6 @@
 //! Complex format preservation tests for writer integration
 
-use codebase_translate::core::models::{CommentStyle, FormatInfo, NodeType, Position};
+use codebase_translate::core::models::{NodeType, Position};
 use codebase_translate::writer::{FileWriter, WriterConfig};
 
 use super::common::*;
@@ -20,29 +20,18 @@ async fn test_complex_nested_block_comment() {
 
     let file = create_test_file(&temp_path, "nested_comment.rs", content).await;
 
-    let format_info = FormatInfo {
-        style: CommentStyle::BlockMulti,
-        base_indent: "    ".to_string(),
-        line_prefix: Some(" * ".to_string()),
-        ends_with_newline: true,
-        is_multiline: false,
-        string_style: None,
-        placeholders: None,
-        quote_char: None,
-    };
-
-    let mut units = vec![create_translation_unit_with_format(
+    let mut units = vec![create_translation_unit_with_raw_match(
         "1",
         "/* Outer comment
      * /* Inner comment */
      * More outer comment
      */",
+        "    /* Outer comment\n     * /* Inner comment */\n     * More outer comment\n     */",
         2,
         5,
         67,
-        format_info,
     )];
-    units[0].set_translated("外部注释\n内部注释\n更多外部注释");
+    units[0].set_translated("    /* 外部注释\n     * /* 内部注释 */\n     * 更多外部注释\n     */");
 
     let config = WriterConfig::default();
     let writer = FileWriter::new(config);
@@ -191,28 +180,17 @@ fn main() {
 
     let file = create_test_file(&temp_path, "mixed_comments.rs", content).await;
 
-    let format_info = FormatInfo {
-        style: CommentStyle::BlockMulti,
-        base_indent: "    ".to_string(),
-        line_prefix: Some(" * ".to_string()),
-        ends_with_newline: true,
-        is_multiline: false,
-        string_style: None,
-        placeholders: None,
-        quote_char: None,
-    };
-
     let mut units = vec![
         create_translation_unit("1", "Top comment", 1, 1, 13),
         create_translation_unit("2", "Function comment", 3, 5, 22),
         create_translation_unit("3", "Inline comment", 4, 16, 32),
-        create_translation_unit_with_format(
+        create_translation_unit_with_raw_match(
             "4",
             "/* Block comment\n     * with multiple lines\n     */",
+            "    /* Block comment\n     * with multiple lines\n     */",
             5,
             5,
             52,
-            format_info,
         ),
         create_translation_unit("5", "Bottom comment", 9, 1, 15),
     ];
@@ -220,7 +198,7 @@ fn main() {
     units[0].set_translated("顶部注释");
     units[1].set_translated("函数注释");
     units[2].set_translated("行内注释");
-    units[3].set_translated("块注释\n多行");
+    units[3].set_translated("    /* 块注释\n     * 多行\n     */");
     units[4].set_translated("底部注释");
 
     let config = WriterConfig::default();
@@ -278,26 +256,17 @@ async fn test_indented_block_comment_preservation() {
 
     let file = create_test_file(&temp_path, "indented_block.rs", content).await;
 
-    let format_info = FormatInfo {
-        style: CommentStyle::BlockMulti,
-        base_indent: "        ".to_string(),
-        line_prefix: Some(" * ".to_string()),
-        ends_with_newline: true,
-        is_multiline: false,
-        string_style: None,
-        placeholders: None,
-        quote_char: None,
-    };
-
-    let mut units = vec![create_translation_unit_with_format(
+    let mut units = vec![create_translation_unit_with_raw_match(
         "1",
         "/* Indented block comment\n             * with multiple levels\n             * of indentation\n             */",
+        "        /* Indented block comment\n             * with multiple levels\n             * of indentation\n             */",
         3,
-            13,
-            91,
-        format_info,
+        13,
+        91,
     )];
-    units[0].set_translated("缩进块注释\n多级缩进\n更多缩进");
+    units[0].set_translated(
+        "        /* 缩进块注释\n             * 多级缩进\n             * 更多缩进\n             */",
+    );
 
     let config = WriterConfig::default();
     let writer = FileWriter::new(config);
@@ -352,43 +321,39 @@ fn another() -> i32 {
 
     let file = create_test_file(&temp_path, "doc_comment.rs", content).await;
 
-    let format_info = FormatInfo {
-        style: CommentStyle::DocOuter,
-        base_indent: "".to_string(),
-        line_prefix: Some("/// ".to_string()),
-        ends_with_newline: false,
-        is_multiline: false,
-        string_style: None,
-        placeholders: None,
-        quote_char: None,
-    };
-
     let mut units = vec![
-        create_translation_unit_with_format(
+        create_translation_unit_with_raw_match(
             "1",
+            "/// This is a doc comment",
             "/// This is a doc comment",
             1,
             1,
             24,
-            format_info.clone(),
         ),
-        create_translation_unit_with_format(
+        create_translation_unit_with_raw_match(
             "2",
+            "/// with multiple lines",
             "/// with multiple lines",
             2,
             1,
             23,
-            format_info.clone(),
         ),
-        create_translation_unit_with_format(
+        create_translation_unit_with_raw_match(
             "3",
+            "/// Another doc comment",
             "/// Another doc comment",
             7,
             1,
             24,
-            format_info.clone(),
         ),
-        create_translation_unit_with_format("4", "/// for another function", 8, 1, 27, format_info),
+        create_translation_unit_with_raw_match(
+            "4",
+            "/// for another function",
+            "/// for another function",
+            8,
+            1,
+            27,
+        ),
     ];
 
     units[0].set_translated("这是一个文档注释");
@@ -507,35 +472,45 @@ mod example {
 
     let file = create_test_file(&temp_path, "complex_structure.rs", content).await;
 
-    let format_info = FormatInfo {
-        style: CommentStyle::DocOuter,
-        base_indent: "        ".to_string(),
-        line_prefix: Some("/// ".to_string()),
-        ends_with_newline: false,
-        is_multiline: false,
-        string_style: None,
-        placeholders: None,
-        quote_char: None,
-    };
-
     let mut units = vec![
-        create_translation_unit("1", "Module comment", 1, 3, 18), // "Module comment" (13 chars) - ends at 3+13=16, but we need 18 for exclusive end with space
-        create_translation_unit("2", "Nested module comment", 3, 7, 29), // "Nested module comment" (21 chars) - ends at 7+21=28, but we need 29 for exclusive end with space
-        create_translation_unit_with_format(
+        create_translation_unit_with_raw_match(
+            "1",
+            "Module comment",
+            "// Module comment",
+            1,
+            3,
+            18,
+        ),
+        create_translation_unit_with_raw_match(
+            "2",
+            "Nested module comment",
+            "    // Nested module comment",
+            3,
+            7,
+            29,
+        ),
+        create_translation_unit_with_raw_match(
             "3",
-            "Field doc comment", // Note: without the "/// " prefix
+            "Field doc comment",
+            "        /// Field doc comment",
             5,
             13,
-            31, // "Field doc comment" (17 chars) - this one seems correct now
-            format_info.clone(),
+            31,
         ),
-        create_translation_unit("4", "Method comment", 10, 11, 27), // "Method comment" (14 chars) - ends at 11+14=25, but we need 27 for exclusive end with space
+        create_translation_unit_with_raw_match(
+            "4",
+            "Method comment",
+            "        // Method comment",
+            10,
+            11,
+            27,
+        ),
     ];
 
-    units[0].set_translated(" 模块注释");
-    units[1].set_translated(" 嵌套模块注释");
-    units[2].set_translated("字段文档注释");
-    units[3].set_translated(" 方法注释");
+    units[0].set_translated("// 模块注释");
+    units[1].set_translated("    // 嵌套模块注释");
+    units[2].set_translated("        /// 字段文档注释");
+    units[3].set_translated("        // 方法注释");
 
     let config = WriterConfig::default();
     let writer = FileWriter::new(config);
@@ -595,26 +570,15 @@ fn example() -> i32 {
 
     let file = create_test_file(&temp_path, "doc_block.rs", content).await;
 
-    let format_info = FormatInfo {
-        style: CommentStyle::DocBlock,
-        base_indent: "".to_string(),
-        line_prefix: Some(" * ".to_string()),
-        ends_with_newline: true,
-        is_multiline: false,
-        string_style: None,
-        placeholders: None,
-        quote_char: None,
-    };
-
-    let mut units = vec![create_translation_unit_with_format(
+    let mut units = vec![create_translation_unit_with_raw_match(
         "1",
+        "/**\n * This is a doc block comment\n * with multiple lines\n * and detailed information\n */",
         "/**\n * This is a doc block comment\n * with multiple lines\n * and detailed information\n */",
         1,
         1,
         76,
-        format_info,
     )];
-    units[0].set_translated("这是一个文档块注释\n多行\n详细信息");
+    units[0].set_translated("/**\n * 这是一个文档块注释\n * 多行\n * 详细信息\n */");
 
     let config = WriterConfig::default();
     let writer = FileWriter::new(config);
