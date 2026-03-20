@@ -152,7 +152,7 @@ mod workflow_file_processor {
 mod workflow_factory {
     use codebase_translate::{
         config::{global::GlobalConfig, project::ProjectConfig},
-        factory::{create_cache, create_parser, create_translator, create_writer},
+        CacheFactory, ParserFactory, WriterFactory,
     };
 
     fn create_test_project_config() -> ProjectConfig {
@@ -166,14 +166,14 @@ mod workflow_factory {
     #[test]
     fn test_create_writer() {
         let project_config = create_test_project_config();
-        let writer = create_writer(&project_config, None);
+        let writer = WriterFactory::from_project_config(&project_config, None);
         assert!(writer.is_ok());
     }
 
     #[test]
     fn test_create_parser() {
         let project_config = create_test_project_config();
-        let parser = create_parser(&project_config);
+        let parser = ParserFactory::create(&project_config);
         assert!(parser.is_ok());
     }
 
@@ -181,7 +181,7 @@ mod workflow_factory {
     fn test_create_translator() {
         let global_config = create_test_global_config();
         let project_config = create_test_project_config();
-        let translator = create_translator(&global_config, &project_config);
+        let translator = codebase_translate::create_translation_service(&global_config, &project_config);
         assert!(translator.is_ok());
     }
 
@@ -189,7 +189,7 @@ mod workflow_factory {
     fn test_create_cache() {
         let project_config = create_test_project_config();
         let temp_dir = std::env::temp_dir();
-        let cache = create_cache(&project_config.cache, temp_dir.to_str().unwrap());
+        let cache = CacheFactory::create(&project_config.cache, temp_dir.to_str().unwrap());
         assert!(cache.is_ok());
     }
 }

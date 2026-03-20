@@ -5,7 +5,6 @@
 use crate::cache_integration::test_utils::hash_utils;
 use codebase_translate::cache::binary::BinaryCache;
 use codebase_translate::core::models::{CacheConfig, CacheEntry, CacheMode};
-use codebase_translate::Cache;
 
 #[test]
 fn test_cache_fingerprint_validation() {

@@ -4,7 +4,6 @@
 //! Uses MessagePack for serialization and includes a file header with magic number,
 //! version, and checksum.
 
-use crate::cache::r#trait::Cache;
 use crate::cache::util;
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{CacheConfig, CacheEntry, CacheEntryInfo, CacheStats};
@@ -40,17 +39,29 @@ impl FileHeader {
         bytes
     }
 
-    #[allow(dead_code)]
     fn from_bytes(bytes: &[u8]) -> Result<Self> {
         if bytes.len() < HEADER_SIZE {
             return Err(TranslateError::Cache("Header too small".to_string()));
         }
 
-        let magic = bytes[0..8].try_into().unwrap();
-        let version = u32::from_le_bytes(bytes[8..12].try_into().unwrap());
-        let index_offset = u64::from_le_bytes(bytes[12..20].try_into().unwrap());
-        let index_size = u64::from_le_bytes(bytes[20..28].try_into().unwrap());
-        let checksum = u32::from_le_bytes(bytes[28..32].try_into().unwrap());
+        let magic: [u8; 8] = bytes[0..8].try_into()
+            .map_err(|_| TranslateError::Cache("Invalid magic bytes length".to_string()))?;
+        let version = u32::from_le_bytes(
+            bytes[8..12].try_into()
+                .map_err(|_| TranslateError::Cache("Invalid version bytes length".to_string()))?
+        );
+        let index_offset = u64::from_le_bytes(
+            bytes[12..20].try_into()
+                .map_err(|_| TranslateError::Cache("Invalid index_offset bytes length".to_string()))?
+        );
+        let index_size = u64::from_le_bytes(
+            bytes[20..28].try_into()
+                .map_err(|_| TranslateError::Cache("Invalid index_size bytes length".to_string()))?
+        );
+        let checksum = u32::from_le_bytes(
+            bytes[28..32].try_into()
+                .map_err(|_| TranslateError::Cache("Invalid checksum bytes length".to_string()))?
+        );
 
         Ok(Self {
             magic,
@@ -244,7 +255,7 @@ impl BinaryCache {
             return Err(TranslateError::Cache("Cache file too small".to_string()));
         }
 
-        let start = (HEADER_SIZE + offset as usize) as usize;
+        let start = HEADER_SIZE + offset as usize;
         let end = start + size as usize;
 
         if end > data.len() {
@@ -432,10 +443,9 @@ impl BinaryCache {
         debug!("Cache entry added successfully");
         Ok(())
     }
-}
 
-impl Cache for BinaryCache {
-    fn get(&self, file_hash: &str) -> Result<Option<CacheEntry>> {
+    /// Get cached entry for a file hash
+    pub fn get(&self, file_hash: &str) -> Result<Option<CacheEntry>> {
         if !self.config.enabled {
             debug!("Cache disabled, returning None");
             return Ok(None);
@@ -483,7 +493,8 @@ impl Cache for BinaryCache {
         }
     }
 
-    fn set(&self, entry: &CacheEntry) -> Result<()> {
+    /// Store a cache entry
+    pub fn set(&self, entry: &CacheEntry) -> Result<()> {
         if !self.config.enabled {
             debug!("Cache disabled, skipping set");
             return Ok(());
@@ -501,7 +512,8 @@ impl Cache for BinaryCache {
         Ok(())
     }
 
-    fn invalidate(&self, file_hash: &str) -> Result<()> {
+    /// Invalidate cache entry for a file hash
+    pub fn invalidate(&self, file_hash: &str) -> Result<()> {
         if !self.config.enabled {
             debug!("Cache disabled, skipping invalidate");
             return Ok(());
@@ -530,7 +542,8 @@ impl Cache for BinaryCache {
         Ok(())
     }
 
-    fn clear(&self) -> Result<()> {
+    /// Clear all cache
+    pub fn clear(&self) -> Result<()> {
         if !self.config.enabled {
             debug!("Cache disabled, skipping clear");
             return Ok(());
@@ -562,14 +575,16 @@ impl Cache for BinaryCache {
         }
     }
 
-    fn close(&self) -> Result<()> {
+    /// Close cache and release resources
+    pub fn close(&self) -> Result<()> {
         debug!("Closing cache");
         self.save()?;
         debug!("Cache closed successfully");
         Ok(())
     }
 
-    fn list_entries(&self) -> Result<Vec<CacheEntryInfo>> {
+    /// List all cache entries
+    pub fn list_entries(&self) -> Result<Vec<CacheEntryInfo>> {
         if !self.config.enabled {
             debug!("Cache disabled, returning empty list");
             return Ok(Vec::new());
@@ -598,7 +613,8 @@ impl Cache for BinaryCache {
         Ok(result)
     }
 
-    fn cleanup_orphaned(&self, existing_hashes: HashMap<String, bool>) -> Result<usize> {
+    /// Cleanup orphaned cache entries (files that no longer exist)
+    pub fn cleanup_orphaned(&self, existing_hashes: HashMap<String, bool>) -> Result<usize> {
         if !self.config.enabled {
             debug!("Cache disabled, skipping cleanup");
             return Ok(0);
@@ -654,7 +670,8 @@ impl Cache for BinaryCache {
         Ok(to_remove.len())
     }
 
-    fn stats(&self) -> Result<CacheStats> {
+    /// Get cache statistics
+    pub fn stats(&self) -> Result<CacheStats> {
         if !self.config.enabled {
             debug!("Cache disabled, returning empty stats");
             return Ok(CacheStats::default());
@@ -690,7 +707,6 @@ impl Cache for BinaryCache {
     }
 }
 
-#[allow(dead_code)]
 fn calculate_crc32(data: &[u8]) -> u32 {
     let mut hasher = Crc32Hasher::new();
     hasher.update(data);

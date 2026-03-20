@@ -21,8 +21,8 @@ pub mod writer;
 pub use core::error::{Result, TranslateError};
 pub use core::models::{File, FileEntry, LanguageInfo, NodeType, Position, TranslationUnit};
 
-// Re-export traits from their respective modules
-pub use cache::{Cache, CacheEntry, CacheStats};
+// Re-export types from cache module
+pub use cache::{CacheEntry, CacheStats};
 pub use encoding::{Detector, Encoder, EncodingResult, EncodingType};
 pub use parser::Parser;
 pub use reporter::Reporter;

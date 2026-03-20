@@ -4,7 +4,7 @@
 //! translation, caching, and writing.
 
 use crate::{
-    cache::{binary::BinaryCache, Cache, CacheEntry},
+    cache::{binary::BinaryCache, CacheEntry},
     config::project::ProjectConfig,
     core::error::Result,
     core::models::{File, TranslationStats},

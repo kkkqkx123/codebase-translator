@@ -7,7 +7,6 @@
 use crate::cache_integration::test_utils::hash_utils;
 use codebase_translate::cache::binary::BinaryCache;
 use codebase_translate::core::models::{CacheConfig, CacheEntry, CacheMode};
-use codebase_translate::Cache;
 
 /// Test basic cache hit scenario
 /// Verifies that a translated file can be retrieved from cache
