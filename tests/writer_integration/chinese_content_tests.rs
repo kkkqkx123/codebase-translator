@@ -8,9 +8,10 @@ fn test_chinese_doc_comment_replacement() {
     // Simulate the exact scenario from E2E test
     // Original line: "    /// 获取计算器名称"
     // Translated: "    /// Get Calculator Name"
-    
-    let content = "    /// 获取计算器名称\n    pub fn get_name(&self) -> &str {\n        &self.name\n    }";
-    
+
+    let content =
+        "    /// 获取计算器名称\n    pub fn get_name(&self) -> &str {\n        &self.name\n    }";
+
     // Create translation unit simulating parser output
     let mut units = vec![TranslationUnit {
         id: "1".to_string(),
@@ -34,28 +35,34 @@ fn test_chinese_doc_comment_replacement() {
         pattern_name: None,
         raw_match: Some("    /// 获取计算器名称".to_string()),
     }];
-    
+
     units[0].set_translated("Get Calculator Name");
-    
+
     let result = apply_translations(content, &units).unwrap();
-    
+
     println!("Original content:\n{}", content);
     println!("\nResult:\n{}", result);
-    
+
     // Check that translation is correct
-    assert!(result.contains("/// Get Calculator Name"), 
-            "Translation not found. Result: {}", result);
-    
+    assert!(
+        result.contains("/// Get Calculator Name"),
+        "Translation not found. Result: {}",
+        result
+    );
+
     // Check that next line is not merged
-    assert!(result.contains("\n    pub fn get_name(&self) -> &str {"),
-            "Next line was merged. Result: {}", result);
+    assert!(
+        result.contains("\n    pub fn get_name(&self) -> &str {"),
+        "Next line was merged. Result: {}",
+        result
+    );
 }
 
 #[test]
 fn test_chinese_multiline_doc_replacement() {
     // Test case for: "/// multiplicationpub fn multiply"
     let content = "/// 乘法运算\npub fn multiply(a: i32, b: i32) -> i32 {\n    a * b\n}";
-    
+
     let mut units = vec![TranslationUnit {
         id: "1".to_string(),
         node_type: NodeType::DocString,
@@ -65,8 +72,8 @@ fn test_chinese_multiline_doc_replacement() {
         // - space: byte 3
         // - 乘法运算: bytes 4-15 (4 chars * 3 bytes = 12 bytes)
         // Total: 16 bytes
-        start_pos: Position::new(1, 5, 4),  // Content starts after "/// "
-        end_pos: Position::new(1, 17, 16),   // End of line
+        start_pos: Position::new(1, 5, 4), // Content starts after "/// "
+        end_pos: Position::new(1, 17, 16), // End of line
         language: None,
         should_translate: true,
         translated: None,
@@ -74,17 +81,23 @@ fn test_chinese_multiline_doc_replacement() {
         pattern_name: None,
         raw_match: Some("/// 乘法运算".to_string()),
     }];
-    
+
     units[0].set_translated("multiplication");
-    
+
     let result = apply_translations(content, &units).unwrap();
-    
+
     println!("Original content:\n{}", content);
     println!("\nResult:\n{}", result);
-    
+
     // Check that translation is correct and not merged with next line
-    assert!(result.contains("/// multiplication\n"),
-            "Translation incorrect or merged. Result: {}", result);
-    assert!(result.contains("pub fn multiply(a: i32, b: i32) -> i32 {"),
-            "Function definition missing. Result: {}", result);
+    assert!(
+        result.contains("/// multiplication\n"),
+        "Translation incorrect or merged. Result: {}",
+        result
+    );
+    assert!(
+        result.contains("pub fn multiply(a: i32, b: i32) -> i32 {"),
+        "Function definition missing. Result: {}",
+        result
+    );
 }

@@ -7,6 +7,7 @@
 //! Uses static dispatch via TranslatorImpl for better performance.
 
 use std::sync::Arc;
+use tracing::{debug, info};
 
 use crate::core::error::{Result, TranslateError};
 use crate::translator::batch::BatchTranslator;
@@ -33,15 +34,18 @@ impl TranslationService {
     /// # Returns
     /// A new TranslationService instance
     pub fn new(config: TranslatorConfig) -> Result<Self> {
+        debug!("Creating translation service");
         let runtime = tokio::runtime::Runtime::new().map_err(|e| {
             TranslateError::Translation(format!("Failed to create Tokio runtime: {}", e))
         })?;
 
+        debug!("Creating translator from config");
         let translator = runtime.block_on(async {
             // Note: factory creation is sync, but we prepare for async initialization
             create_translator_from_config(&config)
         })?;
 
+        info!("Translation service created successfully");
         Ok(Self {
             runtime,
             translator: Arc::new(translator),
@@ -57,12 +61,24 @@ impl TranslationService {
     /// # Returns
     /// Translated texts in the same order as input
     pub fn translate_batch(&self, texts: &[String], target_lang: &str) -> Result<Vec<String>> {
+        debug!(
+            texts_count = texts.len(),
+            target_lang = %target_lang,
+            "Translating batch of texts"
+        );
         let texts = texts.to_vec();
         let target_lang = target_lang.to_string();
         let translator = self.translator.clone();
 
-        self.runtime
-            .block_on(async move { translator.translate(&texts, &target_lang).await })
+        let result = self
+            .runtime
+            .block_on(async move { translator.translate(&texts, &target_lang).await })?;
+
+        debug!(
+            translated_count = result.len(),
+            "Batch translation completed"
+        );
+        Ok(result)
     }
 
     /// Translate a single text

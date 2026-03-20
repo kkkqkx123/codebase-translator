@@ -2,10 +2,7 @@
 
 mod workflow_integration {
     use codebase_translate::{
-        config::{
-            global::GlobalConfig,
-            project::ProjectConfig,
-        },
+        config::{global::GlobalConfig, project::ProjectConfig},
         workflow::{TranslationWorkflow, WorkflowConfig, WorkflowResult},
     };
 

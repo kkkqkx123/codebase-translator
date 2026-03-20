@@ -3,7 +3,7 @@
 //! This module contains logic for applying translations to file content,
 //! with support for different file types (generic and markdown).
 
-use crate::core::error::{Result};
+use crate::core::error::Result;
 use crate::core::models::TranslationUnit;
 
 /// Applies translations to file content
@@ -51,9 +51,8 @@ impl TranslationApplier {
                 let end_byte = unit.end_pos.offset;
 
                 // Check if we have valid byte positions (non-zero and within bounds)
-                let has_valid_positions = start_byte > 0
-                    && start_byte < end_byte
-                    && end_byte <= normalized_content.len();
+                let has_valid_positions =
+                    start_byte > 0 && start_byte < end_byte && end_byte <= normalized_content.len();
 
                 if has_valid_positions {
                     // Use position-based extraction for accurate replacement
@@ -717,8 +716,8 @@ mod tests {
             content: "获取计算器名称".to_string(),
             // Byte positions: 4 spaces (4) + /// (3) + space (1) + 获取计算器名称 (24) = 32 bytes
             // Char positions: 4 spaces (4) + /// (3) + space (1) + 获取计算器名称 (8) = 16 chars
-            start_pos: Position::new(1, 9, 8),   // column is byte-based from tree-sitter
-            end_pos: Position::new(1, 33, 32),    // column is byte-based from tree-sitter
+            start_pos: Position::new(1, 9, 8), // column is byte-based from tree-sitter
+            end_pos: Position::new(1, 33, 32), // column is byte-based from tree-sitter
             language: None,
             should_translate: true,
             translated: None,
@@ -750,8 +749,8 @@ mod tests {
             // Bytes: 4 spaces + 3 /// + 1 space + 24 Chinese = 32 bytes
             // Content "获取计算器名称" starts at byte 9 (4+3+1+1, 1-based)
             // Content "获取计算器名称" ends at byte 33 (4+3+1+24+1, 1-based)
-            start_pos: Position::new(1, 9, 8),   // column 9 = byte 8 (0-based offset)
-            end_pos: Position::new(1, 33, 32),    // column 33 = byte 32 (0-based offset)
+            start_pos: Position::new(1, 9, 8), // column 9 = byte 8 (0-based offset)
+            end_pos: Position::new(1, 33, 32), // column 33 = byte 32 (0-based offset)
             language: None,
             should_translate: true,
             translated: None,
@@ -766,9 +765,16 @@ mod tests {
         let result = TranslationApplier::apply_translations(content, &units).unwrap();
         println!("Result: {:?}", result);
         // The translation should replace the Chinese text correctly
-        assert!(result.contains("/// Get Calculator Name"), "Expected translation not found in: {}", result);
+        assert!(
+            result.contains("/// Get Calculator Name"),
+            "Expected translation not found in: {}",
+            result
+        );
         // The next line should remain intact (not merged)
-        assert!(result.contains("\n    pub fn get_name(&self) -> &str {"), "Next line was merged incorrectly");
+        assert!(
+            result.contains("\n    pub fn get_name(&self) -> &str {"),
+            "Next line was merged incorrectly"
+        );
     }
 
     #[test]
@@ -777,9 +783,9 @@ mod tests {
         // Original: "/// 乘法运算\npub fn multiply(a: i32, b: i32) -> i32 {"
         // Expected: "/// multiplication\npub fn multiply(a: i32, b: i32) -> i32 {"
         // Actual (bug): "/// multiplicationpub fn multiply(a: i32, b: i32) -> i32 {"
-        
+
         let content = "/// 乘法运算\npub fn multiply(a: i32, b: i32) -> i32 {\n    a * b\n}";
-        
+
         let mut units = vec![TranslationUnit {
             id: "1".to_string(),
             node_type: NodeType::DocString,
@@ -797,23 +803,32 @@ mod tests {
             pattern_name: None,
             raw_match: Some("/// 乘法运算".to_string()),
         }];
-        
+
         units[0].set_translated("multiplication");
-        
+
         let result = TranslationApplier::apply_translations(content, &units).unwrap();
-        
+
         println!("Original:\n{}", content);
         println!("\nResult:\n{}", result);
-        
+
         // The key assertion: translation should be on its own line
-        assert!(result.contains("/// multiplication\n"), 
-                "Translation should end with newline. Result: {:?}", result);
-        assert!(result.contains("pub fn multiply(a: i32, b: i32) -> i32 {"),
-                "Function should be on separate line. Result: {:?}", result);
-        
+        assert!(
+            result.contains("/// multiplication\n"),
+            "Translation should end with newline. Result: {:?}",
+            result
+        );
+        assert!(
+            result.contains("pub fn multiply(a: i32, b: i32) -> i32 {"),
+            "Function should be on separate line. Result: {:?}",
+            result
+        );
+
         // Make sure they are NOT merged
-        assert!(!result.contains("multiplicationpub fn"),
-                "Lines should not be merged! Result: {:?}", result);
+        assert!(
+            !result.contains("multiplicationpub fn"),
+            "Lines should not be merged! Result: {:?}",
+            result
+        );
     }
 
     #[test]
@@ -825,13 +840,13 @@ mod tests {
         // - space is at byte 3
         // - 乘法运算 is at bytes 4-15 (4 chars * 3 bytes each)
         // Total: 16 bytes, 8 chars
-        // 
+        //
         // If tree-sitter returns start_pos.column = 1 (start of line),
         // and end_pos.column = 17 (1-based byte position after the line),
         // then the replacement range would be the entire line.
-        
+
         let content = "/// 乘法运算\npub fn multiply(a: i32, b: i32) -> i32 {";
-        
+
         // Simulate what tree-sitter might return
         let mut units = vec![TranslationUnit {
             id: "1".to_string(),
@@ -840,8 +855,8 @@ mod tests {
             // Tree-sitter might return positions for the entire line including prefix
             // If start_pos.column = 1 (start of line, 1-based byte position)
             // and end_pos.column = 17 (end of line + 1, 1-based byte position)
-            start_pos: Position::new(1, 1, 0),   // column 1 = byte 0
-            end_pos: Position::new(1, 17, 16),    // column 17 = byte 16
+            start_pos: Position::new(1, 1, 0), // column 1 = byte 0
+            end_pos: Position::new(1, 17, 16), // column 17 = byte 16
             language: None,
             should_translate: true,
             translated: None,
@@ -849,20 +864,26 @@ mod tests {
             pattern_name: None,
             raw_match: Some("/// 乘法运算".to_string()),
         }];
-        
+
         units[0].set_translated("/// multiplication");
-        
+
         let result = TranslationApplier::apply_translations(content, &units).unwrap();
-        
+
         println!("Test with actual parser positions:");
         println!("Original:\n{}", content);
         println!("\nResult:\n{}", result);
-        
+
         // Check the result
-        assert!(result.contains("/// multiplication\n"), 
-                "Translation should have newline. Result: {:?}", result);
-        assert!(!result.contains("multiplicationpub fn"),
-                "Lines should not be merged! Result: {:?}", result);
+        assert!(
+            result.contains("/// multiplication\n"),
+            "Translation should have newline. Result: {:?}",
+            result
+        );
+        assert!(
+            !result.contains("multiplicationpub fn"),
+            "Lines should not be merged! Result: {:?}",
+            result
+        );
     }
 
     #[test]
@@ -871,9 +892,9 @@ mod tests {
         // but end_pos doesn't include it (due to query_executor adjustment)
         // This can happen when tree-sitter returns a node that includes newline
         // but end_pos is adjusted to exclude it
-        
+
         let content = "/// 乘法运算\npub fn multiply(a: i32, b: i32) -> i32 {";
-        
+
         // Simulate the problematic case:
         // - raw_match includes newline: "/// 乘法运算\n"
         // - but end_pos points to end of line without newline
@@ -883,7 +904,7 @@ mod tests {
             content: "乘法运算".to_string(),
             // Positions for the line without newline
             start_pos: Position::new(1, 1, 0),
-            end_pos: Position::new(1, 17, 16),  // End of "/// 乘法运算" without newline
+            end_pos: Position::new(1, 17, 16), // End of "/// 乘法运算" without newline
             language: None,
             should_translate: true,
             translated: None,
@@ -892,25 +913,28 @@ mod tests {
             // raw_match includes newline (this is the bug!)
             raw_match: Some("/// 乘法运算\n".to_string()),
         }];
-        
+
         units[0].set_translated("multiplication");
-        
+
         let result = TranslationApplier::apply_translations(content, &units).unwrap();
-        
+
         println!("Test with raw_match containing newline:");
         println!("Original:\n{}", content);
         println!("\nResult:\n{}", result);
-        
+
         // The result should NOT merge lines
-        assert!(!result.contains("multiplicationpub fn"),
-                "Lines should not be merged! Result: {:?}", result);
+        assert!(
+            !result.contains("multiplicationpub fn"),
+            "Lines should not be merged! Result: {:?}",
+            result
+        );
     }
 
     #[test]
     fn test_translated_with_trailing_newline() {
         // This test checks if the bug is caused by translated text containing trailing newline
         let content = "/// 乘法运算\npub fn multiply(a: i32, b: i32) -> i32 {";
-        
+
         let mut units = vec![TranslationUnit {
             id: "1".to_string(),
             node_type: NodeType::DocString,
@@ -924,15 +948,15 @@ mod tests {
             pattern_name: None,
             raw_match: Some("/// 乘法运算".to_string()),
         }];
-        
+
         units[0].set_translated("multiplication\n");
-        
+
         let result = TranslationApplier::apply_translations(content, &units).unwrap();
-        
+
         println!("Test with translated containing trailing newline:");
         println!("Original:\n{}", content);
         println!("\nResult:\n{}", result);
-        
+
         if result.contains("multiplicationpub fn") {
             panic!("Lines merged! Result: {:?}", result);
         }
@@ -941,7 +965,7 @@ mod tests {
     #[test]
     fn test_raw_match_with_crlf() {
         let content = "/// 乘法运算\r\npub fn multiply(a: i32, b: i32) -> i32 {";
-        
+
         let mut units = vec![TranslationUnit {
             id: "1".to_string(),
             node_type: NodeType::DocString,
@@ -955,11 +979,11 @@ mod tests {
             pattern_name: None,
             raw_match: Some("/// 乘法运算\r".to_string()),
         }];
-        
+
         units[0].set_translated("multiplication");
-        
+
         let result = TranslationApplier::apply_translations(content, &units).unwrap();
-        
+
         if result.contains("multiplicationpub fn") {
             panic!("Lines merged! Result: {:?}", result);
         }
@@ -968,7 +992,7 @@ mod tests {
     #[test]
     fn test_content_with_newline() {
         let content = "/// 乘法运算\npub fn multiply(a: i32, b: i32) -> i32 {";
-        
+
         let mut units = vec![TranslationUnit {
             id: "1".to_string(),
             node_type: NodeType::DocString,
@@ -982,15 +1006,15 @@ mod tests {
             pattern_name: None,
             raw_match: Some("/// 乘法运算\npub fn multiply".to_string()),
         }];
-        
+
         units[0].set_translated("multiplication\npub fn multiply");
-        
+
         let result = TranslationApplier::apply_translations(content, &units).unwrap();
-        
+
         println!("Test with content containing newline:");
         println!("Original:\n{}", content);
         println!("\nResult:\n{}", result);
-        
+
         if result.contains("multiplicationpub fn") {
             println!("\n*** FOUND THE BUG! ***");
         }
@@ -1002,9 +1026,9 @@ mod tests {
         // translated content differs from original line count.
         // Note: It's the translator's responsibility to return correct content.
         // Writer's job is to faithfully apply the translation.
-        
+
         let content = "/// 乘法运算\npub fn multiply(a: i32, b: i32) -> i32 {";
-        
+
         let mut units = vec![TranslationUnit {
             id: "1".to_string(),
             node_type: NodeType::DocString,
@@ -1018,18 +1042,26 @@ mod tests {
             pattern_name: None,
             raw_match: Some("/// 乘法运算".to_string()),
         }];
-        
+
         // Test with correct translation
         units[0].set_translated("multiplication");
-        
+
         let result = TranslationApplier::apply_translations(content, &units).unwrap();
-        
+
         println!("Test with correct translation:");
         println!("Original:\n{}", content);
         println!("\nResult:\n{}", result);
-        
+
         // Verify correct translation is applied
-        assert!(result.contains("/// multiplication"), "Translation not applied correctly: {}", result);
-        assert!(!result.contains("乘法运算"), "Original content still present: {}", result);
+        assert!(
+            result.contains("/// multiplication"),
+            "Translation not applied correctly: {}",
+            result
+        );
+        assert!(
+            !result.contains("乘法运算"),
+            "Original content still present: {}",
+            result
+        );
     }
 }

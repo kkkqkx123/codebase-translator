@@ -8,10 +8,12 @@ use crate::{
     core::models::{FileEntry, TranslationStats},
     encoding::{Detector, Encoder},
     factory::{create_cache, create_parser, create_translator, create_writer},
+    reporter::Reporter,
     scanner::r#trait::{ScanOptions, Scanner},
     scanner::FSScanner,
     workflow::file_processor::FileProcessor,
 };
+use std::sync::Arc;
 use tracing::{debug, info, warn};
 
 /// Configuration for the translation workflow
@@ -73,6 +75,7 @@ pub struct TranslationWorkflow {
     global_config: GlobalConfig,
     project_config: ProjectConfig,
     workflow_config: WorkflowConfig,
+    reporter: Option<Arc<dyn Reporter>>,
 }
 
 impl TranslationWorkflow {
@@ -86,6 +89,7 @@ impl TranslationWorkflow {
             global_config,
             project_config,
             workflow_config,
+            reporter: None,
         }
     }
 
@@ -102,7 +106,14 @@ impl TranslationWorkflow {
             global_config,
             project_config,
             workflow_config,
+            reporter: None,
         }
+    }
+
+    /// Set the reporter for this workflow
+    pub fn with_reporter(mut self, reporter: Arc<dyn Reporter>) -> Self {
+        self.reporter = Some(reporter);
+        self
     }
 
     /// Execute the complete translation workflow
@@ -125,10 +136,7 @@ impl TranslationWorkflow {
         );
 
         let files = self.scan_files()?;
-        info!(
-            files_count = files.len(),
-            "File scan completed"
-        );
+        info!(files_count = files.len(), "File scan completed");
 
         if files.is_empty() {
             info!("No files found to translate");
@@ -150,6 +158,7 @@ impl TranslationWorkflow {
             &detector,
             &encoder,
             &self.project_config,
+            self.reporter.clone(),
         );
 
         for (idx, file_entry) in files.iter().enumerate() {
@@ -159,6 +168,10 @@ impl TranslationWorkflow {
                 file = %file_entry.path.display(),
                 "Processing file"
             );
+
+            if let Some(ref reporter) = self.reporter {
+                reporter.report_progress(idx + 1, files.len());
+            }
 
             let modified_time = file_entry
                 .modified
@@ -178,6 +191,9 @@ impl TranslationWorkflow {
                         "Failed to process file, continuing"
                     );
                     result.stats.errors += 1;
+                    if let Some(ref reporter) = self.reporter {
+                        reporter.report_error(&e);
+                    }
                 }
             }
         }
@@ -190,6 +206,10 @@ impl TranslationWorkflow {
             files_processed = result.files_processed,
             "Workflow execution completed"
         );
+
+        if let Some(ref reporter) = self.reporter {
+            reporter.finalize();
+        }
 
         // Print summary
         info!("========================================");

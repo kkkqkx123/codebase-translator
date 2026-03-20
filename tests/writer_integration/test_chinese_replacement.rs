@@ -20,7 +20,8 @@ fn test_chinese_doc_comment_replacement_full() {
         TranslationUnit {
             id: "1".to_string(),
             node_type: NodeType::Comment,
-            content: "这是一个简单的Rust文件，用于测试翻译功能\n包含中文注释和文档字符串".to_string(),
+            content: "这是一个简单的Rust文件，用于测试翻译功能\n包含中文注释和文档字符串"
+                .to_string(),
             start_pos: Position::new(1, 1, 0),
             end_pos: Position::new(2, 40, 101),
             language: None,
@@ -28,7 +29,10 @@ fn test_chinese_doc_comment_replacement_full() {
             translated: None,
             pattern_type: None,
             pattern_name: None,
-            raw_match: Some("// 这是一个简单的Rust文件，用于测试翻译功能\n// 包含中文注释和文档字符串".to_string()),
+            raw_match: Some(
+                "// 这是一个简单的Rust文件，用于测试翻译功能\n// 包含中文注释和文档字符串"
+                    .to_string(),
+            ),
         },
         // Unit 2: Doc comment for add function
         TranslationUnit {
@@ -96,20 +100,42 @@ fn test_chinese_doc_comment_replacement_full() {
     units[4].set_translated("\"Test translation function\"");
 
     let result = apply_translations(&content, &units);
-    assert!(result.is_ok(), "apply_translations failed: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "apply_translations failed: {:?}",
+        result.err()
+    );
 
     let modified = result.unwrap();
     println!("\n=== Modified content ===\n{}", modified);
 
     // Write output for inspection
     fs::create_dir_all("tests/writer_integration/output").expect("Failed to create output dir");
-    fs::write("tests/writer_integration/output/chinese_replacement_result.rs", &modified)
-        .expect("Failed to write output");
+    fs::write(
+        "tests/writer_integration/output/chinese_replacement_result.rs",
+        &modified,
+    )
+    .expect("Failed to write output");
 
     // Check specific replacements
-    assert!(modified.contains("// This is a simple Rust file"), "First comment not translated");
-    assert!(modified.contains("/// Calculate the sum of two numbers"), "add doc comment not translated");
-    assert!(modified.contains("/// multiplication"), "multiply doc comment not translated correctly");
-    assert!(modified.contains("/// Get Calculator Name"), "get_name doc comment not translated");
-    assert!(modified.contains("\"Test translation function\""), "String literal not translated");
+    assert!(
+        modified.contains("// This is a simple Rust file"),
+        "First comment not translated"
+    );
+    assert!(
+        modified.contains("/// Calculate the sum of two numbers"),
+        "add doc comment not translated"
+    );
+    assert!(
+        modified.contains("/// multiplication"),
+        "multiply doc comment not translated correctly"
+    );
+    assert!(
+        modified.contains("/// Get Calculator Name"),
+        "get_name doc comment not translated"
+    );
+    assert!(
+        modified.contains("\"Test translation function\""),
+        "String literal not translated"
+    );
 }

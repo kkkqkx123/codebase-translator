@@ -1,5 +1,5 @@
 use clap::Parser;
-use tracing::info;
+use tracing::{debug, info};
 
 use crate::{
     config::{global::GlobalConfig, project::ProjectConfig},
@@ -63,6 +63,7 @@ impl Command for VerifyArgs {
             )));
         }
 
+        debug!("Configuring scan options");
         let scan_options = ScanOptions {
             root_path: self.path.clone(),
             include_patterns: project_config.include.patterns.clone(),
@@ -73,18 +74,27 @@ impl Command for VerifyArgs {
             gitignore_path: None,
         };
 
+        debug!("Creating file scanner");
         let scanner = FSScanner::new();
+        debug!("Starting directory scan");
         let file_entries = scanner.scan(scan_options)?;
         let total_files = file_entries.len();
 
         info!(files_found = total_files, "Scanned files");
 
+        debug!("Creating parser");
         let parser_config = ParserConfig::default();
         let parser = ParserCoordinator::from_project_config(parser_config, project_config)?;
 
         let mut all_matches = Vec::new();
 
-        for entry in file_entries {
+        debug!("Processing files for extraction");
+        for (index, entry) in file_entries.iter().enumerate() {
+            debug!(
+                file = %entry.path.display(),
+                progress = format!("{}/{}", index + 1, total_files),
+                "Processing file"
+            );
             let file = Self::load_file(&entry.path)?;
             let content = file.content_string().map_err(|e| {
                 TranslateError::Parse(format!(
@@ -96,11 +106,17 @@ impl Command for VerifyArgs {
 
             let units = parser.parse_file(&file)?;
             let matches = MatchCollector::collect_from_units(entry.path.clone(), units, &content);
+            debug!(
+                file = %entry.path.display(),
+                matches = matches.len(),
+                "Extracted matches from file"
+            );
             all_matches.extend(matches);
         }
 
         info!(total_matches = all_matches.len(), "Extracted matches");
 
+        debug!("Applying filters");
         let filter_options = FilterOptions::new()
             .with_pattern_name(self.pattern.clone().unwrap_or_default())
             .with_extension(self.extension.clone().unwrap_or_default())
@@ -114,8 +130,10 @@ impl Command for VerifyArgs {
             "Filtered matches"
         );
 
+        debug!("Generating statistics");
         let summary = StatisticsGenerator::generate(&filtered_matches, total_files);
 
+        debug!("Formatting output");
         let output = OutputFormatter::format(
             &filtered_matches,
             &summary,
@@ -125,6 +143,10 @@ impl Command for VerifyArgs {
         )?;
 
         if let Some(output_path) = &self.output {
+            debug!(
+                output_path = %output_path,
+                "Writing results to file"
+            );
             std::fs::write(output_path, output).map_err(|e| {
                 TranslateError::Io(format!("Failed to write output to {}: {}", output_path, e))
             })?;
@@ -133,9 +155,11 @@ impl Command for VerifyArgs {
                 "Results written to file"
             );
         } else {
+            debug!("Outputting results to console");
             println!("{}", output);
         }
 
+        info!("Verification completed successfully");
         Ok(())
     }
 }

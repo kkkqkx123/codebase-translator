@@ -4,6 +4,7 @@ use tracing::info;
 use crate::{
     config::{global::GlobalConfig, project::ProjectConfig},
     core::error::{Result, TranslateError},
+    reporter::create_reporter,
     workflow::TranslationWorkflow,
 };
 
@@ -65,11 +66,14 @@ impl Command for TranslateArgs {
             "Translation configuration"
         );
 
+        let reporter = create_reporter();
+
         let workflow = TranslationWorkflow::from_configs_with_path(
             global_config.clone(),
             project_config,
             &self.path,
-        );
+        )
+        .with_reporter(reporter);
         let _result = workflow.execute()?;
         Ok(())
     }

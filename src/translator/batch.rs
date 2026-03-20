@@ -1,14 +1,14 @@
 //! Batch translator with rate limiting
 //!
 //! This module provides batch translation with rate limiting and retry logic.
-//! Uses static dispatch via TranslatorImpl enum for better performance.
+//! Uses static dispatch via TranslatorImpl for better performance.
 
 use governor::{Quota, RateLimiter};
 use std::num::NonZeroU32;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::sync::{RwLock, Semaphore};
-use tracing::{error, info, warn};
+use tracing::{debug, error, info, warn};
 
 use crate::core::error::{Result, TranslateError};
 use crate::translator::common::{BatchOptions, BatchResult, LimitPolicy, TranslateResponse};
@@ -37,7 +37,15 @@ pub struct BatchTranslator {
 impl BatchTranslator {
     /// Create a new batch translator
     pub fn new(translator: Arc<TranslatorImpl>, options: BatchOptions) -> Self {
+        debug!("Creating batch translator");
         let limit_policy = options.limit_policy.unwrap_or_default();
+
+        debug!(
+            rate_limit = limit_policy.rate_limit,
+            workers = options.workers,
+            max_retries = options.max_retries,
+            "Batch translator configuration"
+        );
 
         let rate_limiter = if limit_policy.rate_limit > 0 {
             let quota = Quota::per_second(
@@ -49,6 +57,12 @@ impl BatchTranslator {
         };
 
         let semaphore = Arc::new(Semaphore::new(options.workers.max(1)));
+
+        debug!(
+            rate_limiter_enabled = rate_limiter.is_some(),
+            semaphore_permits = options.workers.max(1),
+            "Batch translator created"
+        );
 
         Self {
             translator,

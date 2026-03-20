@@ -1,5 +1,5 @@
 use clap::Parser;
-use tracing::info;
+use tracing::{debug, info};
 
 use crate::{
     cache::Cache,
@@ -31,22 +31,29 @@ fn execute_cache_command(
     detailed: bool,
 ) -> Result<()> {
     let current_dir = std::env::current_dir()?;
+    debug!(
+        cache_dir = %project_config.cache.directory,
+        cache_enabled = project_config.cache.enabled,
+        "Creating cache instance"
+    );
     let cache = create_cache(
         &project_config.cache,
         current_dir.to_string_lossy().as_ref(),
     )?;
 
     if clear {
-        info!("Clearing cache...");
+        info!("Starting cache clear operation");
         cache.clear()?;
         info!("Cache cleared successfully");
     } else {
+        debug!("Retrieving cache statistics");
         let stats = cache.stats()?;
         info!("Cache statistics:");
         info!("  Total entries: {}", stats.entry_count);
         info!("  Total size: {} bytes", stats.total_size);
 
         if detailed {
+            debug!("Retrieving detailed cache entries");
             let entries = cache.list_entries()?;
             info!("  Detailed entries:");
             for entry in entries {

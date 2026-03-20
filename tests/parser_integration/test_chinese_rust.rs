@@ -12,14 +12,18 @@ fn test_parse_chinese_rust_file() {
     let mut config = ParserConfig::default();
     config.extract_strings = true;
 
-    let coordinator = ParserCoordinator::with_unified_config(config)
-        .expect("Failed to create coordinator");
+    let coordinator =
+        ParserCoordinator::with_unified_config(config).expect("Failed to create coordinator");
 
     // Load the Chinese Rust file from main_integration fixtures
     let content = fs::read_to_string("tests/main_integration/fixtures/simple_rust.rs")
         .expect("Failed to read fixture file");
 
-    let file = File::new(PathBuf::from("simple_rust.rs"), content.as_bytes().to_vec(), "utf-8");
+    let file = File::new(
+        PathBuf::from("simple_rust.rs"),
+        content.as_bytes().to_vec(),
+        "utf-8",
+    );
 
     let units = coordinator.parse_file(&file).expect("Parsing failed");
 
@@ -58,6 +62,11 @@ fn test_parse_chinese_rust_file() {
     println!("\n=== Summary ===");
     println!("Total units: {}", units.len());
     for (i, unit) in units.iter().enumerate() {
-        println!("Unit {}: {:?} - '{}'", i + 1, unit.node_type, unit.content.chars().take(30).collect::<String>());
+        println!(
+            "Unit {}: {:?} - '{}'",
+            i + 1,
+            unit.node_type,
+            unit.content.chars().take(30).collect::<String>()
+        );
     }
 }

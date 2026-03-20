@@ -387,13 +387,13 @@ impl Reporter for ReporterImpl {
 }
 
 /// Create a new default reporter
-pub fn create_reporter() -> Arc<ReporterImpl> {
+pub fn create_reporter() -> Arc<dyn Reporter> {
     Arc::new(ReporterImpl::Default(DefaultReporter::new()))
 }
 
 /// Create a new progress reporter
 #[cfg(feature = "progress")]
-pub fn create_progress_reporter() -> Arc<ReporterImpl> {
+pub fn create_progress_reporter() -> Arc<dyn Reporter> {
     Arc::new(ReporterImpl::Progress(ProgressReporter::new()))
 }
 

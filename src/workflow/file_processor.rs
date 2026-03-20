@@ -10,11 +10,13 @@ use crate::{
     core::models::{File, TranslationStats},
     encoding::{Detector, Encoder},
     parser::coordinator::ParserCoordinator,
+    reporter::Reporter,
     translator::service::TranslationService,
     utils::hash::calculate_hash,
     writer::file::FileWriter,
 };
 use std::path::Path;
+use std::sync::Arc;
 use tracing::{debug, info};
 
 /// Result of processing a single file
@@ -67,6 +69,7 @@ pub struct FileProcessor<'a> {
     detector: &'a Detector,
     encoder: &'a Encoder,
     project_config: &'a ProjectConfig,
+    reporter: Option<Arc<dyn Reporter>>,
 }
 
 impl<'a> FileProcessor<'a> {
@@ -79,6 +82,7 @@ impl<'a> FileProcessor<'a> {
         detector: &'a Detector,
         encoder: &'a Encoder,
         project_config: &'a ProjectConfig,
+        reporter: Option<Arc<dyn Reporter>>,
     ) -> Self {
         Self {
             cache,
@@ -88,6 +92,7 @@ impl<'a> FileProcessor<'a> {
             detector,
             encoder,
             project_config,
+            reporter,
         }
     }
 
@@ -113,6 +118,9 @@ impl<'a> FileProcessor<'a> {
                     "Cache hit - file already translated"
                 );
                 result.cached_files = 1;
+                if let Some(ref reporter) = self.reporter {
+                    reporter.report_cache_hit();
+                }
                 return Ok(result);
             } else {
                 debug!(
@@ -125,6 +133,9 @@ impl<'a> FileProcessor<'a> {
                 file = %file_path.display(),
                 "Cache miss"
             );
+            if let Some(ref reporter) = self.reporter {
+                reporter.report_cache_miss();
+            }
         }
 
         let encoding_result = self.detector.detect_bytes(&content)?;
@@ -145,6 +156,10 @@ impl<'a> FileProcessor<'a> {
         let mut units = self.parser.parse_file(&file)?;
         result.total_units = units.len();
 
+        if let Some(ref reporter) = self.reporter {
+            reporter.report_file(file_path, result.total_units);
+        }
+
         info!(
             file = %file_path.display(),
             total_units = result.total_units,
@@ -154,6 +169,9 @@ impl<'a> FileProcessor<'a> {
 
         if units.is_empty() {
             debug!("No translatable content found");
+            if let Some(ref reporter) = self.reporter {
+                reporter.report_skipped(file_path);
+            }
             return Ok(result);
         }
 
@@ -163,6 +181,9 @@ impl<'a> FileProcessor<'a> {
         if num_to_translate == 0 {
             debug!("All units filtered, nothing to translate");
             result.skipped_units = units.len();
+            if let Some(ref reporter) = self.reporter {
+                reporter.report_skipped(file_path);
+            }
             return Ok(result);
         }
 
@@ -184,6 +205,10 @@ impl<'a> FileProcessor<'a> {
         let translated_texts = self
             .translator
             .translate_batch(&texts, &self.project_config.translate.target_lang)?;
+
+        if let Some(ref reporter) = self.reporter {
+            reporter.report_api_call(1);
+        }
 
         info!(
             file = %file_path.display(),

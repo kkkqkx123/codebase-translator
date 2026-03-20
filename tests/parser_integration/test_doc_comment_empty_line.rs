@@ -11,8 +11,8 @@ use std::path::PathBuf;
 #[test]
 fn test_doc_comment_empty_line_preserved() {
     let config = ParserConfig::default();
-    let coordinator = ParserCoordinator::with_unified_config(config)
-        .expect("Failed to create coordinator");
+    let coordinator =
+        ParserCoordinator::with_unified_config(config).expect("Failed to create coordinator");
 
     // Create test content with empty doc comment line
     let content = r#"/// 创建新的计算器实例
@@ -32,7 +32,8 @@ pub fn new(name: &str) {}
     let units = coordinator.parse_file(&file).expect("Parsing failed");
 
     // Find the unit with "创建新的计算器实例"
-    let unit = units.iter()
+    let unit = units
+        .iter()
         .find(|u| u.content.contains("创建新的计算器实例"))
         .expect("Should find unit with '创建新的计算器实例'");
 
@@ -63,8 +64,8 @@ pub fn new(name: &str) {}
 #[test]
 fn test_doc_comment_code_example() {
     let config = ParserConfig::default();
-    let coordinator = ParserCoordinator::with_unified_config(config)
-        .expect("Failed to create coordinator");
+    let coordinator =
+        ParserCoordinator::with_unified_config(config).expect("Failed to create coordinator");
 
     // Create test content with code example
     let content = r#"/// # Examples
@@ -93,7 +94,8 @@ pub fn add(a: i32, b: i32) -> i32 { a + b }
 
     // Code examples should now be part of the same unit as the doc comment
     // not extracted as separate units
-    let code_example_units: Vec<_> = units.iter()
+    let code_example_units: Vec<_> = units
+        .iter()
         .filter(|u| u.content.contains("assert_eq!") || u.content.contains("let result"))
         .collect();
 
@@ -122,8 +124,8 @@ pub fn add(a: i32, b: i32) -> i32 { a + b }
 #[test]
 fn test_fixture_simple_rust_doc_comments() {
     let config = ParserConfig::default();
-    let coordinator = ParserCoordinator::with_unified_config(config)
-        .expect("Failed to create coordinator");
+    let coordinator =
+        ParserCoordinator::with_unified_config(config).expect("Failed to create coordinator");
 
     let content = fs::read_to_string("tests/main_integration/fixtures/simple_rust.rs")
         .expect("Failed to read fixture file");
@@ -139,17 +141,21 @@ fn test_fixture_simple_rust_doc_comments() {
     // Write output for inspection
     let mut output = String::new();
     output.push_str(&format!("Extracted {} translation units\n", units.len()));
-    output.push_str("=" .repeat(50).as_str());
+    output.push_str("=".repeat(50).as_str());
     output.push('\n');
 
     for (i, unit) in units.iter().enumerate() {
         output.push_str(&format!("\n--- Unit {} ---\n", i + 1));
         output.push_str(&format!("ID: {}\n", unit.id));
         output.push_str(&format!("Type: {:?}\n", unit.node_type));
-        output.push_str(&format!("Position: Line {}, Column {} (Offset: {})\n",
-            unit.start_pos.line, unit.start_pos.column, unit.start_pos.offset));
-        output.push_str(&format!("End Position: Line {}, Column {} (Offset: {})\n",
-            unit.end_pos.line, unit.end_pos.column, unit.end_pos.offset));
+        output.push_str(&format!(
+            "Position: Line {}, Column {} (Offset: {})\n",
+            unit.start_pos.line, unit.start_pos.column, unit.start_pos.offset
+        ));
+        output.push_str(&format!(
+            "End Position: Line {}, Column {} (Offset: {})\n",
+            unit.end_pos.line, unit.end_pos.column, unit.end_pos.offset
+        ));
         output.push_str(&format!("Content:\n{}\n", unit.content));
         if let Some(raw) = &unit.raw_match {
             output.push_str(&format!("Raw Match:\n{}\n", raw));
@@ -157,18 +163,22 @@ fn test_fixture_simple_rust_doc_comments() {
         output.push_str(&format!("Should Translate: {}\n", unit.should_translate));
     }
 
-    fs::write("tests/parser_integration/output/doc_comment_issue_analysis.txt", output)
-        .expect("Failed to write output");
+    fs::write(
+        "tests/parser_integration/output/doc_comment_issue_analysis.txt",
+        output,
+    )
+    .expect("Failed to write output");
 
     println!("Output written to: tests/parser_integration/output/doc_comment_issue_analysis.txt");
 
     // Check for specific issues
-    let issues: Vec<_> = units.iter()
+    let issues: Vec<_> = units
+        .iter()
         .filter(|u| {
             // Find units that might be problematic
-            u.content.starts_with("assert_eq!") ||
-            u.content.starts_with("let ") ||
-            u.content.starts_with("# ") && !u.content.contains("中文")
+            u.content.starts_with("assert_eq!")
+                || u.content.starts_with("let ")
+                || u.content.starts_with("# ") && !u.content.contains("中文")
         })
         .collect();
 

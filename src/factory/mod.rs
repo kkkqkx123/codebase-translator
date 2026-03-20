@@ -103,10 +103,7 @@ pub fn create_writer(
     writer_config.validate()?;
 
     let writer = if let Some(path) = project_path {
-        FileWriter::with_project_path(
-            writer_config,
-            std::path::PathBuf::from(path),
-        )
+        FileWriter::with_project_path(writer_config, std::path::PathBuf::from(path))
     } else {
         FileWriter::new(writer_config)
     };

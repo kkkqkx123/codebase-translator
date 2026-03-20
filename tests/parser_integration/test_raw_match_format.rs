@@ -12,8 +12,8 @@ fn test_raw_match_format() {
     let mut config = ParserConfig::default();
     config.extract_strings = true;
 
-    let coordinator = ParserCoordinator::with_unified_config(config)
-        .expect("Failed to create coordinator");
+    let coordinator =
+        ParserCoordinator::with_unified_config(config).expect("Failed to create coordinator");
 
     let content = fs::read_to_string("tests/main_integration/fixtures/simple_rust.rs")
         .expect("Failed to read fixture file");
@@ -25,7 +25,11 @@ fn test_raw_match_format() {
         println!("Line {}: {:?}", i + 1, line);
     }
 
-    let file = File::new(PathBuf::from("simple_rust.rs"), content.as_bytes().to_vec(), "utf-8");
+    let file = File::new(
+        PathBuf::from("simple_rust.rs"),
+        content.as_bytes().to_vec(),
+        "utf-8",
+    );
     let units = coordinator.parse_file(&file).expect("Parsing failed");
 
     println!("\n=== Translation Units ===\n");
@@ -39,10 +43,14 @@ fn test_raw_match_format() {
             // Show byte representation
             println!("  Raw match bytes: {:?}", raw.as_bytes());
         }
-        println!("  Position: Line {}, Col {} (Offset {})",
-            unit.start_pos.line, unit.start_pos.column, unit.start_pos.offset);
-        println!("  End Position: Line {}, Col {} (Offset {})",
-            unit.end_pos.line, unit.end_pos.column, unit.end_pos.offset);
+        println!(
+            "  Position: Line {}, Col {} (Offset {})",
+            unit.start_pos.line, unit.start_pos.column, unit.start_pos.offset
+        );
+        println!(
+            "  End Position: Line {}, Col {} (Offset {})",
+            unit.end_pos.line, unit.end_pos.column, unit.end_pos.offset
+        );
         println!();
     }
 }

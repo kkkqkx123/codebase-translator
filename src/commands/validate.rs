@@ -1,5 +1,5 @@
 use clap::Parser;
-use tracing::info;
+use tracing::{debug, info};
 
 use crate::{
     config::{global::GlobalConfig, project::ProjectConfig},
@@ -23,15 +23,24 @@ impl Command for ValidateArgs {
 }
 
 fn validate_config(global: &GlobalConfig, project: &ProjectConfig) -> Result<()> {
+    debug!("Validating project configuration");
+
     if project.translate.target_lang.is_empty() {
         return Err(TranslateError::Config(
             "Target language cannot be empty".to_string(),
         ));
     }
 
+    debug!(
+        target_lang = %project.translate.target_lang,
+        provider = ?project.translate.provider,
+        "Validating provider configuration"
+    );
+
     match project.translate.provider {
         ProviderType::DeepLX => {
             info!("Using DeepLX provider at: {}", global.deeplx.api_url);
+            debug!("DeepLX configuration validated");
         }
         ProviderType::LLM => {
             if global.llm.providers.is_empty() {
@@ -39,6 +48,11 @@ fn validate_config(global: &GlobalConfig, project: &ProjectConfig) -> Result<()>
                     "No LLM providers configured".to_string(),
                 ));
             }
+            info!(
+                providers_count = global.llm.providers.len(),
+                "Using LLM provider"
+            );
+            debug!("LLM configuration validated");
         }
         ProviderType::Tencent => {
             if global.tencent.secret_id.is_none() || global.tencent.secret_key.is_none() {
@@ -46,8 +60,11 @@ fn validate_config(global: &GlobalConfig, project: &ProjectConfig) -> Result<()>
                     "Tencent Cloud requires secret_id and secret_key".to_string(),
                 ));
             }
+            info!("Using Tencent Cloud provider");
+            debug!("Tencent Cloud configuration validated");
         }
     }
 
+    debug!("All configuration validations passed");
     Ok(())
 }

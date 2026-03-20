@@ -404,7 +404,10 @@ impl TreeSitterParser {
                 // Check if original text is a doc comment marker with empty content
                 let is_doc_empty_line = {
                     let trimmed = node_text.trim();
-                    (trimmed == "///" || trimmed == "//!" || trimmed.starts_with("/// ") || trimmed.starts_with("//! "))
+                    (trimmed == "///"
+                        || trimmed == "//!"
+                        || trimmed.starts_with("/// ")
+                        || trimmed.starts_with("//! "))
                         && strategy_node_type == StrategyNodeType::DocString
                 };
 
@@ -458,7 +461,7 @@ impl TreeSitterParser {
                 );
                 unit.raw_match = Some(node_text.to_string());
                 units.push(unit);
-                
+
                 match_idx += 1;
             }
         }

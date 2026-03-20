@@ -1,6 +1,6 @@
 use clap::Parser;
 use std::path::PathBuf;
-use tracing::{info, warn};
+use tracing::{debug, info, warn};
 
 use crate::{
     cache::Cache,
@@ -36,11 +36,7 @@ pub struct CleanArgs {
 }
 
 impl Command for CleanArgs {
-    fn execute(
-        &self,
-        _global_config: &GlobalConfig,
-        project_config: &ProjectConfig,
-    ) -> Result<()> {
+    fn execute(&self, _global_config: &GlobalConfig, project_config: &ProjectConfig) -> Result<()> {
         execute_clean_command(project_config, self)
     }
 }
@@ -54,6 +50,14 @@ fn execute_clean_command(project_config: &ProjectConfig, args: &CleanArgs) -> Re
         return Ok(());
     }
 
+    info!(
+        cache = clean_cache,
+        backup = clean_backup,
+        dry_run = args.dry_run,
+        older_than_days = args.older_than,
+        "Starting clean operation"
+    );
+
     let current_dir = std::env::current_dir()?;
 
     if clean_cache {
@@ -64,6 +68,7 @@ fn execute_clean_command(project_config: &ProjectConfig, args: &CleanArgs) -> Re
         clean_backup_files(project_config, args, &current_dir)?;
     }
 
+    info!("Clean operation completed");
     Ok(())
 }
 
@@ -80,17 +85,21 @@ fn clean_cache_files(
         current_dir.join(&project_config.cache.directory)
     };
 
+    debug!(cache_dir = %cache_dir.display(), "Cache directory");
+
     if !cache_dir.exists() {
         info!("Cache directory does not exist: {}", cache_dir.display());
         return Ok(());
     }
 
+    debug!("Creating cache instance");
     let cache = create_cache(
         &project_config.cache,
         current_dir.to_string_lossy().as_ref(),
     )?;
 
     if args.dry_run {
+        debug!("Retrieving cache entries for dry run");
         let entries = cache.list_entries()?;
         let filtered = filter_by_age(&entries, args.older_than, &cache_dir)?;
         info!("Dry run: would delete {} cache entries", filtered.len());
@@ -98,6 +107,7 @@ fn clean_cache_files(
             info!("  - {}", entry.file_path);
         }
     } else {
+        debug!("Clearing cache");
         cache.clear()?;
         info!("Cache cleared successfully");
     }
@@ -120,12 +130,16 @@ fn clean_backup_files(
         current_dir.join("translator")
     };
 
+    debug!(backup_dir = %backup_dir.display(), "Backup directory");
+
     if !backup_dir.exists() {
         info!("Backup directory does not exist: {}", backup_dir.display());
         return Ok(());
     }
 
+    debug!("Finding backup files");
     let backup_files = find_backup_files(&backup_dir)?;
+    debug!(found_files = backup_files.len(), "Backup files found");
     let filtered = filter_backup_files_by_age(&backup_files, args.older_than)?;
 
     if args.dry_run {
@@ -134,12 +148,15 @@ fn clean_backup_files(
             info!("  - {}", file.display());
         }
     } else {
+        let mut deleted_count = 0;
         for file in filtered {
             if let Err(e) = std::fs::remove_file(&file) {
                 warn!("Failed to delete {}: {}", file.display(), e);
+            } else {
+                deleted_count += 1;
             }
         }
-        info!("Deleted {} backup files", backup_files.len());
+        info!("Deleted {} backup files", deleted_count);
     }
 
     Ok(())
@@ -195,7 +212,10 @@ fn filter_by_age(
     Ok(filtered)
 }
 
-fn filter_backup_files_by_age(files: &[PathBuf], older_than_days: Option<u32>) -> Result<Vec<PathBuf>> {
+fn filter_backup_files_by_age(
+    files: &[PathBuf],
+    older_than_days: Option<u32>,
+) -> Result<Vec<PathBuf>> {
     if older_than_days.is_none() {
         return Ok(files.to_vec());
     }
@@ -311,7 +331,8 @@ mod tests {
 
         create_test_backup_file(&temp_dir, "file1", 0);
         create_test_backup_file(&temp_dir, "file2", 0);
-        fs::write(temp_dir.join("not_backup.txt"), "test content").expect("Failed to write test file");
+        fs::write(temp_dir.join("not_backup.txt"), "test content")
+            .expect("Failed to write test file");
 
         let result = find_backup_files(&temp_dir).expect("Failed to find backup files");
         assert_eq!(result.len(), 2);
@@ -342,8 +363,8 @@ mod tests {
         let file2 = create_test_backup_file(&temp_dir, "file2", 0);
 
         let files = vec![file1.clone(), file2.clone()];
-        let result = filter_backup_files_by_age(&files, None)
-            .expect("Failed to filter files by age");
+        let result =
+            filter_backup_files_by_age(&files, None).expect("Failed to filter files by age");
 
         assert_eq!(result.len(), 2);
 
@@ -364,8 +385,7 @@ mod tests {
         ];
 
         let temp_dir = std::env::temp_dir();
-        let result = filter_by_age(&entries, None, &temp_dir)
-            .expect("Failed to filter by age");
+        let result = filter_by_age(&entries, None, &temp_dir).expect("Failed to filter by age");
 
         assert_eq!(result.len(), 2);
     }
