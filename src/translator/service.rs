@@ -96,16 +96,18 @@ impl TranslationService {
             let batch_translator = batch_translator.clone();
 
             let result = self.runtime.block_on(async move {
-                batch_translator
-                    .translate_batch(&texts, &target_lang)
-                    .await
+                batch_translator.translate_batch(&texts, &target_lang).await
             })?;
 
             debug!(
                 translated_count = result.results.len(),
                 "Batch translation completed with rate limiting"
             );
-            Ok(result.results.into_iter().map(|r| r.translated_text).collect())
+            Ok(result
+                .results
+                .into_iter()
+                .map(|r| r.translated_text)
+                .collect())
         } else if let Some(ref translator) = self.translator {
             let texts = texts.to_vec();
             let target_lang = target_lang.to_string();
@@ -204,7 +206,9 @@ impl Drop for TranslationService {
     fn drop(&mut self) {
         // Clean up translator resources
         if let Some(translator) = self.translator.clone() {
-            let _ = self.runtime.block_on(async move { translator.close().await });
+            let _ = self
+                .runtime
+                .block_on(async move { translator.close().await });
         }
     }
 }

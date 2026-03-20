@@ -283,8 +283,7 @@ mod multi_tests {
         );
         assert!(SelectionStrategy::from_str("unknown").is_err());
     }
-
-    }
+}
 
 // ============================================================================
 // Batch Translator Integration Tests

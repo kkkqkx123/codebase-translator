@@ -14,6 +14,9 @@ pub use concurrent::{ConcurrentWriteStats, ConcurrentWriter, WriteResult};
 pub use file::{FileWriter, WriterConfig};
 
 use crate::core::models::TranslationUnit;
+use crate::config::project::ProjectConfig;
+use crate::core::error::Result;
+use tracing::{debug, info};
 
 /// Factory for creating writers
 pub struct WriterFactory;
@@ -47,6 +50,40 @@ impl WriterFactory {
         project_path: std::path::PathBuf,
     ) -> ConcurrentWriter {
         ConcurrentWriter::with_project_path(config, max_concurrent, project_path)
+    }
+
+    /// Create file writer from project config
+    pub fn from_project_config(
+        project_config: &ProjectConfig,
+        project_path: Option<&str>,
+    ) -> Result<FileWriter> {
+        info!(
+            dry_run = project_config.writer.dry_run,
+            backup = project_config.writer.backup,
+            "Creating file writer"
+        );
+
+        let writer_config = WriterConfig {
+            preview_only: project_config.writer.dry_run,
+            backup: project_config.writer.backup,
+            backup_dir: project_config
+                .writer
+                .backup_dir
+                .as_ref()
+                .map(std::path::PathBuf::from),
+            strict_encoding: false,
+        };
+
+        writer_config.validate()?;
+
+        let writer = if let Some(path) = project_path {
+            FileWriter::with_project_path(writer_config, std::path::PathBuf::from(path))
+        } else {
+            FileWriter::new(writer_config)
+        };
+
+        debug!("File writer created successfully");
+        Ok(writer)
     }
 }
 

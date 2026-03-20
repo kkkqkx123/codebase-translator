@@ -82,3 +82,35 @@ pub use tree_sitter::{LanguageConfig, ParserConfig, TreeSitterParser, TreeSitter
 
 // Re-export coordinator types
 pub use coordinator::{ParserCoordinator, ParserType};
+
+use crate::config::project::ProjectConfig;
+use crate::core::error::Result;
+use tracing::{debug, info};
+
+/// Factory for creating parser instances
+pub struct ParserFactory;
+
+impl ParserFactory {
+    /// Create parser coordinator
+    pub fn create(project_config: &ProjectConfig) -> Result<ParserCoordinator> {
+        info!(
+            extract_comments = project_config.extraction.comments,
+            extract_docstrings = project_config.extraction.doc_strings,
+            extract_strings = project_config.extraction.format_strings,
+            "Creating parser coordinator"
+        );
+
+        let parser_config = ParserConfig {
+            extract_comments: project_config.extraction.comments,
+            extract_docstrings: project_config.extraction.doc_strings,
+            extract_strings: project_config.extraction.format_strings,
+            min_content_length: 2,
+            max_content_length: 10000,
+            trim_content: true,
+        };
+
+        let parser = ParserCoordinator::from_project_config(parser_config, project_config)?;
+        debug!("Parser coordinator created successfully");
+        Ok(parser)
+    }
+}

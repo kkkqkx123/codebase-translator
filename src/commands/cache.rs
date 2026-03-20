@@ -2,10 +2,9 @@ use clap::Parser;
 use tracing::{debug, info};
 
 use crate::{
-    cache::Cache,
+    cache::CacheFactory,
     config::{global::GlobalConfig, project::ProjectConfig},
     core::error::Result,
-    factory::create_cache,
 };
 
 use super::Command;
@@ -36,7 +35,7 @@ fn execute_cache_command(
         cache_enabled = project_config.cache.enabled,
         "Creating cache instance"
     );
-    let cache = create_cache(
+    let cache = CacheFactory::create(
         &project_config.cache,
         current_dir.to_string_lossy().as_ref(),
     )?;

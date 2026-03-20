@@ -8,7 +8,6 @@ pub mod commands;
 pub mod config;
 pub mod core;
 pub mod encoding;
-pub mod factory;
 pub mod logger;
 pub mod parser;
 pub mod reporter;
@@ -34,10 +33,14 @@ pub use writer::r#trait::{AsyncWriter, Writer};
 // Re-export workflow types
 pub use workflow::{
     FileProcessResult, FileProcessor, TranslationWorkflow, WorkflowConfig, WorkflowResult,
+    WorkflowBuilder,
 };
 
-// Re-export factory functions
-pub use factory::{create_cache, create_parser, create_translator, create_writer};
+// Re-export factory functions from their respective modules
+pub use cache::CacheFactory;
+pub use parser::ParserFactory;
+pub use translator::create_translation_service;
+pub use writer::WriterFactory;
 
 // Re-export utility functions
 pub use utils::hash::calculate_hash;

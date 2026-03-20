@@ -6,12 +6,11 @@ use crate::{
     config::{global::GlobalConfig, project::ProjectConfig},
     core::error::Result,
     core::models::{FileEntry, TranslationStats},
-    encoding::{Detector, Encoder},
-    factory::{create_cache, create_parser, create_translator, create_writer},
     reporter::Reporter,
     scanner::r#trait::{ScanOptions, Scanner},
     scanner::FSScanner,
     workflow::file_processor::FileProcessor,
+    workflow::WorkflowBuilder,
 };
 use std::sync::Arc;
 use tracing::{debug, info, warn};
@@ -143,20 +142,21 @@ impl TranslationWorkflow {
             return Ok(result);
         }
 
-        let cache = create_cache(&self.project_config.cache, &self.workflow_config.root_path)?;
-        let translator = create_translator(&self.global_config, &self.project_config)?;
-        let parser = create_parser(&self.project_config)?;
-        let writer = create_writer(&self.project_config, Some(&self.workflow_config.root_path))?;
-        let detector = Detector::default();
-        let encoder = Encoder::default();
+        let builder = WorkflowBuilder::new(
+            self.global_config.clone(),
+            self.project_config.clone(),
+            self.workflow_config.root_path.clone(),
+        );
+
+        let components = builder.build()?;
 
         let processor = FileProcessor::new(
-            &cache,
-            &translator,
-            &parser,
-            &writer,
-            &detector,
-            &encoder,
+            &components.cache,
+            &components.translator,
+            &components.parser,
+            &components.writer,
+            &components.detector,
+            &components.encoder,
             &self.project_config,
             self.reporter.clone(),
         );
