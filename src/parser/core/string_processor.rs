@@ -613,13 +613,14 @@ impl StringProcessor {
                     // Raw string: r"...", r#"..."#
                     let hash_count = text[1..].chars().take_while(|&c| c == '#').count() as u8;
                     let quote_start = 1 + hash_count as usize;
-                    
+
                     if text.chars().nth(quote_start) == Some('"') {
                         let content_start = quote_start + 1;
                         let end_pattern = format!("\"{}", "#".repeat(hash_count as usize));
-                        
+
                         if let Some(content_end) = text[content_start..].find(&end_pattern) {
-                            let content = text[content_start..content_start + content_end].to_string();
+                            let content =
+                                text[content_start..content_start + content_end].to_string();
                             return (StringStyle::Raw { hash_count }, '"', content);
                         }
                     }
@@ -670,7 +671,7 @@ impl StringProcessor {
     ///
     /// Note: Only the outermost structure is guaranteed to be correct.
     /// Complex internal structures are left to the translator to handle.
-    fn extract_placeholders(&self, text: &str, style: &StringStyle) -> Vec<FormatPlaceholder> {
+    pub fn extract_placeholders(&self, text: &str, style: &StringStyle) -> Vec<FormatPlaceholder> {
         let mut placeholders = Vec::new();
 
         match style {

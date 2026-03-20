@@ -74,9 +74,15 @@ impl TranslationApplier {
                 if line_num == unit.start_pos.line {
                     // First line of multiline comment - apply the full replacement
                     if let Some(translated) = &unit.translated {
-                        let formatted = if let Some(format) = &unit.format_info {
+                        // Use direct replacement strategy if raw_match is available
+                        let formatted = if let Some(_raw_match) = &unit.raw_match {
+                            // Direct replacement: replace the entire raw match with translated text
+                            translated.clone()
+                        } else if let Some(format) = &unit.format_info {
+                            // Format-based replacement: use format_info to reconstruct
                             Self::format_translated_text(translated, format)
                         } else {
+                            // Fallback: use translated text directly
                             translated.clone()
                         };
 
@@ -160,10 +166,16 @@ impl TranslationApplier {
             .filter(|unit| unit.should_translate)
             .filter_map(|unit| {
                 unit.translated.as_ref().map(|translated| {
-                    // Format the translated text if format_info is available
-                    let formatted_text = if let Some(format) = &unit.format_info {
+                    // Use direct replacement strategy if raw_match is available
+                    // This is for regex-based extraction where boundaries are arbitrary
+                    let formatted_text = if let Some(_raw_match) = &unit.raw_match {
+                        // Direct replacement: replace the entire raw match with translated text
+                        translated.clone()
+                    } else if let Some(format) = &unit.format_info {
+                        // Format-based replacement: use format_info to reconstruct
                         Self::format_translated_text(translated, format)
                     } else {
+                        // Fallback: use translated text directly
                         translated.clone()
                     };
 
@@ -418,6 +430,7 @@ mod tests {
             format_info: None,
             pattern_type: None,
             pattern_name: None,
+            raw_match: None,
         }];
 
         units[0].set_translated("你好");
@@ -442,6 +455,7 @@ mod tests {
             format_info: None,
             pattern_type: None,
             pattern_name: None,
+            raw_match: None,
         }];
 
         units[0].set_translated("你好");
@@ -474,6 +488,7 @@ mod tests {
             }),
             pattern_type: None,
             pattern_name: None,
+            raw_match: None,
         }];
 
         let result = TranslationApplier::apply_translations("content", &units);
@@ -504,6 +519,7 @@ mod tests {
             }),
             pattern_type: None,
             pattern_name: None,
+            raw_match: None,
         }];
 
         units[0].set_translated("这是一个注释");
@@ -537,6 +553,7 @@ mod tests {
             }),
             pattern_type: None,
             pattern_name: None,
+            raw_match: None,
         }];
 
         units[0].set_translated("这是一个注释");
@@ -569,6 +586,7 @@ mod tests {
             }),
             pattern_type: None,
             pattern_name: None,
+            raw_match: None,
         }];
 
         units[0].set_translated("这是一个\n多行注释");
@@ -604,6 +622,7 @@ mod tests {
             }),
             pattern_type: None,
             pattern_name: None,
+            raw_match: None,
         }];
 
         units[0].set_translated("这是一个\n多行注释");
@@ -638,6 +657,7 @@ mod tests {
             }),
             pattern_type: None,
             pattern_name: None,
+            raw_match: None,
         }];
 
         units[0].set_translated("/// 这是一个文档注释");
@@ -670,6 +690,7 @@ mod tests {
             }),
             pattern_type: None,
             pattern_name: None,
+            raw_match: None,
         }];
 
         units[0].set_translated("这是一个\n文档注释");
@@ -703,6 +724,7 @@ mod tests {
             }),
             pattern_type: None,
             pattern_name: None,
+            raw_match: None,
         }];
 
         units[0].set_translated("第一行\n第二行");
@@ -726,6 +748,7 @@ mod tests {
             format_info: None,
             pattern_type: None,
             pattern_name: None,
+            raw_match: None,
         }];
 
         units[0].set_translated("你好");
@@ -760,6 +783,7 @@ mod tests {
                 }),
                 pattern_type: None,
                 pattern_name: None,
+                raw_match: None,
             },
             TranslationUnit {
                 id: "2".to_string(),
@@ -782,6 +806,7 @@ mod tests {
                 }),
                 pattern_type: None,
                 pattern_name: None,
+                raw_match: None,
             },
         ];
 

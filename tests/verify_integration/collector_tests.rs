@@ -29,6 +29,7 @@ fn create_test_unit(
         format_info: None,
         pattern_type: None,
         pattern_name: None,
+        raw_match: None,
     }
 }
 
@@ -54,6 +55,7 @@ fn create_test_unit_with_pattern(
         format_info: None,
         pattern_type: Some(pattern_type),
         pattern_name: Some(pattern_name.to_string()),
+        raw_match: None,
     }
 }
 

@@ -8,7 +8,8 @@ use tree_sitter::{Node, Parser, Tree};
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, TranslationUnit};
 use crate::parser::core::query_executor::QueryExecutor;
-use crate::parser::core::{CommentType, StringProcessor};
+use crate::parser::core::string_processor::{CleanedComment, CommentType};
+use crate::parser::core::StringProcessor;
 use crate::parser::filter::ContentFilter;
 use crate::parser::languages::javascript::patterns::JavaScriptPatterns;
 use crate::parser::languages::javascript::queries::JavaScriptQueries;
@@ -45,31 +46,44 @@ impl JavaScriptParser {
     }
 
     /// Clean comment text by removing JavaScript comment markers
-    fn clean_comment_text(&self, text: &str) -> String {
+    /// Returns CleanedComment with format information for proper reconstruction.
+    fn clean_comment_text(&self, text: &str) -> CleanedComment {
         let trimmed = text.trim();
 
         // Handle JSDoc comments: /**
         if trimmed.starts_with("/**") {
             return self
                 .string_processor
-                .clean_comment(trimmed, CommentType::Doc);
+                .clean_comment_with_format(trimmed, CommentType::Doc);
         }
 
         // Handle block comments: /*
         if trimmed.starts_with("/*") {
             return self
                 .string_processor
-                .clean_comment(trimmed, CommentType::Block);
+                .clean_comment_with_format(trimmed, CommentType::Block);
         }
 
         // Handle line comments: //
         if trimmed.starts_with("//") {
             return self
                 .string_processor
-                .clean_comment(trimmed, CommentType::Line);
+                .clean_comment_with_format(trimmed, CommentType::Line);
         }
 
-        trimmed.to_string()
+        CleanedComment {
+            text: trimmed.to_string(),
+            format_info: crate::core::models::FormatInfo {
+                style: crate::core::models::CommentStyle::Line,
+                base_indent: String::new(),
+                line_prefix: None,
+                ends_with_newline: false,
+                is_multiline: false,
+                string_style: None,
+                placeholders: None,
+                quote_char: None,
+            },
+        }
     }
 
     /// Parse file content into a syntax tree
@@ -114,13 +128,13 @@ impl JavaScriptParser {
 
         for m in matches {
             // Clean comment markers (//, /* */)
-            let text = self.clean_comment_text(m.text);
+            let cleaned = self.clean_comment_text(m.text);
 
             // Apply trim if configured
             let text = if self.config.trim_content {
-                text.trim().to_string()
+                cleaned.text.trim().to_string()
             } else {
-                text
+                cleaned.text
             };
 
             // Apply length filters
@@ -152,7 +166,8 @@ impl JavaScriptParser {
 
             let id = format!("{}_comment_{}", file_path, match_idx);
             let node_type = self.strategy.get_node_type(StrategyNodeType::Comment);
-            let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
+            let mut unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
+            unit.format_info = Some(cleaned.format_info);
             units.push(unit);
             match_idx += 1;
         }
@@ -178,13 +193,13 @@ impl JavaScriptParser {
 
         for m in matches {
             // Clean JSDoc markers (/** */)
-            let text = self.clean_comment_text(m.text);
+            let cleaned = self.clean_comment_text(m.text);
 
             // Apply trim if configured
             let text = if self.config.trim_content {
-                text.trim().to_string()
+                cleaned.text.trim().to_string()
             } else {
-                text
+                cleaned.text
             };
 
             // Apply length filters
@@ -216,7 +231,8 @@ impl JavaScriptParser {
 
             let id = format!("{}_jsdoc_{}", file_path, match_idx);
             let node_type = self.strategy.get_node_type(StrategyNodeType::DocString);
-            let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
+            let mut unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
+            unit.format_info = Some(cleaned.format_info);
             units.push(unit);
             match_idx += 1;
         }

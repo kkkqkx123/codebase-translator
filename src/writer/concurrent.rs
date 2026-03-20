@@ -49,7 +49,11 @@ impl ConcurrentWriter {
     }
 
     /// Create a new concurrent writer with project path
-    pub fn with_project_path(config: WriterConfig, max_concurrent: usize, project_path: PathBuf) -> Self {
+    pub fn with_project_path(
+        config: WriterConfig,
+        max_concurrent: usize,
+        project_path: PathBuf,
+    ) -> Self {
         Self {
             config,
             max_concurrent: max_concurrent.max(1),

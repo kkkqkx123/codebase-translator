@@ -34,7 +34,10 @@ fn test_binary_cache_local_mode() {
     cache.set(&entry1).unwrap();
 
     // Cache file should be in translator subdirectory
-    let cache_file = temp_dir.path().join("translator").join("translator-cache.bin");
+    let cache_file = temp_dir
+        .path()
+        .join("translator")
+        .join("translator-cache.bin");
     assert!(cache_file.exists());
 
     let retrieved = cache.get(&hash1).unwrap();
@@ -240,7 +243,10 @@ fn test_binary_cache_custom_directory() {
     cache.set(&entry1).unwrap();
 
     // Cache file should be in translator subdirectory (directory parameter is now ignored)
-    let cache_file = temp_dir.path().join("translator").join("translator-cache.bin");
+    let cache_file = temp_dir
+        .path()
+        .join("translator")
+        .join("translator-cache.bin");
     assert!(cache_file.exists());
 
     let retrieved = cache.get(&hash1).unwrap();

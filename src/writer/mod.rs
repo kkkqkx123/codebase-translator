@@ -25,7 +25,10 @@ impl WriterFactory {
     }
 
     /// Create a new file writer with project path
-    pub fn create_file_writer_with_path(config: WriterConfig, project_path: std::path::PathBuf) -> FileWriter {
+    pub fn create_file_writer_with_path(
+        config: WriterConfig,
+        project_path: std::path::PathBuf,
+    ) -> FileWriter {
         FileWriter::with_project_path(config, project_path)
     }
 

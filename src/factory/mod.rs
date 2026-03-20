@@ -74,7 +74,10 @@ pub fn create_parser(project_config: &ProjectConfig) -> Result<ParserCoordinator
 }
 
 /// Create file writer
-pub fn create_writer(project_config: &ProjectConfig, project_path: Option<&str>) -> Result<FileWriter> {
+pub fn create_writer(
+    project_config: &ProjectConfig,
+    project_path: Option<&str>,
+) -> Result<FileWriter> {
     let writer_config = WriterConfig {
         preview_only: project_config.writer.dry_run,
         backup: project_config.writer.backup,
@@ -87,9 +90,12 @@ pub fn create_writer(project_config: &ProjectConfig, project_path: Option<&str>)
     };
 
     writer_config.validate()?;
-    
+
     if let Some(path) = project_path {
-        Ok(FileWriter::with_project_path(writer_config, std::path::PathBuf::from(path)))
+        Ok(FileWriter::with_project_path(
+            writer_config,
+            std::path::PathBuf::from(path),
+        ))
     } else {
         Ok(FileWriter::new(writer_config))
     }

@@ -393,6 +393,10 @@ pub struct TranslationUnit {
     /// Pattern name (if extracted by custom pattern)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pattern_name: Option<String>,
+    /// Raw match content (for regex-based extraction)
+    /// Contains complete matched text including any prefixes/suffixes
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub raw_match: Option<String>,
 }
 
 impl TranslationUnit {
@@ -428,6 +432,7 @@ impl TranslationUnit {
             format_info: None,
             pattern_type: None,
             pattern_name: None,
+            raw_match: None,
         }
     }
 
@@ -452,6 +457,7 @@ impl TranslationUnit {
             format_info: Some(format_info),
             pattern_type: None,
             pattern_name: None,
+            raw_match: None,
         }
     }
 
@@ -477,6 +483,7 @@ impl TranslationUnit {
             format_info: None,
             pattern_type: Some(pattern_type),
             pattern_name: Some(pattern_name.into()),
+            raw_match: None,
         }
     }
 

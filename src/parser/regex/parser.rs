@@ -108,6 +108,7 @@ impl RegexParser {
 
         // Extract line comments
         if let Some(ref regex) = self.line_comment_regex {
+            let initial_count = units.len();
             for mat in regex.find_iter(content) {
                 if let Some(captured) = regex.captures(&content[mat.start()..mat.end()]) {
                     if let Some(group) = captured.get(1) {
@@ -129,19 +130,23 @@ impl RegexParser {
                             let id = format!("{}_comment_{}", file_path, id_counter);
                             id_counter += 1;
 
-                            let unit = TranslationUnit::new(
+                            let mut unit = TranslationUnit::new(
                                 id,
                                 NodeType::Comment,
                                 text,
                                 start_pos,
                                 end_pos,
                             );
+                            unit.raw_match = Some(mat.as_str().to_string());
                             units.push(unit);
                         }
                     }
                 }
             }
-            debug!(count = units.len(), "Line comments extracted");
+            debug!(
+                count = units.len() - initial_count,
+                "Line comments extracted"
+            );
         }
 
         // Extract block comments
@@ -168,13 +173,14 @@ impl RegexParser {
                             let id = format!("{}_block_{}", file_path, id_counter);
                             id_counter += 1;
 
-                            let unit = TranslationUnit::new(
+                            let mut unit = TranslationUnit::new(
                                 id,
                                 NodeType::Comment,
                                 text,
                                 start_pos,
                                 end_pos,
                             );
+                            unit.raw_match = Some(mat.as_str().to_string());
                             units.push(unit);
                         }
                     }
@@ -210,13 +216,14 @@ impl RegexParser {
                             let id = format!("{}_doc_{}", file_path, id_counter);
                             id_counter += 1;
 
-                            let unit = TranslationUnit::new(
+                            let mut unit = TranslationUnit::new(
                                 id,
                                 NodeType::DocString,
                                 text,
                                 start_pos,
                                 end_pos,
                             );
+                            unit.raw_match = Some(mat.as_str().to_string());
                             units.push(unit);
                         }
                     }
@@ -250,13 +257,14 @@ impl RegexParser {
                             let id = format!("{}_string_{}", file_path, id_counter);
                             id_counter += 1;
 
-                            let unit = TranslationUnit::new(
+                            let mut unit = TranslationUnit::new(
                                 id,
                                 NodeType::FormatString,
                                 text,
                                 start_pos,
                                 end_pos,
                             );
+                            unit.raw_match = Some(mat.as_str().to_string());
                             units.push(unit);
                         }
                     }
@@ -278,13 +286,14 @@ impl RegexParser {
                     let id = format!("{}_sm_{}_{}", file_path, matcher.name, id_counter);
                     id_counter += 1;
 
-                    let unit = TranslationUnit::new(
+                    let mut unit = TranslationUnit::new(
                         id,
                         NodeType::StringLiteral,
                         m.extracted_text,
                         m.start_pos,
                         m.end_pos,
                     );
+                    unit.raw_match = Some(m.raw_content);
                     units.push(unit);
                 }
             }

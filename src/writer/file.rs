@@ -267,7 +267,7 @@ impl FileWriter {
             } else {
                 base_dir.clone()
             };
-            
+
             tokio::fs::create_dir_all(&backup_dir).await.map_err(|e| {
                 TranslateError::Io(format!("Failed to create backup subdirectory: {e}"))
             })?;
@@ -390,6 +390,7 @@ mod tests {
             format_info: None,
             pattern_type: None,
             pattern_name: None,
+            raw_match: None,
         }];
 
         units[0].set_translated("你好");
@@ -423,6 +424,7 @@ mod tests {
             format_info: None,
             pattern_type: None,
             pattern_name: None,
+            raw_match: None,
         }];
 
         units[0].set_translated("你好");

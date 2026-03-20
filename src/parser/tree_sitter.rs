@@ -5,7 +5,6 @@
 
 use std::sync::Arc;
 use streaming_iterator::StreamingIterator;
-use tracing::debug;
 use tree_sitter::{Language as TSLanguage, Node, Parser, Query, QueryCursor, Tree};
 
 use crate::core::error::{Result, TranslateError};
@@ -279,6 +278,7 @@ impl TreeSitterParser {
             format_info: Some(format_info),
             pattern_type: None,
             pattern_name: None,
+            raw_match: None,
         }
     }
 

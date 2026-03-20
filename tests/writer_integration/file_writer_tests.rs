@@ -68,7 +68,10 @@ async fn test_file_writer_with_backup() {
             backup_count += 1;
         }
     }
-    assert!(backup_count >= 1, "Should have at least one backup file in translator directory");
+    assert!(
+        backup_count >= 1,
+        "Should have at least one backup file in translator directory"
+    );
 }
 
 #[tokio::test]

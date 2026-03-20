@@ -451,6 +451,7 @@ fn test_translation_applier_multiline_without_format_info() {
         format_info: None, // No format info
         pattern_type: None,
         pattern_name: None,
+        raw_match: None,
     };
     // When format_info is None, the translated text should include the full formatted comment
     unit.set_translated("/*\nThis is a multi-line comment\nwith multiple lines of text\n*/");
@@ -495,6 +496,7 @@ fn test_translation_applier_merged_multiline_doc_comment() {
         format_info: Some(format_info),
         pattern_type: None,
         pattern_name: None,
+        raw_match: None,
     };
     unit.set_translated("第一行\n第二行\n第三行");
 

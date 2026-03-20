@@ -6,9 +6,9 @@ use std::sync::Arc;
 use tree_sitter::{Node, Parser, Tree};
 
 use crate::core::error::{Result, TranslateError};
-use crate::core::models::{File, TranslationUnit};
+use crate::core::models::{File, FormatInfo, StringStyle, TranslationUnit};
 use crate::parser::core::query_executor::QueryExecutor;
-use crate::parser::core::string_processor::CommentType;
+use crate::parser::core::string_processor::{CleanedString, CommentType};
 use crate::parser::core::StringProcessor;
 use crate::parser::filter::ContentFilter;
 use crate::parser::languages::python::patterns::PythonPatterns;
@@ -53,22 +53,37 @@ impl PythonParser {
     /// Clean docstring by removing triple quotes
     ///
     /// Preserves newlines and removes common leading indentation from all lines.
-    fn clean_docstring_text(&self, text: &str) -> String {
+    /// Returns CleanedString with format information for proper reconstruction.
+    fn clean_docstring_text(&self, text: &str) -> CleanedString {
         // Only trim leading/trailing whitespace on the outer edges, not internal newlines
         let trimmed = text
             .trim_start()
             .trim_end_matches(|c: char| c.is_whitespace() && c != '\n');
 
-        let content = if trimmed.starts_with("\"\"\"") && trimmed.ends_with("\"\"\"") {
-            &trimmed[3..trimmed.len() - 3]
+        let (quote_style, content) = if trimmed.starts_with("\"\"\"") && trimmed.ends_with("\"\"\"")
+        {
+            (StringStyle::DoubleQuoted, &trimmed[3..trimmed.len() - 3])
         } else if trimmed.starts_with("'''") && trimmed.ends_with("'''") {
-            &trimmed[3..trimmed.len() - 3]
+            (StringStyle::SingleQuoted, &trimmed[3..trimmed.len() - 3])
         } else if trimmed.starts_with('"') && trimmed.ends_with('"') && trimmed.len() > 1 {
-            return trimmed[1..trimmed.len() - 1].to_string();
+            (StringStyle::DoubleQuoted, &trimmed[1..trimmed.len() - 1])
         } else if trimmed.starts_with('\'') && trimmed.ends_with('\'') && trimmed.len() > 1 {
-            return trimmed[1..trimmed.len() - 1].to_string();
+            (StringStyle::SingleQuoted, &trimmed[1..trimmed.len() - 1])
         } else {
-            return trimmed.to_string();
+            return CleanedString {
+                text: trimmed.to_string(),
+                format_info: FormatInfo {
+                    style: crate::core::models::CommentStyle::Line,
+                    base_indent: String::new(),
+                    line_prefix: None,
+                    ends_with_newline: false,
+                    is_multiline: false,
+                    string_style: None,
+                    placeholders: None,
+                    quote_char: None,
+                },
+                placeholders: Vec::new(),
+            };
         };
 
         // Process lines to remove common leading indentation
@@ -95,7 +110,31 @@ impl PythonParser {
             .collect();
 
         // Join lines and trim trailing whitespace
-        processed_lines.join("\n").trim_end().to_string()
+        let cleaned_text = processed_lines.join("\n").trim_end().to_string();
+
+        // Extract format placeholders
+        let placeholders = self
+            .string_processor
+            .extract_placeholders(&cleaned_text, &quote_style);
+
+        CleanedString {
+            text: cleaned_text,
+            format_info: FormatInfo {
+                style: crate::core::models::CommentStyle::Line,
+                base_indent: String::new(),
+                line_prefix: None,
+                ends_with_newline: false,
+                is_multiline: processed_lines.len() > 1,
+                string_style: Some(quote_style),
+                placeholders: if placeholders.is_empty() {
+                    None
+                } else {
+                    Some(placeholders.clone())
+                },
+                quote_char: Some('"'),
+            },
+            placeholders,
+        }
     }
 
     /// Parse file content into a syntax tree
@@ -256,13 +295,13 @@ impl PythonParser {
 
         for m in matches {
             // Clean docstring quotes ("""...""" or '''...''')
-            let text = self.clean_docstring_text(m.text);
+            let cleaned = self.clean_docstring_text(m.text);
 
             // Apply trim if configured
             let text = if self.config.trim_content {
-                text.trim().to_string()
+                cleaned.text.trim().to_string()
             } else {
-                text
+                cleaned.text
             };
 
             // Apply length filters
@@ -321,7 +360,8 @@ impl PythonParser {
 
             let id = format!("{}_docstring_{}", file_path, match_idx);
             let node_type = self.strategy.get_node_type(StrategyNodeType::DocString);
-            let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
+            let mut unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
+            unit.format_info = Some(cleaned.format_info);
             units.push(unit);
             match_idx += 1;
         }
@@ -391,7 +431,9 @@ impl PythonParser {
                     // Clean the string literal with format info
                     // Note: Only the outermost structure is guaranteed to be correct.
                     // Complex internal structures are left to the translator to handle.
-                    let cleaned = self.string_processor.clean_string_literal_with_format(m.text);
+                    let cleaned = self
+                        .string_processor
+                        .clean_string_literal_with_format(m.text);
 
                     // Apply filter
                     if !self.filter.should_translate(&cleaned.text) {
@@ -442,7 +484,8 @@ impl PythonParser {
                     };
 
                     // Apply strategy
-                    let ctx = ExtractionContext::new(&cleaned.text).with_function_name(&full_func_name);
+                    let ctx =
+                        ExtractionContext::new(&cleaned.text).with_function_name(&full_func_name);
                     if !self.strategy.should_extract(strategy_node_type, &ctx) {
                         debug!(
                             file = %file_path,
@@ -455,7 +498,8 @@ impl PythonParser {
 
                     let id = format!("{}_func_{}", file_path, match_idx);
                     let node_type = self.strategy.get_node_type(strategy_node_type);
-                    let mut unit = TranslationUnit::new(id, node_type, cleaned.text, m.start_pos, m.end_pos);
+                    let mut unit =
+                        TranslationUnit::new(id, node_type, cleaned.text, m.start_pos, m.end_pos);
                     // Preserve format info for accurate reconstruction
                     unit.format_info = Some(cleaned.format_info);
                     units.push(unit);

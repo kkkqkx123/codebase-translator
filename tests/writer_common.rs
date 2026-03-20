@@ -78,6 +78,7 @@ pub fn create_translation_unit(
         format_info: None,
         pattern_type: None,
         pattern_name: None,
+        raw_match: None,
     }
 }
 
@@ -102,6 +103,7 @@ pub fn create_translation_unit_with_format(
         format_info: Some(format_info),
         pattern_type: None,
         pattern_name: None,
+        raw_match: None,
     }
 }
 

@@ -8,7 +8,7 @@ use tree_sitter::{Node, Parser, Tree};
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, TranslationUnit};
 use crate::parser::core::query_executor::QueryExecutor;
-use crate::parser::core::string_processor::CommentType;
+use crate::parser::core::string_processor::{CleanedComment, CommentType};
 use crate::parser::core::StringProcessor;
 use crate::parser::filter::ContentFilter;
 use crate::parser::languages::rust::patterns::RustPatterns;
@@ -46,46 +46,59 @@ impl RustParser {
     }
 
     /// Clean comment text by removing Rust comment markers
-    fn clean_comment_text(&self, text: &str) -> String {
+    /// Returns CleanedComment with format information for proper reconstruction.
+    fn clean_comment_text(&self, text: &str) -> CleanedComment {
         let trimmed = text.trim();
 
         // Handle outer doc comments: ///
         if trimmed.starts_with("///") {
             return self
                 .string_processor
-                .clean_comment(trimmed, CommentType::Doc);
+                .clean_comment_with_format(trimmed, CommentType::Doc);
         }
 
         // Handle inner doc comments: //!
         if trimmed.starts_with("//!") {
             return self
                 .string_processor
-                .clean_comment(trimmed, CommentType::Doc);
+                .clean_comment_with_format(trimmed, CommentType::Doc);
         }
 
         // Handle block doc comments: /**
         if trimmed.starts_with("/**") {
             return self
                 .string_processor
-                .clean_comment(trimmed, CommentType::Doc);
+                .clean_comment_with_format(trimmed, CommentType::Doc);
         }
 
         // Handle regular line comments: //
         if trimmed.starts_with("//") {
             return self
                 .string_processor
-                .clean_comment(trimmed, CommentType::Line);
+                .clean_comment_with_format(trimmed, CommentType::Line);
         }
 
         // Handle block comments: /* */
         if trimmed.starts_with("/*") {
             return self
                 .string_processor
-                .clean_comment(trimmed, CommentType::Block);
+                .clean_comment_with_format(trimmed, CommentType::Block);
         }
 
         // Return as-is if no markers found
-        trimmed.to_string()
+        CleanedComment {
+            text: trimmed.to_string(),
+            format_info: crate::core::models::FormatInfo {
+                style: crate::core::models::CommentStyle::Line,
+                base_indent: String::new(),
+                line_prefix: None,
+                ends_with_newline: false,
+                is_multiline: false,
+                string_style: None,
+                placeholders: None,
+                quote_char: None,
+            },
+        }
     }
 
     /// Parse file content into a syntax tree
@@ -130,13 +143,13 @@ impl RustParser {
 
         for m in matches {
             // Clean comment markers (//, /* */, etc.)
-            let text = self.clean_comment_text(m.text);
+            let cleaned = self.clean_comment_text(m.text);
 
             // Apply trim if configured
             let text = if self.config.trim_content {
-                text.trim().to_string()
+                cleaned.text.trim().to_string()
             } else {
-                text
+                cleaned.text
             };
 
             // Apply length filters
@@ -168,7 +181,8 @@ impl RustParser {
 
             let id = format!("{}_comment_{}", file_path, match_idx);
             let node_type = self.strategy.get_node_type(StrategyNodeType::Comment);
-            let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
+            let mut unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
+            unit.format_info = Some(cleaned.format_info);
             units.push(unit);
             match_idx += 1;
         }
@@ -194,13 +208,13 @@ impl RustParser {
 
         for m in matches {
             // Clean doc comment markers (///, //!, /** */
-            let text = self.clean_comment_text(m.text);
+            let cleaned = self.clean_comment_text(m.text);
 
             // Apply trim if configured
             let text = if self.config.trim_content {
-                text.trim().to_string()
+                cleaned.text.trim().to_string()
             } else {
-                text
+                cleaned.text
             };
 
             // Apply length filters
@@ -232,7 +246,8 @@ impl RustParser {
 
             let id = format!("{}_docstring_{}", file_path, match_idx);
             let node_type = self.strategy.get_node_type(StrategyNodeType::DocString);
-            let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
+            let mut unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
+            unit.format_info = Some(cleaned.format_info);
             units.push(unit);
             match_idx += 1;
         }
@@ -272,7 +287,9 @@ impl RustParser {
                     // Clean the string literal with format info
                     // Note: Only the outermost structure is guaranteed to be correct.
                     // Complex internal structures are left to the translator to handle.
-                    let cleaned = self.string_processor.clean_string_literal_with_format(m.text);
+                    let cleaned = self
+                        .string_processor
+                        .clean_string_literal_with_format(m.text);
 
                     // Apply filter
                     if !self.filter.should_translate(&cleaned.text) {
@@ -297,14 +314,16 @@ impl RustParser {
                     };
 
                     // Apply strategy
-                    let ctx = ExtractionContext::new(&cleaned.text).with_function_name(&current_macro);
+                    let ctx =
+                        ExtractionContext::new(&cleaned.text).with_function_name(&current_macro);
                     if !self.strategy.should_extract(strategy_node_type, &ctx) {
                         continue;
                     }
 
                     let id = format!("{}_macro_{}", file_path, match_idx);
                     let node_type = self.strategy.get_node_type(strategy_node_type);
-                    let mut unit = TranslationUnit::new(id, node_type, cleaned.text, m.start_pos, m.end_pos);
+                    let mut unit =
+                        TranslationUnit::new(id, node_type, cleaned.text, m.start_pos, m.end_pos);
                     // Preserve format info for accurate reconstruction
                     unit.format_info = Some(cleaned.format_info);
                     units.push(unit);
