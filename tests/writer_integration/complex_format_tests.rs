@@ -1,6 +1,5 @@
 //! Complex format preservation tests for writer integration
 
-use codebase_translate::core::models::{NodeType, Position};
 use codebase_translate::writer::{FileWriter, WriterConfig};
 
 use super::common::*;

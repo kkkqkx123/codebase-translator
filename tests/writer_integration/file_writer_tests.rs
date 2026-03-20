@@ -1,6 +1,5 @@
 //! FileWriter integration tests
 
-use codebase_translate::core::models::{NodeType, Position};
 use codebase_translate::writer::{FileWriter, WriterConfig};
 
 use super::common::*;

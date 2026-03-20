@@ -113,15 +113,15 @@ fn test_load_project_config() {
          Target Lang: {}\n\
          Include Patterns: {:?}\n\
          Exclude Patterns: {:?}\n\
-         Cache Type: {}\n\
+         Cache Enabled: {}\n\
          Cache Directory: {}\n\
          Backup Enabled: {}\n",
         config.translate.source_langs,
         config.translate.target_lang,
         config.include.patterns,
         config.exclude.patterns,
-        config.cache.cache_type,
-        config.cache.cache_dir,
+        config.cache.enabled,
+        config.cache.directory,
         config.writer.backup
     );
 

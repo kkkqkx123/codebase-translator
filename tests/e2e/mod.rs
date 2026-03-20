@@ -3,6 +3,8 @@
 //! These tests verify the integration between components and
 //! test against real translation services (when configured).
 
+#![allow(static_mut_refs)]
+
 use std::path::PathBuf;
 use std::sync::Once;
 
@@ -44,18 +46,6 @@ pub fn init_test_config() -> &'static GlobalConfig {
         GLOBAL_CONFIG
             .as_ref()
             .expect("Global config should be initialized")
-    }
-}
-
-/// Check if running in CI environment
-pub fn is_ci() -> bool {
-    std::env::var("CI").is_ok()
-}
-
-/// Skip test if no API credentials are configured
-pub fn skip_if_no_credentials(configured: bool) {
-    if !configured && is_ci() {
-        panic!("Test requires API credentials but none configured in CI");
     }
 }
 

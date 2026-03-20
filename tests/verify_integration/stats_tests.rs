@@ -4,7 +4,7 @@
 
 use std::path::PathBuf;
 
-use codebase_translate::commands::verify::{StatisticsGenerator, VerifyMatch, VerifySummary};
+use codebase_translate::commands::verify::{StatisticsGenerator, VerifyMatch};
 use codebase_translate::core::models::PatternType;
 use codebase_translate::core::models::Position;
 

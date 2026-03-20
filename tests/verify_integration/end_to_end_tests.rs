@@ -6,11 +6,9 @@ use std::fs;
 use std::path::PathBuf;
 
 use codebase_translate::commands::verify::{
-    MatchCollector, OutputFormat, OutputFormatter, StatisticsGenerator, VerifyMatch,
+    MatchCollector, OutputFormat, OutputFormatter, StatisticsGenerator,
 };
-use codebase_translate::core::models::{
-    File, NodeType, PatternType as CorePatternType, PatternType, Position, TranslationUnit,
-};
+use codebase_translate::core::models::{File, PatternType};
 use codebase_translate::parser::coordinator::ParserCoordinator;
 use codebase_translate::parser::tree_sitter::ParserConfig;
 

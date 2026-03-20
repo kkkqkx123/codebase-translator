@@ -4,15 +4,10 @@ mod workflow_integration {
     use codebase_translate::{
         config::{
             global::GlobalConfig,
-            project::{
-                CacheConfig, ExcludeConfig, ExtractionConfig, IncludeConfig, ProjectConfig,
-                TranslateConfig, WriterConfig,
-            },
+            project::ProjectConfig,
         },
-        translator::ProviderType,
         workflow::{TranslationWorkflow, WorkflowConfig, WorkflowResult},
     };
-    use std::collections::HashMap;
 
     fn create_test_global_config() -> GlobalConfig {
         GlobalConfig::default()
@@ -24,7 +19,7 @@ mod workflow_integration {
         config.translate.source_langs = vec!["zh".to_string()];
         config.include.patterns = vec!["**/*.txt".to_string()];
         config.exclude.respect_gitignore = false;
-        config.cache.cache_type = "none".to_string();
+        config.cache.enabled = false;
         config.writer.dry_run = true;
         config.writer.backup = false;
         config
@@ -72,7 +67,7 @@ mod workflow_integration {
         let project_config = create_test_project_config();
         let workflow_config = WorkflowConfig::default();
 
-        let workflow =
+        let _workflow =
             TranslationWorkflow::new(global_config, project_config, workflow_config.clone());
 
         // Workflow should be created successfully
@@ -89,6 +84,8 @@ mod workflow_integration {
             project_config,
             "/test/path",
         );
+
+        let _workflow = workflow;
 
         // Workflow should be created with custom path
         assert!(true); // If we get here, workflow was created successfully
@@ -110,22 +107,7 @@ mod workflow_integration {
 }
 
 mod workflow_file_processor {
-    use codebase_translate::config::{global::GlobalConfig, project::ProjectConfig};
-    use codebase_translate::workflow::{
-        FileProcessResult, FileProcessor, TranslationWorkflow, WorkflowConfig,
-    };
-
-    fn create_test_project_config() -> ProjectConfig {
-        let mut config = ProjectConfig::default();
-        config.translate.target_lang = "en".to_string();
-        config.translate.source_langs = vec!["zh".to_string()];
-        config.include.patterns = vec!["**/*.txt".to_string()];
-        config.exclude.respect_gitignore = false;
-        config.cache.cache_type = "none".to_string();
-        config.writer.dry_run = true;
-        config.writer.backup = false;
-        config
-    }
+    use codebase_translate::workflow::FileProcessResult;
 
     #[test]
     fn test_file_process_result_default() {

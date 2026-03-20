@@ -2,7 +2,7 @@ use clap::{Parser as ClapParser, Subcommand};
 use tracing::info;
 
 use codebase_translate::{
-    commands::{cache, init, translate, validate, verify, Command},
+    commands::{cache, clean, init, translate, validate, verify, Command},
     config::loader::ConfigLoader,
     core::error::Result,
     logger,
@@ -53,6 +53,9 @@ enum Commands {
 
     /// Verify extraction rules
     Verify(verify::VerifyArgs),
+
+    /// Clean cache and backup files
+    Clean(clean::CleanArgs),
 }
 
 /// Main entry point - synchronous
@@ -93,6 +96,7 @@ fn run() -> Result<()> {
         Some(Commands::Cache(args)) => args.execute(&global_config, &project_config)?,
         Some(Commands::Validate(args)) => args.execute(&global_config, &project_config)?,
         Some(Commands::Verify(args)) => args.execute(&global_config, &project_config)?,
+        Some(Commands::Clean(args)) => args.execute(&global_config, &project_config)?,
         None => {
             info!("No command specified, translating current directory");
             info!(

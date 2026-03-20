@@ -1,6 +1,5 @@
 //! ConcurrentWriter integration tests
 
-use codebase_translate::core::models::Position;
 use codebase_translate::writer::{ConcurrentWriter, WriterConfig};
 
 use super::common::*;

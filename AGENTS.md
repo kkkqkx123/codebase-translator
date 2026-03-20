@@ -42,7 +42,7 @@ Codebase Translate is a command-line tool developed in **Rust** that automatical
 **Quality Verify**
 
 ```shell
-# complie check (similat to cargo check, but more readable)
+# complie check (similar to cargo check, but more readable)
 analyze_cargo # (Encapsulate `cargo test --lib` and provide detailed, classified complie report)
 
 # lint

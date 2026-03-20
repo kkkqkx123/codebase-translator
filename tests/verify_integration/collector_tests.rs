@@ -4,7 +4,7 @@
 
 use std::path::PathBuf;
 
-use codebase_translate::commands::verify::{MatchCollector, VerifyMatch};
+use codebase_translate::commands::verify::MatchCollector;
 use codebase_translate::core::models::{
     NodeType, PatternType as CorePatternType, PatternType, Position, TranslationUnit,
 };

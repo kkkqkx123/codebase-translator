@@ -8,6 +8,7 @@ pub trait Command {
 }
 
 pub mod cache;
+pub mod clean;
 pub mod init;
 pub mod translate;
 pub mod validate;
