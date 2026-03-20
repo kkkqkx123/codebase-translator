@@ -81,27 +81,6 @@ fn test_translation_service_creation_tencent() {
     assert_eq!(service.name(), "tencent");
 }
 
-/// Test TranslationService supported languages
-#[test]
-fn test_translation_service_supported_langs() {
-    let config = TranslatorConfig {
-        provider: ProviderType::DeepLX,
-        deeplx: Some(DeepLXConfig::default()),
-        ..Default::default()
-    };
-
-    let service = TranslationService::new(config).expect("Should create service");
-
-    let source_langs = service.supported_source_langs();
-    assert!(!source_langs.is_empty());
-    assert!(source_langs.contains(&"AUTO".to_string()));
-
-    let target_langs = service.supported_target_langs();
-    assert!(!target_langs.is_empty());
-    assert!(target_langs.contains(&"EN".to_string()));
-    assert!(target_langs.contains(&"ZH".to_string()));
-}
-
 /// Test BatchTranslationService creation
 #[test]
 fn test_batch_translation_service_creation() {

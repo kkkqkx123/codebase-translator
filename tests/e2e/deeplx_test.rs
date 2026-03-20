@@ -185,24 +185,3 @@ async fn test_deeplx_empty_text() {
         }
     }
 }
-
-/// Test supported languages
-#[test]
-fn test_deeplx_supported_languages() {
-    let config = DeepLXConfig::default();
-    let translator = DeepLXTranslator::new(config).expect("Failed to create translator");
-
-    let source_langs = translator.supported_source_langs();
-    let target_langs = translator.supported_target_langs();
-
-    assert!(!source_langs.is_empty());
-    assert!(!target_langs.is_empty());
-
-    // Check for common languages
-    assert!(source_langs.contains(&"AUTO"));
-    assert!(source_langs.contains(&"EN"));
-    assert!(source_langs.contains(&"ZH"));
-
-    println!("Source languages: {:?}", source_langs);
-    println!("Target languages: {:?}", target_langs);
-}

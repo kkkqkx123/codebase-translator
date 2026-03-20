@@ -77,10 +77,6 @@ fn test_config_to_service_flow() {
 
     let service = TranslationService::new(config).expect("Should create service");
     assert_eq!(service.name(), "deeplx");
-
-    // Verify all service methods work
-    let _source_langs = service.supported_source_langs();
-    let _target_langs = service.supported_target_langs();
 }
 
 /// Test all provider types through factory

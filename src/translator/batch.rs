@@ -226,9 +226,9 @@ impl BatchTranslator {
                     warn!("Translation attempt {} failed: {}", attempt + 1, e);
                     last_error = Some(e);
 
-                    // Exponential backoff
+                    // Exponential backoff (starting from 1 second)
                     if attempt < self.max_retries - 1 {
-                        let delay = Duration::from_millis(100 * 2_u64.pow(attempt as u32));
+                        let delay = Duration::from_millis(1000 * 2_u64.pow(attempt as u32));
                         tokio::time::sleep(delay).await;
                     }
                 }

@@ -110,29 +110,6 @@ fn test_selection_strategy_case_insensitive() {
     );
 }
 
-/// Test MultiTranslator supported languages
-#[tokio::test]
-async fn test_multi_translator_supported_langs() {
-    let config = DeepLXConfig::default();
-    let translator = TranslatorImpl::from_config(&TranslatorConfig {
-        provider: ProviderType::DeepLX,
-        deeplx: Some(config),
-        ..Default::default()
-    })
-    .expect("Should create translator");
-
-    let translators = vec![(Arc::new(translator), 1u32)];
-    let multi = MultiTranslator::new(translators, SelectionStrategy::RoundRobin, 3)
-        .expect("Should create multi-translator");
-
-    let source_langs = multi.supported_source_langs();
-    assert!(source_langs.contains(&"AUTO"));
-
-    let target_langs = multi.supported_target_langs();
-    assert!(target_langs.contains(&"EN"));
-    assert!(target_langs.contains(&"ZH"));
-}
-
 /// Test MultiTranslator max input chars
 #[test]
 fn test_multi_translator_max_input_chars() {

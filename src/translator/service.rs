@@ -22,7 +22,8 @@ use crate::translator::{Translator, TranslatorImpl};
 /// Uses static dispatch via TranslatorImpl for better performance.
 pub struct TranslationService {
     runtime: tokio::runtime::Runtime,
-    translator: Arc<TranslatorImpl>,
+    batch_translator: Option<Arc<BatchTranslator>>,
+    translator: Option<Arc<TranslatorImpl>>,
 }
 
 impl TranslationService {
@@ -48,7 +49,29 @@ impl TranslationService {
         info!("Translation service created successfully");
         Ok(Self {
             runtime,
-            translator: Arc::new(translator),
+            batch_translator: None,
+            translator: Some(Arc::new(translator)),
+        })
+    }
+
+    /// Create a new translation service with batch translator
+    ///
+    /// # Arguments
+    /// * `batch_translator` - Batch translator with rate limiting and retry logic
+    ///
+    /// # Returns
+    /// A new TranslationService instance
+    pub fn with_batch_translator(batch_translator: Arc<BatchTranslator>) -> Result<Self> {
+        debug!("Creating translation service with batch translator");
+        let runtime = tokio::runtime::Runtime::new().map_err(|e| {
+            TranslateError::Translation(format!("Failed to create Tokio runtime: {}", e))
+        })?;
+
+        info!("Translation service created with batch translator");
+        Ok(Self {
+            runtime,
+            batch_translator: Some(batch_translator),
+            translator: None,
         })
     }
 
@@ -66,19 +89,42 @@ impl TranslationService {
             target_lang = %target_lang,
             "Translating batch of texts"
         );
-        let texts = texts.to_vec();
-        let target_lang = target_lang.to_string();
-        let translator = self.translator.clone();
 
-        let result = self
-            .runtime
-            .block_on(async move { translator.translate(&texts, &target_lang).await })?;
+        if let Some(ref batch_translator) = self.batch_translator {
+            let texts = texts.to_vec();
+            let target_lang = target_lang.to_string();
+            let batch_translator = batch_translator.clone();
 
-        debug!(
-            translated_count = result.len(),
-            "Batch translation completed"
-        );
-        Ok(result)
+            let result = self.runtime.block_on(async move {
+                batch_translator
+                    .translate_batch(&texts, &target_lang)
+                    .await
+            })?;
+
+            debug!(
+                translated_count = result.results.len(),
+                "Batch translation completed with rate limiting"
+            );
+            Ok(result.results.into_iter().map(|r| r.translated_text).collect())
+        } else if let Some(ref translator) = self.translator {
+            let texts = texts.to_vec();
+            let target_lang = target_lang.to_string();
+            let translator = translator.clone();
+
+            let result = self
+                .runtime
+                .block_on(async move { translator.translate(&texts, &target_lang).await })?;
+
+            debug!(
+                translated_count = result.len(),
+                "Batch translation completed"
+            );
+            Ok(result)
+        } else {
+            Err(TranslateError::Translation(
+                "No translator configured".to_string(),
+            ))
+        }
     }
 
     /// Translate a single text
@@ -99,53 +145,67 @@ impl TranslationService {
         let text = text.to_string();
         let source_lang = source_lang.to_string();
         let target_lang = target_lang.to_string();
-        let translator = self.translator.clone();
 
-        self.runtime.block_on(async move {
-            translator
-                .translate_single(&text, &source_lang, &target_lang)
-                .await
-        })
+        if let Some(ref batch_translator) = self.batch_translator {
+            let batch_translator = batch_translator.clone();
+            self.runtime.block_on(async move {
+                let result = batch_translator
+                    .translate_batch(&[text.clone()], &target_lang)
+                    .await?;
+                if let Some(first) = result.results.first() {
+                    Ok(first.translated_text.clone())
+                } else {
+                    Err(TranslateError::Translation(
+                        "No translation result".to_string(),
+                    ))
+                }
+            })
+        } else if let Some(ref translator) = self.translator {
+            let translator = translator.clone();
+            self.runtime.block_on(async move {
+                translator
+                    .translate_single(&text, &source_lang, &target_lang)
+                    .await
+            })
+        } else {
+            Err(TranslateError::Translation(
+                "No translator configured".to_string(),
+            ))
+        }
     }
 
     /// Check if the translation service is available
     pub fn is_available(&self) -> bool {
-        let translator = self.translator.clone();
-        self.runtime
-            .block_on(async move { translator.is_available().await })
+        if let Some(ref batch_translator) = self.batch_translator {
+            self.runtime
+                .block_on(async move { batch_translator.name() != "" })
+        } else if let Some(ref translator) = self.translator {
+            let translator = translator.clone();
+            self.runtime
+                .block_on(async move { translator.is_available().await })
+        } else {
+            false
+        }
     }
 
     /// Get the translator name
     pub fn name(&self) -> String {
-        self.translator.name().to_string()
-    }
-
-    /// Get supported source languages
-    pub fn supported_source_langs(&self) -> Vec<String> {
-        self.translator
-            .supported_source_langs()
-            .into_iter()
-            .map(|s| s.to_string())
-            .collect()
-    }
-
-    /// Get supported target languages
-    pub fn supported_target_langs(&self) -> Vec<String> {
-        self.translator
-            .supported_target_langs()
-            .into_iter()
-            .map(|s| s.to_string())
-            .collect()
+        if let Some(ref batch_translator) = self.batch_translator {
+            batch_translator.name().to_string()
+        } else if let Some(ref translator) = self.translator {
+            translator.name().to_string()
+        } else {
+            "unknown".to_string()
+        }
     }
 }
 
 impl Drop for TranslationService {
     fn drop(&mut self) {
         // Clean up translator resources
-        let translator = self.translator.clone();
-        let _ = self
-            .runtime
-            .block_on(async move { translator.close().await });
+        if let Some(translator) = self.translator.clone() {
+            let _ = self.runtime.block_on(async move { translator.close().await });
+        }
     }
 }
 

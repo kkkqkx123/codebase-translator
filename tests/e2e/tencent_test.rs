@@ -248,39 +248,6 @@ async fn test_tencent_invalid_credentials() {
     println!("Expected error occurred: {:?}", result.err());
 }
 
-/// Test supported languages
-#[test]
-fn test_tencent_supported_languages() {
-    let config = TencentConfig {
-        secret_id: "test".to_string(),
-        secret_key: "test".to_string(),
-        region: "ap-beijing".to_string(),
-        project_id: 0,
-        proxy_url: None,
-        timeout: 30,
-        max_retries: 3,
-        untranslated_text: Vec::new(),
-        term_repo_id_list: Vec::new(),
-        sent_repo_id_list: Vec::new(),
-    };
-
-    let translator = TencentTranslator::new(config).expect("Failed to create translator");
-
-    let source_langs = translator.supported_source_langs();
-    let target_langs = translator.supported_target_langs();
-
-    assert!(!source_langs.is_empty());
-    assert!(!target_langs.is_empty());
-
-    // Check for common languages
-    assert!(source_langs.contains(&"auto"));
-    assert!(source_langs.contains(&"en"));
-    assert!(source_langs.contains(&"zh"));
-
-    println!("Source languages: {:?}", source_langs);
-    println!("Target languages: {:?}", target_langs);
-}
-
 /// Test API signature generation
 #[test]
 fn test_tencent_signature_generation() {

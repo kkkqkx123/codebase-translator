@@ -116,8 +116,8 @@ impl GlobalConfig {
                     {
                         return Err("tencent: secret_key is required".to_string());
                     }
-                    if self.tencent.rate_limit == 0 || self.tencent.rate_limit > 5 {
-                        return Err("tencent: rate_limit must be between 1 and 5".to_string());
+                    if self.tencent.rate_limit == 0 {
+                        return Err("tencent: rate_limit must be positive".to_string());
                     }
                 }
                 _ => {}
