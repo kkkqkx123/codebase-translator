@@ -7,6 +7,7 @@
 //! - Log file creation and content verification
 
 use std::fs;
+use std::path::Path;
 use std::path::PathBuf;
 
 use codebase_translate::config::global::LoggingConfig;
@@ -168,7 +169,7 @@ fn test_logger_init_stdout() {
         file: None,
     };
 
-    let result = init(&config);
+    let result = init(&config, None::<&Path>);
 
     let mut output = String::new();
     output.push_str("Logger Initialization Test - stdout\n");
@@ -194,7 +195,7 @@ fn test_logger_init_stderr() {
         file: None,
     };
 
-    let result = init(&config);
+    let result = init(&config, None::<&Path>);
 
     let mut output = String::new();
     output.push_str("Logger Initialization Test - stderr\n");
@@ -227,7 +228,7 @@ fn test_logger_init_file() {
         file: Some(log_file.to_string_lossy().to_string()),
     };
 
-    let result = init(&config);
+    let result = init(&config, None::<&Path>);
 
     let mut output = String::new();
     output.push_str("Logger Initialization Test - file\n");

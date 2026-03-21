@@ -158,9 +158,10 @@ mod tests {
         };
 
         let project_dir = Path::new("/home/user/project");
+        let expected = project_dir.join(".translator/translator.log").to_string_lossy().to_string();
         assert_eq!(
             get_log_file_path(&config, Some(project_dir)),
-            "/home/user/project/.translator/translator.log"
+            expected
         );
     }
 
@@ -186,9 +187,10 @@ mod tests {
         };
 
         let project_dir = Path::new("/home/user/project");
+        let expected = project_dir.join("custom.log").to_string_lossy().to_string();
         assert_eq!(
             get_log_file_path(&config, Some(project_dir)),
-            "/home/user/project/custom.log"
+            expected
         );
     }
 

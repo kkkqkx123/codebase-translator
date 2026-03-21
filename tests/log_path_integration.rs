@@ -19,8 +19,8 @@ output = "file"
 file = ".translator/translator.log"
 "#;
 
-    let mut config: GlobalConfig = toml::from_str(config_content).expect("Failed to parse config");
-    
+    let config: GlobalConfig = toml::from_str(config_content).expect("Failed to parse config");
+
     // Test path resolution with project directory
     let resolved_path = logger::get_log_file_path(&config.logging, Some(project_dir.as_path()));
     let expected_path = project_dir.join(".translator/translator.log");
@@ -29,8 +29,6 @@ file = ".translator/translator.log"
 
 #[test]
 fn test_log_path_resolution_without_project_dir() {
-    let temp_dir = TempDir::new().expect("Failed to create temp dir");
-
     let config_content = r#"
 [logging]
 level = "info"
@@ -39,8 +37,8 @@ output = "file"
 file = "translator.log"
 "#;
 
-    let mut config: GlobalConfig = toml::from_str(config_content).expect("Failed to parse config");
-    
+    let config: GlobalConfig = toml::from_str(config_content).expect("Failed to parse config");
+
     // Test path resolution without project directory (should use current directory)
     let resolved_path = logger::get_log_file_path(&config.logging, None);
     assert_eq!(resolved_path, "translator.log");

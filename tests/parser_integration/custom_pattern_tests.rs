@@ -10,7 +10,7 @@ use codebase_translate::config::project::{
     StateTransition, StringLiteralCategory,
 };
 use codebase_translate::core::models::File;
-use codebase_translate::parser::filtering::{ContentFilter, FilterConfig, default_filter};
+use codebase_translate::parser::filtering::default_filter;
 use codebase_translate::parser::coordinator::ParserCoordinator;
 use codebase_translate::parser::engine::ParserConfig;
 use codebase_translate::parser::core::strategies::{ConfigBasedStrategy, ExtractionStrategyImpl};
