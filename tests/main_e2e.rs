@@ -186,8 +186,8 @@ fn test_e2e_directory_structure() {
         assert!(path.exists(), "Expected directory not found: {}", dir);
     }
 
-    // Check for .translator config file
-    let config_file = e2e_dir.join(".translator");
+    // Check for .translator.toml config file
+    let config_file = e2e_dir.join(".translator.toml");
     assert!(config_file.exists(), "E2E config file not found");
 }
 

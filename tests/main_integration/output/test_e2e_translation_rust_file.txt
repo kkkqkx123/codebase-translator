@@ -3,19 +3,20 @@ E2E Translation Test - Rust File
 
 Translation completed successfully!
 
-Files processed: 0
-Total files: 0
-Total units: 0
-Translated units: 0
+Files processed: 1
+Total files: 1
+Total units: 8
+Translated units: 8
 Cached files: 0
 Skipped units: 0
-Errors: 1
-Duration: 8.43s
+Errors: 0
+Duration: 8.26s
 
 
 Directory Contents:
 ====================
-  .translator [FILE]
+  .translator [DIR]
+  .translator.toml [FILE]
   simple_rust.rs [FILE]
 
 

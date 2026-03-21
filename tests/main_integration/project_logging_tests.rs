@@ -177,7 +177,7 @@ fn test_project_config_file_has_logging() {
         .join("tests")
         .join("main_integration")
         .join("fixtures")
-        .join(".translator");
+        .join(".translator.toml");
 
     if !fixture_config.exists() {
         output.push_str("Skipping test: fixture config not found\n");

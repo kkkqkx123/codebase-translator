@@ -91,7 +91,7 @@ fn list_directory_contents(path: &Path) -> Vec<String> {
 #[test]
 fn test_load_project_config() {
     let project_root = get_project_root();
-    let fixture_config = project_root.join(FIXTURES_DIR).join(".translator");
+    let fixture_config = project_root.join(FIXTURES_DIR).join(".translator.toml");
 
     if !fixture_config.exists() {
         println!(
@@ -174,8 +174,8 @@ fn test_load_global_config() {
 #[test]
 fn test_e2e_translation_rust_file() {
     let (temp_dir, _file_path) = copy_fixture_to_temp("simple_rust.rs");
-    let config_path = temp_dir.path().join(".translator");
-    let fixture_config = PathBuf::from(FIXTURES_DIR).join(".translator");
+    let config_path = temp_dir.path().join(".translator.toml");
+    let fixture_config = PathBuf::from(FIXTURES_DIR).join(".translator.toml");
 
     if !fixture_config.exists() {
         println!("Skipping test: fixture config not found");
@@ -282,8 +282,8 @@ fn test_e2e_translation_rust_file() {
 #[test]
 fn test_e2e_translation_python_file() {
     let (temp_dir, _file_path) = copy_fixture_to_temp("simple_python.py");
-    let config_path = temp_dir.path().join(".translator");
-    let fixture_config = PathBuf::from(FIXTURES_DIR).join(".translator");
+    let config_path = temp_dir.path().join(".translator.toml");
+    let fixture_config = PathBuf::from(FIXTURES_DIR).join(".translator.toml");
 
     if !fixture_config.exists() {
         println!("Skipping test: fixture config not found");
@@ -390,8 +390,8 @@ fn test_e2e_translation_python_file() {
 #[test]
 fn test_e2e_translation_javascript_file() {
     let (temp_dir, _file_path) = copy_fixture_to_temp("simple_javascript.js");
-    let config_path = temp_dir.path().join(".translator");
-    let fixture_config = PathBuf::from(FIXTURES_DIR).join(".translator");
+    let config_path = temp_dir.path().join(".translator.toml");
+    let fixture_config = PathBuf::from(FIXTURES_DIR).join(".translator.toml");
 
     if !fixture_config.exists() {
         println!("Skipping test: fixture config not found");
@@ -498,8 +498,8 @@ fn test_e2e_translation_javascript_file() {
 #[test]
 fn test_e2e_translation_markdown_file() {
     let (temp_dir, _file_path) = copy_fixture_to_temp("simple_markdown.md");
-    let config_path = temp_dir.path().join(".translator");
-    let fixture_config = PathBuf::from(FIXTURES_DIR).join(".translator");
+    let config_path = temp_dir.path().join(".translator.toml");
+    let fixture_config = PathBuf::from(FIXTURES_DIR).join(".translator.toml");
 
     if !fixture_config.exists() {
         println!("Skipping test: fixture config not found");
@@ -606,8 +606,8 @@ fn test_e2e_translation_markdown_file() {
 #[test]
 fn test_e2e_translation_multiple_files() {
     let temp_dir = copy_all_fixtures_to_temp();
-    let config_path = temp_dir.path().join(".translator");
-    let fixture_config = PathBuf::from(FIXTURES_DIR).join(".translator");
+    let config_path = temp_dir.path().join(".translator.toml");
+    let fixture_config = PathBuf::from(FIXTURES_DIR).join(".translator.toml");
 
     if !fixture_config.exists() {
         println!("Skipping test: fixture config not found");
@@ -716,8 +716,8 @@ fn test_e2e_translation_multiple_files() {
 #[test]
 fn test_e2e_translation_with_cache() {
     let (temp_dir, _file_path) = copy_fixture_to_temp("simple_rust.rs");
-    let config_path = temp_dir.path().join(".translator");
-    let fixture_config = PathBuf::from(FIXTURES_DIR).join(".translator");
+    let config_path = temp_dir.path().join(".translator.toml");
+    let fixture_config = PathBuf::from(FIXTURES_DIR).join(".translator.toml");
 
     if !fixture_config.exists() {
         println!("Skipping test: fixture config not found");

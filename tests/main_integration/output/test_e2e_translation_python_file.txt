@@ -3,19 +3,20 @@ E2E Translation Test - Python File
 
 Translation completed successfully!
 
-Files processed: 0
-Total files: 0
-Total units: 0
-Translated units: 0
+Files processed: 1
+Total files: 1
+Total units: 6
+Translated units: 6
 Cached files: 0
 Skipped units: 0
-Errors: 1
-Duration: 8.63s
+Errors: 0
+Duration: 6.82s
 
 
 Directory Contents:
 ====================
-  .translator [FILE]
+  .translator [DIR]
+  .translator.toml [FILE]
   simple_python.py [FILE]
 
 
