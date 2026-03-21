@@ -187,7 +187,10 @@ pub fn expand_env_vars(input: &str) -> String {
                 .or_else(|| caps.get(2))
                 .map(|m| m.as_str())
                 .unwrap_or("");
-            std::env::var(var_name).unwrap_or_else(|_| caps[0].to_string())
+            std::env::var(var_name).unwrap_or_else(|_| {
+                // If environment variable is not set, keep the placeholder
+                caps.get(0).map(|m| m.as_str()).unwrap_or("").to_string()
+            })
         })
         .to_string();
 

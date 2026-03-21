@@ -5,6 +5,10 @@ use crate::{
 
 pub trait Command {
     fn execute(&self, global_config: &GlobalConfig, project_config: &ProjectConfig) -> Result<()>;
+
+    fn get_project_path(&self) -> Option<&str> {
+        None
+    }
 }
 
 pub mod cache;

@@ -15,7 +15,7 @@
 
 # 启用的翻译器列表（支持多个）
 # 可选值: "deeplx", "llm", "tencent"
-enabled_providers = ["deeplx", "llm"]
+enabled_providers = ["deeplx", "llm", "tencent"]
 
 # DeepLX 配置
 [deeplx]
@@ -75,8 +75,8 @@ rate_limit = 5
 # 日志配置
 [logging]
 level = "info"               # 日志级别: trace, debug, info, warn, error, fatal
-format = "console"            # 输出格式: console 或 json
-output = "stdout"             # 输出目标: stdout, stderr, file
+format = "json"            # 输出格式: console 或 json
+output = "file"             # 输出目标: stdout, stderr, file
 file = "translator.log"       # 日志文件路径（当 output 为 file 时）
 
 # Tencent Cloud 配置

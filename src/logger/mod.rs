@@ -22,7 +22,12 @@ pub static LOG_GUARD: OnceLock<Box<dyn std::any::Any + Send + Sync>> = OnceLock:
 /// Note: This function can only be called once globally. Subsequent calls
 /// will return an error unless the logger was not previously initialized.
 /// For testing purposes, use `--test-threads=1` to ensure serial execution.
-pub fn init(config: &LoggingConfig) -> Result<()> {
+///
+/// # Arguments
+/// * `config` - The logging configuration
+/// * `project_dir` - Optional project directory path. If provided and the log file
+///   path is relative, it will be resolved relative to this directory.
+pub fn init(config: &LoggingConfig, project_dir: Option<&Path>) -> Result<()> {
     validate_config(config)?;
 
     let level = parse_level(&config.level);
@@ -34,7 +39,7 @@ pub fn init(config: &LoggingConfig) -> Result<()> {
 
     let format = get_format_string(config);
     match get_output_string(config) {
-        "file" => init_file_logger(config, filter, format),
+        "file" => init_file_logger(config, filter, format, project_dir),
         "stderr" => init_stderr_logger(filter, format),
         _ => init_stdout_logger(filter, format),
     }
@@ -122,8 +127,13 @@ fn init_stderr_logger(filter: EnvFilter, format: &str) -> Result<()> {
 }
 
 /// Initialize file logger
-fn init_file_logger(config: &LoggingConfig, filter: EnvFilter, format: &str) -> Result<()> {
-    let file_path_str = get_log_file_path(config);
+fn init_file_logger(
+    config: &LoggingConfig,
+    filter: EnvFilter,
+    format: &str,
+    project_dir: Option<&Path>,
+) -> Result<()> {
+    let file_path_str = get_log_file_path(config, project_dir);
     let file_path = Path::new(&file_path_str);
 
     if let Some(parent) = file_path.parent() {

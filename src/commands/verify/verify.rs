@@ -162,6 +162,10 @@ impl Command for VerifyArgs {
         info!("Verification completed successfully");
         Ok(())
     }
+
+    fn get_project_path(&self) -> Option<&str> {
+        Some(&self.path)
+    }
 }
 
 impl VerifyArgs {

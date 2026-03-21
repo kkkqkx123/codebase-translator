@@ -23,11 +23,11 @@ fn chinese_function() {
 }
 
 fn mixed_function() {
-    // English comment with some Chinese words
+    // 带有一些中文词汇的英文评论
     let message = "Hello 世界";
     // 带有一些中文词汇的英文评论
     
-    // Chinese comment with English words
+    // 带英文单词的中文评论
     let greeting = "你好 World";
     // 带英文单词的中文评论
 }

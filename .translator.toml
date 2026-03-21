@@ -336,4 +336,4 @@ convert_to_utf8 = true        # 是否自动转换为 UTF-8 (翻译后不保留�
 level = "debug"              # 日志级别：trace, debug, info, warn, error
 output = "file"               # 输出目标：stdout, stderr, file
 format = "pretty"             # 日志格式：pretty, json, compact
-file = "logs/translator.log"  # 日志文件路径（当output为file时）
+file = ".translator/translator.log"  # 日志文件路径（当output为file时）

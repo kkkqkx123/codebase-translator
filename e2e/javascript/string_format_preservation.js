@@ -1,5 +1,5 @@
-// 字符串格式保存测试文件
-// 该文件用于测试各种 JavaScript 字符串字面类型
+// Save test file in string format
+// This file is used to test various JavaScript string literal types
 
 function testRegularStrings() {
     const s1 = "Hello, world!";

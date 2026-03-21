@@ -103,7 +103,9 @@ impl GlobalConfig {
                             .tencent
                             .secret_id
                             .as_ref()
-                            .map_or(true, |s| s.is_empty())
+                            .map_or(true, |s| {
+                                s.is_empty() || s.starts_with("${")
+                            })
                     {
                         return Err("tencent: secret_id is required".to_string());
                     }
@@ -112,7 +114,9 @@ impl GlobalConfig {
                             .tencent
                             .secret_key
                             .as_ref()
-                            .map_or(true, |s| s.is_empty())
+                            .map_or(true, |s| {
+                                s.is_empty() || s.starts_with("${")
+                            })
                     {
                         return Err("tencent: secret_key is required".to_string());
                     }
@@ -147,7 +151,12 @@ impl GlobalConfig {
         debug!("Filtering invalid LLM providers");
         let mut valid_providers = Vec::new();
 
-        for provider in self.llm.providers.drain(..) {
+        for mut provider in self.llm.providers.drain(..) {
+            // If model is empty but model_list has values, use the first model
+            if provider.model.is_empty() && !provider.model_list.is_empty() {
+                provider.model = provider.model_list[0].clone();
+            }
+
             let mut valid_api_keys = Vec::new();
             for key in &provider.api_keys {
                 if Self::is_valid_api_key(key) {
@@ -164,9 +173,7 @@ impl GlobalConfig {
                 continue;
             }
 
-            let mut provider = provider;
             provider.api_keys = valid_api_keys;
-
             valid_providers.push(provider);
         }
 
@@ -282,6 +289,46 @@ impl GlobalConfig {
                 "Setting log file from environment variable"
             );
             self.logging.file = Some(log_file);
+        }
+
+        // Apply LLM provider environment variables
+        // Format: TRANSLATOR_LLM_<PROVIDER_ID>_<KEY>
+        // Example: TRANSLATOR_LLM_SILICON_API_KEY
+        for provider in &mut self.llm.providers {
+            let provider_id_upper = provider.id.to_uppercase();
+            
+            // API keys: TRANSLATOR_LLM_<PROVIDER_ID>_API_KEY
+            let api_key_env = format!("TRANSLATOR_LLM_{}_API_KEY", provider_id_upper);
+            if let Ok(api_key) = std::env::var(&api_key_env) {
+                debug!(
+                    env_var = %api_key_env,
+                    provider_id = %provider.id,
+                    "Setting LLM provider API key from environment variable"
+                );
+                provider.api_keys = vec![api_key];
+            }
+            
+            // Base URL: TRANSLATOR_LLM_<PROVIDER_ID>_BASE_URL
+            let base_url_env = format!("TRANSLATOR_LLM_{}_BASE_URL", provider_id_upper);
+            if let Ok(base_url) = std::env::var(&base_url_env) {
+                debug!(
+                    env_var = %base_url_env,
+                    provider_id = %provider.id,
+                    "Setting LLM provider base URL from environment variable"
+                );
+                provider.base_url = base_url;
+            }
+            
+            // Model: TRANSLATOR_LLM_<PROVIDER_ID>_MODEL
+            let model_env = format!("TRANSLATOR_LLM_{}_MODEL", provider_id_upper);
+            if let Ok(model) = std::env::var(&model_env) {
+                debug!(
+                    env_var = %model_env,
+                    provider_id = %provider.id,
+                    "Setting LLM provider model from environment variable"
+                );
+                provider.model = model;
+            }
         }
     }
 

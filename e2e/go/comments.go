@@ -1,21 +1,21 @@
-// 转到测试评论
+// Go to Test Reviews
 package main
 
-// 这是一个单行注释
+// This is a one-line comment
 const value = 42
 
 /*
-这是一个多行注释
-多行文本
+This is a multi-line comment
+Multi-line text
 */
 
 func test() int {
-    // 函数内部的另一个注释
+    // Another comment inside the function
     return value
 }
 
-// greet 返回问候信息
-// name 是要问候的人
+// greet returns a greeting message
+// name is the person to greet
 func greet(name string) string {
     return fmt.Sprintf("Hello, %s!", name)
 }

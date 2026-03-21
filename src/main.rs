@@ -1,4 +1,5 @@
 use clap::{Parser as ClapParser, Subcommand};
+use std::path::Path;
 use tracing::info;
 
 use codebase_translate::{
@@ -7,7 +8,6 @@ use codebase_translate::{
     core::error::Result,
     logger,
     workflow::TranslationWorkflow,
-    NAME, VERSION,
 };
 
 /// Codebase Translate - Automatic code comment translator
@@ -78,26 +78,39 @@ fn run() -> Result<()> {
         loader = loader.with_global_config(global_config_path);
     }
 
-    let (mut global_config, mut project_config) = loader.load()?;
+    let (mut global_config, project_config) = loader.load()?;
 
     global_config.logging.level = cli.log_level.clone();
 
-    logger::init(&global_config.logging)?;
-
-    info!(name = NAME, version = VERSION, "Starting application");
-
-    if cli.dry_run {
-        project_config.writer.dry_run = true;
-    }
-
     match cli.command {
-        Some(Commands::Translate(args)) => args.execute(&global_config, &project_config)?,
-        Some(Commands::Init(args)) => args.execute(&global_config, &project_config)?,
-        Some(Commands::Cache(args)) => args.execute(&global_config, &project_config)?,
-        Some(Commands::Validate(args)) => args.execute(&global_config, &project_config)?,
-        Some(Commands::Verify(args)) => args.execute(&global_config, &project_config)?,
-        Some(Commands::Clean(args)) => args.execute(&global_config, &project_config)?,
+        Some(Commands::Translate(args)) => {
+            let project_path = args.get_project_path();
+            logger::init(&global_config.logging, project_path.map(Path::new))?;
+            args.execute(&global_config, &project_config)?
+        }
+        Some(Commands::Init(args)) => {
+            logger::init(&global_config.logging, None)?;
+            args.execute(&global_config, &project_config)?
+        }
+        Some(Commands::Cache(args)) => {
+            logger::init(&global_config.logging, None)?;
+            args.execute(&global_config, &project_config)?
+        }
+        Some(Commands::Validate(args)) => {
+            logger::init(&global_config.logging, None)?;
+            args.execute(&global_config, &project_config)?
+        }
+        Some(Commands::Verify(args)) => {
+            let project_path = args.get_project_path();
+            logger::init(&global_config.logging, project_path.map(Path::new))?;
+            args.execute(&global_config, &project_config)?
+        }
+        Some(Commands::Clean(args)) => {
+            logger::init(&global_config.logging, None)?;
+            args.execute(&global_config, &project_config)?
+        }
         None => {
+            logger::init(&global_config.logging, None)?;
             info!("No command specified, translating current directory");
             info!(
                 target_lang = %project_config.translate.target_lang,

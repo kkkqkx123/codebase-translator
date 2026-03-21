@@ -4,6 +4,7 @@ use tracing::Level;
 
 use crate::config::global::LoggingConfig;
 use crate::core::error::Result;
+use std::path::Path;
 
 /// Parse log level string to tracing::Level
 pub fn parse_level(level: &str) -> Level {
@@ -17,29 +18,46 @@ pub fn parse_level(level: &str) -> Level {
     }
 }
 
-/// Default log file path
+/// Default log file path (relative to project directory)
 pub const DEFAULT_LOG_FILE: &str = ".translator/translator.log";
 
 /// Validate logging configuration
 pub fn validate_config(config: &LoggingConfig) -> Result<()> {
     parse_level(&config.level);
 
-    // If output is file, a file path must be provided
-    if config.output == "file" && config.file.is_none() {
-        return Err(crate::core::error::TranslateError::Config(
-            "File output requires a file path".to_string(),
-        ));
-    }
+    // File output is always valid, will use default path if not specified
+    // The actual path resolution happens in get_log_file_path
 
     Ok(())
 }
 
 /// Get log file path with default fallback
-pub fn get_log_file_path(config: &LoggingConfig) -> String {
-    config
+/// 
+/// If project_dir is provided and the file path is relative, it will be resolved
+/// relative to the project directory. Otherwise, it will be resolved relative to
+/// the current working directory.
+pub fn get_log_file_path(config: &LoggingConfig, project_dir: Option<&Path>) -> String {
+    let file_path = config
         .file
         .clone()
-        .unwrap_or_else(|| DEFAULT_LOG_FILE.to_string())
+        .unwrap_or_else(|| DEFAULT_LOG_FILE.to_string());
+
+    resolve_log_path(&file_path, project_dir)
+}
+
+/// Resolve log path relative to project directory if provided
+fn resolve_log_path(file_path: &str, project_dir: Option<&Path>) -> String {
+    let path = Path::new(file_path);
+
+    if path.is_absolute() {
+        return file_path.to_string();
+    }
+
+    if let Some(project_dir) = project_dir {
+        project_dir.join(file_path).to_string_lossy().to_string()
+    } else {
+        file_path.to_string()
+    }
 }
 
 /// Get the output format string
@@ -109,7 +127,23 @@ mod tests {
             file: None,
         };
 
-        assert_eq!(get_log_file_path(&config), DEFAULT_LOG_FILE);
+        assert_eq!(get_log_file_path(&config, None), DEFAULT_LOG_FILE);
+    }
+
+    #[test]
+    fn test_get_log_file_path_with_project_dir() {
+        let config = LoggingConfig {
+            level: "info".to_string(),
+            output: "file".to_string(),
+            format: "pretty".to_string(),
+            file: None,
+        };
+
+        let project_dir = Path::new("/home/user/project");
+        assert_eq!(
+            get_log_file_path(&config, Some(project_dir)),
+            "/home/user/project/.translator/translator.log"
+        );
     }
 
     #[test]
@@ -121,7 +155,40 @@ mod tests {
             file: Some("custom.log".to_string()),
         };
 
-        assert_eq!(get_log_file_path(&config), "custom.log");
+        assert_eq!(get_log_file_path(&config, None), "custom.log");
+    }
+
+    #[test]
+    fn test_get_log_file_path_custom_with_project_dir() {
+        let config = LoggingConfig {
+            level: "info".to_string(),
+            output: "file".to_string(),
+            format: "pretty".to_string(),
+            file: Some("custom.log".to_string()),
+        };
+
+        let project_dir = Path::new("/home/user/project");
+        assert_eq!(
+            get_log_file_path(&config, Some(project_dir)),
+            "/home/user/project/custom.log"
+        );
+    }
+
+    #[test]
+    fn test_get_log_file_path_absolute_path() {
+        let config = LoggingConfig {
+            level: "info".to_string(),
+            output: "file".to_string(),
+            format: "pretty".to_string(),
+            file: Some("/var/log/translator.log".to_string()),
+        };
+
+        let project_dir = Path::new("/home/user/project");
+        // Absolute path should not be affected by project_dir
+        assert_eq!(
+            get_log_file_path(&config, Some(project_dir)),
+            "/var/log/translator.log"
+        );
     }
 
     #[test]

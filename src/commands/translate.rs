@@ -8,6 +8,8 @@ use crate::{
     workflow::TranslationWorkflow,
 };
 
+use crate::{NAME, VERSION};
+
 use super::Command;
 
 #[derive(Parser, Debug)]
@@ -33,6 +35,8 @@ pub struct TranslateArgs {
 
 impl Command for TranslateArgs {
     fn execute(&self, global_config: &GlobalConfig, project_config: &ProjectConfig) -> Result<()> {
+        info!(name = NAME, version = VERSION, "Starting application");
+
         let mut project_config = project_config.clone();
 
         if let Some(lang) = &self.target_lang {
@@ -76,5 +80,9 @@ impl Command for TranslateArgs {
         .with_reporter(reporter);
         let _result = workflow.execute()?;
         Ok(())
+    }
+
+    fn get_project_path(&self) -> Option<&str> {
+        Some(&self.path)
     }
 }

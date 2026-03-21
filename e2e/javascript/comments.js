@@ -1,14 +1,14 @@
-// 用于测试的 JavaScript 注释
-// 这是一个单行注释
+// JavaScript comments for testing
+// This is a single line comment
 const value = 42;
 
 /*
- * 这是一个多行注释
- * 多行文本
+ * This is a multi-line comment
+ * Multi-line text
  */
 
 function test() {
-    // 函数内部的另一个注释
+    // Another comment inside the function
     return value;
 }
 

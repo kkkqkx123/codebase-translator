@@ -208,3 +208,605 @@
 2026-03-21T11:15:55.248117Z  INFO codebase_translate::workflow::executor: Units total_units=5 translated_units=5 skipped_units=0
 2026-03-21T11:15:55.248126Z  INFO codebase_translate::workflow::executor: Errors errors=1
 2026-03-21T11:15:55.248127Z  INFO codebase_translate::workflow::executor: ========================================
+2026-03-21T13:04:11.388498Z  INFO codebase_translate::commands::validate: Validating configuration
+2026-03-21T13:04:40.905739Z  INFO codebase_translate::commands::translate: Starting application name="codebase-translate" version="0.1.0"
+2026-03-21T13:04:40.905831Z  INFO codebase_translate::commands::translate: Translating directory path=.
+2026-03-21T13:04:40.905838Z  INFO codebase_translate::commands::translate: Translation configuration target_lang=EN provider=deeplx
+2026-03-21T13:04:40.905861Z DEBUG codebase_translate::reporter::stats::shared: Creating new shared statistics
+2026-03-21T13:04:40.905870Z DEBUG codebase_translate::reporter::stats::translation: Creating new translation statistics
+2026-03-21T13:04:40.905924Z  INFO codebase_translate::workflow::executor: Starting translation workflow root_path=. include_patterns=22 exclude_patterns=20 respect_gitignore=true follow_symlinks=false
+2026-03-21T13:04:40.905935Z  INFO codebase_translate::workflow::executor: Step 1: Scanning directory path=.
+2026-03-21T13:04:40.906212Z DEBUG codebase_translate::scanner::walker: Loaded .gitignore path=.\.gitignore patterns_count=8
+2026-03-21T13:04:40.906280Z  INFO codebase_translate::scanner::walker: Starting directory scan: \\?\E:\project\codebase-translator
+2026-03-21T13:04:40.997483Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\e2e\go\comments.go size=336
+2026-03-21T13:04:40.997665Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\e2e\go\string_format_preservation.go size=460
+2026-03-21T13:04:40.997821Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\e2e\go\string_literals.go size=373
+2026-03-21T13:04:40.998084Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\e2e\javascript\comments.js size=346
+2026-03-21T13:04:40.998201Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js size=789
+2026-03-21T13:04:40.998308Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\e2e\javascript\string_literals.js size=297
+2026-03-21T13:04:40.998527Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\e2e\language_filter\mixed_content.rs size=932
+2026-03-21T13:04:40.999011Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\e2e\python\comments.py size=522
+2026-03-21T13:04:40.999132Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\e2e\python\string_format_preservation.py size=815
+2026-03-21T13:04:40.999241Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\e2e\python\string_literals.py size=403
+2026-03-21T13:04:40.999504Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs size=593
+2026-03-21T13:04:40.999655Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\e2e\rust\macros.rs size=354
+2026-03-21T13:04:40.999776Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\e2e\rust\simple_comments.rs size=280
+2026-03-21T13:04:40.999904Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\e2e\rust\string_format_preservation.rs size=995
+2026-03-21T13:04:41.000021Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\e2e\rust\string_literals.rs size=432
+2026-03-21T13:04:41.000467Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\cache\binary.rs size=28951
+2026-03-21T13:04:41.000599Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\cache\mod.rs size=763
+2026-03-21T13:04:41.000710Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\cache\util.rs size=5101
+2026-03-21T13:04:41.000979Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\commands\cache.rs size=1753
+2026-03-21T13:04:41.001101Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\commands\clean.rs size=14606
+2026-03-21T13:04:41.001213Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\commands\init.rs size=3085
+2026-03-21T13:04:41.001321Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\commands\mod.rs size=390
+2026-03-21T13:04:41.001433Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\commands\translate.rs size=2596
+2026-03-21T13:04:41.001543Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\commands\validate.rs size=2157
+2026-03-21T13:04:41.001771Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\commands\verify\collector.rs size=4063
+2026-03-21T13:04:41.001890Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\commands\verify\filter.rs size=2081
+2026-03-21T13:04:41.002003Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\commands\verify\mod.rs size=309
+2026-03-21T13:04:41.002116Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\commands\verify\output.rs size=7316
+2026-03-21T13:04:41.002229Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\commands\verify\stats.rs size=1850
+2026-03-21T13:04:41.002343Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\commands\verify\verify.rs size=6482
+2026-03-21T13:04:41.002581Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\config\env.rs size=12828
+2026-03-21T13:04:41.002697Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\config\global.rs size=31570
+2026-03-21T13:04:41.002805Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\config\loader.rs size=13393
+2026-03-21T13:04:41.002914Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\config\mod.rs size=563
+2026-03-21T13:04:41.003024Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\config\project.rs size=27663
+2026-03-21T13:04:41.003237Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\core\error.rs size=8175
+2026-03-21T13:04:41.003347Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\core\mod.rs size=212
+2026-03-21T13:04:41.003454Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\core\models.rs size=14100
+2026-03-21T13:04:41.003675Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\encoding\detector.rs size=14205
+2026-03-21T13:04:41.003790Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\encoding\encoder.rs size=13334
+2026-03-21T13:04:41.003898Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\encoding\error.rs size=4825
+2026-03-21T13:04:41.004026Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\encoding\mod.rs size=1502
+2026-03-21T13:04:41.004139Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\encoding\types.rs size=5050
+2026-03-21T13:04:41.004250Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\lib.rs size=1511
+2026-03-21T13:04:41.004454Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\logger\config.rs size=6883
+2026-03-21T13:04:41.004570Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\logger\mod.rs size=8300
+2026-03-21T13:04:41.004684Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\main.rs size=3633
+2026-03-21T13:04:41.004999Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\abstraction\mod.rs size=351
+2026-03-21T13:04:41.005118Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\abstraction\parser.rs size=602
+2026-03-21T13:04:41.005234Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\abstraction\strategy.rs size=4802
+2026-03-21T13:04:41.005462Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\coordinator\coordinator.rs size=20678
+2026-03-21T13:04:41.005645Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\coordinator\mod.rs size=315
+2026-03-21T13:04:41.005770Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\coordinator\tests.rs size=2142
+2026-03-21T13:04:41.005885Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\coordinator\types.rs size=276
+2026-03-21T13:04:41.006112Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\core\extractor.rs size=2873
+2026-03-21T13:04:41.006233Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\core\language_parser.rs size=10663
+2026-03-21T13:04:41.006345Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\core\mod.rs size=641
+2026-03-21T13:04:41.006469Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\core\position_tracker.rs size=3079
+2026-03-21T13:04:41.006586Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\core\query_executor.rs size=8036
+2026-03-21T13:04:41.006820Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\core\strategies\config_based.rs size=3936
+2026-03-21T13:04:41.006948Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\core\strategies\exported_only.rs size=1818
+2026-03-21T13:04:41.007077Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\core\strategies\mod.rs size=497
+2026-03-21T13:04:41.007249Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\core\strategies\strategy_impl.rs size=1702
+2026-03-21T13:04:41.007381Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\core\string_processor.rs size=17171
+2026-03-21T13:04:41.007613Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\detection\language.rs size=21229
+2026-03-21T13:04:41.007734Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\detection\mod.rs size=283
+2026-03-21T13:04:41.007952Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\engine\mod.rs size=306
+2026-03-21T13:04:41.008072Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\engine\tree_sitter.rs size=31364
+2026-03-21T13:04:41.008401Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\filtering\checks\content.rs size=2319
+2026-03-21T13:04:41.008527Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language.rs size=7556
+2026-03-21T13:04:41.008668Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\filtering\checks\length.rs size=2203
+2026-03-21T13:04:41.008793Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\filtering\checks\mod.rs size=362
+2026-03-21T13:04:41.008913Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\filtering\checks\pattern.rs size=7233
+2026-03-21T13:04:41.009039Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\filtering\composite.rs size=5884
+2026-03-21T13:04:41.009154Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\filtering\config.rs size=2585
+2026-03-21T13:04:41.009267Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\filtering\mod.rs size=1675
+2026-03-21T13:04:41.009381Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\filtering\traits.rs size=970
+2026-03-21T13:04:41.009715Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\c\mod.rs size=243
+2026-03-21T13:04:41.009835Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\c\parser.rs size=17549
+2026-03-21T13:04:41.009953Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\c\patterns.rs size=2865
+2026-03-21T13:04:41.010071Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\c\queries.rs size=2517
+2026-03-21T13:04:41.010321Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\cpp\mod.rs size=275
+2026-03-21T13:04:41.010446Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\cpp\parser.rs size=19053
+2026-03-21T13:04:41.010567Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\cpp\patterns.rs size=3456
+2026-03-21T13:04:41.010685Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\cpp\queries.rs size=3116
+2026-03-21T13:04:41.010914Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\csharp\mod.rs size=300
+2026-03-21T13:04:41.011038Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\csharp\parser.rs size=19183
+2026-03-21T13:04:41.011163Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\csharp\patterns.rs size=5221
+2026-03-21T13:04:41.011288Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\csharp\queries.rs size=4485
+2026-03-21T13:04:41.011516Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\go\mod.rs size=287
+2026-03-21T13:04:41.011659Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\go\parser.rs size=17147
+2026-03-21T13:04:41.011795Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\go\patterns.rs size=5870
+2026-03-21T13:04:41.011916Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\go\queries.rs size=5956
+2026-03-21T13:04:41.012144Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\java\mod.rs size=291
+2026-03-21T13:04:41.012266Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\java\parser.rs size=16071
+2026-03-21T13:04:41.012385Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\java\patterns.rs size=4944
+2026-03-21T13:04:41.012506Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\java\queries.rs size=2696
+2026-03-21T13:04:41.012743Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\javascript\mod.rs size=341
+2026-03-21T13:04:41.012868Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\javascript\parser.rs size=18590
+2026-03-21T13:04:41.012992Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\javascript\patterns.rs size=4937
+2026-03-21T13:04:41.013114Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\javascript\queries.rs size=3488
+2026-03-21T13:04:41.013256Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\mod.rs size=795
+2026-03-21T13:04:41.013485Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\python\mod.rs size=300
+2026-03-21T13:04:41.013614Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\python\parser.rs size=25009
+2026-03-21T13:04:41.013750Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\python\patterns.rs size=6145
+2026-03-21T13:04:41.013873Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\python\queries.rs size=4750
+2026-03-21T13:04:41.014102Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\rust\mod.rs size=291
+2026-03-21T13:04:41.014225Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\rust\parser.rs size=17612
+2026-03-21T13:04:41.014345Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\rust\patterns.rs size=5393
+2026-03-21T13:04:41.014463Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\rust\queries.rs size=3867
+2026-03-21T13:04:41.014691Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\tests\mod.rs size=61
+2026-03-21T13:04:41.014861Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\tests\strategy_integration_tests.rs size=13768
+2026-03-21T13:04:41.015104Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\typescript\mod.rs size=331
+2026-03-21T13:04:41.015240Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\typescript\parser.rs size=18723
+2026-03-21T13:04:41.015370Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\typescript\patterns.rs size=4665
+2026-03-21T13:04:41.015496Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\languages\typescript\queries.rs size=3488
+2026-03-21T13:04:41.015623Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\mod.rs size=4075
+2026-03-21T13:04:41.015860Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\patterns\function_patterns.rs size=5817
+2026-03-21T13:04:41.015978Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\patterns\mod.rs size=506
+2026-03-21T13:04:41.016196Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\queries\builder.rs size=8659
+2026-03-21T13:04:41.016333Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\queries\comment_queries.rs size=4084
+2026-03-21T13:04:41.016456Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\queries\function_queries.rs size=5995
+2026-03-21T13:04:41.016567Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\queries\mod.rs size=302
+2026-03-21T13:04:41.016683Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\queries\string_queries.rs size=3123
+2026-03-21T13:04:41.016938Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\regex\config.rs size=4266
+2026-03-21T13:04:41.017068Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\regex\custom_pattern_matcher.rs size=6896
+2026-03-21T13:04:41.017177Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\regex\mod.rs size=965
+2026-03-21T13:04:41.017287Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\regex\parser.rs size=13593
+2026-03-21T13:04:41.017403Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\regex\state_machine.rs size=19548
+2026-03-21T13:04:41.017527Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\regex\utils.rs size=2311
+2026-03-21T13:04:41.017793Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\regex_parsers\fallback.rs size=3130
+2026-03-21T13:04:41.017922Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\regex_parsers\html.rs size=2670
+2026-03-21T13:04:41.018037Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\regex_parsers\mod.rs size=650
+2026-03-21T13:04:41.018152Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\regex_parsers\shell.rs size=4860
+2026-03-21T13:04:41.018266Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\parser\regex_parsers\sql.rs size=2586
+2026-03-21T13:04:41.018634Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\reporter\default.rs size=15739
+2026-03-21T13:04:41.018744Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\reporter\mod.rs size=357
+2026-03-21T13:04:41.018853Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\reporter\progress.rs size=13799
+2026-03-21T13:04:41.019063Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\reporter\stats\error.rs size=230
+2026-03-21T13:04:41.019177Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\reporter\stats\mod.rs size=222
+2026-03-21T13:04:41.019294Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\reporter\stats\provider.rs size=4432
+2026-03-21T13:04:41.019426Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\reporter\stats\shared.rs size=4769
+2026-03-21T13:04:41.019544Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\reporter\stats\translation.rs size=7083
+2026-03-21T13:04:41.019665Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\reporter\trait.rs size=1818
+2026-03-21T13:04:41.019877Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\scanner\gitignore.rs size=11195
+2026-03-21T13:04:41.019988Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\scanner\mod.rs size=183
+2026-03-21T13:04:41.020096Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\scanner\trait.rs size=1029
+2026-03-21T13:04:41.020205Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\scanner\walker.rs size=9160
+2026-03-21T13:04:41.020514Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\translator\batch.rs size=12521
+2026-03-21T13:04:41.020629Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\translator\common.rs size=5818
+2026-03-21T13:04:41.020738Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\translator\deeplx.rs size=6872
+2026-03-21T13:04:41.020869Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\translator\factory.rs size=1286
+2026-03-21T13:04:41.021184Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\translator\llm\mod.rs size=357
+2026-03-21T13:04:41.021340Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\translator\llm\multi_translator.rs size=8781
+2026-03-21T13:04:41.021533Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\translator\llm\pool.rs size=11624
+2026-03-21T13:04:41.021729Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\translator\llm\provider.rs size=10100
+2026-03-21T13:04:41.021891Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\translator\llm\routing.rs size=9417
+2026-03-21T13:04:41.022016Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\translator\llm\translator.rs size=9985
+2026-03-21T13:04:41.022151Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\translator\mod.rs size=6614
+2026-03-21T13:04:41.022268Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\translator\multi.rs size=12138
+2026-03-21T13:04:41.022388Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\translator\service.rs size=9380
+2026-03-21T13:04:41.022556Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\translator\tencent.rs size=12272
+2026-03-21T13:04:41.022687Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\translator\trait.rs size=7837
+2026-03-21T13:04:41.022910Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\utils\hash.rs size=2163
+2026-03-21T13:04:41.023025Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\utils\mod.rs size=66
+2026-03-21T13:04:41.023241Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\workflow\builder.rs size=3519
+2026-03-21T13:04:41.023355Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\workflow\executor.rs size=8684
+2026-03-21T13:04:41.023472Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\workflow\file_processor.rs size=10429
+2026-03-21T13:04:41.023581Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\workflow\mod.rs size=436
+2026-03-21T13:04:41.023901Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\writer\applier\line.rs size=6950
+2026-03-21T13:04:41.024036Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\writer\applier\mod.rs size=300
+2026-03-21T13:04:41.024160Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\writer\applier\multiline.rs size=16382
+2026-03-21T13:04:41.024282Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\writer\concurrent.rs size=11775
+2026-03-21T13:04:41.024390Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\writer\core.rs size=7231
+2026-03-21T13:04:41.024497Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\writer\file.rs size=15822
+2026-03-21T13:04:41.024707Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\writer\format\mod.rs size=319
+2026-03-21T13:04:41.024828Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\writer\format\prefix.rs size=4256
+2026-03-21T13:04:41.024946Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\writer\format\replacement.rs size=5559
+2026-03-21T13:04:41.025061Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\writer\mod.rs size=3330
+2026-03-21T13:04:41.025169Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\src\writer\trait.rs size=1675
+2026-03-21T13:04:41.025288Z DEBUG codebase_translate::scanner::walker: Skipping excluded directory dir=\\?\E:\project\codebase-translator\target
+2026-03-21T13:04:41.025651Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\cache_integration\basic_tests.rs size=12253
+2026-03-21T13:04:41.025781Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\cache_integration\cache_hit_tests.rs size=20834
+2026-03-21T13:04:41.025904Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\cache_integration\cache_mode_tests.rs size=8235
+2026-03-21T13:04:41.026030Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\cache_integration\concurrent_tests.rs size=10144
+2026-03-21T13:04:41.026157Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\cache_integration\fingerprint_tests.rs size=9539
+2026-03-21T13:04:41.026271Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\cache_integration\mod.rs size=174
+2026-03-21T13:04:41.026387Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\cache_integration\test_utils.rs size=275
+2026-03-21T13:04:41.026510Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\cache_integration_tests.rs size=64
+2026-03-21T13:04:41.026619Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\cache_test.rs size=1452
+2026-03-21T13:04:41.026737Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\config_integration_tests.rs size=8523
+2026-03-21T13:04:41.026943Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\e2e\deeplx_test.rs size=6141
+2026-03-21T13:04:41.027065Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\e2e\llm_test.rs size=8921
+2026-03-21T13:04:41.027186Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\e2e\mod.rs size=1806
+2026-03-21T13:04:41.027301Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\e2e\tencent_test.rs size=9225
+2026-03-21T13:04:41.027416Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\e2e_tests.rs size=48
+2026-03-21T13:04:41.027504Z DEBUG codebase_translate::scanner::walker: Skipping excluded directory dir=\\?\E:\project\codebase-translator\tests\hurl
+2026-03-21T13:04:41.027623Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\logger_integration.rs size=6410
+2026-03-21T13:04:41.027731Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\main_e2e.rs size=7580
+2026-03-21T13:04:41.027963Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\main_integration\e2e_tests.rs size=29819
+2026-03-21T13:04:41.028217Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\main_integration\fixtures\simple_javascript.js size=936
+2026-03-21T13:04:41.028356Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\main_integration\fixtures\simple_python.py size=889
+2026-03-21T13:04:41.028481Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\main_integration\fixtures\simple_rust.rs size=1127
+2026-03-21T13:04:41.028627Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\main_integration\logger_tests.rs size=11034
+2026-03-21T13:04:41.028749Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\main_integration\mod.rs size=392
+2026-03-21T13:04:41.029742Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\main_integration\project_logging_tests.rs size=6830
+2026-03-21T13:04:41.029994Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\parser_integration\check_line_endings.rs size=1032
+2026-03-21T13:04:41.030134Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\parser_integration\coordinator_tests.rs size=9310
+2026-03-21T13:04:41.030300Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\parser_integration\custom_pattern_tests.rs size=10269
+2026-03-21T13:04:41.030427Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\parser_integration\edge_case_tests.rs size=13793
+2026-03-21T13:04:41.030770Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\parser_integration\fixtures\go\comments.go size=378
+2026-03-21T13:04:41.030902Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\parser_integration\fixtures\go\string_format_preservation.go size=460
+2026-03-21T13:04:41.031023Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\parser_integration\fixtures\go\string_literals.go size=366
+2026-03-21T13:04:41.031268Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\parser_integration\fixtures\javascript\comments.js size=369
+2026-03-21T13:04:41.031405Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\parser_integration\fixtures\javascript\string_format_preservation.js size=791
+2026-03-21T13:04:41.031531Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\parser_integration\fixtures\javascript\string_literals.js size=290
+2026-03-21T13:04:41.031819Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\parser_integration\fixtures\language_filter\mixed_content.rs size=917
+2026-03-21T13:04:41.032218Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\parser_integration\fixtures\python\comments.py size=524
+2026-03-21T13:04:41.032355Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\parser_integration\fixtures\python\string_format_preservation.py size=817
+2026-03-21T13:04:41.032478Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\parser_integration\fixtures\python\string_literals.py size=396
+2026-03-21T13:04:41.032727Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\parser_integration\fixtures\rust\doc_comments.rs size=705
+2026-03-21T13:04:41.032856Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\parser_integration\fixtures\rust\macros.rs size=355
+2026-03-21T13:04:41.032992Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\parser_integration\fixtures\rust\simple_comments.rs size=306
+2026-03-21T13:04:41.033128Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\parser_integration\fixtures\rust\string_format_preservation.rs size=997
+2026-03-21T13:04:41.033272Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\parser_integration\fixtures\rust\string_literals.rs size=427
+2026-03-21T13:04:41.033415Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\parser_integration\function_pattern_tests.rs size=10357
+2026-03-21T13:04:41.033541Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\parser_integration\language_detection_tests.rs size=12450
+2026-03-21T13:04:41.033698Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\parser_integration\mod.rs size=290
+2026-03-21T13:04:41.033839Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\parser_integration\multiline_doc_tests.rs size=2443
+2026-03-21T13:04:41.034525Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\parser_integration\simple_tests.rs size=17359
+2026-03-21T13:04:41.034655Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\parser_integration\strategy_filter_tests.rs size=15984
+2026-03-21T13:04:41.034799Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\parser_integration\string_format_tests.rs size=9185
+2026-03-21T13:04:41.034921Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\parser_integration\test_chinese_rust.rs size=2686
+2026-03-21T13:04:41.035045Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\parser_integration\test_doc_comment_empty_line.rs size=6736
+2026-03-21T13:04:41.035166Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\parser_integration\test_raw_match_format.rs size=2004
+2026-03-21T13:04:41.035285Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\parser_integration\tree_sitter_debug.rs size=2239
+2026-03-21T13:04:41.035406Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\parser_integration_tests.rs size=66
+2026-03-21T13:04:41.035513Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\regex_parser_tests.rs size=7884
+2026-03-21T13:04:41.035736Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\reporter_integration_tests.rs size=10569
+2026-03-21T13:04:41.035959Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\scanner_integration\basic_scan_tests.rs size=5285
+2026-03-21T13:04:41.036082Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\scanner_integration\edge_case_tests.rs size=10981
+2026-03-21T13:04:41.036913Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\nested_dir\nested.rs size=73
+2026-03-21T13:04:41.037088Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\simple_javascript.js size=110
+2026-03-21T13:04:41.037204Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\simple_python.py size=122
+2026-03-21T13:04:41.037326Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\simple_rust.rs size=89
+2026-03-21T13:04:41.037474Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\scanner_integration\gitignore_tests.rs size=7736
+2026-03-21T13:04:41.037587Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\scanner_integration\mod.rs size=130
+2026-03-21T13:04:41.038526Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\scanner_integration\pattern_tests.rs size=7299
+2026-03-21T13:04:41.038654Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\scanner_integration_tests.rs size=68
+2026-03-21T13:04:41.038886Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\translator_integration\batch_tests.rs size=9587
+2026-03-21T13:04:41.039010Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\translator_integration\common_tests.rs size=5501
+2026-03-21T13:04:41.039128Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\translator_integration\factory_tests.rs size=8415
+2026-03-21T13:04:41.039252Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\translator_integration\integration_flow_tests.rs size=11670
+2026-03-21T13:04:41.039395Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\translator_integration\llm_pool_tests.rs size=10390
+2026-03-21T13:04:41.039520Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\translator_integration\llm_routing_tests.rs size=10135
+2026-03-21T13:04:41.039633Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\translator_integration\mod.rs size=508
+2026-03-21T13:04:41.039758Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\translator_integration\multi_tests.rs size=8846
+2026-03-21T13:04:41.039946Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\translator_integration\service_tests.rs size=9286
+2026-03-21T13:04:41.040087Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\translator_integration_test.rs size=24038
+2026-03-21T13:04:41.040219Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\translator_integration_tests.rs size=22100
+2026-03-21T13:04:41.040521Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\verify_integration\collector_tests.rs size=11439
+2026-03-21T13:04:41.040650Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\verify_integration\end_to_end_tests.rs size=7001
+2026-03-21T13:04:41.040774Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\verify_integration\filter_tests.rs size=13140
+2026-03-21T13:04:41.041009Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\verify_integration\fixtures\complex_rust.rs size=2221
+2026-03-21T13:04:41.041136Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\verify_integration\fixtures\simple_rust.rs size=713
+2026-03-21T13:04:41.041257Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\verify_integration\mod.rs size=146
+2026-03-21T13:04:41.041648Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\verify_integration\output_tests.rs size=15163
+2026-03-21T13:04:41.041772Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\verify_integration\stats_tests.rs size=13522
+2026-03-21T13:04:41.041906Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\verify_integration_tests.rs size=66
+2026-03-21T13:04:41.042049Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\workflow_integration_tests.rs size=7506
+2026-03-21T13:04:41.042285Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\writer_integration\chinese_content_tests.rs size=3503
+2026-03-21T13:04:41.042403Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\writer_integration\common.rs size=2902
+2026-03-21T13:04:41.042526Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\writer_integration\complex_format_tests.rs size=18640
+2026-03-21T13:04:41.042652Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\writer_integration\concurrent_writer_tests.rs size=11078
+2026-03-21T13:04:41.042770Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\writer_integration\debug_parser.rs size=572
+2026-03-21T13:04:41.042895Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\writer_integration\doc_comment_newline_issue.rs size=6088
+2026-03-21T13:04:41.043016Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\writer_integration\file_writer_tests.rs size=14960
+2026-03-21T13:04:41.043242Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\writer_integration\fixtures\jsdoc_multiline.js size=373
+2026-03-21T13:04:41.043356Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\writer_integration\fixtures\simple_go.go size=433
+2026-03-21T13:04:41.043487Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\writer_integration\fixtures\simple_javascript.js size=187
+2026-03-21T13:04:41.043641Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\writer_integration\fixtures\simple_python.py size=149
+2026-03-21T13:04:41.043778Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\writer_integration\fixtures\simple_rust.rs size=128
+2026-03-21T13:04:41.043908Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\writer_integration\go_parser_tests.rs size=6156
+2026-03-21T13:04:41.044022Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\writer_integration\mod.rs size=375
+2026-03-21T13:04:41.044263Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\writer_integration\output\chinese_replacement_result.rs size=1220
+2026-03-21T13:04:41.044396Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\writer_integration\output\doc_comment_newline_issue.rs size=251
+2026-03-21T13:04:41.044686Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\writer_integration\python_docstring_tests.rs size=11098
+2026-03-21T13:04:41.044808Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\writer_integration\raw_match_tests.rs size=7182
+2026-03-21T13:04:41.044933Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\writer_integration\test_chinese_replacement.rs size=5189
+2026-03-21T13:04:41.045079Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\writer_integration\translation_applier_tests.rs size=14867
+2026-03-21T13:04:41.045207Z DEBUG codebase_translate::scanner::walker: Found file path=\\?\E:\project\codebase-translator\tests\writer_integration_tests.rs size=66
+2026-03-21T13:04:41.045305Z DEBUG codebase_translate::scanner::walker: Scan completed directory=\\?\E:\project\codebase-translator files_found=289
+2026-03-21T13:04:41.045341Z  INFO codebase_translate::workflow::executor: File scan completed files_count=289
+2026-03-21T13:04:41.045388Z  INFO codebase_translate::cache: Creating cache instance cache_type=local cache_dir=.
+2026-03-21T13:04:41.045709Z  INFO codebase_translate::cache::binary: Creating binary cache cache_file=.\.translator\cache.bin mode=Local enabled=true
+2026-03-21T13:04:41.045733Z DEBUG codebase_translate::cache::binary: Loading cache index cache_file=.\.translator\cache.bin
+2026-03-21T13:04:41.045787Z DEBUG codebase_translate::cache::binary: Cache file not found, starting with empty cache
+2026-03-21T13:04:41.045801Z DEBUG codebase_translate::cache::binary: Binary cache initialized successfully
+2026-03-21T13:04:41.045805Z DEBUG codebase_translate::cache: Cache instance created successfully
+2026-03-21T13:04:41.045813Z  INFO codebase_translate::translator: Creating translator instance provider=deeplx
+2026-03-21T13:04:41.045827Z  INFO codebase_translate::translator::r#trait: Creating translator from configuration provider=DeepLX
+2026-03-21T13:04:41.045835Z DEBUG codebase_translate::translator::r#trait: Creating DeepLX translator
+2026-03-21T13:04:41.046463Z  INFO codebase_translate::translator::deeplx: DeepLX translator created api_url=https://api.deeplx.org
+2026-03-21T13:04:41.046476Z  INFO codebase_translate::translator::r#trait: Translator created successfully provider=DeepLX
+2026-03-21T13:04:41.046490Z DEBUG codebase_translate::translator::batch: Creating batch translator
+2026-03-21T13:04:41.046494Z DEBUG codebase_translate::translator::batch: Batch translator configuration rate_limit=5 workers=5 max_retries=3
+2026-03-21T13:04:41.246581Z DEBUG codebase_translate::translator::batch: Batch translator created rate_limiter_enabled=true semaphore_permits=5
+2026-03-21T13:04:41.246633Z DEBUG codebase_translate::translator::service: Creating translation service with batch translator
+2026-03-21T13:04:41.247259Z  INFO codebase_translate::translator::service: Translation service created with batch translator
+2026-03-21T13:04:41.247271Z DEBUG codebase_translate::translator: Translator instance created successfully with batch translator
+2026-03-21T13:04:41.247278Z  INFO codebase_translate::parser: Creating parser coordinator extract_comments=true extract_docstrings=true extract_strings=true
+2026-03-21T13:04:41.276294Z DEBUG codebase_translate::parser::regex::parser: Creating regex parser with configuration extensions=["txt", "md", "markdown", "yml", "yaml", "toml"] has_line_comment=true has_block_comment=true has_doc_comment=false has_string_pattern=true state_machine_patterns_count=0
+2026-03-21T13:04:41.280287Z DEBUG codebase_translate::parser::regex::parser: Regex parser compilation completed line_comment_regex_valid=true block_comment_regex_valid=true doc_comment_regex_valid=false string_regex_valid=true state_machine_matchers_count=0
+2026-03-21T13:04:41.280319Z DEBUG codebase_translate::parser: Parser coordinator created successfully
+2026-03-21T13:04:41.280333Z  INFO codebase_translate::writer: Creating file writer dry_run=false backup=false
+2026-03-21T13:04:41.280342Z DEBUG codebase_translate::writer: File writer created successfully
+2026-03-21T13:04:41.280371Z DEBUG codebase_translate::workflow::executor: Processing file index=1 total=289 file=\\?\E:\project\codebase-translator\e2e\go\comments.go
+2026-03-21T13:04:41.280391Z DEBUG codebase_translate::reporter::default: Reporting progress current=1 total=289
+2026-03-21T13:04:41.280400Z DEBUG codebase_translate::workflow::file_processor: Processing file file=\\?\E:\project\codebase-translator\e2e\go\comments.go
+2026-03-21T13:04:41.280682Z DEBUG codebase_translate::cache::binary: Getting cache entry file_hash=c5cb19cb3e97cb26859da3b5161bd0c3a97f78619dd758d6dd5f728b0f4cf08c
+2026-03-21T13:04:41.280716Z DEBUG codebase_translate::cache::binary: Cache entry not found file_hash=c5cb19cb3e97cb26859da3b5161bd0c3a97f78619dd758d6dd5f728b0f4cf08c
+2026-03-21T13:04:41.280724Z DEBUG codebase_translate::workflow::file_processor: Cache miss file=\\?\E:\project\codebase-translator\e2e\go\comments.go
+2026-03-21T13:04:41.280728Z DEBUG codebase_translate::reporter::default: Reporting cache miss
+2026-03-21T13:04:41.280733Z DEBUG codebase_translate::reporter::stats::translation: Recording cache miss cache_misses=1
+2026-03-21T13:04:41.280754Z DEBUG codebase_translate::encoding::detector: Encoding detected source=<bytes> encoding=UTF-8 confidence=0.9
+2026-03-21T13:04:41.282681Z DEBUG codebase_translate::parser::filtering::composite: Text passed all filter checks text=转到测试评论
+2026-03-21T13:04:41.282700Z DEBUG codebase_translate::parser::core::strategies::config_based: Extraction strategy decision node_type=comment should_extract=true strategy="config_based"
+2026-03-21T13:04:41.282748Z DEBUG codebase_translate::parser::filtering::composite: Text passed all filter checks text=这是一个单行注释
+2026-03-21T13:04:41.282755Z DEBUG codebase_translate::parser::core::strategies::config_based: Extraction strategy decision node_type=comment should_extract=true strategy="config_based"
+2026-03-21T13:04:41.282816Z DEBUG codebase_translate::parser::filtering::composite: Text passed all filter checks text=这是一个多行注释
+多行文本
+2026-03-21T13:04:41.282823Z DEBUG codebase_translate::parser::core::strategies::config_based: Extraction strategy decision node_type=comment should_extract=true strategy="config_based"
+2026-03-21T13:04:41.282850Z DEBUG codebase_translate::parser::filtering::composite: Text passed all filter checks text=函数内部的另一个注释
+2026-03-21T13:04:41.282856Z DEBUG codebase_translate::parser::core::strategies::config_based: Extraction strategy decision node_type=comment should_extract=true strategy="config_based"
+2026-03-21T13:04:41.282881Z DEBUG codebase_translate::parser::filtering::composite: Text passed all filter checks text=greet 返回问候信息
+2026-03-21T13:04:41.282887Z DEBUG codebase_translate::parser::core::strategies::config_based: Extraction strategy decision node_type=comment should_extract=true strategy="config_based"
+2026-03-21T13:04:41.282905Z DEBUG codebase_translate::parser::filtering::composite: Text passed all filter checks text=name 是要问候的人
+2026-03-21T13:04:41.282911Z DEBUG codebase_translate::parser::core::strategies::config_based: Extraction strategy decision node_type=comment should_extract=true strategy="config_based"
+2026-03-21T13:04:41.283708Z DEBUG codebase_translate::parser::filtering::checks::pattern: Text filtered by pattern check reason="contains_placeholder"
+2026-03-21T13:04:41.283814Z DEBUG codebase_translate::reporter::default: Reporting file processed file=\\?\E:\project\codebase-translator\e2e\go\comments.go units=5
+2026-03-21T13:04:41.283824Z DEBUG codebase_translate::reporter::stats::translation: Recording translation units units=5 total=5
+2026-03-21T13:04:41.283832Z DEBUG codebase_translate::reporter::stats::translation: Recording file processed processed=1
+2026-03-21T13:04:41.283837Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\go\comments.go total_units=5 translatable_units=5
+2026-03-21T13:04:41.283848Z DEBUG codebase_translate::workflow::file_processor: Translating units units_count=5
+2026-03-21T13:04:41.283852Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\e2e\go\comments.go units_to_translate=5
+2026-03-21T13:04:41.283860Z DEBUG codebase_translate::translator::service: Translating batch of texts texts_count=5 target_lang=EN
+2026-03-21T13:04:41.283990Z DEBUG codebase_translate::translator::deeplx: Sending DeepLX translation request url=https://api.deeplx.org/wpHYqxJTk560N5b0dGsBSyOsc3otyH0sheBPPAaMvNM/translate source_lang="" target_lang="EN"
+2026-03-21T13:04:43.070888Z DEBUG codebase_translate::translator::deeplx: Sending DeepLX translation request url=https://api.deeplx.org/wpHYqxJTk560N5b0dGsBSyOsc3otyH0sheBPPAaMvNM/translate source_lang="" target_lang="EN"
+2026-03-21T13:04:44.094726Z DEBUG codebase_translate::translator::deeplx: Sending DeepLX translation request url=https://api.deeplx.org/wpHYqxJTk560N5b0dGsBSyOsc3otyH0sheBPPAaMvNM/translate source_lang="" target_lang="EN"
+2026-03-21T13:04:45.144682Z DEBUG codebase_translate::translator::deeplx: Sending DeepLX translation request url=https://api.deeplx.org/wpHYqxJTk560N5b0dGsBSyOsc3otyH0sheBPPAaMvNM/translate source_lang="" target_lang="EN"
+2026-03-21T13:04:46.167835Z DEBUG codebase_translate::translator::deeplx: Sending DeepLX translation request url=https://api.deeplx.org/wpHYqxJTk560N5b0dGsBSyOsc3otyH0sheBPPAaMvNM/translate source_lang="" target_lang="EN"
+2026-03-21T13:04:47.192688Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=5 success_count=5 failed_count=0 processing_time_ms=5908 average_latency_ms=1181.0 total_chars=157
+2026-03-21T13:04:47.192775Z DEBUG codebase_translate::translator::service: Batch translation completed with rate limiting translated_count=5
+2026-03-21T13:04:47.192790Z DEBUG codebase_translate::reporter::default: Reporting API call count=1
+2026-03-21T13:04:47.192797Z DEBUG codebase_translate::reporter::stats::translation: Recording API calls api_calls=1 total=1
+2026-03-21T13:04:47.192804Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\e2e\go\comments.go translated_units=5
+2026-03-21T13:04:47.192819Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\e2e\go\comments.go
+2026-03-21T13:04:47.193526Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\e2e\go\comments.go translation_units=5
+2026-03-21T13:04:47.194237Z DEBUG codebase_translate::writer::file: Starting async atomic file write file=\\?\E:\project\codebase-translator\e2e\go\comments.go
+2026-03-21T13:04:47.194262Z DEBUG codebase_translate::writer::file: Creating temporary file file=\\?\E:\project\codebase-translator\e2e\go\comments.go temp_file=\\?\E:\project\codebase-translator\e2e\go\comments.tmp
+2026-03-21T13:04:47.194797Z DEBUG codebase_translate::writer::file: Preserving file metadata file=\\?\E:\project\codebase-translator\e2e\go\comments.go
+2026-03-21T13:04:47.195111Z DEBUG codebase_translate::writer::file: Performing atomic rename file=\\?\E:\project\codebase-translator\e2e\go\comments.go
+2026-03-21T13:04:47.195363Z DEBUG codebase_translate::writer::file: Async atomic file write completed file=\\?\E:\project\codebase-translator\e2e\go\comments.go
+2026-03-21T13:04:47.195374Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\e2e\go\comments.go
+2026-03-21T13:04:47.195383Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\e2e\go\comments.go
+2026-03-21T13:04:47.195881Z DEBUG codebase_translate::workflow::file_processor: Updating cache file=\\?\E:\project\codebase-translator\e2e\go\comments.go
+2026-03-21T13:04:47.195899Z DEBUG codebase_translate::cache::binary: Setting cache entry file_hash=c5cb19cb3e97cb26859da3b5161bd0c3a97f78619dd758d6dd5f728b0f4cf08c file_path=\\?\E:\project\codebase-translator\e2e\go\comments.go
+2026-03-21T13:04:47.195909Z DEBUG codebase_translate::cache::binary: Adding cache entry file_hash=c5cb19cb3e97cb26859da3b5161bd0c3a97f78619dd758d6dd5f728b0f4cf08c file_path=\\?\E:\project\codebase-translator\e2e\go\comments.go
+2026-03-21T13:04:47.195948Z DEBUG codebase_translate::cache::binary: Cache entry added successfully
+2026-03-21T13:04:47.196149Z DEBUG codebase_translate::cache::binary: Saving cache to disk
+2026-03-21T13:04:47.196191Z DEBUG codebase_translate::cache::binary: Cache data prepared entries=1 data_size=145
+2026-03-21T13:04:47.196953Z DEBUG codebase_translate::cache::binary: Cache saved successfully cache_file=.\.translator\cache.bin file_size=249
+2026-03-21T13:04:47.196973Z DEBUG codebase_translate::cache::binary: Cache entry set successfully
+2026-03-21T13:04:47.196977Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\e2e\go\comments.go total_units=5 translated_units=5
+2026-03-21T13:04:47.196996Z DEBUG codebase_translate::workflow::executor: Processing file index=2 total=289 file=\\?\E:\project\codebase-translator\e2e\go\string_format_preservation.go
+2026-03-21T13:04:47.197008Z DEBUG codebase_translate::reporter::default: Reporting progress current=2 total=289
+2026-03-21T13:04:47.197014Z DEBUG codebase_translate::workflow::file_processor: Processing file file=\\?\E:\project\codebase-translator\e2e\go\string_format_preservation.go
+2026-03-21T13:04:47.197139Z DEBUG codebase_translate::cache::binary: Getting cache entry file_hash=774d0f3c52ac6754b210dcd9a0d82d84f6281593fe22558f4198cb33061c3393
+2026-03-21T13:04:47.197155Z DEBUG codebase_translate::cache::binary: Cache entry not found file_hash=774d0f3c52ac6754b210dcd9a0d82d84f6281593fe22558f4198cb33061c3393
+2026-03-21T13:04:47.197161Z DEBUG codebase_translate::workflow::file_processor: Cache miss file=\\?\E:\project\codebase-translator\e2e\go\string_format_preservation.go
+2026-03-21T13:04:47.197164Z DEBUG codebase_translate::reporter::default: Reporting cache miss
+2026-03-21T13:04:47.197169Z DEBUG codebase_translate::reporter::stats::translation: Recording cache miss cache_misses=2
+2026-03-21T13:04:47.197176Z DEBUG codebase_translate::encoding::detector: Encoding detected source=<bytes> encoding=UTF-8 confidence=1.0
+2026-03-21T13:04:47.200030Z DEBUG codebase_translate::parser::filtering::composite: Text passed all filter checks text="fmt"
+2026-03-21T13:04:47.200054Z DEBUG codebase_translate::parser::core::strategies::config_based: Extraction strategy decision node_type=string_literal should_extract=false strategy="config_based"
+2026-03-21T13:04:47.200097Z DEBUG codebase_translate::parser::filtering::checks::language: Text filtered by language check source_langs=["AUTO"] reason="no_target_language"
+2026-03-21T13:04:47.200126Z DEBUG codebase_translate::parser::filtering::checks::language: Text filtered by language check source_langs=["AUTO"] reason="no_target_language"
+2026-03-21T13:04:47.200161Z DEBUG codebase_translate::parser::filtering::checks::language: Text filtered by language check source_langs=["AUTO"] reason="no_target_language"
+2026-03-21T13:04:47.200179Z DEBUG codebase_translate::parser::filtering::checks::language: Text filtered by language check source_langs=["AUTO"] reason="no_target_language"
+2026-03-21T13:04:47.200211Z DEBUG codebase_translate::parser::filtering::checks::language: Text filtered by language check source_langs=["AUTO"] reason="no_target_language"
+2026-03-21T13:04:47.200248Z DEBUG codebase_translate::parser::filtering::checks::pattern: Text filtered by pattern check reason="contains_placeholder"
+2026-03-21T13:04:47.200284Z DEBUG codebase_translate::parser::filtering::checks::language: Text filtered by language check source_langs=["AUTO"] reason="no_target_language"
+2026-03-21T13:04:47.200332Z DEBUG codebase_translate::reporter::default: Reporting file processed file=\\?\E:\project\codebase-translator\e2e\go\string_format_preservation.go units=0
+2026-03-21T13:04:47.200341Z DEBUG codebase_translate::reporter::stats::translation: Recording translation units units=0 total=5
+2026-03-21T13:04:47.200346Z DEBUG codebase_translate::reporter::stats::translation: Recording file processed processed=2
+2026-03-21T13:04:47.200351Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\go\string_format_preservation.go total_units=0 translatable_units=0
+2026-03-21T13:04:47.200356Z DEBUG codebase_translate::workflow::file_processor: No translatable content found
+2026-03-21T13:04:47.200369Z DEBUG codebase_translate::reporter::default: Reporting skipped file file=\\?\E:\project\codebase-translator\e2e\go\string_format_preservation.go
+2026-03-21T13:04:47.200375Z DEBUG codebase_translate::reporter::stats::translation: Recording file skipped skipped=1
+2026-03-21T13:04:47.200380Z DEBUG codebase_translate::workflow::executor: Processing file index=3 total=289 file=\\?\E:\project\codebase-translator\e2e\go\string_literals.go
+2026-03-21T13:04:47.200385Z DEBUG codebase_translate::reporter::default: Reporting progress current=3 total=289
+2026-03-21T13:04:47.200390Z DEBUG codebase_translate::workflow::file_processor: Processing file file=\\?\E:\project\codebase-translator\e2e\go\string_literals.go
+2026-03-21T13:04:47.200503Z DEBUG codebase_translate::cache::binary: Getting cache entry file_hash=598d0b7787b73bbc2f5d819718321f3ac7eece6c271d7b8a02b82f18704b46af
+2026-03-21T13:04:47.200515Z DEBUG codebase_translate::cache::binary: Cache entry not found file_hash=598d0b7787b73bbc2f5d819718321f3ac7eece6c271d7b8a02b82f18704b46af
+2026-03-21T13:04:47.200518Z DEBUG codebase_translate::workflow::file_processor: Cache miss file=\\?\E:\project\codebase-translator\e2e\go\string_literals.go
+2026-03-21T13:04:47.200522Z DEBUG codebase_translate::reporter::default: Reporting cache miss
+2026-03-21T13:04:47.200524Z DEBUG codebase_translate::reporter::stats::translation: Recording cache miss cache_misses=3
+2026-03-21T13:04:47.200529Z DEBUG codebase_translate::encoding::detector: Encoding detected source=<bytes> encoding=UTF-8 confidence=0.9
+2026-03-21T13:04:47.201613Z DEBUG codebase_translate::parser::filtering::composite: Text passed all filter checks text=用于测试的 Go 字符串字面量
+2026-03-21T13:04:47.201626Z DEBUG codebase_translate::parser::core::strategies::config_based: Extraction strategy decision node_type=comment should_extract=true strategy="config_based"
+2026-03-21T13:04:47.202698Z DEBUG codebase_translate::parser::filtering::composite: Text passed all filter checks text="fmt"
+2026-03-21T13:04:47.202719Z DEBUG codebase_translate::parser::core::strategies::config_based: Extraction strategy decision node_type=string_literal should_extract=false strategy="config_based"
+2026-03-21T13:04:47.202748Z DEBUG codebase_translate::parser::filtering::checks::language: Text filtered by language check source_langs=["AUTO"] reason="no_target_language"
+2026-03-21T13:04:47.202769Z DEBUG codebase_translate::parser::filtering::checks::language: Text filtered by language check source_langs=["AUTO"] reason="no_target_language"
+2026-03-21T13:04:47.202785Z DEBUG codebase_translate::parser::filtering::checks::language: Text filtered by language check source_langs=["AUTO"] reason="no_target_language"
+2026-03-21T13:04:47.202824Z DEBUG codebase_translate::parser::filtering::checks::language: Text filtered by language check source_langs=["AUTO"] reason="no_target_language"
+2026-03-21T13:04:47.202852Z DEBUG codebase_translate::parser::filtering::checks::language: Text filtered by language check source_langs=["AUTO"] reason="no_target_language"
+2026-03-21T13:04:47.202884Z DEBUG codebase_translate::reporter::default: Reporting file processed file=\\?\E:\project\codebase-translator\e2e\go\string_literals.go units=1
+2026-03-21T13:04:47.202892Z DEBUG codebase_translate::reporter::stats::translation: Recording translation units units=1 total=6
+2026-03-21T13:04:47.202896Z DEBUG codebase_translate::reporter::stats::translation: Recording file processed processed=3
+2026-03-21T13:04:47.202899Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\go\string_literals.go total_units=1 translatable_units=1
+2026-03-21T13:04:47.202908Z DEBUG codebase_translate::workflow::file_processor: Translating units units_count=1
+2026-03-21T13:04:47.202912Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\e2e\go\string_literals.go units_to_translate=1
+2026-03-21T13:04:47.202916Z DEBUG codebase_translate::translator::service: Translating batch of texts texts_count=1 target_lang=EN
+2026-03-21T13:04:47.202951Z DEBUG codebase_translate::translator::deeplx: Sending DeepLX translation request url=https://api.deeplx.org/wpHYqxJTk560N5b0dGsBSyOsc3otyH0sheBPPAaMvNM/translate source_lang="" target_lang="EN"
+2026-03-21T13:04:48.226137Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=1 success_count=1 failed_count=0 processing_time_ms=1023 average_latency_ms=1023.0 total_chars=37
+2026-03-21T13:04:48.226221Z DEBUG codebase_translate::translator::service: Batch translation completed with rate limiting translated_count=1
+2026-03-21T13:04:48.226236Z DEBUG codebase_translate::reporter::default: Reporting API call count=1
+2026-03-21T13:04:48.226244Z DEBUG codebase_translate::reporter::stats::translation: Recording API calls api_calls=1 total=2
+2026-03-21T13:04:48.226250Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\e2e\go\string_literals.go translated_units=1
+2026-03-21T13:04:48.226261Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\e2e\go\string_literals.go
+2026-03-21T13:04:48.226936Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\e2e\go\string_literals.go translation_units=1
+2026-03-21T13:04:48.227734Z DEBUG codebase_translate::writer::file: Starting async atomic file write file=\\?\E:\project\codebase-translator\e2e\go\string_literals.go
+2026-03-21T13:04:48.227766Z DEBUG codebase_translate::writer::file: Creating temporary file file=\\?\E:\project\codebase-translator\e2e\go\string_literals.go temp_file=\\?\E:\project\codebase-translator\e2e\go\string_literals.tmp
+2026-03-21T13:04:48.228315Z DEBUG codebase_translate::writer::file: Preserving file metadata file=\\?\E:\project\codebase-translator\e2e\go\string_literals.go
+2026-03-21T13:04:48.228610Z DEBUG codebase_translate::writer::file: Performing atomic rename file=\\?\E:\project\codebase-translator\e2e\go\string_literals.go
+2026-03-21T13:04:48.228918Z DEBUG codebase_translate::writer::file: Async atomic file write completed file=\\?\E:\project\codebase-translator\e2e\go\string_literals.go
+2026-03-21T13:04:48.228938Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\e2e\go\string_literals.go
+2026-03-21T13:04:48.228950Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\e2e\go\string_literals.go
+2026-03-21T13:04:48.229418Z DEBUG codebase_translate::workflow::file_processor: Updating cache file=\\?\E:\project\codebase-translator\e2e\go\string_literals.go
+2026-03-21T13:04:48.229435Z DEBUG codebase_translate::cache::binary: Setting cache entry file_hash=598d0b7787b73bbc2f5d819718321f3ac7eece6c271d7b8a02b82f18704b46af file_path=\\?\E:\project\codebase-translator\e2e\go\string_literals.go
+2026-03-21T13:04:48.229442Z DEBUG codebase_translate::cache::binary: Adding cache entry file_hash=598d0b7787b73bbc2f5d819718321f3ac7eece6c271d7b8a02b82f18704b46af file_path=\\?\E:\project\codebase-translator\e2e\go\string_literals.go
+2026-03-21T13:04:48.229469Z DEBUG codebase_translate::cache::binary: Cache entry added successfully
+2026-03-21T13:04:48.229612Z DEBUG codebase_translate::cache::binary: Saving cache to disk
+2026-03-21T13:04:48.229724Z DEBUG codebase_translate::cache::binary: Cache data prepared entries=2 data_size=297
+2026-03-21T13:04:48.230166Z DEBUG codebase_translate::cache::binary: Cache saved successfully cache_file=.\.translator\cache.bin file_size=473
+2026-03-21T13:04:48.230186Z DEBUG codebase_translate::cache::binary: Cache entry set successfully
+2026-03-21T13:04:48.230190Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\e2e\go\string_literals.go total_units=1 translated_units=1
+2026-03-21T13:04:48.230204Z DEBUG codebase_translate::workflow::executor: Processing file index=4 total=289 file=\\?\E:\project\codebase-translator\e2e\javascript\comments.js
+2026-03-21T13:04:48.230212Z DEBUG codebase_translate::reporter::default: Reporting progress current=4 total=289
+2026-03-21T13:04:48.230217Z DEBUG codebase_translate::workflow::file_processor: Processing file file=\\?\E:\project\codebase-translator\e2e\javascript\comments.js
+2026-03-21T13:04:48.230334Z DEBUG codebase_translate::cache::binary: Getting cache entry file_hash=b021add6644a3b5ec4bc2a0e39f287bf2515745ef057f902f23e747cfd1e109e
+2026-03-21T13:04:48.230349Z DEBUG codebase_translate::cache::binary: Cache entry not found file_hash=b021add6644a3b5ec4bc2a0e39f287bf2515745ef057f902f23e747cfd1e109e
+2026-03-21T13:04:48.230354Z DEBUG codebase_translate::workflow::file_processor: Cache miss file=\\?\E:\project\codebase-translator\e2e\javascript\comments.js
+2026-03-21T13:04:48.230357Z DEBUG codebase_translate::reporter::default: Reporting cache miss
+2026-03-21T13:04:48.230361Z DEBUG codebase_translate::reporter::stats::translation: Recording cache miss cache_misses=4
+2026-03-21T13:04:48.230368Z DEBUG codebase_translate::encoding::detector: Encoding detected source=<bytes> encoding=UTF-8 confidence=0.9
+2026-03-21T13:04:48.232852Z DEBUG codebase_translate::parser::filtering::composite: Text passed all filter checks text=用于测试的 JavaScript 注释
+2026-03-21T13:04:48.232873Z DEBUG codebase_translate::parser::core::strategies::config_based: Extraction strategy decision node_type=comment should_extract=true strategy="config_based"
+2026-03-21T13:04:48.232904Z DEBUG codebase_translate::parser::filtering::composite: Text passed all filter checks text=这是一个单行注释
+2026-03-21T13:04:48.232911Z DEBUG codebase_translate::parser::core::strategies::config_based: Extraction strategy decision node_type=comment should_extract=true strategy="config_based"
+2026-03-21T13:04:48.232962Z DEBUG codebase_translate::parser::filtering::composite: Text passed all filter checks text=这是一个多行注释
+多行文本
+2026-03-21T13:04:48.232969Z DEBUG codebase_translate::parser::core::strategies::config_based: Extraction strategy decision node_type=comment should_extract=true strategy="config_based"
+2026-03-21T13:04:48.232995Z DEBUG codebase_translate::parser::filtering::composite: Text passed all filter checks text=函数内部的另一个注释
+2026-03-21T13:04:48.233001Z DEBUG codebase_translate::parser::core::strategies::config_based: Extraction strategy decision node_type=comment should_extract=true strategy="config_based"
+2026-03-21T13:04:48.233027Z DEBUG codebase_translate::parser::filtering::checks::language: Text filtered by language check source_langs=["AUTO"] reason="no_target_language"
+2026-03-21T13:04:48.235075Z DEBUG codebase_translate::parser::filtering::composite: Text passed all filter checks text=用于测试的 JavaScript 注释
+2026-03-21T13:04:48.235093Z DEBUG codebase_translate::parser::core::strategies::config_based: Extraction strategy decision node_type=docstring should_extract=true strategy="config_based"
+2026-03-21T13:04:48.235118Z DEBUG codebase_translate::parser::filtering::composite: Text passed all filter checks text=这是一个单行注释
+2026-03-21T13:04:48.235122Z DEBUG codebase_translate::parser::core::strategies::config_based: Extraction strategy decision node_type=docstring should_extract=true strategy="config_based"
+2026-03-21T13:04:48.235160Z DEBUG codebase_translate::parser::filtering::composite: Text passed all filter checks text=这是一个多行注释
+多行文本
+2026-03-21T13:04:48.235167Z DEBUG codebase_translate::parser::core::strategies::config_based: Extraction strategy decision node_type=docstring should_extract=true strategy="config_based"
+2026-03-21T13:04:48.235193Z DEBUG codebase_translate::parser::filtering::composite: Text passed all filter checks text=函数内部的另一个注释
+2026-03-21T13:04:48.235199Z DEBUG codebase_translate::parser::core::strategies::config_based: Extraction strategy decision node_type=docstring should_extract=true strategy="config_based"
+2026-03-21T13:04:48.235222Z DEBUG codebase_translate::parser::filtering::checks::language: Text filtered by language check source_langs=["AUTO"] reason="no_target_language"
+2026-03-21T13:04:48.236682Z DEBUG codebase_translate::parser::filtering::checks::pattern: Text filtered by pattern check reason="contains_placeholder"
+2026-03-21T13:04:48.236755Z DEBUG codebase_translate::reporter::default: Reporting file processed file=\\?\E:\project\codebase-translator\e2e\javascript\comments.js units=3
+2026-03-21T13:04:48.236765Z DEBUG codebase_translate::reporter::stats::translation: Recording translation units units=3 total=9
+2026-03-21T13:04:48.236771Z DEBUG codebase_translate::reporter::stats::translation: Recording file processed processed=4
+2026-03-21T13:04:48.236775Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\javascript\comments.js total_units=3 translatable_units=3
+2026-03-21T13:04:48.236783Z DEBUG codebase_translate::workflow::file_processor: Translating units units_count=3
+2026-03-21T13:04:48.236787Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\e2e\javascript\comments.js units_to_translate=3
+2026-03-21T13:04:48.236791Z DEBUG codebase_translate::translator::service: Translating batch of texts texts_count=3 target_lang=EN
+2026-03-21T13:04:48.236833Z DEBUG codebase_translate::translator::deeplx: Sending DeepLX translation request url=https://api.deeplx.org/wpHYqxJTk560N5b0dGsBSyOsc3otyH0sheBPPAaMvNM/translate source_lang="" target_lang="EN"
+2026-03-21T13:04:49.757141Z DEBUG codebase_translate::translator::deeplx: Sending DeepLX translation request url=https://api.deeplx.org/wpHYqxJTk560N5b0dGsBSyOsc3otyH0sheBPPAaMvNM/translate source_lang="" target_lang="EN"
+2026-03-21T13:04:50.788792Z DEBUG codebase_translate::translator::deeplx: Sending DeepLX translation request url=https://api.deeplx.org/wpHYqxJTk560N5b0dGsBSyOsc3otyH0sheBPPAaMvNM/translate source_lang="" target_lang="EN"
+2026-03-21T13:04:51.828583Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=3 success_count=3 failed_count=0 processing_time_ms=3591 average_latency_ms=1196.6666666666667 total_chars=125
+2026-03-21T13:04:51.828633Z DEBUG codebase_translate::translator::service: Batch translation completed with rate limiting translated_count=3
+2026-03-21T13:04:51.828644Z DEBUG codebase_translate::reporter::default: Reporting API call count=1
+2026-03-21T13:04:51.828649Z DEBUG codebase_translate::reporter::stats::translation: Recording API calls api_calls=1 total=3
+2026-03-21T13:04:51.828654Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\e2e\javascript\comments.js translated_units=3
+2026-03-21T13:04:51.828662Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\e2e\javascript\comments.js
+2026-03-21T13:04:51.829074Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\e2e\javascript\comments.js translation_units=3
+2026-03-21T13:04:51.829755Z DEBUG codebase_translate::writer::file: Starting async atomic file write file=\\?\E:\project\codebase-translator\e2e\javascript\comments.js
+2026-03-21T13:04:51.829788Z DEBUG codebase_translate::writer::file: Creating temporary file file=\\?\E:\project\codebase-translator\e2e\javascript\comments.js temp_file=\\?\E:\project\codebase-translator\e2e\javascript\comments.tmp
+2026-03-21T13:04:51.830394Z DEBUG codebase_translate::writer::file: Preserving file metadata file=\\?\E:\project\codebase-translator\e2e\javascript\comments.js
+2026-03-21T13:04:51.830696Z DEBUG codebase_translate::writer::file: Performing atomic rename file=\\?\E:\project\codebase-translator\e2e\javascript\comments.js
+2026-03-21T13:04:51.830963Z DEBUG codebase_translate::writer::file: Async atomic file write completed file=\\?\E:\project\codebase-translator\e2e\javascript\comments.js
+2026-03-21T13:04:51.830975Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\e2e\javascript\comments.js
+2026-03-21T13:04:51.830986Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\e2e\javascript\comments.js
+2026-03-21T13:04:51.831549Z DEBUG codebase_translate::workflow::file_processor: Updating cache file=\\?\E:\project\codebase-translator\e2e\javascript\comments.js
+2026-03-21T13:04:51.831566Z DEBUG codebase_translate::cache::binary: Setting cache entry file_hash=b021add6644a3b5ec4bc2a0e39f287bf2515745ef057f902f23e747cfd1e109e file_path=\\?\E:\project\codebase-translator\e2e\javascript\comments.js
+2026-03-21T13:04:51.831574Z DEBUG codebase_translate::cache::binary: Adding cache entry file_hash=b021add6644a3b5ec4bc2a0e39f287bf2515745ef057f902f23e747cfd1e109e file_path=\\?\E:\project\codebase-translator\e2e\javascript\comments.js
+2026-03-21T13:04:51.831597Z DEBUG codebase_translate::cache::binary: Cache entry added successfully
+2026-03-21T13:04:51.831729Z DEBUG codebase_translate::cache::binary: Saving cache to disk
+2026-03-21T13:04:51.831823Z DEBUG codebase_translate::cache::binary: Cache data prepared entries=3 data_size=450
+2026-03-21T13:04:51.832317Z DEBUG codebase_translate::cache::binary: Cache saved successfully cache_file=.\.translator\cache.bin file_size=698
+2026-03-21T13:04:51.832338Z DEBUG codebase_translate::cache::binary: Cache entry set successfully
+2026-03-21T13:04:51.832341Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\e2e\javascript\comments.js total_units=3 translated_units=3
+2026-03-21T13:04:51.832355Z DEBUG codebase_translate::workflow::executor: Processing file index=5 total=289 file=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js
+2026-03-21T13:04:51.832365Z DEBUG codebase_translate::reporter::default: Reporting progress current=5 total=289
+2026-03-21T13:04:51.832370Z DEBUG codebase_translate::workflow::file_processor: Processing file file=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js
+2026-03-21T13:04:51.832482Z DEBUG codebase_translate::cache::binary: Getting cache entry file_hash=0780f8b6e0d4d78158a73de6324c4c924f6d17e766a3b8a8a9c1f5247e8f51ef
+2026-03-21T13:04:51.832497Z DEBUG codebase_translate::cache::binary: Cache entry not found file_hash=0780f8b6e0d4d78158a73de6324c4c924f6d17e766a3b8a8a9c1f5247e8f51ef
+2026-03-21T13:04:51.832502Z DEBUG codebase_translate::workflow::file_processor: Cache miss file=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js
+2026-03-21T13:04:51.832506Z DEBUG codebase_translate::reporter::default: Reporting cache miss
+2026-03-21T13:04:51.832510Z DEBUG codebase_translate::reporter::stats::translation: Recording cache miss cache_misses=5
+2026-03-21T13:04:51.832517Z DEBUG codebase_translate::encoding::detector: Encoding detected source=<bytes> encoding=UTF-8 confidence=0.9
+2026-03-21T13:04:51.834580Z DEBUG codebase_translate::parser::filtering::composite: Text passed all filter checks text=字符串格式保存测试文件
+2026-03-21T13:04:51.834594Z DEBUG codebase_translate::parser::core::strategies::config_based: Extraction strategy decision node_type=comment should_extract=true strategy="config_based"
+2026-03-21T13:04:51.834627Z DEBUG codebase_translate::parser::filtering::composite: Text passed all filter checks text=该文件用于测试各种 JavaScript 字符串字面类型
+2026-03-21T13:04:51.834633Z DEBUG codebase_translate::parser::core::strategies::config_based: Extraction strategy decision node_type=comment should_extract=true strategy="config_based"
+2026-03-21T13:04:51.836561Z DEBUG codebase_translate::parser::filtering::composite: Text passed all filter checks text=字符串格式保存测试文件
+2026-03-21T13:04:51.836580Z DEBUG codebase_translate::parser::core::strategies::config_based: Extraction strategy decision node_type=docstring should_extract=true strategy="config_based"
+2026-03-21T13:04:51.836608Z DEBUG codebase_translate::parser::filtering::composite: Text passed all filter checks text=该文件用于测试各种 JavaScript 字符串字面类型
+2026-03-21T13:04:51.836612Z DEBUG codebase_translate::parser::core::strategies::config_based: Extraction strategy decision node_type=docstring should_extract=true strategy="config_based"
+2026-03-21T13:04:51.838154Z DEBUG codebase_translate::parser::filtering::checks::language: Text filtered by language check source_langs=["AUTO"] reason="no_target_language"
+2026-03-21T13:04:51.838179Z DEBUG codebase_translate::parser::filtering::checks::language: Text filtered by language check source_langs=["AUTO"] reason="no_target_language"
+2026-03-21T13:04:51.838212Z DEBUG codebase_translate::parser::filtering::checks::language: Text filtered by language check source_langs=["AUTO"] reason="no_target_language"
+2026-03-21T13:04:51.838245Z DEBUG codebase_translate::parser::filtering::checks::pattern: Text filtered by pattern check reason="contains_placeholder"
+2026-03-21T13:04:51.838287Z DEBUG codebase_translate::parser::filtering::checks::language: Text filtered by language check source_langs=["AUTO"] reason="no_target_language"
+2026-03-21T13:04:51.838323Z DEBUG codebase_translate::parser::filtering::checks::language: Text filtered by language check source_langs=["AUTO"] reason="no_target_language"
+2026-03-21T13:04:51.838343Z DEBUG codebase_translate::parser::filtering::checks::language: Text filtered by language check source_langs=["AUTO"] reason="no_target_language"
+2026-03-21T13:04:51.838367Z DEBUG codebase_translate::parser::filtering::checks::language: Text filtered by language check source_langs=["AUTO"] reason="no_target_language"
+2026-03-21T13:04:51.838388Z DEBUG codebase_translate::parser::filtering::checks::language: Text filtered by language check source_langs=["AUTO"] reason="no_target_language"
+2026-03-21T13:04:51.838467Z DEBUG codebase_translate::reporter::default: Reporting file processed file=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js units=1
+2026-03-21T13:04:51.838476Z DEBUG codebase_translate::reporter::stats::translation: Recording translation units units=1 total=10
+2026-03-21T13:04:51.838481Z DEBUG codebase_translate::reporter::stats::translation: Recording file processed processed=5
+2026-03-21T13:04:51.838486Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js total_units=1 translatable_units=1
+2026-03-21T13:04:51.838493Z DEBUG codebase_translate::workflow::file_processor: Translating units units_count=1
+2026-03-21T13:04:51.838497Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js units_to_translate=1
+2026-03-21T13:04:51.838501Z DEBUG codebase_translate::translator::service: Translating batch of texts texts_count=1 target_lang=EN
+2026-03-21T13:04:51.838532Z DEBUG codebase_translate::translator::deeplx: Sending DeepLX translation request url=https://api.deeplx.org/wpHYqxJTk560N5b0dGsBSyOsc3otyH0sheBPPAaMvNM/translate source_lang="" target_lang="EN"
+2026-03-21T13:04:52.880228Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=1 success_count=1 failed_count=0 processing_time_ms=1041 average_latency_ms=1041.0 total_chars=94
+2026-03-21T13:04:52.880311Z DEBUG codebase_translate::translator::service: Batch translation completed with rate limiting translated_count=1
+2026-03-21T13:04:52.880327Z DEBUG codebase_translate::reporter::default: Reporting API call count=1
+2026-03-21T13:04:52.880335Z DEBUG codebase_translate::reporter::stats::translation: Recording API calls api_calls=1 total=4
+2026-03-21T13:04:52.880341Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js translated_units=1
+2026-03-21T13:04:52.880352Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js
+2026-03-21T13:04:52.880815Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js translation_units=1
+2026-03-21T13:04:52.881421Z DEBUG codebase_translate::writer::file: Starting async atomic file write file=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js
+2026-03-21T13:04:52.881445Z DEBUG codebase_translate::writer::file: Creating temporary file file=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js temp_file=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.tmp
+2026-03-21T13:04:52.881899Z DEBUG codebase_translate::writer::file: Preserving file metadata file=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js
+2026-03-21T13:04:52.882065Z DEBUG codebase_translate::writer::file: Performing atomic rename file=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js
+2026-03-21T13:04:52.882302Z DEBUG codebase_translate::writer::file: Async atomic file write completed file=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js
+2026-03-21T13:04:52.882324Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js
+2026-03-21T13:04:52.882332Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js
+2026-03-21T13:04:52.882812Z DEBUG codebase_translate::workflow::file_processor: Updating cache file=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js
+2026-03-21T13:04:52.882829Z DEBUG codebase_translate::cache::binary: Setting cache entry file_hash=0780f8b6e0d4d78158a73de6324c4c924f6d17e766a3b8a8a9c1f5247e8f51ef file_path=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js
+2026-03-21T13:04:52.882834Z DEBUG codebase_translate::cache::binary: Adding cache entry file_hash=0780f8b6e0d4d78158a73de6324c4c924f6d17e766a3b8a8a9c1f5247e8f51ef file_path=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js
+2026-03-21T13:04:52.882858Z DEBUG codebase_translate::cache::binary: Cache entry added successfully
+2026-03-21T13:04:52.882955Z DEBUG codebase_translate::cache::binary: Saving cache to disk
+2026-03-21T13:04:52.883038Z DEBUG codebase_translate::cache::binary: Cache data prepared entries=4 data_size=621
+2026-03-21T13:04:52.883444Z DEBUG codebase_translate::cache::binary: Cache saved successfully cache_file=.\.translator\cache.bin file_size=941
+2026-03-21T13:04:52.883464Z DEBUG codebase_translate::cache::binary: Cache entry set successfully
+2026-03-21T13:04:52.883468Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js total_units=1 translated_units=1
+2026-03-21T13:04:52.883480Z DEBUG codebase_translate::workflow::executor: Processing file index=6 total=289 file=\\?\E:\project\codebase-translator\e2e\javascript\string_literals.js
+2026-03-21T13:04:52.883485Z DEBUG codebase_translate::reporter::default: Reporting progress current=6 total=289
+2026-03-21T13:04:52.883489Z DEBUG codebase_translate::workflow::file_processor: Processing file file=\\?\E:\project\codebase-translator\e2e\javascript\string_literals.js
+2026-03-21T13:04:52.883574Z DEBUG codebase_translate::cache::binary: Getting cache entry file_hash=ba4ba30f9216c22932fdb6dda35f15aa500018d0b050eb209b062bdc8df3a08e
+2026-03-21T13:04:52.883587Z DEBUG codebase_translate::cache::binary: Cache entry not found file_hash=ba4ba30f9216c22932fdb6dda35f15aa500018d0b050eb209b062bdc8df3a08e
+2026-03-21T13:04:52.883591Z DEBUG codebase_translate::workflow::file_processor: Cache miss file=\\?\E:\project\codebase-translator\e2e\javascript\string_literals.js
+2026-03-21T13:04:52.883595Z DEBUG codebase_translate::reporter::default: Reporting cache miss
+2026-03-21T13:04:52.883599Z DEBUG codebase_translate::reporter::stats::translation: Recording cache miss cache_misses=6
+2026-03-21T13:04:52.883605Z DEBUG codebase_translate::encoding::detector: Encoding detected source=<bytes> encoding=UTF-8 confidence=0.9
+2026-03-21T13:04:52.885413Z DEBUG codebase_translate::parser::filtering::composite: Text passed all filter checks text=用于测试的 JavaScript 字符串字面量
+2026-03-21T13:04:52.885428Z DEBUG codebase_translate::parser::core::strategies::config_based: Extraction strategy decision node_type=comment should_extract=true strategy="config_based"
+2026-03-21T13:04:52.887577Z DEBUG codebase_translate::parser::filtering::composite: Text passed all filter checks text=用于测试的 JavaScript 字符串字面量
+2026-03-21T13:04:52.887599Z DEBUG codebase_translate::parser::core::strategies::config_based: Extraction strategy decision node_type=docstring should_extract=true strategy="config_based"
+2026-03-21T13:04:52.889142Z DEBUG codebase_translate::parser::filtering::checks::language: Text filtered by language check source_langs=["AUTO"] reason="no_target_language"
+2026-03-21T13:04:52.889177Z DEBUG codebase_translate::parser::filtering::checks::language: Text filtered by language check source_langs=["AUTO"] reason="no_target_language"
+2026-03-21T13:04:52.889194Z DEBUG codebase_translate::parser::filtering::checks::language: Text filtered by language check source_langs=["AUTO"] reason="no_target_language"
+2026-03-21T13:04:52.889266Z DEBUG codebase_translate::reporter::default: Reporting file processed file=\\?\E:\project\codebase-translator\e2e\javascript\string_literals.js units=1
+2026-03-21T13:04:52.889275Z DEBUG codebase_translate::reporter::stats::translation: Recording translation units units=1 total=11
+2026-03-21T13:04:52.889280Z DEBUG codebase_translate::reporter::stats::translation: Recording file processed processed=6
+2026-03-21T13:04:52.889285Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\javascript\string_literals.js total_units=1 translatable_units=1
+2026-03-21T13:04:52.889298Z DEBUG codebase_translate::workflow::file_processor: Translating units units_count=1
+2026-03-21T13:04:52.889304Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\e2e\javascript\string_literals.js units_to_translate=1
+2026-03-21T13:04:52.889310Z DEBUG codebase_translate::translator::service: Translating batch of texts texts_count=1 target_lang=EN
+2026-03-21T13:04:52.889351Z DEBUG codebase_translate::translator::deeplx: Sending DeepLX translation request url=https://api.deeplx.org/wpHYqxJTk560N5b0dGsBSyOsc3otyH0sheBPPAaMvNM/translate source_lang="" target_lang="EN"
