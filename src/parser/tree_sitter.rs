@@ -412,20 +412,7 @@ impl TreeSitterParser {
                 };
 
                 if !is_doc_empty_line {
-                    if text.len() < self.config.min_content_length {
-                        continue;
-                    }
-
-                    if text.len() > self.config.max_content_length {
-                        continue;
-                    }
-
-                    // Skip if only symbols/whitespace
-                    if is_only_symbols(&text) {
-                        continue;
-                    }
-
-                    // Apply content filter
+                    // Apply content filter (includes length, symbol, and language checks)
                     if !self.filter.should_translate(&text) {
                         continue;
                     }
@@ -494,49 +481,6 @@ impl ParserTrait for TreeSitterParser {
         // The caller should use the LanguageConfig directly
         &[]
     }
-}
-
-/// Check if text contains only symbols/whitespace (no actual content)
-fn is_only_symbols(text: &str) -> bool {
-    text.chars().all(|c| c.is_whitespace() || is_punctuation(c))
-}
-
-/// Check if character is punctuation
-fn is_punctuation(c: char) -> bool {
-    matches!(
-        c,
-        '!' | '"'
-            | '#'
-            | '$'
-            | '%'
-            | '&'
-            | '\''
-            | '('
-            | ')'
-            | '*'
-            | '+'
-            | ','
-            | '-'
-            | '.'
-            | '/'
-            | ':'
-            | ';'
-            | '<'
-            | '='
-            | '>'
-            | '?'
-            | '@'
-            | '['
-            | '\\'
-            | ']'
-            | '^'
-            | '_'
-            | '`'
-            | '{'
-            | '|'
-            | '}'
-            | '~'
-    )
 }
 
 /// Parser factory for creating language-specific parsers

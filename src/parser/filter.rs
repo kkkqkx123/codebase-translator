@@ -12,6 +12,11 @@ use tracing::debug;
 /// Filter configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FilterConfig {
+    /// Source languages to translate from (e.g., ["zh", "zh-CN"])
+    /// If empty, all languages are accepted
+    #[serde(default)]
+    pub source_langs: Vec<String>,
+
     /// Keywords to exclude
     #[serde(default = "default_exclude_keywords")]
     pub exclude_keywords: Vec<String>,
@@ -81,6 +86,7 @@ fn default_true() -> bool {
 impl Default for FilterConfig {
     fn default() -> Self {
         Self {
+            source_langs: Vec::new(),
             exclude_keywords: default_exclude_keywords(),
             exclude_patterns: default_exclude_patterns(),
             include_patterns: Vec::new(),
@@ -100,11 +106,22 @@ pub struct ContentFilter {
     include_patterns_regex: Vec<Regex>,
     placeholder_regex: Vec<Regex>,
     code_pattern_regex: Vec<Regex>,
+    #[allow(dead_code)]
+    language_detector: Arc<LanguageDetector>,
 }
 
 impl ContentFilter {
     /// Create a new content filter
     pub fn new(config: FilterConfig) -> crate::core::error::Result<Self> {
+        let language_detector = Arc::new(LanguageDetector::new());
+        Self::with_language_detector(config, language_detector)
+    }
+
+    /// Create a new content filter with a language detector
+    pub fn with_language_detector(
+        config: FilterConfig,
+        language_detector: Arc<LanguageDetector>,
+    ) -> crate::core::error::Result<Self> {
         // Compile exclude keywords as word-boundary regexes
         let exclude_keywords_regex = config
             .exclude_keywords
@@ -167,6 +184,7 @@ impl ContentFilter {
             include_patterns_regex,
             placeholder_regex,
             code_pattern_regex,
+            language_detector,
         })
     }
 
@@ -177,6 +195,7 @@ impl ContentFilter {
 
     /// Check if content should be translated
     pub fn should_translate(&self, text: &str) -> bool {
+        // Layer 1: O(1) operations - fastest checks first
         // Empty check
         if text.is_empty() {
             debug!(text = %text, reason = "empty", "Text filtered");
@@ -206,6 +225,22 @@ impl ContentFilter {
             return false;
         }
 
+        // Layer 2: Quick language detection (O(k) where k=32)
+        // Early filter based on source language configuration
+        if !self.config.source_langs.is_empty() {
+            if !contains_target_language(text, &self.config.source_langs) {
+                debug!(
+                    text = %text,
+                    source_langs = ?self.config.source_langs,
+                    reason = "no_target_language",
+                    "Text filtered"
+                );
+                return false;
+            }
+        }
+
+        // Layer 3: Regex matching (O(n) where n is number of patterns)
+        // Compiled regex patterns are relatively fast
         // Exclude keywords check
         for pattern in &self.exclude_keywords_regex {
             if pattern.is_match(text) {
@@ -271,6 +306,7 @@ impl ContentFilter {
             }
         }
 
+        // Layer 4: O(len) operations - most expensive checks last
         // Symbol-only check
         if is_only_symbols(text) {
             debug!(
@@ -350,6 +386,41 @@ fn is_punctuation(c: char) -> bool {
             | '}'
             | '~'
     )
+}
+
+/// Quick detection of CJK characters in text
+/// Only checks the first 32 characters for performance
+fn quick_detect_cjk(text: &str) -> bool {
+    text.chars().take(32).any(|c| {
+        // Check if character is in CJK Unified Ideographs block
+        matches!(c, '\u{4E00}'..='\u{9FFF}' | '\u{3400}'..='\u{4DBF}')
+    })
+}
+
+/// Check if text contains target language characters based on source_langs config
+fn contains_target_language(text: &str, source_langs: &[String]) -> bool {
+    if source_langs.is_empty() {
+        return true; // No language restriction
+    }
+
+    // Check if AUTO mode is enabled
+    if source_langs.iter().any(|lang| lang.to_uppercase() == "AUTO") {
+        return true; // AUTO mode accepts all languages
+    }
+
+    // Check if any of the source languages require CJK characters
+    let requires_cjk = source_langs
+        .iter()
+        .any(|lang| lang == "zh" || lang == "zh-CN" || lang == "zh-TW" || lang == "ja" || lang == "ko");
+
+    if requires_cjk {
+        // If Chinese/Japanese/Korean is required, check for CJK characters
+        quick_detect_cjk(text)
+    } else {
+        // For other languages, we accept all text
+        // This could be extended with more specific checks
+        true
+    }
 }
 
 /// Script type for language detection
@@ -488,8 +559,10 @@ pub fn default_filter() -> crate::core::error::Result<ContentFilter> {
 /// Create a filter from project config
 pub fn from_project_config(
     config: &crate::config::project::FilterConfig,
+    translate_config: &crate::config::project::TranslateConfig,
 ) -> crate::core::error::Result<ContentFilter> {
     let filter_config = FilterConfig {
+        source_langs: translate_config.source_langs.clone(),
         exclude_keywords: config.exclude_keywords.clone(),
         exclude_patterns: config.exclude_patterns.clone(),
         include_patterns: config.include_patterns.clone(),
@@ -508,6 +581,7 @@ pub fn from_project_config(
 /// Create a filter from project config with translator max length
 pub fn from_project_config_with_translator(
     project_config: &crate::config::project::FilterConfig,
+    translate_config: &crate::config::project::TranslateConfig,
     translator_max_length: Option<usize>,
 ) -> crate::core::error::Result<ContentFilter> {
     let max_length = match (project_config.max_length, translator_max_length) {
@@ -518,6 +592,7 @@ pub fn from_project_config_with_translator(
     };
 
     let filter_config = FilterConfig {
+        source_langs: translate_config.source_langs.clone(),
         exclude_keywords: project_config.exclude_keywords.clone(),
         exclude_patterns: project_config.exclude_patterns.clone(),
         include_patterns: project_config.include_patterns.clone(),

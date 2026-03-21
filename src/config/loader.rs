@@ -147,7 +147,7 @@ impl ConfigLoader {
 
     /// Find project config by searching up the directory tree
     fn find_project_config(start_dir: &Path) -> Option<PathBuf> {
-        let config_names = [".translator.toml", "translator.toml"];
+        let config_names = [".translator"];
 
         let mut current = Some(start_dir);
         while let Some(dir) = current {

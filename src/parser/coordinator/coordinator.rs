@@ -66,7 +66,10 @@ impl ParserCoordinator {
         use crate::parser::strategy::default_strategy;
 
         let strategy = Arc::new(default_strategy());
-        let filter = Arc::new(from_project_config(&project_config.filter)?);
+        let filter = Arc::new(from_project_config(
+            &project_config.filter,
+            &project_config.translate,
+        )?);
 
         Self::new(config, strategy, filter)
     }
@@ -87,6 +90,7 @@ impl ParserCoordinator {
         let strategy = Arc::new(default_strategy());
         let filter = Arc::new(from_project_config_with_translator(
             &project_config.filter,
+            &project_config.translate,
             translator_max_length,
         )?);
 

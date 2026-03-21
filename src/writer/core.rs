@@ -57,13 +57,15 @@ impl TranslationApplier {
                 if has_valid_positions {
                     // Use position-based extraction for accurate replacement
                     let original_text = &normalized_content[start_byte..end_byte];
+                    // Check if original_text ends with newline - we need to preserve this
+                    let ends_with_newline = original_text.ends_with('\n');
                     // Format the translation using raw_match as template for consistent formatting
-                    let formatted = Self::format_multiline_translation(raw_match, translated);
+                    let formatted = Self::format_multiline_translation(raw_match, translated, ends_with_newline);
                     // Replace using the actual original text from the file
                     result = result.replace(original_text, &formatted);
                 } else {
                     // Fall back to raw_match-based replacement for tests or legacy data
-                    let formatted = Self::format_multiline_translation(raw_match, translated);
+                    let formatted = Self::format_multiline_translation(raw_match, translated, false);
                     result = result.replace(raw_match.as_str(), &formatted);
                 }
             }
@@ -112,12 +114,17 @@ impl TranslationApplier {
     }
 
     /// Format a multiline translation by applying it line by line to the raw match
-    fn format_multiline_translation(raw_match: &str, translated: &str) -> String {
+    /// 
+    /// # Arguments
+    /// * `raw_match` - The original matched text from the parser
+    /// * `translated` - The translated text
+    /// * `force_trailing_newline` - Whether to force a trailing newline (from original content)
+    fn format_multiline_translation(raw_match: &str, translated: &str, force_trailing_newline: bool) -> String {
         let raw_lines: Vec<&str> = raw_match.lines().collect();
         let translated_lines: Vec<&str> = translated.lines().collect();
 
         // Check if raw_match ends with newline - we need to preserve this
-        let ends_with_newline = raw_match.ends_with('\n');
+        let ends_with_newline = raw_match.ends_with('\n') || force_trailing_newline;
 
         // Check if this is a block comment (starts with /* or /**)
         let is_block_comment = raw_lines
