@@ -9,6 +9,7 @@ use crate::core::error::{Result, TranslateError};
 use crate::core::models::{CacheConfig, CacheEntry, CacheEntryInfo, CacheStats};
 
 use crc32fast::Hasher as Crc32Hasher;
+use rand::Rng;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, RwLock};
@@ -18,6 +19,7 @@ const CACHE_MAGIC: &[u8; 8] = b"CBCACHE\x00";
 const CACHE_VERSION: u32 = 1;
 const HEADER_SIZE: usize = 32;
 const INDEX_ENTRY_SIZE: usize = 72;
+const HASH_SIZE: usize = 64;
 
 #[derive(Debug, Clone)]
 struct FileHeader {
@@ -74,33 +76,26 @@ impl FileHeader {
 }
 
 #[derive(Debug, Clone)]
-struct IndexEntry {
-    offset: u32,
-    size: u32,
-}
-
-#[derive(Debug, Clone)]
-struct PendingEntry {
-    data: Vec<u8>,
+enum EntryState {
+    Pending(Vec<u8>),
+    Committed { offset: u32, size: u32 },
 }
 
 /// Binary cache implementation
 pub struct BinaryCache {
     config: CacheConfig,
-    _project_dir: PathBuf,
     project_fingerprint: String,
     cache_file_path: PathBuf,
-    index: Arc<RwLock<HashMap<String, IndexEntry>>>,
-    pending_entries: Arc<RwLock<HashMap<String, PendingEntry>>>,
+    entries: Arc<RwLock<HashMap<String, EntryState>>>,
     dirty: Arc<RwLock<bool>>,
 }
 
 impl BinaryCache {
     pub fn new(config: CacheConfig, project_dir: impl AsRef<Path>) -> Result<Self> {
-        let project_dir = project_dir.as_ref().to_path_buf();
-        let project_fingerprint = util::generate_project_fingerprint(&project_dir)?;
+        let project_dir = project_dir.as_ref();
+        let project_fingerprint = util::generate_project_fingerprint(project_dir)?;
 
-        let cache_dir = util::resolve_cache_dir(&config.mode, &project_dir);
+        let cache_dir = util::resolve_cache_dir(&config.mode, project_dir);
         let cache_file_path = cache_dir.join("translator-cache.bin");
 
         info!(
@@ -112,11 +107,9 @@ impl BinaryCache {
 
         let cache = Self {
             config,
-            _project_dir: project_dir,
             project_fingerprint,
             cache_file_path,
-            index: Arc::new(RwLock::new(HashMap::new())),
-            pending_entries: Arc::new(RwLock::new(HashMap::new())),
+            entries: Arc::new(RwLock::new(HashMap::new())),
             dirty: Arc::new(RwLock::new(false)),
         };
 
@@ -205,7 +198,7 @@ impl BinaryCache {
         }
 
         let index_data = &data[index_start..index_end];
-        let mut new_index = HashMap::new();
+        let mut new_entries = HashMap::new();
         let mut offset = 0;
 
         while offset + INDEX_ENTRY_SIZE <= index_data.len() {
@@ -226,9 +219,9 @@ impl BinaryCache {
             let hash = String::from_utf8(hash_bytes.to_vec())
                 .map_err(|e| TranslateError::Cache(format!("Invalid hash: {}", e)))?;
 
-            new_index.insert(
+            new_entries.insert(
                 hash,
-                IndexEntry {
+                EntryState::Committed {
                     offset: entry_offset,
                     size,
                 },
@@ -236,12 +229,12 @@ impl BinaryCache {
             offset += INDEX_ENTRY_SIZE;
         }
 
-        let entry_count = new_index.len();
+        let entry_count = new_entries.len();
 
-        let mut index_lock = self.index.write().map_err(|_| {
-            TranslateError::Lock("Failed to acquire write lock on index".to_string())
+        let mut entries_lock = self.entries.write().map_err(|_| {
+            TranslateError::Lock("Failed to acquire write lock on entries in load_index".to_string())
         })?;
-        *index_lock = new_index;
+        *entries_lock = new_entries;
 
         debug!(entries = entry_count, "Cache index loaded successfully");
         Ok(())
@@ -271,89 +264,132 @@ impl BinaryCache {
     fn save(&self) -> Result<()> {
         self.ensure_cache_dir()?;
 
-        let dirty = {
-            let dirty_lock = self.dirty.read().map_err(|_| {
-                TranslateError::Lock("Failed to acquire read lock on dirty".to_string())
+        // Check if dirty and reset flag
+        let should_save = {
+            let mut dirty_lock = self.dirty.write().map_err(|_| {
+                TranslateError::Lock("Failed to acquire write lock on dirty in save".to_string())
             })?;
-            *dirty_lock
+            if *dirty_lock {
+                *dirty_lock = false;
+                true
+            } else {
+                false
+            }
         };
 
-        if !dirty {
-            debug!("Cache not dirty, skipping save");
+        if !should_save {
+            debug!("Cache not dirty or already being saved, skipping save");
             return Ok(());
         }
 
         debug!("Saving cache to disk");
 
-        let pending_snapshot = {
-            let pending_lock = self.pending_entries.read().map_err(|_| {
-                TranslateError::Lock("Failed to acquire read lock on pending_entries".to_string())
+        // Snapshot entries and collect pending data
+        let (entries_snapshot, pending_data) = {
+            let entries_lock = self.entries.write().map_err(|_| {
+                TranslateError::Lock("Failed to acquire write lock on entries in save".to_string())
             })?;
-            pending_lock.clone()
+
+            let mut pending_data = HashMap::new();
+            let mut entries_snapshot = HashMap::new();
+
+            for (hash, entry_state) in entries_lock.iter() {
+                if let EntryState::Pending(ref data) = entry_state {
+                    pending_data.insert(hash.clone(), data.clone());
+                }
+                entries_snapshot.insert(hash.clone(), entry_state.clone());
+            }
+
+            (entries_snapshot, pending_data)
         };
 
-        let index_snapshot = {
-            let index_lock = self.index.read().map_err(|_| {
-                TranslateError::Lock("Failed to acquire read lock on index".to_string())
-            })?;
-            index_lock.clone()
+        // Read existing file data once if needed
+        let existing_data = if entries_snapshot.values().any(|s| matches!(s, EntryState::Committed { .. })) {
+            match std::fs::read(&self.cache_file_path) {
+                Ok(data) => Some(data),
+                Err(e) if e.kind() == std::io::ErrorKind::NotFound => None,
+                Err(e) => return Err(TranslateError::Cache(format!("Failed to read cache file: {}", e))),
+            }
+        } else {
+            None
         };
 
         let mut data_buf = Vec::new();
-        let mut new_index = HashMap::new();
+        let mut new_entries = HashMap::new();
 
-        let file_exists = self.cache_file_path.exists();
-
-        for (hash, entry) in index_snapshot.iter() {
-            if let Some(pending) = pending_snapshot.get(hash) {
-                let offset = data_buf.len() as u32;
-                let size = pending.data.len() as u32;
-
-                data_buf.extend_from_slice(&pending.data);
-                new_index.insert(hash.clone(), IndexEntry { offset, size });
-            } else if file_exists {
-                let entry_data = self.read_data(entry.offset, entry.size)?;
-
-                let offset = data_buf.len() as u32;
-                let size = entry_data.len() as u32;
-
-                data_buf.extend_from_slice(&entry_data);
-                new_index.insert(hash.clone(), IndexEntry { offset, size });
-            }
-        }
-
-        for (hash, pending) in pending_snapshot.iter() {
-            if !new_index.contains_key(hash) {
-                let offset = data_buf.len() as u32;
-                let size = pending.data.len() as u32;
-
-                data_buf.extend_from_slice(&pending.data);
-                new_index.insert(hash.clone(), IndexEntry { offset, size });
+        // Build new data buffer and entries
+        for (hash, entry_state) in entries_snapshot.iter() {
+            match entry_state {
+                EntryState::Pending(data) => {
+                    let offset = data_buf.len() as u32;
+                    let size = data.len() as u32;
+                    data_buf.extend_from_slice(data);
+                    new_entries.insert(
+                        hash.clone(),
+                        EntryState::Committed { offset, size },
+                    );
+                }
+                EntryState::Committed { offset, size } => {
+                    if let Some(pending) = pending_data.get(hash) {
+                        // Use pending data
+                        let new_offset = data_buf.len() as u32;
+                        let new_size = pending.len() as u32;
+                        data_buf.extend_from_slice(pending);
+                        new_entries.insert(
+                            hash.clone(),
+                            EntryState::Committed {
+                                offset: new_offset,
+                                size: new_size,
+                            },
+                        );
+                    } else if let Some(ref file_data) = existing_data {
+                        // Read from existing data in memory
+                        let start = HEADER_SIZE + *offset as usize;
+                        let end = start + *size as usize;
+                        if end <= file_data.len() {
+                            let entry_data = &file_data[start..end];
+                            let new_offset = data_buf.len() as u32;
+                            let new_size = entry_data.len() as u32;
+                            data_buf.extend_from_slice(entry_data);
+                            new_entries.insert(
+                                hash.clone(),
+                                EntryState::Committed {
+                                    offset: new_offset,
+                                    size: new_size,
+                                },
+                            );
+                        }
+                    }
+                }
             }
         }
 
         debug!(
-            entries = new_index.len(),
+            entries = new_entries.len(),
             data_size = data_buf.len(),
             "Cache data prepared"
         );
 
-        if new_index.is_empty() {
+        if new_entries.is_empty() {
             return Ok(());
         }
 
+        // Build index
         let mut index_buf = Vec::new();
-        for (hash, entry) in new_index.iter() {
+        for (hash, entry_state) in new_entries.iter() {
             let hash_bytes = hash.as_bytes();
-            if hash_bytes.len() != 64 {
+            if hash_bytes.len() != HASH_SIZE {
                 return Err(TranslateError::Cache(format!(
-                    "Hash must be exactly 64 bytes, got {}",
+                    "Hash must be exactly {} bytes, got {}",
+                    HASH_SIZE,
                     hash_bytes.len()
                 )));
             }
-            index_buf.extend_from_slice(hash_bytes);
-            index_buf.extend_from_slice(&entry.offset.to_le_bytes());
-            index_buf.extend_from_slice(&entry.size.to_le_bytes());
+            if let EntryState::Committed { offset, size } = entry_state {
+                index_buf.extend_from_slice(hash_bytes);
+                index_buf.extend_from_slice(&offset.to_le_bytes());
+                index_buf.extend_from_slice(&size.to_le_bytes());
+            }
         }
 
         let header = FileHeader {
@@ -380,10 +416,7 @@ impl BinaryCache {
         let temp_file = format!(
             "{}.tmp.{}",
             self.cache_file_path.display(),
-            std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
-                .as_nanos()
+            rand::thread_rng().gen::<u64>()
         );
         std::fs::write(&temp_file, &file_buf)
             .map_err(|e| TranslateError::Cache(format!("Failed to write temp file: {}", e)))?;
@@ -391,26 +424,10 @@ impl BinaryCache {
             .map_err(|e| TranslateError::Cache(format!("Failed to rename cache file: {}", e)))?;
 
         {
-            let mut index_lock = self.index.write().map_err(|_| {
-                TranslateError::Lock("Failed to acquire write lock on index".to_string())
+            let mut entries_lock = self.entries.write().map_err(|_| {
+                TranslateError::Lock("Failed to acquire write lock on entries in save (update)".to_string())
             })?;
-            *index_lock = new_index.clone();
-        }
-
-        {
-            let mut pending_lock = self.pending_entries.write().map_err(|_| {
-                TranslateError::Lock("Failed to acquire write lock on pending_entries".to_string())
-            })?;
-            for hash in new_index.keys() {
-                pending_lock.remove(hash);
-            }
-        }
-
-        {
-            let mut dirty_lock = self.dirty.write().map_err(|_| {
-                TranslateError::Lock("Failed to acquire write lock on dirty".to_string())
-            })?;
-            *dirty_lock = false;
+            *entries_lock = new_entries;
         }
 
         debug!(
@@ -430,14 +447,17 @@ impl BinaryCache {
         let serialized = rmp_serde::to_vec(entry)
             .map_err(|e| TranslateError::Cache(format!("Failed to serialize entry: {}", e)))?;
 
-        let mut pending_lock = self.pending_entries.write().map_err(|_| {
-            TranslateError::Lock("Failed to acquire write lock on pending_entries".to_string())
+        let mut entries_lock = self.entries.write().map_err(|_| {
+            TranslateError::Lock("Failed to acquire write lock on entries in add_entry".to_string())
         })?;
         let mut dirty_lock = self.dirty.write().map_err(|_| {
-            TranslateError::Lock("Failed to acquire write lock on dirty".to_string())
+            TranslateError::Lock("Failed to acquire write lock on dirty in add_entry".to_string())
         })?;
 
-        pending_lock.insert(entry.file_hash.clone(), PendingEntry { data: serialized });
+        entries_lock.insert(
+            entry.file_hash.clone(),
+            EntryState::Pending(serialized),
+        );
         *dirty_lock = true;
 
         debug!("Cache entry added successfully");
@@ -456,15 +476,18 @@ impl BinaryCache {
             "Getting cache entry"
         );
 
-        let index_entry = {
-            let index_lock = self.index.read().map_err(|_| {
-                TranslateError::Lock("Failed to acquire read lock on index".to_string())
+        let entry_state = {
+            let entries_lock = self.entries.read().map_err(|_| {
+                TranslateError::Lock("Failed to acquire read lock on entries in get".to_string())
             })?;
-            index_lock.get(file_hash).cloned()
+            entries_lock.get(file_hash).cloned()
         };
 
-        if let Some(entry) = index_entry {
-            let data = self.read_data(entry.offset, entry.size)?;
+        if let Some(entry_state) = entry_state {
+            let data = match entry_state {
+                EntryState::Pending(data) => data,
+                EntryState::Committed { offset, size } => self.read_data(offset, size)?,
+            };
 
             let cache_entry: CacheEntry = rmp_serde::from_slice(&data).map_err(|e| {
                 TranslateError::Cache(format!("Failed to deserialize entry: {}", e))
@@ -524,17 +547,17 @@ impl BinaryCache {
             "Invalidating cache entry"
         );
 
-        let mut index_lock = self.index.write().map_err(|_| {
-            TranslateError::Lock("Failed to acquire write lock on index".to_string())
-        })?;
-        index_lock.remove(file_hash);
-        drop(index_lock);
+        {
+            let mut entries_lock = self.entries.write().map_err(|_| {
+                TranslateError::Lock("Failed to acquire write lock on entries in invalidate".to_string())
+            })?;
+            let mut dirty_lock = self.dirty.write().map_err(|_| {
+                TranslateError::Lock("Failed to acquire write lock on dirty in invalidate".to_string())
+            })?;
 
-        let mut dirty_lock = self.dirty.write().map_err(|_| {
-            TranslateError::Lock("Failed to acquire write lock on dirty".to_string())
-        })?;
-        *dirty_lock = true;
-        drop(dirty_lock);
+            entries_lock.remove(file_hash);
+            *dirty_lock = true;
+        }
 
         self.save()?;
 
@@ -553,19 +576,19 @@ impl BinaryCache {
 
         match std::fs::remove_file(&self.cache_file_path) {
             Ok(_) => {
-                let mut index_lock = self.index.write().map_err(|_| {
-                    TranslateError::Lock("Failed to acquire write lock on index".to_string())
+                let mut entries_lock = self.entries.write().map_err(|_| {
+                    TranslateError::Lock("Failed to acquire write lock on entries in clear".to_string())
                 })?;
-                index_lock.clear();
+                entries_lock.clear();
                 debug!("Cache cleared successfully");
                 Ok(())
             }
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
-                let mut index_lock = self.index.write().map_err(|_| {
-                    TranslateError::Lock("Failed to acquire write lock on index".to_string())
+                let mut entries_lock = self.entries.write().map_err(|_| {
+                    TranslateError::Lock("Failed to acquire write lock on entries in clear".to_string())
                 })?;
-                index_lock.clear();
-                debug!("Cache file not found, index cleared");
+                entries_lock.clear();
+                debug!("Cache file not found, entries cleared");
                 Ok(())
             }
             Err(e) => Err(TranslateError::Cache(format!(
@@ -593,10 +616,10 @@ impl BinaryCache {
         debug!("Listing cache entries");
 
         let hashes: Vec<String> = {
-            let index_lock = self.index.read().map_err(|_| {
-                TranslateError::Lock("Failed to acquire read lock on index".to_string())
+            let entries_lock = self.entries.read().map_err(|_| {
+                TranslateError::Lock("Failed to acquire read lock on entries in list_entries".to_string())
             })?;
-            index_lock.keys().cloned().collect()
+            entries_lock.keys().cloned().collect()
         };
 
         let mut result = Vec::new();
@@ -626,10 +649,10 @@ impl BinaryCache {
         );
 
         let to_remove: Vec<String> = {
-            let index_lock = self.index.read().map_err(|_| {
-                TranslateError::Lock("Failed to acquire read lock on index".to_string())
+            let entries_lock = self.entries.read().map_err(|_| {
+                TranslateError::Lock("Failed to acquire read lock on entries in cleanup_orphaned".to_string())
             })?;
-            index_lock
+            entries_lock
                 .keys()
                 .filter(|hash| !existing_hashes.contains_key(*hash))
                 .cloned()
@@ -647,19 +670,18 @@ impl BinaryCache {
         );
 
         {
-            let mut index_lock = self.index.write().map_err(|_| {
-                TranslateError::Lock("Failed to acquire write lock on index".to_string())
+            let mut entries_lock = self.entries.write().map_err(|_| {
+                TranslateError::Lock("Failed to acquire write lock on entries in cleanup_orphaned".to_string())
             })?;
-            for hash in &to_remove {
-                index_lock.remove(hash);
-            }
-        }
+            let mut dirty_lock = self.dirty.write().map_err(|_| {
+                TranslateError::Lock("Failed to acquire write lock on dirty in cleanup_orphaned".to_string())
+            })?;
 
-        let mut dirty_lock = self.dirty.write().map_err(|_| {
-            TranslateError::Lock("Failed to acquire write lock on dirty".to_string())
-        })?;
-        *dirty_lock = true;
-        drop(dirty_lock);
+            for hash in &to_remove {
+                entries_lock.remove(hash);
+            }
+            *dirty_lock = true;
+        }
 
         self.save()?;
 
@@ -677,10 +699,10 @@ impl BinaryCache {
             return Ok(CacheStats::default());
         }
 
-        let index_lock = self.index.read().map_err(|_| {
-            TranslateError::Lock("Failed to acquire read lock on index".to_string())
+        let entries_lock = self.entries.read().map_err(|_| {
+            TranslateError::Lock("Failed to acquire read lock on entries in stats".to_string())
         })?;
-        let entry_count = index_lock.len();
+        let entry_count = entries_lock.len();
 
         let total_size = match std::fs::metadata(&self.cache_file_path) {
             Ok(m) => m.len(),
