@@ -1,30 +1,30 @@
-# Python comments for testing
+# 用于测试的 Python 注释
 
-# This is a single-line comment
+# 这是一个单行注释
 value = 42
 
 """
-This is a multi-line comment
-with multiple lines of text
+这是一个多行注释
+多行文本
 """
 
 def test():
-    # Another comment inside function
+    # 函数内部的另一个注释
     return value
 
 def greet(name):
     """
-    Documentation string for greet function
-    Args:
-        name: The name to greet
-    Returns:
-        A greeting message
+    greet 函数的文档字符串
+        参数：
+            name： 要问候的名称
+        返回 返回 返回 返回值值值值
+            问候信息
     """
     return f"Hello, {name}!"
 
 class Example:
-    """Example class for testing"""
+    """测试示例类"""
     
     def method(self):
-        """Method documentation"""
+        """方法文档"""
         pass

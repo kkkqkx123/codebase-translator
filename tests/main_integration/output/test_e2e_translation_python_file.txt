@@ -3,21 +3,20 @@ E2E Translation Test - Python File
 
 Translation completed successfully!
 
-Files processed: 1
-Total files: 1
-Total units: 6
-Translated units: 6
+Files processed: 0
+Total files: 0
+Total units: 0
+Translated units: 0
 Cached files: 0
 Skipped units: 0
-Errors: 0
-Duration: 8.72s
+Errors: 1
+Duration: 8.63s
 
 
 Directory Contents:
 ====================
   .translator [FILE]
   simple_python.py [FILE]
-  translator [DIR]
 
 
 Translated File Content:
@@ -26,41 +25,41 @@ Translated File Content:
 # Contains Chinese comments and document strings
 
 def add(a, b):
+    """
     Compute the sum of two numbers
     
-    
         Args.
-                a: first number
-                b: second number
+            a: first number
+            b: second number
     
-    
-            Returns.
+        Returns.
             The sum of the two numbers
+    """
     return a + b
 
 def subtract(a, b):
+    """
     Compute the difference between two numbers
     
-    
         Args.
-                a: subtracted number
-                b: subtracted number
+            a: subtracted number
+            b: subtracted number
     
-    
-            Returns.
+        Returns.
             Difference between two numbers
+    """
     return a - b
 
 class Calculator:
     """Simple Calculator Class"""
     
     def __init__(self, name):
+        """
         Initializing the Calculator
         
-        
                 Args.
-                        name: Calculator name
-        
+                    name: Calculator name
+        """
         self.name = name
     
     def get_name(self):

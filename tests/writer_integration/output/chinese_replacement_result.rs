@@ -2,7 +2,7 @@
 // Contains Chinese comments and doc strings
 
 /// Calculate the sum of two numbers
-
+/// 
 /// # Arguments
 /// 
 /// * `a` - 第一个数字
@@ -51,7 +51,7 @@ impl Calculator {
         }
     }
 
-        /// Get Calculator Name
+    /// Get Calculator Name
     pub fn get_name(&self) -> &str {
         &self.name
     }

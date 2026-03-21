@@ -1,5 +1,5 @@
-// Test file for string format preservation
-// This file tests various JavaScript string literal types
+// 字符串格式保存测试文件
+// 该文件用于测试各种 JavaScript 字符串字面类型
 
 function testRegularStrings() {
     const s1 = "Hello, world!";

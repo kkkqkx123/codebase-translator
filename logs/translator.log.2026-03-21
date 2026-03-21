@@ -1,0 +1,210 @@
+2026-03-21T11:09:37.544623Z  INFO translator: Starting application name="codebase-translate" version="0.1.0"
+2026-03-21T11:09:37.544769Z  INFO codebase_translate::commands::translate: Translating directory path=e2e
+2026-03-21T11:09:37.544783Z  INFO codebase_translate::commands::translate: Translation configuration target_lang=zh provider=deeplx
+2026-03-21T11:09:37.544868Z  INFO codebase_translate::workflow::executor: Starting translation workflow root_path=e2e include_patterns=22 exclude_patterns=20 respect_gitignore=true follow_symlinks=false
+2026-03-21T11:09:37.544890Z  INFO codebase_translate::workflow::executor: Step 1: Scanning directory path=e2e
+2026-03-21T11:09:37.545216Z  INFO codebase_translate::scanner::walker: Starting directory scan: \\?\E:\project\codebase-translator\e2e
+2026-03-21T11:09:37.545726Z  INFO codebase_translate::workflow::executor: File scan completed files_count=15
+2026-03-21T11:09:37.545749Z  INFO codebase_translate::cache: Creating cache instance cache_type=local cache_dir=e2e
+2026-03-21T11:09:37.545845Z  INFO codebase_translate::cache::binary: Creating binary cache cache_file=e2e\.translator\cache.bin mode=Local enabled=true
+2026-03-21T11:09:37.545881Z  INFO codebase_translate::translator: Creating translator instance provider=deeplx
+2026-03-21T11:09:37.545886Z  INFO codebase_translate::translator::r#trait: Creating translator from configuration provider=DeepLX
+2026-03-21T11:09:37.546076Z  INFO codebase_translate::translator::deeplx: DeepLX translator created api_url=https://api.deeplx.org
+2026-03-21T11:09:37.546080Z  INFO codebase_translate::translator::r#trait: Translator created successfully provider=DeepLX
+2026-03-21T11:09:37.746442Z  INFO codebase_translate::translator::service: Translation service created with batch translator
+2026-03-21T11:09:37.746464Z  INFO codebase_translate::parser: Creating parser coordinator extract_comments=true extract_docstrings=true extract_strings=true
+2026-03-21T11:09:37.749612Z  INFO codebase_translate::writer: Creating file writer dry_run=false backup=false
+2026-03-21T11:09:37.751151Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\go\comments.go total_units=5 translatable_units=5
+2026-03-21T11:09:37.751173Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\e2e\go\comments.go units_to_translate=5
+2026-03-21T11:09:43.152067Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=5 success_count=5 failed_count=0 processing_time_ms=5400 average_latency_ms=1079.6 total_chars=199
+2026-03-21T11:09:43.152148Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\e2e\go\comments.go translated_units=5
+2026-03-21T11:09:43.152153Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\e2e\go\comments.go
+2026-03-21T11:09:43.152655Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\e2e\go\comments.go translation_units=5
+2026-03-21T11:09:43.154194Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\e2e\go\comments.go
+2026-03-21T11:09:43.154204Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\e2e\go\comments.go
+2026-03-21T11:09:43.155366Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\e2e\go\comments.go total_units=5 translated_units=5
+2026-03-21T11:09:43.156883Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\go\string_format_preservation.go total_units=0 translatable_units=0
+2026-03-21T11:09:43.157804Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\go\string_literals.go total_units=1 translatable_units=1
+2026-03-21T11:09:43.157809Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\e2e\go\string_literals.go units_to_translate=1
+2026-03-21T11:09:44.106748Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=1 success_count=1 failed_count=0 processing_time_ms=948 average_latency_ms=948.0 total_chars=30
+2026-03-21T11:09:44.106783Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\e2e\go\string_literals.go translated_units=1
+2026-03-21T11:09:44.106786Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\e2e\go\string_literals.go
+2026-03-21T11:09:44.107175Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\e2e\go\string_literals.go translation_units=1
+2026-03-21T11:09:44.108921Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\e2e\go\string_literals.go
+2026-03-21T11:09:44.108931Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\e2e\go\string_literals.go
+2026-03-21T11:09:44.110006Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\e2e\go\string_literals.go total_units=1 translated_units=1
+2026-03-21T11:09:44.113306Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\javascript\comments.js total_units=3 translatable_units=3
+2026-03-21T11:09:44.113317Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\e2e\javascript\comments.js units_to_translate=3
+2026-03-21T11:09:47.036890Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=3 success_count=3 failed_count=0 processing_time_ms=2923 average_latency_ms=974.0 total_chars=148
+2026-03-21T11:09:47.036907Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\e2e\javascript\comments.js translated_units=3
+2026-03-21T11:09:47.036910Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\e2e\javascript\comments.js
+2026-03-21T11:09:47.037306Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\e2e\javascript\comments.js translation_units=3
+2026-03-21T11:09:47.038725Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\e2e\javascript\comments.js
+2026-03-21T11:09:47.038738Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\e2e\javascript\comments.js
+2026-03-21T11:09:47.039550Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\e2e\javascript\comments.js total_units=3 translated_units=3
+2026-03-21T11:09:47.052219Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js total_units=1 translatable_units=1
+2026-03-21T11:09:47.052235Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js units_to_translate=1
+2026-03-21T11:09:48.003949Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=1 success_count=1 failed_count=0 processing_time_ms=951 average_latency_ms=951.0 total_chars=96
+2026-03-21T11:09:48.003963Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js translated_units=1
+2026-03-21T11:09:48.003966Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js
+2026-03-21T11:09:48.004247Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js translation_units=1
+2026-03-21T11:09:48.005707Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js
+2026-03-21T11:09:48.005718Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js
+2026-03-21T11:09:48.006728Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js total_units=1 translated_units=1
+2026-03-21T11:09:48.009162Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\javascript\string_literals.js total_units=1 translatable_units=1
+2026-03-21T11:09:48.009175Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\e2e\javascript\string_literals.js units_to_translate=1
+2026-03-21T11:09:48.953649Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=1 success_count=1 failed_count=0 processing_time_ms=944 average_latency_ms=944.0 total_chars=38
+2026-03-21T11:09:48.953669Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\e2e\javascript\string_literals.js translated_units=1
+2026-03-21T11:09:48.953672Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\e2e\javascript\string_literals.js
+2026-03-21T11:09:48.954116Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\e2e\javascript\string_literals.js translation_units=1
+2026-03-21T11:09:48.955266Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\e2e\javascript\string_literals.js
+2026-03-21T11:09:48.955277Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\e2e\javascript\string_literals.js
+2026-03-21T11:09:48.956218Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\e2e\javascript\string_literals.js total_units=1 translated_units=1
+2026-03-21T11:09:48.964858Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\language_filter\mixed_content.rs total_units=7 translatable_units=7
+2026-03-21T11:09:48.964876Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\e2e\language_filter\mixed_content.rs units_to_translate=7
+2026-03-21T11:09:55.465005Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=7 success_count=7 failed_count=0 processing_time_ms=6500 average_latency_ms=928.1428571428571 total_chars=311
+2026-03-21T11:09:55.465025Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\e2e\language_filter\mixed_content.rs translated_units=7
+2026-03-21T11:09:55.465030Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\e2e\language_filter\mixed_content.rs
+2026-03-21T11:09:55.465429Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\e2e\language_filter\mixed_content.rs translation_units=7
+2026-03-21T11:09:55.466899Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\e2e\language_filter\mixed_content.rs
+2026-03-21T11:09:55.466906Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\e2e\language_filter\mixed_content.rs
+2026-03-21T11:09:55.467813Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\e2e\language_filter\mixed_content.rs total_units=7 translated_units=7
+2026-03-21T11:09:55.474040Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\python\comments.py total_units=7 translatable_units=7
+2026-03-21T11:09:55.474048Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\e2e\python\comments.py units_to_translate=7
+2026-03-21T11:10:02.023811Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=7 success_count=7 failed_count=0 processing_time_ms=6549 average_latency_ms=935.4285714285714 total_chars=309
+2026-03-21T11:10:02.023832Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\e2e\python\comments.py translated_units=7
+2026-03-21T11:10:02.023836Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\e2e\python\comments.py
+2026-03-21T11:10:02.024246Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\e2e\python\comments.py translation_units=7
+2026-03-21T11:10:02.025583Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\e2e\python\comments.py
+2026-03-21T11:10:02.025589Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\e2e\python\comments.py
+2026-03-21T11:10:02.026511Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\e2e\python\comments.py total_units=7 translated_units=7
+2026-03-21T11:10:02.061951Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\python\string_format_preservation.py total_units=1 translatable_units=1
+2026-03-21T11:10:02.061959Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\e2e\python\string_format_preservation.py units_to_translate=1
+2026-03-21T11:10:03.018187Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=1 success_count=1 failed_count=0 processing_time_ms=956 average_latency_ms=956.0 total_chars=92
+2026-03-21T11:10:03.018205Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\e2e\python\string_format_preservation.py translated_units=1
+2026-03-21T11:10:03.018209Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\e2e\python\string_format_preservation.py
+2026-03-21T11:10:03.018623Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\e2e\python\string_format_preservation.py translation_units=1
+2026-03-21T11:10:03.019858Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\e2e\python\string_format_preservation.py
+2026-03-21T11:10:03.019861Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\e2e\python\string_format_preservation.py
+2026-03-21T11:10:03.026062Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\e2e\python\string_format_preservation.py total_units=1 translated_units=1
+2026-03-21T11:10:03.032530Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\python\string_literals.py total_units=1 translatable_units=1
+2026-03-21T11:10:03.032536Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\e2e\python\string_literals.py units_to_translate=1
+2026-03-21T11:10:03.952970Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=1 success_count=1 failed_count=0 processing_time_ms=920 average_latency_ms=920.0 total_chars=34
+2026-03-21T11:10:03.952989Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\e2e\python\string_literals.py translated_units=1
+2026-03-21T11:10:03.952992Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\e2e\python\string_literals.py
+2026-03-21T11:10:03.953395Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\e2e\python\string_literals.py translation_units=1
+2026-03-21T11:10:03.954471Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\e2e\python\string_literals.py
+2026-03-21T11:10:03.954482Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\e2e\python\string_literals.py
+2026-03-21T11:10:03.955268Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\e2e\python\string_literals.py total_units=1 translated_units=1
+2026-03-21T11:10:03.961339Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs total_units=5 translatable_units=5
+2026-03-21T11:10:03.961346Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs units_to_translate=5
+2026-03-21T11:10:08.677149Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=5 success_count=5 failed_count=0 processing_time_ms=4715 average_latency_ms=942.6 total_chars=273
+2026-03-21T11:10:08.677178Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs translated_units=5
+2026-03-21T11:10:08.677185Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs
+2026-03-21T11:10:08.677705Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs translation_units=5
+2026-03-21T11:10:08.680359Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs
+2026-03-21T11:10:08.680372Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs
+2026-03-21T11:10:08.681422Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs total_units=5 translated_units=5
+2026-03-21T11:10:08.688996Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\rust\macros.rs total_units=1 translatable_units=1
+2026-03-21T11:10:08.689010Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\e2e\rust\macros.rs units_to_translate=1
+2026-03-21T11:10:09.607158Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=1 success_count=1 failed_count=0 processing_time_ms=918 average_latency_ms=918.0 total_chars=23
+2026-03-21T11:10:09.607176Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\e2e\rust\macros.rs translated_units=1
+2026-03-21T11:10:09.607179Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\e2e\rust\macros.rs
+2026-03-21T11:10:09.607643Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\e2e\rust\macros.rs translation_units=1
+2026-03-21T11:10:09.609120Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\e2e\rust\macros.rs
+2026-03-21T11:10:09.609130Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\e2e\rust\macros.rs
+2026-03-21T11:10:09.610022Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\e2e\rust\macros.rs total_units=1 translated_units=1
+2026-03-21T11:10:09.616599Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\rust\simple_comments.rs total_units=4 translatable_units=4
+2026-03-21T11:10:09.616609Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\e2e\rust\simple_comments.rs units_to_translate=4
+2026-03-21T11:10:13.400406Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=4 success_count=4 failed_count=0 processing_time_ms=3783 average_latency_ms=945.5 total_chars=148
+2026-03-21T11:10:13.400433Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\e2e\rust\simple_comments.rs translated_units=4
+2026-03-21T11:10:13.400438Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\e2e\rust\simple_comments.rs
+2026-03-21T11:10:13.401058Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\e2e\rust\simple_comments.rs translation_units=4
+2026-03-21T11:10:13.402272Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\e2e\rust\simple_comments.rs
+2026-03-21T11:10:13.402280Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\e2e\rust\simple_comments.rs
+2026-03-21T11:10:13.403201Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\e2e\rust\simple_comments.rs total_units=4 translated_units=4
+2026-03-21T11:10:13.410492Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\rust\string_format_preservation.rs total_units=1 translatable_units=1
+2026-03-21T11:10:13.410499Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\e2e\rust\string_format_preservation.rs units_to_translate=1
+2026-03-21T11:10:14.368428Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=1 success_count=1 failed_count=0 processing_time_ms=957 average_latency_ms=957.0 total_chars=90
+2026-03-21T11:10:14.368451Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\e2e\rust\string_format_preservation.rs translated_units=1
+2026-03-21T11:10:14.368456Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\e2e\rust\string_format_preservation.rs
+2026-03-21T11:10:14.368828Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\e2e\rust\string_format_preservation.rs translation_units=1
+2026-03-21T11:10:14.369404Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\e2e\rust\string_format_preservation.rs
+2026-03-21T11:10:14.369413Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\e2e\rust\string_format_preservation.rs
+2026-03-21T11:10:14.370429Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\e2e\rust\string_format_preservation.rs total_units=1 translated_units=1
+2026-03-21T11:10:14.377219Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\rust\string_literals.rs total_units=1 translatable_units=1
+2026-03-21T11:10:14.377230Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\e2e\rust\string_literals.rs units_to_translate=1
+2026-03-21T11:10:15.342135Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=1 success_count=1 failed_count=0 processing_time_ms=964 average_latency_ms=964.0 total_chars=32
+2026-03-21T11:10:15.342151Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\e2e\rust\string_literals.rs translated_units=1
+2026-03-21T11:10:15.342154Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\e2e\rust\string_literals.rs
+2026-03-21T11:10:15.342429Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\e2e\rust\string_literals.rs translation_units=1
+2026-03-21T11:10:15.343626Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\e2e\rust\string_literals.rs
+2026-03-21T11:10:15.343635Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\e2e\rust\string_literals.rs
+2026-03-21T11:10:15.344513Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\e2e\rust\string_literals.rs total_units=1 translated_units=1
+2026-03-21T11:10:15.344523Z  INFO codebase_translate::workflow::executor: Workflow execution completed duration_ms=37799 files_processed=15
+2026-03-21T11:10:15.344525Z  INFO codebase_translate::reporter::default: Finalizing reporter statistics
+2026-03-21T11:10:15.344526Z  INFO codebase_translate::reporter::stats::translation: Finalizing translation statistics total_files=0 processed_files=15 total_units=39 translated_units=0 api_calls=14 cache_hits=0 cache_misses=15
+2026-03-21T11:10:15.344529Z  INFO codebase_translate::workflow::executor: ========================================
+2026-03-21T11:10:15.344529Z  INFO codebase_translate::workflow::executor: Translation completed duration_secs=37.799682
+2026-03-21T11:10:15.344531Z  INFO codebase_translate::workflow::executor: Files total_files=15 cached_files=0 processed_files=15
+2026-03-21T11:10:15.344532Z  INFO codebase_translate::workflow::executor: Units total_units=39 translated_units=39 skipped_units=0
+2026-03-21T11:10:15.344537Z  INFO codebase_translate::workflow::executor: Errors errors=0
+2026-03-21T11:10:15.344538Z  INFO codebase_translate::workflow::executor: ========================================
+2026-03-21T11:15:42.740522Z  INFO translator: Starting application name="codebase-translate" version="0.1.0"
+2026-03-21T11:15:42.740591Z  INFO codebase_translate::commands::translate: Translating directory path=e2e
+2026-03-21T11:15:42.740596Z  INFO codebase_translate::commands::translate: Translation configuration target_lang=zh provider=deeplx
+2026-03-21T11:15:42.740631Z  INFO codebase_translate::workflow::executor: Starting translation workflow root_path=e2e include_patterns=22 exclude_patterns=20 respect_gitignore=true follow_symlinks=false
+2026-03-21T11:15:42.740642Z  INFO codebase_translate::workflow::executor: Step 1: Scanning directory path=e2e
+2026-03-21T11:15:42.740825Z  INFO codebase_translate::scanner::walker: Starting directory scan: \\?\E:\project\codebase-translator\e2e
+2026-03-21T11:15:42.741316Z  INFO codebase_translate::workflow::executor: File scan completed files_count=15
+2026-03-21T11:15:42.741332Z  INFO codebase_translate::cache: Creating cache instance cache_type=local cache_dir=e2e
+2026-03-21T11:15:42.741397Z  INFO codebase_translate::cache::binary: Creating binary cache cache_file=e2e\.translator\cache.bin mode=Local enabled=true
+2026-03-21T11:15:42.741469Z  INFO codebase_translate::translator: Creating translator instance provider=deeplx
+2026-03-21T11:15:42.741474Z  INFO codebase_translate::translator::r#trait: Creating translator from configuration provider=DeepLX
+2026-03-21T11:15:42.741559Z  INFO codebase_translate::translator::deeplx: DeepLX translator created api_url=https://api.deeplx.org
+2026-03-21T11:15:42.741563Z  INFO codebase_translate::translator::r#trait: Translator created successfully provider=DeepLX
+2026-03-21T11:15:42.941933Z  INFO codebase_translate::translator::service: Translation service created with batch translator
+2026-03-21T11:15:42.941946Z  INFO codebase_translate::parser: Creating parser coordinator extract_comments=true extract_docstrings=true extract_strings=true
+2026-03-21T11:15:42.945031Z  INFO codebase_translate::writer: Creating file writer dry_run=false backup=false
+2026-03-21T11:15:42.946150Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\go\comments.go total_units=0 translatable_units=0
+2026-03-21T11:15:42.947156Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\go\string_format_preservation.go total_units=0 translatable_units=0
+2026-03-21T11:15:42.948185Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\go\string_literals.go total_units=0 translatable_units=0
+2026-03-21T11:15:42.950398Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\javascript\comments.js total_units=0 translatable_units=0
+2026-03-21T11:15:42.952416Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js total_units=0 translatable_units=0
+2026-03-21T11:15:42.954089Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\javascript\string_literals.js total_units=0 translatable_units=0
+2026-03-21T11:15:42.962359Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\language_filter\mixed_content.rs total_units=6 translatable_units=6
+2026-03-21T11:15:42.962376Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\e2e\language_filter\mixed_content.rs units_to_translate=6
+2026-03-21T11:15:50.130226Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=6 success_count=6 failed_count=0 processing_time_ms=7167 average_latency_ms=1194.1666666666667 total_chars=209
+2026-03-21T11:15:50.130262Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\e2e\language_filter\mixed_content.rs translated_units=6
+2026-03-21T11:15:50.130265Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\e2e\language_filter\mixed_content.rs
+2026-03-21T11:15:50.130616Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\e2e\language_filter\mixed_content.rs translation_units=6
+2026-03-21T11:15:50.135307Z  WARN codebase_translate::workflow::executor: Failed to process file, continuing error=IO error: Failed to apply translations in blocking task: task 36 panicked with message "byte index 801 is not a char boundary; it is inside '释' (bytes 800..803) of `// 用于语言过滤测试的混合内容 Rust 文件\n\n// 这是一条英语评论\nconst ENGLISH_CONST: i32 = 42;\n\n// 这是一个中文注释\nconst CHINESE_CONST: i32 = 100;\n\n/*\n * Mu/*\n * 多行英文注释\n * 多行\n */行中文注释\n * 包含多行`[...]" file=\\?\E:\project\codebase-translator\e2e\language_filter\mixed_content.rs
+2026-03-21T11:15:50.135323Z  WARN codebase_translate::reporter::default: Reporting error error=IO error: Failed to apply translations in blocking task: task 36 panicked with message "byte index 801 is not a char boundary; it is inside '释' (bytes 800..803) of `// 用于语言过滤测试的混合内容 Rust 文件\n\n// 这是一条英语评论\nconst ENGLISH_CONST: i32 = 42;\n\n// 这是一个中文注释\nconst CHINESE_CONST: i32 = 100;\n\n/*\n * Mu/*\n * 多行英文注释\n * 多行\n */行中文注释\n * 包含多行`[...]"
+2026-03-21T11:15:50.141815Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\python\comments.py total_units=0 translatable_units=0
+2026-03-21T11:15:50.147514Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\python\string_format_preservation.py total_units=0 translatable_units=0
+2026-03-21T11:15:50.153407Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\python\string_literals.py total_units=0 translatable_units=0
+2026-03-21T11:15:50.161839Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs total_units=4 translatable_units=4
+2026-03-21T11:15:50.161862Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs units_to_translate=4
+2026-03-21T11:15:54.159636Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=4 success_count=4 failed_count=0 processing_time_ms=3997 average_latency_ms=999.0 total_chars=177
+2026-03-21T11:15:54.159655Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs translated_units=4
+2026-03-21T11:15:54.166852Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\rust\macros.rs total_units=0 translatable_units=0
+2026-03-21T11:15:54.172610Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\rust\simple_comments.rs total_units=0 translatable_units=0
+2026-03-21T11:15:54.179288Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\rust\string_format_preservation.rs total_units=1 translatable_units=1
+2026-03-21T11:15:54.179294Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\e2e\rust\string_format_preservation.rs units_to_translate=1
+2026-03-21T11:15:55.236711Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=1 success_count=1 failed_count=0 processing_time_ms=1057 average_latency_ms=1057.0 total_chars=90
+2026-03-21T11:15:55.236729Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\e2e\rust\string_format_preservation.rs translated_units=1
+2026-03-21T11:15:55.236732Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\e2e\rust\string_format_preservation.rs
+2026-03-21T11:15:55.237111Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\e2e\rust\string_format_preservation.rs translation_units=1
+2026-03-21T11:15:55.237771Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\e2e\rust\string_format_preservation.rs
+2026-03-21T11:15:55.237778Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\e2e\rust\string_format_preservation.rs
+2026-03-21T11:15:55.239056Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\e2e\rust\string_format_preservation.rs total_units=1 translated_units=1
+2026-03-21T11:15:55.248083Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\rust\string_literals.rs total_units=0 translatable_units=0
+2026-03-21T11:15:55.248105Z  INFO codebase_translate::workflow::executor: Workflow execution completed duration_ms=12507 files_processed=14
+2026-03-21T11:15:55.248109Z  INFO codebase_translate::reporter::default: Finalizing reporter statistics
+2026-03-21T11:15:55.248110Z  INFO codebase_translate::reporter::stats::translation: Finalizing translation statistics total_files=0 processed_files=15 total_units=11 translated_units=0 api_calls=3 cache_hits=0 cache_misses=15
+2026-03-21T11:15:55.248113Z  INFO codebase_translate::workflow::executor: ========================================
+2026-03-21T11:15:55.248113Z  INFO codebase_translate::workflow::executor: Translation completed duration_secs=12.5074814
+2026-03-21T11:15:55.248116Z  INFO codebase_translate::workflow::executor: Files total_files=14 cached_files=0 processed_files=14
+2026-03-21T11:15:55.248117Z  INFO codebase_translate::workflow::executor: Units total_units=5 translated_units=5 skipped_units=0
+2026-03-21T11:15:55.248126Z  INFO codebase_translate::workflow::executor: Errors errors=1
+2026-03-21T11:15:55.248127Z  INFO codebase_translate::workflow::executor: ========================================

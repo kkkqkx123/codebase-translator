@@ -46,7 +46,7 @@ fn test_chinese_doc_comment_replacement_full() {
             translated: None,
             pattern_type: None,
             pattern_name: None,
-            raw_match: Some("/// 计算两个数的和\n\n/// # Arguments\n".to_string()),
+            raw_match: Some("/// 计算两个数的和\n/// \n/// # Arguments\n".to_string()),
         },
         // Unit 6: multiply function
         TranslationUnit {

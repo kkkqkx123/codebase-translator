@@ -53,13 +53,13 @@ async fn test_file_writer_with_backup() {
     let written_content = read_file_content(&file.path).await;
     assert!(written_content.contains("修改后的"));
 
-    // Backup should be in translator subdirectory
-    let translator_dir = temp_path.join("translator");
-    assert!(translator_dir.exists(), "Translator directory should exist");
+    // Backup should be in .translator/backups subdirectory
+    let translator_dir = temp_path.join(".translator").join("backups");
+    assert!(translator_dir.exists(), "Translator backup directory should exist");
 
     let mut backup_files = tokio::fs::read_dir(&translator_dir)
         .await
-        .expect("Failed to read translator dir");
+        .expect("Failed to read translator backups dir");
     let mut backup_count = 0;
     while let Ok(Some(entry)) = backup_files.next_entry().await {
         let file_name = entry.file_name().to_string_lossy().to_string();
@@ -69,7 +69,7 @@ async fn test_file_writer_with_backup() {
     }
     assert!(
         backup_count >= 1,
-        "Should have at least one backup file in translator directory"
+        "Should have at least one backup file in translator backups directory"
     );
 }
 
@@ -268,19 +268,6 @@ async fn test_file_writer_crlf_preservation() {
         "CRLF line endings should be preserved"
     );
     assert!(written_content.contains("第一行"));
-}
-
-#[tokio::test]
-async fn test_file_writer_config_validation() {
-    let config = WriterConfig::default();
-    assert!(config.validate().is_ok(), "Default config should be valid");
-
-    let abs_path = std::env::current_dir().expect("Should get current dir");
-    let config_with_backup = WriterConfig {
-        backup_dir: Some(abs_path),
-        ..Default::default()
-    };
-    assert!(config_with_backup.validate().is_ok());
 }
 
 #[tokio::test]

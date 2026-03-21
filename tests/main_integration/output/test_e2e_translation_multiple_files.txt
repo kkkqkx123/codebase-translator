@@ -3,14 +3,14 @@ E2E Translation Test - Multiple Files
 
 Translation completed successfully!
 
-Files processed: 4
-Total files: 4
-Total units: 25
-Translated units: 25
+Files processed: 0
+Total files: 0
+Total units: 0
+Translated units: 0
 Cached files: 0
 Skipped units: 0
-Errors: 0
-Duration: 33.74s
+Errors: 4
+Duration: 28.76s
 
 
 Directory Contents:
@@ -20,13 +20,12 @@ Directory Contents:
   simple_markdown.md [FILE]
   simple_python.py [FILE]
   simple_rust.rs [FILE]
-  translator [DIR]
 
 
 Translated Files:
 ==================
 
---- C:\Users\33530\AppData\Local\Temp\.tmpqi9ksc\simple_javascript.js ---
+--- C:\Users\33530\AppData\Local\Temp\.tmpemNuNE\simple_javascript.js ---
 // This is a simple JavaScript file to test the translation function
 // Includes Chinese comments
 
@@ -78,7 +77,7 @@ function main() {
 
 main();
 
---- C:\Users\33530\AppData\Local\Temp\.tmpqi9ksc\simple_markdown.md ---
+--- C:\Users\33530\AppData\Local\Temp\.tmpemNuNE\simple_markdown.md ---
 # Testing the translation function
 
 这是一个简单的Markdown文件，用于测试翻译功能。
@@ -126,46 +125,46 @@ fn main() {
 - [项目主页](https://github.com/example/translator)
 - [文档](https://docs.example.com)
 
---- C:\Users\33530\AppData\Local\Temp\.tmpqi9ksc\simple_python.py ---
+--- C:\Users\33530\AppData\Local\Temp\.tmpemNuNE\simple_python.py ---
 # This is a simple Python file to test the translation function
 # Contains Chinese comments and document strings
 
 def add(a, b):
+    """
     Compute the sum of two numbers
     
-    
         Args.
-                a: first number
-                b: second number
+            a: first number
+            b: second number
     
-    
-            Returns.
+        Returns.
             The sum of the two numbers
+    """
     return a + b
 
 def subtract(a, b):
+    """
     Compute the difference between two numbers
     
-    
         Args.
-                a: subtracted number
-                b: subtracted number
+            a: subtracted number
+            b: subtracted number
     
-    
-            Returns.
+        Returns.
             Difference between two numbers
+    """
     return a - b
 
 class Calculator:
     """Simple Calculator Class"""
     
     def __init__(self, name):
+        """
         Initializing the Calculator
         
-        
                 Args.
-                        name: Calculator name
-        
+                    name: Calculator name
+        """
         self.name = name
     
     def get_name(self):
@@ -177,7 +176,7 @@ if __name__ == "__main__":
     result = add(10, 20)
     print(f"结果: {result}")
 
---- C:\Users\33530\AppData\Local\Temp\.tmpqi9ksc\simple_rust.rs ---
+--- C:\Users\33530\AppData\Local\Temp\.tmpemNuNE\simple_rust.rs ---
 // This is a simple Rust file for testing translation functionality
 // Contains Chinese comments and document strings
 
@@ -220,11 +219,11 @@ pub struct Calculator {
 }
 
 impl Calculator {
-    /// Creating a New Calculator Instance
-/// 
-/// # Arguments
-/// 
-/// * `name` - the name of the calculator
+    /// 创建新的计算器实例
+    /// 
+    /// # Arguments
+    /// 
+    /// * `name` - 计算器名称
     pub fn new(name: &str) -> Self {
         Calculator {
             name: name.to_string(),

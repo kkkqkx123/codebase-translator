@@ -72,6 +72,7 @@ impl WriterFactory {
                 .writer
                 .backup_dir
                 .as_ref()
+                .filter(|s| !s.is_empty())
                 .map(std::path::PathBuf::from),
             strict_encoding: false,
         };

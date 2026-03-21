@@ -1,35 +1,33 @@
-// Rust doc comments for testing
+// 用于测试的 Rust 文档注释
 
-/// This is a module-level documentation comment
-mod example {
-    /// This is a struct documentation comment
-    pub struct Example {
-        /// Field documentation
+/// 这是模块级文档注释
+/// 这是结构文档注释
+/// 字段文档
         pub value: i32,
     }
     
     impl Example {
-        /// Creates a new Example instance
+        /// 创建一个新的示例实例
         pub fn new(value: i32) -> Self {
             Example { value }
         }
         
-        /// Returns the value
+        /// 返回值
         pub fn get_value(&self) -> i32 {
             self.value
         }
     }
 }
 
-/// Function documentation
+/// 功能文档
 /// 
-/// # Arguments
+/// # 参数
 /// 
-/// * `name` - A name to greet
+/// * `name` - 要问候的名字
 /// 
-/// # Returns
+/// # 返回
 /// 
-/// A greeting message
+/// 问候信息
 pub fn greet(name: &str) -> String {
     format!("Hello, {}!", name)
 }

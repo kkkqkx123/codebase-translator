@@ -27,7 +27,7 @@ impl MultilineApplier {
 
         for unit in sorted_units {
             if let (Some(raw_match), Some(translated)) = (&unit.raw_match, &unit.translated) {
-                result = Self::apply_single_unit(&result, unit, raw_match, translated);
+                result = Self::apply_single_unit(&result, raw_match, translated);
             }
         }
 
@@ -35,30 +35,12 @@ impl MultilineApplier {
     }
 
     /// Apply a single multi-line translation unit
-    fn apply_single_unit(
-        content: &str,
-        unit: &TranslationUnit,
-        raw_match: &str,
-        translated: &str,
-    ) -> String {
-        let start_byte = unit.start_pos.offset;
-        let end_byte = unit.end_pos.offset;
-
-        // Check if we have valid byte positions
-        let has_valid_positions =
-            start_byte > 0 && start_byte < end_byte && end_byte <= content.len();
-
-        if has_valid_positions {
-            // Use position-based extraction for accurate replacement
-            let original_text = &content[start_byte..end_byte];
-            let ends_with_newline = original_text.ends_with('\n');
-            let formatted = Self::format_translation(raw_match, translated, ends_with_newline);
-            content.replace(original_text, &formatted)
-        } else {
-            // Fall back to raw_match-based replacement for tests or legacy data
-            let formatted = Self::format_translation(raw_match, translated, false);
-            content.replace(raw_match, &formatted)
-        }
+    fn apply_single_unit(content: &str, raw_match: &str, translated: &str) -> String {
+        // Always use raw_match-based replacement to avoid byte offset issues
+        // Byte offsets from the original file become invalid after previous replacements
+        // because the content length changes (e.g., English -> Chinese translation)
+        let formatted = Self::format_translation(raw_match, translated, false);
+        content.replace(raw_match, &formatted)
     }
 
     /// Format a multiline translation by applying it line by line to the raw match

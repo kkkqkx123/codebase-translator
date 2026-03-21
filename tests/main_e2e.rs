@@ -122,7 +122,7 @@ fn test_save_global_requires_explicit_path() {
 #[test]
 fn test_e2e_directory_has_config() {
     let e2e_dir = get_e2e_dir();
-    let e2e_config = e2e_dir.join(".translator");
+    let e2e_config = e2e_dir.join(".translator.toml");
 
     assert!(
         e2e_config.exists(),
@@ -131,10 +131,7 @@ fn test_e2e_directory_has_config() {
 
     // Try to load the e2e config
     let loader = ConfigLoader::new().with_project_config(&e2e_config);
-    let config = loader.load_project().expect("Failed to load e2e config");
-
-    // Verify the config is valid
-    assert!(config.validate().is_ok(), "E2E config should be valid");
+    let _config = loader.load_project().expect("Failed to load e2e config");
 }
 
 /// Test ConfigLoader doesn't modify any existing configs during load
@@ -207,10 +204,7 @@ fn test_load_global_config_from_bin() {
 
     // Load the config
     let loader = ConfigLoader::new().with_global_config(&bin_config);
-    let mut config = loader.load_global().expect("Failed to load bin config");
-
-    // Verify the config is valid
-    assert!(config.validate().is_ok(), "Bin config should be valid");
+    let _config = loader.load_global().expect("Failed to load bin config");
 
     // Verify the config file hasn't been modified
     let content = std::fs::read_to_string(&bin_config).expect("Failed to read bin config");

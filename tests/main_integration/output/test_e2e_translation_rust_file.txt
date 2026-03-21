@@ -3,21 +3,20 @@ E2E Translation Test - Rust File
 
 Translation completed successfully!
 
-Files processed: 1
-Total files: 1
-Total units: 8
-Translated units: 8
+Files processed: 0
+Total files: 0
+Total units: 0
+Translated units: 0
 Cached files: 0
 Skipped units: 0
-Errors: 0
-Duration: 9.45s
+Errors: 1
+Duration: 8.43s
 
 
 Directory Contents:
 ====================
   .translator [FILE]
   simple_rust.rs [FILE]
-  translator [DIR]
 
 
 Translated File Content:
@@ -64,11 +63,11 @@ pub struct Calculator {
 }
 
 impl Calculator {
-    /// Creating a New Calculator Instance
-/// 
-/// # Arguments
-/// 
-/// * `name` - the name of the calculator
+    /// 创建新的计算器实例
+    /// 
+    /// # Arguments
+    /// 
+    /// * `name` - 计算器名称
     pub fn new(name: &str) -> Self {
         Calculator {
             name: name.to_string(),

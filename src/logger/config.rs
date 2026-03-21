@@ -24,6 +24,13 @@ pub const DEFAULT_LOG_FILE: &str = ".translator/translator.log";
 pub fn validate_config(config: &LoggingConfig) -> Result<()> {
     parse_level(&config.level);
 
+    // If output is file, a file path must be provided
+    if config.output == "file" && config.file.is_none() {
+        return Err(crate::core::error::TranslateError::Config(
+            "File output requires a file path".to_string(),
+        ));
+    }
+
     Ok(())
 }
 

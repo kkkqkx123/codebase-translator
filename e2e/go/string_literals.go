@@ -1,4 +1,4 @@
-// Go string literals for testing
+// 用于测试的 Go 字符串字面量
 package main
 
 import "fmt"

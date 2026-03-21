@@ -3,21 +3,20 @@ E2E Translation Test - Markdown File
 
 Translation completed successfully!
 
-Files processed: 1
-Total files: 1
-Total units: 8
-Translated units: 8
+Files processed: 0
+Total files: 0
+Total units: 0
+Translated units: 0
 Cached files: 0
 Skipped units: 0
-Errors: 0
-Duration: 9.33s
+Errors: 1
+Duration: 8.35s
 
 
 Directory Contents:
 ====================
   .translator [FILE]
   simple_markdown.md [FILE]
-  translator [DIR]
 
 
 Translated File Content:

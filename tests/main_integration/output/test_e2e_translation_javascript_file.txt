@@ -3,21 +3,20 @@ E2E Translation Test - JavaScript File
 
 Translation completed successfully!
 
-Files processed: 1
-Total files: 1
-Total units: 3
-Translated units: 3
+Files processed: 0
+Total files: 0
+Total units: 0
+Translated units: 0
 Cached files: 0
 Skipped units: 0
-Errors: 0
-Duration: 3.98s
+Errors: 1
+Duration: 3.59s
 
 
 Directory Contents:
 ====================
   .translator [FILE]
   simple_javascript.js [FILE]
-  translator [DIR]
 
 
 Translated File Content:

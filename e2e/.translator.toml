@@ -4,15 +4,15 @@
 #
 # 重要说明：
 #   - "项目"指的是被翻译的外部代码库，不是 Codebase Translate 工具本身
-#   - 将此文件保存到目标代码库的根目录，命名为 `.translator`（隐藏文件）
+#   - 将此文件保存到目标代码库的根目录，命名为 `.translator.toml`（隐藏文件）
 #   - 本工具会扫描目标代码库，根据此配置进行翻译
 #
 # 配置文件位置：
-#   - 目标代码库根目录: .translator
+#   - 目标代码库根目录: .translator.toml
 #
 # 使用示例：
 #   1. 将此文件复制到目标项目根目录
-#   2. 重命名为 .translator
+#   2. 重命名为 .translator.toml
 #   3. 根据项目需求修改配置
 #   4. 运行 translator 工具指定目标项目路径
 
@@ -122,13 +122,13 @@ detect_code_patterns = true  # 是否检测并过滤代码模式（如 obj.metho
 # 缓存配置
 [cache]
 enabled = true                # 是否启用缓存
-directory = ".translator-cache"  # 缓存目录名（相对于项目根目录）
+directory = ".translator"  # 缓存目录名（相对于项目根目录）
 
 # 写入配置
 [writer]
 preview_only = false         # 是否仅预览，不实际修改文件
-backup = false               # 是否在修改前创建备份文件
-backup_dir = ""              # 备份目录，为空则与原文件同目录
+backup = true                # 是否在修改前创建备份文件
+backup_dir = ""              # 备份目录，为空则使用 .translator/backups/
 
 # 字符串字面量提取配置
 # 控制是否从代码中提取字符串字面量进行翻译

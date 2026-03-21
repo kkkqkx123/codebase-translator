@@ -1,4 +1,4 @@
-// Rust macros for testing
+// 用于测试的 Rust 宏
 macro_rules! log {
     ($($arg:tt)*) => {
         println!($($arg)*);
