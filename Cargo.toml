@@ -92,12 +92,7 @@ dotenvy = "0.15"
 dirs = "6.0"
 rayon = "1.10"
 
-# 进度条
-indicatif = { version = "0.17", optional = true }
 
-[features]
-default = []
-progress = ["indicatif"]
 
 [dev-dependencies]
 tempfile = "3.21"

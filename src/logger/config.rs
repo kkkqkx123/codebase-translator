@@ -25,6 +25,24 @@ pub const DEFAULT_LOG_FILE: &str = ".translator/translator.log";
 pub fn validate_config(config: &LoggingConfig) -> Result<()> {
     parse_level(&config.level);
 
+    // Validate output format
+    let valid_formats = ["pretty", "json", "compact"];
+    if !valid_formats.contains(&config.format.as_str()) {
+        return Err(crate::core::error::TranslateError::Config(format!(
+            "Invalid log format: '{}'. Valid values: pretty, json, compact",
+            config.format
+        )));
+    }
+
+    // Validate output target
+    let valid_outputs = ["stdout", "stderr", "file"];
+    if !valid_outputs.contains(&config.output.as_str()) {
+        return Err(crate::core::error::TranslateError::Config(format!(
+            "Invalid log output: '{}'. Valid values: stdout, stderr, file",
+            config.output
+        )));
+    }
+
     // File output is always valid, will use default path if not specified
     // The actual path resolution happens in get_log_file_path
 

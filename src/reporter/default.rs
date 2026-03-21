@@ -6,11 +6,8 @@ use std::sync::Arc;
 
 use crate::core::error::TranslateError;
 use crate::reporter::r#trait::{ReportFormat, Reporter};
-use crate::reporter::stats::{SharedStats, TranslationStats};
+use crate::reporter::stats::SharedStats;
 use tracing::{debug, info, warn};
-
-#[cfg(feature = "progress")]
-use crate::reporter::progress::ProgressReporter;
 
 /// Default reporter implementation
 #[derive(Debug, Clone)]
@@ -259,142 +256,9 @@ impl Reporter for DefaultReporter {
     }
 }
 
-/// Reporter implementation enum for static dispatch
-#[derive(Debug, Clone)]
-pub enum ReporterImpl {
-    Default(DefaultReporter),
-    #[cfg(feature = "progress")]
-    Progress(ProgressReporter),
-}
-
-impl Reporter for ReporterImpl {
-    fn report_file(&self, path: &Path, units: usize) {
-        match self {
-            Self::Default(r) => r.report_file(path, units),
-            #[cfg(feature = "progress")]
-            Self::Progress(r) => r.report_file(path, units),
-        }
-    }
-
-    fn report_progress(&self, current: usize, total: usize) {
-        match self {
-            Self::Default(r) => r.report_progress(current, total),
-            #[cfg(feature = "progress")]
-            Self::Progress(r) => r.report_progress(current, total),
-        }
-    }
-
-    fn report_error(&self, error: &TranslateError) {
-        match self {
-            Self::Default(r) => r.report_error(error),
-            #[cfg(feature = "progress")]
-            Self::Progress(r) => r.report_error(error),
-        }
-    }
-
-    fn report_skipped(&self, path: &Path) {
-        match self {
-            Self::Default(r) => r.report_skipped(path),
-            #[cfg(feature = "progress")]
-            Self::Progress(r) => r.report_skipped(path),
-        }
-    }
-
-    fn report_api_call(&self, count: usize) {
-        match self {
-            Self::Default(r) => r.report_api_call(count),
-            #[cfg(feature = "progress")]
-            Self::Progress(r) => r.report_api_call(count),
-        }
-    }
-
-    fn report_cache_hit(&self) {
-        match self {
-            Self::Default(r) => r.report_cache_hit(),
-            #[cfg(feature = "progress")]
-            Self::Progress(r) => r.report_cache_hit(),
-        }
-    }
-
-    fn report_cache_miss(&self) {
-        match self {
-            Self::Default(r) => r.report_cache_miss(),
-            #[cfg(feature = "progress")]
-            Self::Progress(r) => r.report_cache_miss(),
-        }
-    }
-
-    fn final_report(&self, format: ReportFormat) -> Result<String, TranslateError> {
-        match self {
-            Self::Default(r) => r.final_report(format),
-            #[cfg(feature = "progress")]
-            Self::Progress(r) => r.final_report(format),
-        }
-    }
-
-    fn get_stats(&self) -> TranslationStats {
-        match self {
-            Self::Default(r) => r.get_stats(),
-            #[cfg(feature = "progress")]
-            Self::Progress(r) => r.get_stats(),
-        }
-    }
-
-    fn has_errors(&self) -> bool {
-        match self {
-            Self::Default(r) => r.has_errors(),
-            #[cfg(feature = "progress")]
-            Self::Progress(r) => r.has_errors(),
-        }
-    }
-
-    fn get_progress(&self) -> f64 {
-        match self {
-            Self::Default(r) => r.get_progress(),
-            #[cfg(feature = "progress")]
-            Self::Progress(r) => r.get_progress(),
-        }
-    }
-
-    fn finalize(&self) {
-        match self {
-            Self::Default(r) => r.finalize(),
-            #[cfg(feature = "progress")]
-            Self::Progress(r) => r.finalize(),
-        }
-    }
-
-    fn save_report(&self, path: &Path, format: ReportFormat) -> Result<(), TranslateError> {
-        match self {
-            Self::Default(r) => r.save_report(path, format),
-            #[cfg(feature = "progress")]
-            Self::Progress(r) => r.save_report(path, format),
-        }
-    }
-
-    fn save_report_with_template(
-        &self,
-        dir: &Path,
-        template: &str,
-        format: ReportFormat,
-    ) -> Result<std::path::PathBuf, TranslateError> {
-        match self {
-            Self::Default(r) => r.save_report_with_template(dir, template, format),
-            #[cfg(feature = "progress")]
-            Self::Progress(r) => r.save_report_with_template(dir, template, format),
-        }
-    }
-}
-
 /// Create a new default reporter
 pub fn create_reporter() -> Arc<dyn Reporter> {
-    Arc::new(ReporterImpl::Default(DefaultReporter::new()))
-}
-
-/// Create a new progress reporter
-#[cfg(feature = "progress")]
-pub fn create_progress_reporter() -> Arc<dyn Reporter> {
-    Arc::new(ReporterImpl::Progress(ProgressReporter::new()))
+    Arc::new(DefaultReporter::new())
 }
 
 #[cfg(test)]

@@ -74,10 +74,10 @@ rate_limit = 5
 
 # 日志配置
 [logging]
-level = "info"               # 日志级别: trace, debug, info, warn, error, fatal
-format = "json"            # 输出格式: console 或 json
-output = "file"             # 输出目标: stdout, stderr, file
-file = "translator.log"       # 日志文件路径（当 output 为 file 时）
+level = "info"               # 日志级别: trace, debug, info, warn, error
+format = "json"              # 日志格式: pretty, compact 或 json
+output = "file"              # 输出目标: stdout, stderr, file
+file = "translator.log"      # 日志文件路径（当 output 为 file 时）
 
 # Tencent Cloud 配置
 # 需要在腾讯云控制台搜索机器翻译，开启服务。每月500万字符免费，默认仅使用免费额度

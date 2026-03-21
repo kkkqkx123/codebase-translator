@@ -128,6 +128,10 @@ impl GlobalConfig {
             }
         }
 
+        // Validate logging configuration
+        crate::logger::validate_config(&self.logging)
+            .map_err(|e| format!("Logging configuration error: {}", e))?;
+
         debug!("Global configuration validated successfully");
         Ok(())
     }
@@ -947,5 +951,147 @@ mod tests {
         };
         let providers = config.get_enabled_providers();
         assert_eq!(providers, vec!["deeplx"]);
+    }
+
+    #[test]
+    fn test_llm_provider_with_multiple_models() {
+        let mut config = GlobalConfig {
+            enabled_providers: vec!["llm".to_string()],
+            provider: ProviderType::LLM,
+            ..Default::default()
+        };
+
+        config.llm.providers = vec![LLMProviderConfig {
+            id: "silicon".to_string(),
+            name: "Siliconflow".to_string(),
+            weight: 50,
+            base_url: "https://api.siliconflow.cn/v1".to_string(),
+            api_keys: vec!["test-api-key".to_string()],
+            model: "".to_string(), // Empty model, should use first from model_list
+            model_list: vec![
+                "tencent/Hunyuan-MT-7B".to_string(),
+                "THUDM/GLM-4-9B-0414".to_string(),
+                "Qwen/Qwen2.5-7B-Instruct".to_string(),
+            ],
+            max_tokens: 4096,
+            temperature: 0.3,
+            proxy_url: None,
+            timeout: 20,
+            rate_limit: 40,
+            extra_headers: std::collections::HashMap::new(),
+            extra_params: std::collections::HashMap::new(),
+        }];
+
+        // Validate should filter and set model from model_list
+        let result = config.validate();
+        assert!(result.is_ok(), "Validation failed: {:?}", result.err());
+        assert_eq!(config.llm.providers.len(), 1);
+        assert_eq!(config.llm.providers[0].model, "tencent/Hunyuan-MT-7B");
+        assert_eq!(config.llm.providers[0].model_list.len(), 3);
+    }
+
+    #[test]
+    fn test_filter_llm_providers_with_empty_api_key() {
+        let mut config = GlobalConfig {
+            enabled_providers: vec!["llm".to_string()],
+            provider: ProviderType::LLM,
+            ..Default::default()
+        };
+
+        config.llm.providers = vec![LLMProviderConfig {
+            id: "silicon".to_string(),
+            name: "Siliconflow".to_string(),
+            weight: 50,
+            base_url: "https://api.siliconflow.cn/v1".to_string(),
+            api_keys: vec!["${SILICON_API_KEY}".to_string()], // Unresolved placeholder
+            model: "tencent/Hunyuan-MT-7B".to_string(),
+            model_list: vec![],
+            max_tokens: 4096,
+            temperature: 0.3,
+            proxy_url: None,
+            timeout: 20,
+            rate_limit: 40,
+            extra_headers: std::collections::HashMap::new(),
+            extra_params: std::collections::HashMap::new(),
+        }];
+
+        // Validate should fail because provider has no valid API keys
+        let result = config.validate();
+        assert!(result.is_err());
+        let error_msg = result.unwrap_err();
+        assert!(error_msg.contains("LLM providers configuration is required"));
+    }
+
+    #[test]
+    fn test_apply_env_vars_to_llm_provider() {
+        std::env::set_var("TRANSLATOR_LLM_SILICON_API_KEY", "env-api-key-67890");
+        std::env::set_var("TRANSLATOR_LLM_SILICON_BASE_URL", "https://env.example.com");
+        std::env::set_var("TRANSLATOR_LLM_SILICON_MODEL", "env-model");
+
+        let mut config = GlobalConfig {
+            enabled_providers: vec!["llm".to_string()],
+            provider: ProviderType::LLM,
+            ..Default::default()
+        };
+
+        config.llm.providers = vec![LLMProviderConfig {
+            id: "silicon".to_string(),
+            name: "Siliconflow".to_string(),
+            weight: 50,
+            base_url: "https://api.siliconflow.cn/v1".to_string(),
+            api_keys: vec!["original-key".to_string()],
+            model: "original-model".to_string(),
+            model_list: vec![],
+            max_tokens: 4096,
+            temperature: 0.3,
+            proxy_url: None,
+            timeout: 20,
+            rate_limit: 40,
+            extra_headers: std::collections::HashMap::new(),
+            extra_params: std::collections::HashMap::new(),
+        }];
+
+        config.apply_env_vars();
+
+        assert_eq!(config.llm.providers[0].api_keys, vec!["env-api-key-67890"]);
+        assert_eq!(config.llm.providers[0].base_url, "https://env.example.com");
+        assert_eq!(config.llm.providers[0].model, "env-model");
+
+        std::env::remove_var("TRANSLATOR_LLM_SILICON_API_KEY");
+        std::env::remove_var("TRANSLATOR_LLM_SILICON_BASE_URL");
+        std::env::remove_var("TRANSLATOR_LLM_SILICON_MODEL");
+    }
+
+    #[test]
+    fn test_validate_tencent_with_empty_credentials() {
+        let mut config = GlobalConfig {
+            enabled_providers: vec!["tencent".to_string()],
+            provider: ProviderType::Tencent,
+            ..Default::default()
+        };
+
+        // Test with empty secret_id
+        config.tencent.secret_id = Some("".to_string());
+        config.tencent.secret_key = Some("valid-key".to_string());
+
+        let result = config.validate();
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("tencent: secret_id is required"));
+
+        // Test with empty secret_key
+        config.tencent.secret_id = Some("valid-id".to_string());
+        config.tencent.secret_key = Some("".to_string());
+
+        let result = config.validate();
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("tencent: secret_key is required"));
+
+        // Test with unresolved placeholder
+        config.tencent.secret_id = Some("${TENCENT_SECRET_ID}".to_string());
+        config.tencent.secret_key = Some("${TENCENT_SECRET_KEY}".to_string());
+
+        let result = config.validate();
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("tencent: secret_id is required"));
     }
 }
