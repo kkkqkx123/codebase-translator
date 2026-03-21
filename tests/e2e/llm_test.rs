@@ -3,8 +3,7 @@
 use std::sync::Arc;
 
 use codebase_translate::translator::{
-    create_translator_from_config, BatchOptions, LLMConfig, LLMTranslator, LimitPolicy,
-    ProviderType, Translator, TranslatorConfig, TranslatorImpl,
+    BatchOptions, LimitPolicy, MultiProviderTranslator, Translator, TranslatorImpl,
 };
 
 use super::init_test_config;
@@ -20,29 +19,28 @@ async fn test_llm_single_translation() {
         return;
     }
 
-    let provider = &global_config.llm.providers[0];
-    let api_key = provider.api_keys.first().cloned().unwrap_or_default();
+    // Filter valid providers
+    let valid_providers: Vec<_> = global_config
+        .llm
+        .providers
+        .iter()
+        .filter(|p| {
+            let api_key = p.api_keys.first().cloned().unwrap_or_default();
+            !api_key.is_empty()
+                && !api_key.starts_with("${")
+                && !p.base_url.is_empty()
+                && !p.base_url.starts_with("${")
+        })
+        .cloned()
+        .collect();
 
-    if !super::is_configured(&api_key) || !super::is_configured(&provider.base_url) {
-        println!("Skipping: No API key or base URL configured");
+    if valid_providers.is_empty() {
+        println!("Skipping: No valid LLM providers configured");
         return;
     }
 
-    let config = LLMConfig {
-        base_url: provider.base_url.clone(),
-        api_key,
-        model: provider.model.clone(),
-        max_tokens: provider.max_tokens as i32,
-        temperature: provider.temperature as f64,
-        top_p: None,
-        proxy_url: provider.proxy_url.clone(),
-        timeout: provider.timeout,
-        max_retries: provider.rate_limit as usize,
-        extra_headers: Some(provider.extra_headers.clone()),
-        extra_params: None,
-    };
-
-    let translator = LLMTranslator::new(config).expect("Failed to create translator");
+    let translator =
+        MultiProviderTranslator::new(&valid_providers, 3).expect("Failed to create translator");
 
     // Test English to Chinese
     let texts = vec!["Hello, world!".to_string()];
@@ -77,30 +75,28 @@ async fn test_llm_batch_translation() {
         return;
     }
 
-    let provider = &global_config.llm.providers[0];
-    let api_key = provider.api_keys.first().cloned().unwrap_or_default();
+    // Filter valid providers
+    let valid_providers: Vec<_> = global_config
+        .llm
+        .providers
+        .iter()
+        .filter(|p| {
+            let api_key = p.api_keys.first().cloned().unwrap_or_default();
+            !api_key.is_empty()
+                && !api_key.starts_with("${")
+                && !p.base_url.is_empty()
+                && !p.base_url.starts_with("${")
+        })
+        .cloned()
+        .collect();
 
-    if !super::is_configured(&api_key) || !super::is_configured(&provider.base_url) {
-        println!("Skipping: No API key or base URL configured");
+    if valid_providers.is_empty() {
+        println!("Skipping: No valid LLM providers configured");
         return;
     }
 
-    let config = LLMConfig {
-        base_url: provider.base_url.clone(),
-        api_key,
-        model: provider.model.clone(),
-        max_tokens: provider.max_tokens as i32,
-        temperature: provider.temperature as f64,
-        top_p: None,
-        proxy_url: provider.proxy_url.clone(),
-        timeout: provider.timeout,
-        max_retries: 3,
-        extra_headers: Some(provider.extra_headers.clone()),
-        extra_params: None,
-    };
-
     let translator = Arc::new(TranslatorImpl::LLM(
-        LLMTranslator::new(config).expect("Failed to create translator"),
+        MultiProviderTranslator::new(&valid_providers, 3).expect("Failed to create translator"),
     ));
 
     let batch_options = BatchOptions {
@@ -149,34 +145,27 @@ async fn test_llm_factory() {
         return;
     }
 
-    let provider = &global_config.llm.providers[0];
-    let api_key = provider.api_keys.first().cloned().unwrap_or_default();
+    // Filter valid providers
+    let valid_providers: Vec<_> = global_config
+        .llm
+        .providers
+        .iter()
+        .filter(|p| {
+            let api_key = p.api_keys.first().cloned().unwrap_or_default();
+            !api_key.is_empty()
+                && !api_key.starts_with("${")
+                && !p.base_url.is_empty()
+                && !p.base_url.starts_with("${")
+        })
+        .cloned()
+        .collect();
 
-    if !super::is_configured(&api_key) || !super::is_configured(&provider.base_url) {
-        println!("Skipping: No API key or base URL configured");
+    if valid_providers.is_empty() {
+        println!("Skipping: No valid LLM providers configured");
         return;
     }
 
-    let config = TranslatorConfig {
-        provider: ProviderType::LLM,
-        deeplx: None,
-        llm: Some(LLMConfig {
-            base_url: provider.base_url.clone(),
-            api_key,
-            model: provider.model.clone(),
-            max_tokens: provider.max_tokens as i32,
-            temperature: provider.temperature as f64,
-            top_p: None,
-            proxy_url: provider.proxy_url.clone(),
-            timeout: provider.timeout,
-            max_retries: 3,
-            extra_headers: Some(provider.extra_headers.clone()),
-            extra_params: None,
-        }),
-        tencent: None,
-    };
-
-    let translator = create_translator_from_config(&config);
+    let translator = MultiProviderTranslator::new(&valid_providers, 3);
     assert!(
         translator.is_ok(),
         "Failed to create translator: {:?}",
@@ -184,7 +173,7 @@ async fn test_llm_factory() {
     );
 
     let translator = translator.expect("Translator should be created successfully");
-    assert_eq!(translator.name(), "llm");
+    assert_eq!(translator.name(), "llm-multi-provider");
 
     let texts = vec!["Hello".to_string()];
     let result: Result<Vec<String>, _> = translator.translate(&texts, "zh").await;
@@ -194,21 +183,27 @@ async fn test_llm_factory() {
 /// Test error handling with invalid API key
 #[tokio::test]
 async fn test_llm_invalid_api_key() {
-    let config = LLMConfig {
+    use codebase_translate::config::LLMProviderConfig;
+
+    let config = LLMProviderConfig {
+        id: "test".to_string(),
+        name: "Test Provider".to_string(),
         base_url: "https://api.openai.com/v1".to_string(),
-        api_key: "invalid_key".to_string(),
+        api_keys: vec!["invalid_key".to_string()],
         model: "gpt-3.5-turbo".to_string(),
+        model_list: vec![],
         max_tokens: 4096,
         temperature: 0.3,
-        top_p: None,
         proxy_url: None,
         timeout: 30,
-        max_retries: 1,
-        extra_headers: None,
-        extra_params: None,
+        rate_limit: 5,
+        weight: 50,
+        extra_headers: std::collections::HashMap::new(),
+        extra_params: std::collections::HashMap::new(),
     };
 
-    let translator = LLMTranslator::new(config).expect("Failed to create translator");
+    let translator =
+        MultiProviderTranslator::new(&[config], 1).expect("Failed to create translator");
 
     let texts = vec!["Hello".to_string()];
     let result = translator.translate(&texts, "zh").await;
@@ -227,30 +222,28 @@ async fn test_llm_rate_limiting() {
         return;
     }
 
-    let provider = &global_config.llm.providers[0];
-    let api_key = provider.api_keys.first().cloned().unwrap_or_default();
+    // Filter valid providers
+    let valid_providers: Vec<_> = global_config
+        .llm
+        .providers
+        .iter()
+        .filter(|p| {
+            let api_key = p.api_keys.first().cloned().unwrap_or_default();
+            !api_key.is_empty()
+                && !api_key.starts_with("${")
+                && !p.base_url.is_empty()
+                && !p.base_url.starts_with("${")
+        })
+        .cloned()
+        .collect();
 
-    if !super::is_configured(&api_key) || !super::is_configured(&provider.base_url) {
-        println!("Skipping: No API key or base URL configured");
+    if valid_providers.is_empty() {
+        println!("Skipping: No valid LLM providers configured");
         return;
     }
 
-    let config = LLMConfig {
-        base_url: provider.base_url.clone(),
-        api_key,
-        model: provider.model.clone(),
-        max_tokens: provider.max_tokens as i32,
-        temperature: provider.temperature as f64,
-        top_p: None,
-        proxy_url: provider.proxy_url.clone(),
-        timeout: provider.timeout,
-        max_retries: 3,
-        extra_headers: Some(provider.extra_headers.clone()),
-        extra_params: None,
-    };
-
     let translator = Arc::new(TranslatorImpl::LLM(
-        LLMTranslator::new(config).expect("Failed to create translator"),
+        MultiProviderTranslator::new(&valid_providers, 3).expect("Failed to create translator"),
     ));
 
     // Use rate limit of 2 requests per second

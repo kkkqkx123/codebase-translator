@@ -29,7 +29,6 @@ pub use common::{
 
 // Re-export translators
 pub use deeplx::DeepLXTranslator;
-pub use llm::LLMTranslator;
 pub use llm::{MultiProviderTranslator, ProviderPool, ProviderPoolConfig};
 pub use tencent::TencentTranslator;
 
@@ -72,6 +71,21 @@ pub fn create_translation_service(
             }
         };
 
+        // Special handling for LLM: use MultiProviderTranslator with all valid providers
+        if provider_type == ProviderType::LLM {
+            match create_llm_multi_provider_translator(global_config) {
+                Ok(translator_impl) => {
+                    let weight = get_provider_weight(provider_type, global_config);
+                    translators.push((std::sync::Arc::new(translator_impl), weight));
+                    info!(provider = %provider_str, "LLM MultiProviderTranslator created successfully");
+                }
+                Err(e) => {
+                    warn!(provider = %provider_str, error = %e, "Failed to create LLM translator");
+                }
+            }
+            continue;
+        }
+
         let translator_config = create_translator_config_for_provider(provider_type, global_config);
 
         match create_translator_from_config(&translator_config) {
@@ -105,6 +119,63 @@ pub fn create_translation_service(
     Ok(translator)
 }
 
+/// Create LLM MultiProviderTranslator with all valid providers
+fn create_llm_multi_provider_translator(
+    global_config: &GlobalConfig,
+) -> Result<TranslatorImpl> {
+    // Filter valid LLM providers
+    let valid_configs: Vec<_> = global_config
+        .llm
+        .providers
+        .iter()
+        .filter(|p| {
+            // Check base_url
+            if p.base_url.is_empty() || p.base_url.starts_with("${") {
+                warn!(provider_id = %p.id, "Skipping LLM provider with empty or unresolved base_url");
+                return false;
+            }
+            // Check api_keys - must have at least one valid key
+            let has_valid_key = p.api_keys.iter().any(|k| {
+                !k.is_empty() && !k.starts_with("${") && !k.to_lowercase().contains("your")
+            });
+            if !has_valid_key {
+                warn!(provider_id = %p.id, "Skipping LLM provider with no valid API keys");
+                return false;
+            }
+            // Check model
+            let model_valid = if !p.model.is_empty() && !p.model.starts_with("${") {
+                true
+            } else if !p.model_list.is_empty() {
+                // Use first valid model from model_list
+                p.model_list.iter().any(|m| !m.is_empty() && !m.starts_with("${"))
+            } else {
+                false
+            };
+            if !model_valid {
+                warn!(provider_id = %p.id, "Skipping LLM provider with no valid model");
+                return false;
+            }
+            true
+        })
+        .cloned()
+        .collect();
+
+    if valid_configs.is_empty() {
+        return Err(crate::core::error::TranslateError::Config(
+            "No valid LLM providers found. Please check your configuration for valid base_url, api_keys, and model".to_string(),
+        ));
+    }
+
+    info!(
+        valid_provider_count = valid_configs.len(),
+        total_provider_count = global_config.llm.providers.len(),
+        "Creating MultiProviderTranslator with valid LLM providers"
+    );
+
+    let multi_translator = MultiProviderTranslator::new(&valid_configs, 3)?;
+    Ok(TranslatorImpl::LLM(multi_translator))
+}
+
 /// Create translator configuration for a specific provider
 fn create_translator_config_for_provider(
     provider: ProviderType,
@@ -123,31 +194,12 @@ fn create_translator_config_for_provider(
             tencent: None,
         },
         ProviderType::LLM => {
-            let provider_config = global_config.llm.providers.first().cloned();
-            let llm_config = provider_config.map(|p| common::LLMConfig {
-                base_url: p.base_url.clone(),
-                api_key: p.api_keys.first().cloned().unwrap_or_default(),
-                model: if p.model.is_empty() {
-                    p.model_list.first().cloned().unwrap_or_default()
-                } else {
-                    p.model.clone()
-                },
-                max_tokens: p.max_tokens as i32,
-                temperature: p.temperature as f64,
-                top_p: None,
-                proxy_url: p.proxy_url.clone(),
-                timeout: p.timeout,
-                max_retries: 3,
-                extra_headers: Some(p.extra_headers.clone()),
-                extra_params: Some(
-                    serde_json::to_value(&p.extra_params).unwrap_or_default(),
-                ),
-            });
-
+            // For LLM, we pass all valid provider configs
+            // The MultiProviderTranslator will be created directly in create_translation_service
             TranslatorConfig {
                 provider: ProviderType::LLM,
                 deeplx: None,
-                llm: llm_config,
+                llm: None,
                 tencent: None,
             }
         }
@@ -175,12 +227,28 @@ fn create_translator_config_for_provider(
 fn get_provider_weight(provider: ProviderType, global_config: &GlobalConfig) -> u32 {
     match provider {
         ProviderType::DeepLX => 50,
-        ProviderType::LLM => global_config
-            .llm
-            .providers
-            .first()
-            .map(|p| p.weight)
-            .unwrap_or(50),
+        ProviderType::LLM => {
+            // Calculate average weight of all valid LLM providers
+            let valid_weights: Vec<u32> = global_config
+                .llm
+                .providers
+                .iter()
+                .filter(|p| {
+                    !p.base_url.is_empty()
+                        && !p.base_url.starts_with("${")
+                        && p.api_keys.iter().any(|k| {
+                            !k.is_empty() && !k.starts_with("${") && !k.to_lowercase().contains("your")
+                        })
+                })
+                .map(|p| p.weight)
+                .collect();
+
+            if valid_weights.is_empty() {
+                50
+            } else {
+                valid_weights.iter().sum::<u32>() / valid_weights.len() as u32
+            }
+        }
         ProviderType::Tencent => 50,
     }
 }

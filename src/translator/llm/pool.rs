@@ -6,7 +6,7 @@ use tracing::info;
 
 use crate::config::LLMProviderConfig;
 use crate::core::error::{Result, TranslateError};
-use crate::translator::llm::provider::{LLMProvider, Provider, ProviderImpl};
+use crate::translator::llm::provider::LLMProvider;
 
 /// Rotation strategy for provider selection
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -53,7 +53,7 @@ impl Default for ProviderPoolConfig {
 
 /// Provider pool for managing multiple LLM providers
 pub struct ProviderPool {
-    providers: Arc<RwLock<Vec<Arc<ProviderImpl>>>>,
+    providers: Arc<RwLock<Vec<Arc<LLMProvider>>>>,
     strategy: RotationStrategy,
     current_index: Arc<std::sync::atomic::AtomicU64>,
     total_weight: Arc<std::sync::atomic::AtomicU32>,
@@ -65,11 +65,11 @@ pub struct ProviderPool {
 impl ProviderPool {
     /// Create a new provider pool
     pub async fn new(configs: &[LLMProviderConfig], config: ProviderPoolConfig) -> Result<Self> {
-        let mut providers: Vec<Arc<ProviderImpl>> = Vec::new();
+        let mut providers: Vec<Arc<LLMProvider>> = Vec::new();
         let mut total_weight = 0u32;
 
         for provider_config in configs {
-            let provider = Arc::new(ProviderImpl::Llm(LLMProvider::new(provider_config)?));
+            let provider = Arc::new(LLMProvider::new(provider_config)?);
             total_weight += provider.weight();
             providers.push(provider);
         }
@@ -134,7 +134,7 @@ impl ProviderPool {
 
     /// Check all providers health
     async fn check_all_providers(
-        providers: &Arc<RwLock<Vec<Arc<ProviderImpl>>>>,
+        providers: &Arc<RwLock<Vec<Arc<LLMProvider>>>>,
         timeout: Duration,
     ) {
         let providers_snapshot = providers.read().await.clone();
@@ -159,7 +159,7 @@ impl ProviderPool {
 
     /// Try to recover unhealthy providers
     async fn try_recover_unhealthy_providers(
-        providers: &Arc<RwLock<Vec<Arc<ProviderImpl>>>>,
+        providers: &Arc<RwLock<Vec<Arc<LLMProvider>>>>,
         timeout: Duration,
     ) {
         let providers_snapshot = providers.read().await.clone();
@@ -171,7 +171,7 @@ impl ProviderPool {
                     let check_result =
                         tokio::time::timeout(timeout, provider_clone.health_check()).await;
 
-                    if check_result.is_ok() {
+                    if check_result.is_ok() && check_result.unwrap().is_ok() {
                         provider_clone.mark_healthy().await;
                     }
                 });
@@ -180,7 +180,7 @@ impl ProviderPool {
     }
 
     /// Get next provider based on strategy
-    pub async fn get_provider(&self) -> Result<Arc<ProviderImpl>> {
+    pub async fn get_provider(&self) -> Result<Arc<LLMProvider>> {
         match self.strategy {
             RotationStrategy::RoundRobin => self.get_round_robin_provider().await,
             RotationStrategy::Weighted => self.get_weighted_provider().await,
@@ -188,7 +188,7 @@ impl ProviderPool {
     }
 
     /// Get provider by round-robin strategy
-    async fn get_round_robin_provider(&self) -> Result<Arc<ProviderImpl>> {
+    async fn get_round_robin_provider(&self) -> Result<Arc<LLMProvider>> {
         let providers = self.providers.read().await;
 
         if providers.is_empty() {
@@ -219,7 +219,7 @@ impl ProviderPool {
     }
 
     /// Get provider by weighted strategy using random selection
-    async fn get_weighted_provider(&self) -> Result<Arc<ProviderImpl>> {
+    async fn get_weighted_provider(&self) -> Result<Arc<LLMProvider>> {
         let providers = self.providers.read().await;
 
         if providers.is_empty() {
@@ -259,7 +259,7 @@ impl ProviderPool {
     }
 
     /// Get provider by ID
-    pub async fn get_provider_by_id(&self, id: &str) -> Result<Arc<ProviderImpl>> {
+    pub async fn get_provider_by_id(&self, id: &str) -> Result<Arc<LLMProvider>> {
         let providers = self.providers.read().await;
 
         for provider in providers.iter() {
@@ -275,12 +275,12 @@ impl ProviderPool {
     }
 
     /// Get all providers
-    pub async fn get_all_providers(&self) -> Vec<Arc<ProviderImpl>> {
+    pub async fn get_all_providers(&self) -> Vec<Arc<LLMProvider>> {
         self.providers.read().await.clone()
     }
 
     /// Get healthy providers
-    pub async fn get_healthy_providers(&self) -> Vec<Arc<ProviderImpl>> {
+    pub async fn get_healthy_providers(&self) -> Vec<Arc<LLMProvider>> {
         let providers = self.providers.read().await;
         let mut healthy_providers = Vec::new();
 
@@ -343,18 +343,11 @@ impl Drop for ProviderPool {
     fn drop(&mut self) {
         let stop_signal = self.stop_signal.clone();
         let health_check_handle = self.health_check_handle.clone();
-        let providers = self.providers.clone();
 
         tokio::spawn(async move {
             stop_signal.notify_waiters();
             if let Some(handle) = health_check_handle.write().await.take() {
                 handle.abort();
-            }
-
-            // Close all providers to cleanup resources
-            let providers_snapshot = providers.read().await;
-            for provider in providers_snapshot.iter() {
-                let _ = provider.close().await;
             }
         });
     }

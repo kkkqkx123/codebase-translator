@@ -1,10 +1,11 @@
 use async_trait::async_trait;
+use std::sync::Arc;
 use tracing::{debug, error, info};
 
 use crate::config::LLMProviderConfig;
 use crate::core::error::{Result, TranslateError};
 use crate::translator::common::TranslateResponse;
-use crate::translator::llm::provider::Provider;
+use crate::translator::llm::provider::LLMProvider;
 use crate::translator::llm::routing::ProviderRouter;
 use crate::translator::Translator;
 
@@ -15,6 +16,7 @@ use crate::translator::Translator;
 /// - Long texts (>= threshold): Weighted distribution among capable providers
 ///
 /// Each provider represents a single model with a fixed max_tokens limit.
+#[derive(Debug)]
 pub struct MultiProviderTranslator {
     router: ProviderRouter,
     max_retries: usize,
@@ -50,7 +52,7 @@ impl MultiProviderTranslator {
 
         // Select provider based on capacity
         let provider = match self.router.select_provider(text_len) {
-            Some(p) => p.provider().clone(),
+            Some(p) => p.clone(),
             None => {
                 error!(
                     "No provider can handle text of length {}. Maximum capacity: {}",
@@ -115,11 +117,12 @@ impl MultiProviderTranslator {
         let text_len = text.len();
 
         // Find other providers that can handle this text
-        let other_providers: Vec<_> = self
+        let other_providers: Vec<Arc<LLMProvider>> = self
             .router
             .providers()
             .iter()
-            .filter(|p| p.can_handle(text_len) && p.provider().id() != exclude_provider)
+            .filter(|p| p.can_handle(text_len) && p.id() != exclude_provider)
+            .cloned()
             .collect();
 
         info!(
@@ -138,21 +141,17 @@ impl MultiProviderTranslator {
         // Try each alternative provider (limited by max_retries)
         let max_attempts = self.max_retries.min(other_providers.len());
         for (idx, provider) in other_providers.iter().take(max_attempts).enumerate() {
-            let provider_id = provider.provider().id().to_string();
+            let provider_id = provider.id().to_string();
             let attempt_start = std::time::Instant::now();
             debug!(
                 "Trying alternative provider {} (attempt {}/{}, capacity: {} chars)",
                 provider_id,
                 idx + 1,
                 max_attempts,
-                provider.max_chars()
+                provider.max_input_chars()
             );
 
-            match provider
-                .provider()
-                .translate(text, source_lang, target_lang)
-                .await
-            {
+            match provider.translate(text, source_lang, target_lang).await {
                 Ok(response) => {
                     let latency = attempt_start.elapsed();
                     info!(
@@ -160,7 +159,7 @@ impl MultiProviderTranslator {
                         provider_id, latency
                     );
                     // Mark provider as healthy on success
-                    provider.provider().mark_healthy().await;
+                    provider.mark_healthy().await;
                     return Ok(response);
                 }
                 Err(e) => {
@@ -170,7 +169,7 @@ impl MultiProviderTranslator {
                         provider_id, latency, e
                     );
                     // Immediately mark provider as unhealthy on failure
-                    provider.provider().mark_unhealthy().await;
+                    provider.mark_unhealthy().await;
                 }
             }
         }
@@ -197,8 +196,8 @@ impl MultiProviderTranslator {
             "max_capacity": self.router.max_capacity(),
             "providers": self.router.providers().iter().map(|p| {
                 serde_json::json!({
-                    "id": p.provider().id(),
-                    "max_chars": p.max_chars(),
+                    "id": p.id(),
+                    "max_chars": p.max_input_chars(),
                     "weight": p.weight(),
                 })
             }).collect::<Vec<_>>(),

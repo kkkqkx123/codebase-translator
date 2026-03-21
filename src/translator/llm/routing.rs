@@ -12,61 +12,20 @@
 
 use std::sync::Arc;
 
-use tracing::{debug, trace, warn};
+use tracing::{debug, info, trace, warn};
 
 use crate::config::LLMProviderConfig;
 use crate::core::error::{Result, TranslateError};
-use crate::translator::llm::provider::{LLMProvider, Provider, ProviderImpl};
-
-/// Provider with capacity information for routing
-#[derive(Debug, Clone)]
-pub struct CapacityProvider {
-    provider: Arc<ProviderImpl>,
-    max_chars: usize,
-    weight: u32,
-}
-
-impl CapacityProvider {
-    /// Create a new capacity-aware provider wrapper
-    pub fn new(config: &LLMProviderConfig) -> Result<Self> {
-        let provider = Arc::new(ProviderImpl::Llm(LLMProvider::new(config)?));
-        let max_chars = provider.translator().max_input_chars();
-
-        Ok(Self {
-            provider,
-            max_chars,
-            weight: config.weight,
-        })
-    }
-
-    /// Check if this provider can handle the given text length
-    pub fn can_handle(&self, text_len: usize) -> bool {
-        self.max_chars == 0 || text_len <= self.max_chars
-    }
-
-    /// Get the underlying provider
-    pub fn provider(&self) -> &Arc<ProviderImpl> {
-        &self.provider
-    }
-
-    /// Get maximum characters capacity
-    pub fn max_chars(&self) -> usize {
-        self.max_chars
-    }
-
-    /// Get weight (higher = more likely to be selected)
-    pub fn weight(&self) -> u32 {
-        self.weight
-    }
-}
+use crate::translator::llm::provider::LLMProvider;
 
 /// Weighted router for LLM providers
 ///
 /// Routes texts to providers based on:
 /// 1. Capacity (must fit within provider's max_tokens limit)
 /// 2. Weight (higher weight = more likely to be selected)
+#[derive(Debug)]
 pub struct ProviderRouter {
-    providers: Vec<CapacityProvider>,
+    providers: Vec<Arc<LLMProvider>>,
     /// Threshold for long text routing (minimum capacity among all providers)
     capacity_threshold: usize,
 }
@@ -97,7 +56,7 @@ impl ProviderRouter {
             }
         }
 
-        let mut providers = Vec::new();
+        let mut providers: Vec<Arc<LLMProvider>> = Vec::new();
         let mut total_weight = 0u32;
 
         for config in configs {
@@ -112,14 +71,16 @@ impl ProviderRouter {
                 continue;
             }
 
-            match CapacityProvider::new(config) {
+            match LLMProvider::new(config) {
                 Ok(provider) => {
+                    let max_chars = provider.max_input_chars();
+                    let weight = provider.weight();
                     debug!(
                         "Added provider {} with capacity {} chars, weight {}",
-                        config.id, provider.max_chars, provider.weight
+                        config.id, max_chars, weight
                     );
-                    total_weight += provider.weight();
-                    providers.push(provider);
+                    total_weight += weight;
+                    providers.push(Arc::new(provider));
                 }
                 Err(e) => {
                     warn!("Failed to create provider {}: {}. Skipping.", config.id, e);
@@ -143,7 +104,7 @@ impl ProviderRouter {
         // Calculate capacity threshold (minimum capacity among all providers)
         let capacity_threshold = providers
             .iter()
-            .map(|p| p.max_chars())
+            .map(|p| p.max_input_chars())
             .filter(|&c| c > 0)
             .min()
             .unwrap_or(0);
@@ -162,7 +123,7 @@ impl ProviderRouter {
     }
 
     /// Select provider based on text length using weighted distribution
-    pub fn select_provider(&self, text_len: usize) -> Option<&CapacityProvider> {
+    pub fn select_provider(&self, text_len: usize) -> Option<&Arc<LLMProvider>> {
         trace!(
             "Selecting provider for text length: {} (threshold: {})",
             text_len,
@@ -170,7 +131,7 @@ impl ProviderRouter {
         );
 
         // For long texts, filter to capable providers only
-        let candidates: Vec<&CapacityProvider> = if text_len < self.capacity_threshold {
+        let candidates: Vec<&Arc<LLMProvider>> = if text_len < self.capacity_threshold {
             self.providers.iter().collect()
         } else {
             self.providers
@@ -194,8 +155,8 @@ impl ProviderRouter {
     /// Select provider by weighted strategy using random selection
     fn select_weighted<'a>(
         &self,
-        candidates: &[&'a CapacityProvider],
-    ) -> Option<&'a CapacityProvider> {
+        candidates: &[&'a Arc<LLMProvider>],
+    ) -> Option<&'a Arc<LLMProvider>> {
         if candidates.is_empty() {
             return None;
         }
@@ -225,7 +186,7 @@ impl ProviderRouter {
             if target_weight < current_weight {
                 trace!(
                     "Weighted selected provider {} with weight {} (target: {})",
-                    provider.provider().id(),
+                    provider.id(),
                     provider.weight(),
                     target_weight
                 );
@@ -238,7 +199,7 @@ impl ProviderRouter {
         if let Some(p) = provider {
             trace!(
                 "Weighted selection fell back to last provider {}",
-                p.provider().id()
+                p.id()
             );
         }
         provider
@@ -253,13 +214,13 @@ impl ProviderRouter {
     pub fn max_capacity(&self) -> usize {
         self.providers
             .iter()
-            .map(|p| p.max_chars())
+            .map(|p| p.max_input_chars())
             .max()
             .unwrap_or(0)
     }
 
     /// Get all providers
-    pub fn providers(&self) -> &[CapacityProvider] {
+    pub fn providers(&self) -> &[Arc<LLMProvider>] {
         &self.providers
     }
 
@@ -286,17 +247,9 @@ impl ProviderRouter {
         })?;
 
         let response = provider
-            .provider()
             .translate(text, source_lang, target_lang)
             .await?;
 
         Ok(response.translated_text)
     }
-}
-
-use tracing::info;
-
-#[cfg(test)]
-mod tests {
-    // Tests would require mock providers
 }

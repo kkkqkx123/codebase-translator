@@ -6,7 +6,7 @@ use async_trait::async_trait;
 
 use crate::core::error::Result;
 use crate::translator::deeplx::DeepLXTranslator;
-use crate::translator::llm::LLMTranslator;
+use crate::translator::llm::MultiProviderTranslator;
 use crate::translator::tencent::TencentTranslator;
 use tracing::{debug, info};
 
@@ -110,7 +110,7 @@ impl std::str::FromStr for ProviderType {
 #[derive(Debug)]
 pub enum TranslatorImpl {
     DeepLX(DeepLXTranslator),
-    LLM(LLMTranslator),
+    LLM(MultiProviderTranslator),
     Tencent(TencentTranslator),
 }
 
@@ -188,6 +188,9 @@ impl Translator for TranslatorImpl {
 
 impl TranslatorImpl {
     /// Create a translator from the given configuration
+    /// 
+    /// Note: For LLM provider, use `create_llm_multi_provider_translator` in mod.rs instead
+    /// to enable multi-provider support with automatic filtering.
     pub fn from_config(config: &crate::translator::factory::TranslatorConfig) -> Result<Self> {
         info!(
             provider = ?config.provider,
@@ -202,14 +205,11 @@ impl TranslatorImpl {
                 Ok(Self::DeepLX(translator))
             }
             ProviderType::LLM => {
-                debug!("Creating LLM translator");
-                let llm_config = config.llm.clone().ok_or_else(|| {
-                    crate::core::error::TranslateError::Config(
-                        "LLM configuration is required".to_string(),
-                    )
-                })?;
-                let translator = LLMTranslator::new(llm_config)?;
-                Ok(Self::LLM(translator))
+                // LLM is now handled by create_llm_multi_provider_translator in mod.rs
+                // This branch should not be reached when using the recommended API
+                Err(crate::core::error::TranslateError::Config(
+                    "LLM provider should be created using create_llm_multi_provider_translator".to_string(),
+                ))
             }
             ProviderType::Tencent => {
                 debug!("Creating Tencent translator");
