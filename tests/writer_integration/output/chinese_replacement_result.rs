@@ -2,8 +2,8 @@
 // Contains Chinese comments and doc strings
 
 /// Calculate the sum of two numbers
-# Arguments
-/// 
+
+/// # Arguments
 /// 
 /// * `a` - 第一个数字
 /// * `b` - 第二个数字

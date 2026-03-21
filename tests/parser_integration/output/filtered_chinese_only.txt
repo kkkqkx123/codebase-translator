@@ -2,7 +2,7 @@ Chinese-only content (to be translated zh->en):
 ================================================
 
 1: [comment] 这是一个中文注释
-2: [comment] 多行中文注释
+2: [doc_string] 多行中文注释
 包含多行内容
 3: [string_literal] "这是中文输出"
 4: [string_literal] "Hello 世界"
@@ -16,7 +16,7 @@ English-only content (skip translation):
 
 1: [comment] Mixed content Rust file for language filtering tests
 2: [comment] This is an English comment
-3: [comment] Multi-line English comment
+3: [doc_string] Multi-line English comment
 with multiple lines
 4: [string_literal] "This is English output"
 5: [comment] English comment with some Chinese words

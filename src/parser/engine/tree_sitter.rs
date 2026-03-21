@@ -171,8 +171,19 @@ impl TreeSitterParser {
         // Sort by position for consistent ordering
         units.sort_by(|a, b| a.start_pos.offset.cmp(&b.start_pos.offset));
 
+        // Remove duplicate units (same position)
+        let mut unique_units: Vec<TranslationUnit> = Vec::new();
+        for unit in units {
+            let is_duplicate = unique_units.iter().any(|u| {
+                u.start_pos.offset == unit.start_pos.offset && u.end_pos.offset == unit.end_pos.offset
+            });
+            if !is_duplicate {
+                unique_units.push(unit);
+            }
+        }
+
         // Merge consecutive docstring/comment units
-        let merged_units = Self::merge_consecutive_units(units);
+        let merged_units = Self::merge_consecutive_units(unique_units);
 
         Ok(merged_units)
     }
@@ -384,6 +395,12 @@ impl TreeSitterParser {
                             processor.clean_comment(trimmed, CommentType::Doc)
                         } else if trimmed.starts_with("/**") {
                             processor.clean_comment(trimmed, CommentType::Doc)
+                        } else if trimmed.starts_with("/*") {
+                            // Handle block comments that were mistakenly extracted as docstrings
+                            processor.clean_comment(trimmed, CommentType::Block)
+                        } else if trimmed.starts_with("//") || trimmed.starts_with("#") {
+                            // Handle line comments that were mistakenly extracted as docstrings
+                            processor.clean_comment(trimmed, CommentType::Line)
                         } else if trimmed.starts_with("\"\"\"") || trimmed.starts_with("'''") {
                             // Python-style docstrings
                             processor.clean_string_literal(trimmed)

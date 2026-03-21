@@ -35,7 +35,7 @@ Size: 28 bytes
 
 --- File 9 ---
 Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\nested_dir\nested.rs
-Size: 71 bytes
+Size: 73 bytes
 
 --- File 10 ---
 Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\nested_dir\subdir.cache
@@ -55,7 +55,7 @@ Size: 122 bytes
 
 --- File 14 ---
 Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\simple_rust.rs
-Size: 87 bytes
+Size: 89 bytes
 
 --- File 15 ---
 Path: \\?\E:\project\codebase-translator\tests\scanner_integration\fixtures\temp_file.tmp

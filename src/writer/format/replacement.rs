@@ -126,6 +126,18 @@ mod tests {
     }
 
     #[test]
+    fn test_replace_in_raw_match_with_comment_prefix() {
+        // Simulate E2E test case: Chinese comment translated to English
+        let raw = "// 这是一个简单的JavaScript文件，用于测试翻译功能";
+        let extracted = "这是一个简单的JavaScript文件，用于测试翻译功能";
+        let translated = "This is a simple JavaScript file to test the translation function";
+
+        let result = replace_in_raw_match(raw, extracted, translated);
+        // Should replace the content, not append
+        assert_eq!(result, "// This is a simple JavaScript file to test the translation function");
+    }
+
+    #[test]
     fn test_byte_to_char_pos() {
         let s = "Hello 世界";
         // "Hello " is 6 bytes in UTF-8 (space is 1 byte)

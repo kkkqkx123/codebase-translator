@@ -3,6 +3,7 @@
 //! Check 2: Quick language detection (O(k) where k=32)
 //! - Source language matching
 //! - CJK character detection
+//! - Target language detection (to avoid translating already-translated content)
 
 use crate::parser::filtering::config::FilterConfig;
 use crate::parser::filtering::traits::Filter;
@@ -11,6 +12,7 @@ use tracing::debug;
 /// Language filter for source language validation
 pub struct LanguageFilter {
     source_langs: Vec<String>,
+    target_lang: String,
 }
 
 impl LanguageFilter {
@@ -18,6 +20,7 @@ impl LanguageFilter {
     pub fn new(config: &FilterConfig) -> Self {
         Self {
             source_langs: config.source_langs.clone(),
+            target_lang: config.target_lang.clone(),
         }
     }
 
@@ -43,6 +46,38 @@ impl LanguageFilter {
         })
     }
 
+    /// Quick detection of Latin/English characters
+    /// Returns true if text appears to be primarily English/Latin
+    fn quick_detect_english(text: &str) -> bool {
+        let sample = text.chars().take(32).collect::<String>();
+        if sample.is_empty() {
+            return false;
+        }
+
+        // Count Latin characters
+        let latin_count = sample.chars().filter(|c| c.is_ascii_alphabetic()).count();
+        let total_chars = sample.chars().filter(|c| !c.is_whitespace()).count();
+
+        if total_chars == 0 {
+            return false;
+        }
+
+        // If more than 70% of characters are Latin, consider it English
+        (latin_count as f64 / total_chars as f64) > 0.7
+    }
+
+    /// Check if text is already in target language (to avoid re-translating)
+    fn is_target_language(&self, text: &str) -> bool {
+        let target = self.target_lang.to_uppercase();
+
+        match target.as_str() {
+            "EN" | "EN-US" | "EN-GB" => Self::quick_detect_english(text),
+            "ZH" | "ZH-CN" | "ZH-TW" => Self::quick_detect_cjk(text),
+            // For other languages, allow translation (conservative approach)
+            _ => false,
+        }
+    }
+
     /// Check if text contains target language characters
     fn contains_target_language(&self, text: &str) -> bool {
         if self.source_langs.is_empty() {
@@ -55,6 +90,10 @@ impl LanguageFilter {
             .iter()
             .any(|lang| lang.to_uppercase() == "AUTO")
         {
+            // In AUTO mode, skip if text is already in target language
+            if self.is_target_language(text) {
+                return false;
+            }
             return true;
         }
 
@@ -120,11 +159,66 @@ mod tests {
 
     #[test]
     fn test_auto_mode() {
+        // In AUTO mode with default target EN, Chinese text should be translated
+        // but English text should be skipped (already in target language)
         let config = FilterConfig {
             source_langs: vec!["AUTO".to_string()],
             ..Default::default()
         };
         let filter = LanguageFilter::new(&config);
-        assert!(filter.should_translate("anything"));
+
+        // Chinese text should be translated
+        assert!(filter.should_translate("你好世界"));
+
+        // English text should NOT be translated (already in target language)
+        assert!(!filter.should_translate("Hello World"));
+    }
+
+    #[test]
+    fn test_auto_mode_skip_english_when_target_is_en() {
+        // When target is EN and source is AUTO, English text should be skipped
+        let config = FilterConfig {
+            source_langs: vec!["AUTO".to_string()],
+            target_lang: "EN".to_string(),
+            ..Default::default()
+        };
+        let filter = LanguageFilter::new(&config);
+
+        // English text should NOT be translated (already in target language)
+        assert!(!filter.should_translate("Hello World"));
+        assert!(!filter.should_translate("This is a simple test"));
+
+        // Chinese text should be translated
+        assert!(filter.should_translate("你好世界"));
+        assert!(filter.should_translate("这是一个测试"));
+    }
+
+    #[test]
+    fn test_auto_mode_skip_chinese_when_target_is_zh() {
+        // When target is ZH and source is AUTO, Chinese text should be skipped
+        let config = FilterConfig {
+            source_langs: vec!["AUTO".to_string()],
+            target_lang: "ZH".to_string(),
+            ..Default::default()
+        };
+        let filter = LanguageFilter::new(&config);
+
+        // Chinese text should NOT be translated (already in target language)
+        assert!(!filter.should_translate("你好世界"));
+
+        // English text should be translated
+        assert!(filter.should_translate("Hello World"));
+    }
+
+    #[test]
+    fn test_english_detection() {
+        // Test various English texts
+        assert!(LanguageFilter::quick_detect_english("Hello World"));
+        assert!(LanguageFilter::quick_detect_english("This is a test"));
+        assert!(LanguageFilter::quick_detect_english("function main()"));
+
+        // Test non-English texts
+        assert!(!LanguageFilter::quick_detect_english("你好世界"));
+        assert!(!LanguageFilter::quick_detect_english("こんにちは"));
     }
 }

@@ -29,8 +29,8 @@ Raw Match:
 // 这是一个中文注释
 
 --- Unit 4 ---
-ID: test.rs_comment_3
-Type: comment
+ID: test.rs_doc_string_0
+Type: doc_string
 Position: Line 9, Column 1 (Offset: 180)
 Content:
 Multi-line English comment
@@ -42,8 +42,8 @@ Raw Match:
  */
 
 --- Unit 5 ---
-ID: test.rs_comment_4
-Type: comment
+ID: test.rs_doc_string_1
+Type: doc_string
 Position: Line 14, Column 1 (Offset: 241)
 Content:
 多行中文注释
@@ -73,7 +73,7 @@ Raw Match:
 "这是中文输出"
 
 --- Unit 8 ---
-ID: test.rs_comment_5
+ID: test.rs_comment_3
 Type: comment
 Position: Line 28, Column 5 (Offset: 449)
 Content:
@@ -91,7 +91,7 @@ Raw Match:
 "Hello 世界"
 
 --- Unit 10 ---
-ID: test.rs_comment_6
+ID: test.rs_comment_4
 Type: comment
 Position: Line 32, Column 5 (Offset: 564)
 Content:

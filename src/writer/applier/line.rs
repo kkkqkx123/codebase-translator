@@ -190,4 +190,24 @@ mod tests {
 
         assert_eq!(result, "    // 这是一个注释");
     }
+
+    #[test]
+    fn test_apply_chinese_to_english_translation() {
+        // Simulate E2E test case: Chinese comment translated to English
+        let line = "// 这是一个简单的JavaScript文件，用于测试翻译功能";
+        let mut unit = create_test_unit(
+            "// 这是一个简单的JavaScript文件，用于测试翻译功能",
+            1,
+            1,
+            46,
+        );
+        unit.content = "这是一个简单的JavaScript文件，用于测试翻译功能".to_string();
+        unit.set_translated("This is a simple JavaScript file to test the translation function");
+
+        let units: Vec<&TranslationUnit> = vec![&unit];
+        let result = LineApplier::apply(line, &units);
+
+        // Should replace the content, not append
+        assert_eq!(result, "// This is a simple JavaScript file to test the translation function");
+    }
 }

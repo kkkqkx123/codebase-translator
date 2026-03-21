@@ -506,10 +506,10 @@ mod example {
         ),
     ];
 
-    units[0].set_translated("// 模块注释");
-    units[1].set_translated("    // 嵌套模块注释");
-    units[2].set_translated("        /// 字段文档注释");
-    units[3].set_translated("        // 方法注释");
+    units[0].set_translated("模块注释");
+    units[1].set_translated("嵌套模块注释");
+    units[2].set_translated("字段文档注释");
+    units[3].set_translated("方法注释");
 
     let config = WriterConfig::default();
     let writer = FileWriter::new(config);

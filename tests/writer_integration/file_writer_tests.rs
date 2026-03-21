@@ -345,9 +345,9 @@ async fn test_file_writer_with_rust_fixture() {
             23,
         ),
     ];
-    units[0].set_translated("// 测试文件，包含简单注释");
-    units[1].set_translated("// 这是一个行注释");
-    units[2].set_translated("    // 另一个注释");
+    units[0].set_translated("测试文件，包含简单注释");
+    units[1].set_translated("这是一个行注释");
+    units[2].set_translated("另一个注释");
 
     let config = WriterConfig::default();
     let writer = FileWriter::new(config);
@@ -435,13 +435,13 @@ async fn test_file_writer_with_go_fixture() {
             31,
         ),
     ];
-    units[0].set_translated("// 测试文件，包含简单注释");
-    units[1].set_translated("// 这是一个行注释");
-    units[2].set_translated("// 这是一个单行注释");
-    units[3].set_translated("/*\n这是一个多行注释\n包含多行文本\n*/");
-    units[4].set_translated("    // 函数内部的另一个注释");
-    units[5].set_translated("// greet 返回问候信息");
-    units[6].set_translated("// name 是要问候的人");
+    units[0].set_translated("测试文件，包含简单注释");
+    units[1].set_translated("这是一个行注释");
+    units[2].set_translated("这是一个单行注释");
+    units[3].set_translated("这是一个多行注释\n包含多行文本");
+    units[4].set_translated("函数内部的另一个注释");
+    units[5].set_translated("greet 返回问候信息");
+    units[6].set_translated("name 是要问候的人");
 
     let config = WriterConfig::default();
     let writer = FileWriter::new(config);

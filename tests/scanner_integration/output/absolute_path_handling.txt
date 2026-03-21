@@ -43,7 +43,7 @@ Size: 52 bytes
 
 --- File 11 ---
 Path: nested_dir\nested.rs
-Size: 71 bytes
+Size: 73 bytes
 
 --- File 12 ---
 Path: nested_dir\subdir.cache
@@ -63,7 +63,7 @@ Size: 122 bytes
 
 --- File 16 ---
 Path: simple_rust.rs
-Size: 87 bytes
+Size: 89 bytes
 
 --- File 17 ---
 Path: temp_file.tmp

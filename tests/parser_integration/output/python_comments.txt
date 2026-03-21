@@ -1,4 +1,4 @@
-Extracted 11 translation units from python_comments
+Extracted 7 translation units from python_comments
 ==================================================
 
 --- Unit 1 ---
@@ -20,40 +20,19 @@ Raw Match:
 # This is a single-line comment
 
 --- Unit 3 ---
-ID: test.py_merged_doc_string_75
+ID: test.py_doc_string_0
 Type: doc_string
 Position: Line 6, Column 1 (Offset: 75)
 Content:
 This is a multi-line comment
 with multiple lines of text
-This is a multi-line comment
-with multiple lines of text
 Raw Match:
-"""
-This is a multi-line comment
-with multiple lines of text
-"""
 """
 This is a multi-line comment
 with multiple lines of text
 """
 
 --- Unit 4 ---
-ID: test.py_string_literal_0
-Type: string_literal
-Position: Line 6, Column 1 (Offset: 75)
-Content:
-"""
-This is a multi-line comment
-with multiple lines of text
-"""
-Raw Match:
-"""
-This is a multi-line comment
-with multiple lines of text
-"""
-
---- Unit 5 ---
 ID: test.py_comment_2
 Type: comment
 Position: Line 12, Column 5 (Offset: 157)
@@ -62,7 +41,7 @@ Another comment inside function
 Raw Match:
 # Another comment inside function
 
---- Unit 6 ---
+--- Unit 5 ---
 ID: test.py_doc_string_2
 Type: doc_string
 Position: Line 16, Column 5 (Offset: 230)
@@ -81,28 +60,7 @@ Raw Match:
         A greeting message
     """
 
---- Unit 7 ---
-ID: test.py_string_literal_1
-Type: string_literal
-Position: Line 16, Column 5 (Offset: 230)
-Content:
-"""
-    Documentation string for greet function
-    Args:
-        name: The name to greet
-    Returns:
-        A greeting message
-    """
-Raw Match:
-"""
-    Documentation string for greet function
-    Args:
-        name: The name to greet
-    Returns:
-        A greeting message
-    """
-
---- Unit 8 ---
+--- Unit 6 ---
 ID: test.py_doc_string_3
 Type: doc_string
 Position: Line 26, Column 5 (Offset: 417)
@@ -111,30 +69,12 @@ Example class for testing
 Raw Match:
 """Example class for testing"""
 
---- Unit 9 ---
-ID: test.py_string_literal_2
-Type: string_literal
-Position: Line 26, Column 5 (Offset: 417)
-Content:
-"""Example class for testing"""
-Raw Match:
-"""Example class for testing"""
-
---- Unit 10 ---
+--- Unit 7 ---
 ID: test.py_doc_string_4
 Type: doc_string
 Position: Line 29, Column 9 (Offset: 484)
 Content:
 Method documentation
-Raw Match:
-"""Method documentation"""
-
---- Unit 11 ---
-ID: test.py_string_literal_3
-Type: string_literal
-Position: Line 29, Column 9 (Offset: 484)
-Content:
-"""Method documentation"""
 Raw Match:
 """Method documentation"""
 

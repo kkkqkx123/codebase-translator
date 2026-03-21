@@ -106,6 +106,7 @@ pub fn from_project_config(
 ) -> crate::core::error::Result<CompositeFilter> {
     let filter_config = FilterConfig {
         source_langs: translate_config.source_langs.clone(),
+        target_lang: translate_config.target_lang.clone(),
         exclude_keywords: config.exclude_keywords.clone(),
         exclude_patterns: config.exclude_patterns.clone(),
         include_patterns: config.include_patterns.clone(),
@@ -135,6 +136,7 @@ pub fn from_project_config_with_translator(
 
     let filter_config = FilterConfig {
         source_langs: translate_config.source_langs.clone(),
+        target_lang: translate_config.target_lang.clone(),
         exclude_keywords: project_config.exclude_keywords.clone(),
         exclude_patterns: project_config.exclude_patterns.clone(),
         include_patterns: project_config.include_patterns.clone(),

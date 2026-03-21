@@ -20,8 +20,8 @@ Raw Match:
 // This is a single-line comment
 
 --- Unit 3 ---
-ID: test.rs_comment_2
-Type: comment
+ID: test.rs_doc_string_0
+Type: doc_string
 Position: Line 6, Column 1 (Offset: 94)
 Content:
 This is a multi-line comment
@@ -33,7 +33,7 @@ with multiple lines of text
 */
 
 --- Unit 4 ---
-ID: test.rs_comment_3
+ID: test.rs_comment_2
 Type: comment
 Position: Line 12, Column 5 (Offset: 181)
 Content:

@@ -12,6 +12,11 @@ pub struct FilterConfig {
     #[serde(default)]
     pub source_langs: Vec<String>,
 
+    /// Target language for translation (e.g., "EN", "ZH")
+    /// Used to avoid translating already-translated content
+    #[serde(default = "default_target_lang")]
+    pub target_lang: String,
+
     /// Keywords to exclude
     #[serde(default = "default_exclude_keywords")]
     pub exclude_keywords: Vec<String>,
@@ -66,6 +71,10 @@ fn default_max_length() -> usize {
     100000
 }
 
+fn default_target_lang() -> String {
+    "EN".to_string()
+}
+
 fn default_true() -> bool {
     true
 }
@@ -74,6 +83,7 @@ impl Default for FilterConfig {
     fn default() -> Self {
         Self {
             source_langs: Vec::new(),
+            target_lang: default_target_lang(),
             exclude_keywords: default_exclude_keywords(),
             exclude_patterns: default_exclude_patterns(),
             include_patterns: Vec::new(),

@@ -49,12 +49,12 @@ Total files: 1
 Total matches: 20
 
 Patterns used:
-  - rust: 17
   - : 3
+  - rust: 17
 
 By category:
-  - variables: 8
   - other: 12
+  - variables: 8
 
 By file type:
   - rs: 20

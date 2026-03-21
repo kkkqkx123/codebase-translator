@@ -74,16 +74,26 @@ impl StringProcessor {
     /// Preserves newlines and removes leading '*' characters from each line
     /// (commonly used in Javadoc-style comments).
     fn clean_block_comment(&self, text: &str) -> String {
-        // Only trim leading/trailing whitespace on the outer edges, not internal newlines
-        let text = text
-            .trim_start()
-            .trim_end_matches(|c: char| c.is_whitespace() && c != '\n');
+        // Trim leading whitespace
+        let text = text.trim_start();
 
-        // Remove /* and */
+        // Remove /* and */ - handle cases where */ might be followed by whitespace/newlines
         let content = text
             .strip_prefix("/*")
-            .and_then(|s| s.strip_suffix("*/"))
+            .map(|s| {
+                // Find the position of */ and extract everything before it
+                if let Some(pos) = s.find("*/") {
+                    &s[..pos]
+                } else {
+                    s
+                }
+            })
             .unwrap_or(text);
+
+        // Trim leading/trailing whitespace from content (preserving internal structure)
+        // Use a two-step approach: first trim whitespace to get to content,
+        // then handle the lines
+        let content = content.trim();
 
         // Process each line: trim whitespace and remove leading '*' if present
         let lines: Vec<&str> = content.lines().collect();
@@ -143,10 +153,13 @@ impl StringProcessor {
 
         // Handle block doc comments: /** */ (same as block comments but with extra leading '*')
         if text.starts_with("/**") {
-            let content = text
-                .strip_prefix("/**")
-                .and_then(|s| s.strip_suffix("*/"))
-                .unwrap_or(text);
+            // Find the position of */ and extract everything before it
+            let after_prefix = &text[3..]; // Skip "/**"
+            let content = if let Some(pos) = after_prefix.find("*/") {
+                &after_prefix[..pos]
+            } else {
+                after_prefix
+            };
 
             // Process each line: trim whitespace and remove leading '*' if present
             let lines: Vec<&str> = content.lines().collect();
@@ -163,6 +176,12 @@ impl StringProcessor {
                 .collect();
 
             return processed_lines.join("\n").trim_end().to_string();
+        }
+
+        // Handle block comments that were mistakenly extracted as docstrings
+        // This can happen if tree-sitter query matches /* comments
+        if text.starts_with("/*") {
+            return self.clean_block_comment(text);
         }
 
         self.clean_line_comment(text)
@@ -465,5 +484,33 @@ mod tests {
         let text = "/// 第一行\n/// 第二行\n";
         let result = processor.clean_doc_comment(text);
         assert_eq!(result, "第一行\n第二行");
+    }
+
+    #[test]
+    fn test_clean_block_comment() {
+        let processor = StringProcessor::new();
+
+        // Basic block comment
+        let text = "/*\nThis is a multi-line comment\nwith multiple lines of text\n*/";
+        let result = processor.clean_comment(text, CommentType::Block);
+        assert_eq!(result, "This is a multi-line comment\nwith multiple lines of text");
+
+        // Single line block comment
+        let text3 = "/* single line */";
+        let result3 = processor.clean_comment(text3, CommentType::Block);
+        assert_eq!(result3, "single line");
+
+        // Block comment without leading newline after /*
+        let text4 = "/* content */";
+        let result4 = processor.clean_comment(text4, CommentType::Block);
+        assert_eq!(result4, "content");
+
+        // Test with the exact input from integration test
+        let text5 = "/*\nThis is a multi-line comment\nwith multiple lines of text\n*/";
+        let result5 = processor.clean_block_comment(text5);
+        println!("Input: {:?}", text5);
+        println!("Output: {:?}", result5);
+        assert!(!result5.contains("/*"), "Output should not contain /*");
+        assert!(!result5.contains("*/"), "Output should not contain */");
     }
 }

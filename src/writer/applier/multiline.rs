@@ -85,7 +85,7 @@ impl MultilineApplier {
             .unwrap_or(false);
 
         let result = if is_block_comment {
-            Self::format_block_comment(&raw_lines, &translated_lines)
+            Self::format_block_comment(&raw_lines, &translated_lines, translated)
         } else {
             Self::format_simple_multiline(&raw_lines, &translated_lines, translated)
         };
@@ -99,7 +99,14 @@ impl MultilineApplier {
     }
 
     /// Format block comments (/* */ or /** */)
-    fn format_block_comment(raw_lines: &[&str], translated_lines: &[&str]) -> String {
+    fn format_block_comment(raw_lines: &[&str], translated_lines: &[&str], translated: &str) -> String {
+        // Check if translated already contains block comment markers
+        // If so, use it directly without reformatting
+        let trimmed_translated = translated.trim();
+        if trimmed_translated.starts_with("/*") && trimmed_translated.ends_with("*/") {
+            return translated.to_string();
+        }
+
         let mut result = String::new();
         let mut translated_idx = 0;
 
@@ -156,6 +163,13 @@ impl MultilineApplier {
         translated_lines: &[&str],
         translated: &str,
     ) -> String {
+        // Check if translated already has comment prefixes
+        // If so, use it directly without reformatting
+        let trimmed_translated = translated.trim_start();
+        if trimmed_translated.starts_with("//") || trimmed_translated.starts_with("/*") {
+            return translated.to_string();
+        }
+
         if raw_lines.len() == translated_lines.len() {
             let mut result = String::new();
             for (i, raw_line) in raw_lines.iter().enumerate() {
@@ -168,21 +182,69 @@ impl MultilineApplier {
             }
             result
         } else {
-            // Line count mismatch - use as-is with prefixes
+            // Line count mismatch - distribute translated content across raw lines
+            // This handles cases where raw_match has empty lines or different structure
             let mut result = String::new();
+            let mut translated_idx = 0;
+
             for (i, raw_line) in raw_lines.iter().enumerate() {
+                let trimmed = raw_line.trim();
                 let prefix = extract_comment_prefix(raw_line);
                 result.push_str(&prefix);
-                if i < translated_lines.len() {
-                    result.push_str(translated_lines[i]);
-                } else if i == 0 {
-                    // Use full translated text on first line if no line-by-line match
-                    result.push_str(translated);
+
+                // If this raw line has actual content (not just prefix), add translated content
+                if !trimmed.is_empty()
+                    && !trimmed.starts_with("//")
+                    && !trimmed.starts_with("/*")
+                {
+                    // This line has content beyond the prefix
+                    if translated_idx < translated_lines.len() {
+                        result.push_str(translated_lines[translated_idx]);
+                        translated_idx += 1;
+                    }
+                } else if trimmed.starts_with("//") || trimmed.starts_with("/*") {
+                    // This is a comment line - check if it has content after the prefix
+                    let content_start = raw_line
+                        .find(|c: char| !c.is_whitespace())
+                        .map(|i| {
+                            if raw_line[i..].starts_with("///") {
+                                i + 3
+                            } else if raw_line[i..].starts_with("//") {
+                                i + 2
+                            } else {
+                                i
+                            }
+                        })
+                        .unwrap_or(raw_line.len());
+
+                    let after_prefix = &raw_line[content_start..];
+                    let after_prefix_trimmed = after_prefix.trim_start();
+
+                    if !after_prefix_trimmed.is_empty() {
+                        // This line has content after the comment marker
+                        if translated_idx < translated_lines.len() {
+                            result.push_str(translated_lines[translated_idx]);
+                            translated_idx += 1;
+                        }
+                    }
+                    // If empty after prefix, just keep the prefix (handles empty comment lines)
                 }
+
                 if i < raw_lines.len() - 1 {
                     result.push('\n');
                 }
             }
+
+            // If there's remaining translated content, append it
+            if translated_idx < translated_lines.len() {
+                for i in translated_idx..translated_lines.len() {
+                    result.push_str(translated_lines[i]);
+                    if i < translated_lines.len() - 1 {
+                        result.push('\n');
+                    }
+                }
+            }
+
             result
         }
     }
