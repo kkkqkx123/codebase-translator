@@ -32,8 +32,8 @@ pub use writer::r#trait::{AsyncWriter, Writer};
 
 // Re-export workflow types
 pub use workflow::{
-    FileProcessResult, FileProcessor, TranslationWorkflow, WorkflowConfig, WorkflowResult,
-    WorkflowBuilder,
+    FileProcessResult, FileProcessor, TranslationWorkflow, WorkflowBuilder, WorkflowConfig,
+    WorkflowResult,
 };
 
 // Re-export factory functions from their respective modules

@@ -5,7 +5,9 @@
 
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
+use std::time::Duration;
 use tokio::sync::RwLock;
+use tokio::task;
 use tracing::{debug, error, info, warn};
 
 use crate::core::error::{Result, TranslateError};
@@ -92,26 +94,60 @@ impl FileWriter {
             "Starting async file write"
         );
 
-        let config = self.config.read().await;
+        // Check preview mode first to avoid unnecessary processing
+        let is_preview = {
+            let config = self.config.read().await;
+            config.preview_only
+        };
 
-        if config.preview_only {
+        if is_preview {
             return self.write_preview(file, units);
         }
 
-        let content = String::from_utf8_lossy(&file.content);
-        let line_ending = detect_line_ending(&content);
+        // Clone data for spawn_blocking to avoid lifetime issues
+        let file_content = file.content.clone();
+        let units_owned: Vec<TranslationUnit> = units.to_vec();
 
-        let modified_content = TranslationApplier::apply_translations(&content, units)?;
-        let modified_content = normalize_line_ending(&modified_content, line_ending);
+        // Offload CPU-intensive translation application to blocking thread pool
+        let (original_content, modified_content) = task::spawn_blocking(move || {
+            let content = String::from_utf8_lossy(&file_content);
+            let line_ending = detect_line_ending(&content);
 
-        self.write_file_atomically(file, &content, &modified_content)
-            .await?;
+            let modified = TranslationApplier::apply_translations(&content, &units_owned)?;
+            let modified = normalize_line_ending(&modified, line_ending);
 
-        info!(
-            file = %file.path.display(),
-            "Async file write completed successfully"
-        );
-        Ok(())
+            Ok::<(String, String), crate::core::error::TranslateError>((
+                content.to_string(),
+                modified,
+            ))
+        })
+        .await
+        .map_err(|e| {
+            TranslateError::Io(format!(
+                "Failed to apply translations in blocking task: {e}"
+            ))
+        })??;
+
+        // Perform async file I/O with timeout
+        const WRITE_TIMEOUT: Duration = Duration::from_secs(30);
+        match tokio::time::timeout(
+            WRITE_TIMEOUT,
+            self.write_file_atomically(file, &original_content, &modified_content),
+        )
+        .await
+        {
+            Ok(result) => {
+                result?;
+                info!(
+                    file = %file.path.display(),
+                    "Async file write completed successfully"
+                );
+                Ok(())
+            }
+            Err(_) => Err(TranslateError::Io(format!(
+                "File write operation timed out after {WRITE_TIMEOUT:?}"
+            ))),
+        }
     }
 
     /// Write preview of translations (without modifying file)
@@ -145,15 +181,19 @@ impl FileWriter {
         let file_path = &file.path;
         debug!(file = %file_path.display(), "Starting async atomic file write");
 
-        let config = self.config.read().await;
-
         if original_content == modified_content {
             debug!(file = %file_path.display(), "No changes detected, skipping write");
             return Ok(());
         }
 
+        // Get backup config in a minimal scope to avoid holding lock across await points
+        let backup_enabled = {
+            let config = self.config.read().await;
+            config.backup
+        };
+
         // Create backup if enabled
-        if config.backup {
+        if backup_enabled {
             if let Err(e) = self.create_backup(file_path, original_content).await {
                 warn!(
                     file = %file_path.display(),
@@ -253,12 +293,11 @@ impl FileWriter {
         let backup_base_dir: Option<PathBuf> = if let Some(ref backup_dir) = config.backup_dir {
             // User specified backup directory
             Some(backup_dir.clone())
-        } else if let Some(ref project_path) = self.project_path {
-            // Use translator subdirectory in project path
-            Some(project_path.join("translator"))
         } else {
-            // No backup directory specified, use same directory as original file
-            None
+            // Use translator subdirectory in project path, or None if no project path
+            self.project_path
+                .as_ref()
+                .map(|project_path| project_path.join("translator"))
         };
 
         // Determine backup path

@@ -46,23 +46,26 @@ impl FileHeader {
             return Err(TranslateError::Cache("Header too small".to_string()));
         }
 
-        let magic: [u8; 8] = bytes[0..8].try_into()
+        let magic: [u8; 8] = bytes[0..8]
+            .try_into()
             .map_err(|_| TranslateError::Cache("Invalid magic bytes length".to_string()))?;
         let version = u32::from_le_bytes(
-            bytes[8..12].try_into()
-                .map_err(|_| TranslateError::Cache("Invalid version bytes length".to_string()))?
+            bytes[8..12]
+                .try_into()
+                .map_err(|_| TranslateError::Cache("Invalid version bytes length".to_string()))?,
         );
-        let index_offset = u64::from_le_bytes(
-            bytes[12..20].try_into()
-                .map_err(|_| TranslateError::Cache("Invalid index_offset bytes length".to_string()))?
-        );
-        let index_size = u64::from_le_bytes(
-            bytes[20..28].try_into()
-                .map_err(|_| TranslateError::Cache("Invalid index_size bytes length".to_string()))?
-        );
+        let index_offset =
+            u64::from_le_bytes(bytes[12..20].try_into().map_err(|_| {
+                TranslateError::Cache("Invalid index_offset bytes length".to_string())
+            })?);
+        let index_size =
+            u64::from_le_bytes(bytes[20..28].try_into().map_err(|_| {
+                TranslateError::Cache("Invalid index_size bytes length".to_string())
+            })?);
         let checksum = u32::from_le_bytes(
-            bytes[28..32].try_into()
-                .map_err(|_| TranslateError::Cache("Invalid checksum bytes length".to_string()))?
+            bytes[28..32]
+                .try_into()
+                .map_err(|_| TranslateError::Cache("Invalid checksum bytes length".to_string()))?,
         );
 
         Ok(Self {
@@ -232,7 +235,9 @@ impl BinaryCache {
         let entry_count = new_entries.len();
 
         let mut entries_lock = self.entries.write().map_err(|_| {
-            TranslateError::Lock("Failed to acquire write lock on entries in load_index".to_string())
+            TranslateError::Lock(
+                "Failed to acquire write lock on entries in load_index".to_string(),
+            )
         })?;
         *entries_lock = new_entries;
 
@@ -304,11 +309,19 @@ impl BinaryCache {
         };
 
         // Read existing file data once if needed
-        let existing_data = if entries_snapshot.values().any(|s| matches!(s, EntryState::Committed { .. })) {
+        let existing_data = if entries_snapshot
+            .values()
+            .any(|s| matches!(s, EntryState::Committed { .. }))
+        {
             match std::fs::read(&self.cache_file_path) {
                 Ok(data) => Some(data),
                 Err(e) if e.kind() == std::io::ErrorKind::NotFound => None,
-                Err(e) => return Err(TranslateError::Cache(format!("Failed to read cache file: {}", e))),
+                Err(e) => {
+                    return Err(TranslateError::Cache(format!(
+                        "Failed to read cache file: {}",
+                        e
+                    )))
+                }
             }
         } else {
             None
@@ -324,10 +337,7 @@ impl BinaryCache {
                     let offset = data_buf.len() as u32;
                     let size = data.len() as u32;
                     data_buf.extend_from_slice(data);
-                    new_entries.insert(
-                        hash.clone(),
-                        EntryState::Committed { offset, size },
-                    );
+                    new_entries.insert(hash.clone(), EntryState::Committed { offset, size });
                 }
                 EntryState::Committed { offset, size } => {
                     if let Some(pending) = pending_data.get(hash) {
@@ -425,7 +435,9 @@ impl BinaryCache {
 
         {
             let mut entries_lock = self.entries.write().map_err(|_| {
-                TranslateError::Lock("Failed to acquire write lock on entries in save (update)".to_string())
+                TranslateError::Lock(
+                    "Failed to acquire write lock on entries in save (update)".to_string(),
+                )
             })?;
             *entries_lock = new_entries;
         }
@@ -454,10 +466,7 @@ impl BinaryCache {
             TranslateError::Lock("Failed to acquire write lock on dirty in add_entry".to_string())
         })?;
 
-        entries_lock.insert(
-            entry.file_hash.clone(),
-            EntryState::Pending(serialized),
-        );
+        entries_lock.insert(entry.file_hash.clone(), EntryState::Pending(serialized));
         *dirty_lock = true;
 
         debug!("Cache entry added successfully");
@@ -549,10 +558,14 @@ impl BinaryCache {
 
         {
             let mut entries_lock = self.entries.write().map_err(|_| {
-                TranslateError::Lock("Failed to acquire write lock on entries in invalidate".to_string())
+                TranslateError::Lock(
+                    "Failed to acquire write lock on entries in invalidate".to_string(),
+                )
             })?;
             let mut dirty_lock = self.dirty.write().map_err(|_| {
-                TranslateError::Lock("Failed to acquire write lock on dirty in invalidate".to_string())
+                TranslateError::Lock(
+                    "Failed to acquire write lock on dirty in invalidate".to_string(),
+                )
             })?;
 
             entries_lock.remove(file_hash);
@@ -577,7 +590,9 @@ impl BinaryCache {
         match std::fs::remove_file(&self.cache_file_path) {
             Ok(_) => {
                 let mut entries_lock = self.entries.write().map_err(|_| {
-                    TranslateError::Lock("Failed to acquire write lock on entries in clear".to_string())
+                    TranslateError::Lock(
+                        "Failed to acquire write lock on entries in clear".to_string(),
+                    )
                 })?;
                 entries_lock.clear();
                 debug!("Cache cleared successfully");
@@ -585,7 +600,9 @@ impl BinaryCache {
             }
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
                 let mut entries_lock = self.entries.write().map_err(|_| {
-                    TranslateError::Lock("Failed to acquire write lock on entries in clear".to_string())
+                    TranslateError::Lock(
+                        "Failed to acquire write lock on entries in clear".to_string(),
+                    )
                 })?;
                 entries_lock.clear();
                 debug!("Cache file not found, entries cleared");
@@ -617,7 +634,9 @@ impl BinaryCache {
 
         let hashes: Vec<String> = {
             let entries_lock = self.entries.read().map_err(|_| {
-                TranslateError::Lock("Failed to acquire read lock on entries in list_entries".to_string())
+                TranslateError::Lock(
+                    "Failed to acquire read lock on entries in list_entries".to_string(),
+                )
             })?;
             entries_lock.keys().cloned().collect()
         };
@@ -650,7 +669,9 @@ impl BinaryCache {
 
         let to_remove: Vec<String> = {
             let entries_lock = self.entries.read().map_err(|_| {
-                TranslateError::Lock("Failed to acquire read lock on entries in cleanup_orphaned".to_string())
+                TranslateError::Lock(
+                    "Failed to acquire read lock on entries in cleanup_orphaned".to_string(),
+                )
             })?;
             entries_lock
                 .keys()
@@ -671,10 +692,14 @@ impl BinaryCache {
 
         {
             let mut entries_lock = self.entries.write().map_err(|_| {
-                TranslateError::Lock("Failed to acquire write lock on entries in cleanup_orphaned".to_string())
+                TranslateError::Lock(
+                    "Failed to acquire write lock on entries in cleanup_orphaned".to_string(),
+                )
             })?;
             let mut dirty_lock = self.dirty.write().map_err(|_| {
-                TranslateError::Lock("Failed to acquire write lock on dirty in cleanup_orphaned".to_string())
+                TranslateError::Lock(
+                    "Failed to acquire write lock on dirty in cleanup_orphaned".to_string(),
+                )
             })?;
 
             for hash in &to_remove {

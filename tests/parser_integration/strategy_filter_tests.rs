@@ -7,12 +7,12 @@ use std::sync::Arc;
 
 use codebase_translate::core::models::{File, NodeType};
 use codebase_translate::parser::coordinator::ParserCoordinator;
-use codebase_translate::parser::filter::{ContentFilter, FilterConfig};
-use codebase_translate::parser::strategy::{
+use codebase_translate::parser::abstraction::filter::{ContentFilter, FilterConfig};
+use codebase_translate::parser::abstraction::strategy::{
     ConfigBasedStrategy, ExtractionConfig, ExtractionContext, ExtractionStrategy,
     ExtractionStrategyImpl, StrategyNodeType,
 };
-use codebase_translate::parser::tree_sitter::ParserConfig;
+use codebase_translate::parser::engine::ParserConfig;
 
 fn create_test_file(content: &str, path: &str) -> File {
     File::new(PathBuf::from(path), content.as_bytes().to_vec(), "utf-8")
@@ -496,3 +496,4 @@ TODO: Remember to update this
         assert!(!texts.iter().any(|t| t.contains("TODO")));
     }
 }
+

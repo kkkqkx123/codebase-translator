@@ -174,3 +174,4 @@ mod tests {
         assert!(!CSharpQueries::doc_attributes().is_empty());
     }
 }
+

@@ -1,6 +1,6 @@
 //! TypeScript-specific patterns for function and method classification
 
-use crate::parser::function_patterns::{FunctionCategory, LanguageFunctionPatterns};
+use crate::parser::abstraction::function_patterns::{FunctionCategory, LanguageFunctionPatterns};
 
 /// TypeScript patterns for function classification
 #[derive(Clone)]
@@ -164,3 +164,4 @@ mod tests {
         assert!(TypeScriptPatterns::error_functions().contains(&"throw"));
     }
 }
+

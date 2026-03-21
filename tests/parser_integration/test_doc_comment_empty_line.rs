@@ -3,7 +3,7 @@
 
 use codebase_translate::core::models::File;
 use codebase_translate::parser::coordinator::ParserCoordinator;
-use codebase_translate::parser::tree_sitter::ParserConfig;
+use codebase_translate::parser::engine::ParserConfig;
 use std::fs;
 use std::path::PathBuf;
 

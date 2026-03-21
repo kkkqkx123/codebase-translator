@@ -32,10 +32,7 @@ impl LineApplier {
     }
 
     /// Collect replacement operations from translation units
-    fn collect_replacements(
-        line: &str,
-        units: &[&TranslationUnit],
-    ) -> Vec<Replacement> {
+    fn collect_replacements(line: &str, units: &[&TranslationUnit]) -> Vec<Replacement> {
         let mut replacements: Vec<Replacement> = units
             .iter()
             .filter(|unit| unit.should_translate)
@@ -64,10 +61,7 @@ impl LineApplier {
     }
 
     /// Calculate character positions for a translation unit
-    fn calculate_char_positions(
-        line: &str,
-        unit: &TranslationUnit,
-    ) -> (usize, usize) {
+    fn calculate_char_positions(line: &str, unit: &TranslationUnit) -> (usize, usize) {
         if let Some(raw_match) = &unit.raw_match {
             if let Some(pos) = line.find(raw_match) {
                 // pos is byte position, convert to char position
@@ -129,7 +123,12 @@ mod tests {
     use super::*;
     use crate::core::models::{NodeType, Position};
 
-    fn create_test_unit(content: &str, line: usize, start_col: usize, end_col: usize) -> TranslationUnit {
+    fn create_test_unit(
+        content: &str,
+        line: usize,
+        start_col: usize,
+        end_col: usize,
+    ) -> TranslationUnit {
         TranslationUnit {
             id: "1".to_string(),
             node_type: NodeType::Comment,

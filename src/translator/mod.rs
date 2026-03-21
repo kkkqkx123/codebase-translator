@@ -159,12 +159,11 @@ pub fn create_translation_service(
         }),
     };
 
-    let batch_translator = BatchTranslator::new(
-        std::sync::Arc::new(translator_impl),
-        batch_options,
-    );
+    let batch_translator =
+        BatchTranslator::new(std::sync::Arc::new(translator_impl), batch_options);
 
-    let translator = TranslationService::with_batch_translator(std::sync::Arc::new(batch_translator))?;
+    let translator =
+        TranslationService::with_batch_translator(std::sync::Arc::new(batch_translator))?;
     debug!("Translator instance created successfully with batch translator");
     Ok(translator)
 }

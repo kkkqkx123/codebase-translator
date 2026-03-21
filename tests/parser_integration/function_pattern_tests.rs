@@ -300,3 +300,4 @@ mod function_category_tests {
         assert!(set.contains(&FunctionCategory::Error));
     }
 }
+

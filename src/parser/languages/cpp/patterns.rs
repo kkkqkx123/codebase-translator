@@ -1,6 +1,6 @@
 //! C++-specific patterns for function classification
 
-use crate::parser::function_patterns::{FunctionCategory, LanguageFunctionPatterns};
+use crate::parser::abstraction::function_patterns::{FunctionCategory, LanguageFunctionPatterns};
 
 /// C++ patterns for function classification
 #[derive(Clone)]
@@ -119,3 +119,4 @@ mod tests {
         assert!(!patterns.is_format_function("perror"));
     }
 }
+

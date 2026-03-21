@@ -28,3 +28,4 @@ fn helper_function() -> String {
     let result = "Helper result";
     result.to_string()
 }
+

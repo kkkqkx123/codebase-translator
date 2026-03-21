@@ -5,9 +5,9 @@ use tracing::{debug, info, warn};
 
 use crate::core::error::Result;
 use crate::core::models::{File, NodeType, TranslationUnit};
+use crate::parser::abstraction::parser::Parser as ParserTrait;
 use crate::parser::core::StringProcessor;
-use crate::parser::r#trait::Parser as ParserTrait;
-use crate::parser::tree_sitter::ParserConfig;
+use crate::parser::engine::ParserConfig;
 
 use super::config::RegexParserConfig;
 use super::state_machine::StateMachineMatcher;

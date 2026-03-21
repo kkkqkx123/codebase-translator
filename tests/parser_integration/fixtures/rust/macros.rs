@@ -18,3 +18,4 @@ fn main() {
     
     println!("Normal output");
 }
+

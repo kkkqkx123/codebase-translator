@@ -437,14 +437,17 @@ fn contains_target_language(text: &str, source_langs: &[String]) -> bool {
     }
 
     // Check if AUTO mode is enabled
-    if source_langs.iter().any(|lang| lang.to_uppercase() == "AUTO") {
+    if source_langs
+        .iter()
+        .any(|lang| lang.to_uppercase() == "AUTO")
+    {
         return true; // AUTO mode accepts all languages
     }
 
     // Check if any of the source languages require CJK characters
-    let requires_cjk = source_langs
-        .iter()
-        .any(|lang| lang == "zh" || lang == "zh-CN" || lang == "zh-TW" || lang == "ja" || lang == "ko");
+    let requires_cjk = source_langs.iter().any(|lang| {
+        lang == "zh" || lang == "zh-CN" || lang == "zh-TW" || lang == "ja" || lang == "ko"
+    });
 
     if requires_cjk {
         // If Chinese/Japanese/Korean is required, check for CJK characters

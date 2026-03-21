@@ -3,7 +3,7 @@
 use std::path::PathBuf;
 
 use crate::core::models::File;
-use crate::parser::tree_sitter::ParserConfig;
+use crate::parser::engine::ParserConfig;
 use crate::parser::ParserCoordinator;
 
 fn create_test_file(content: &str, path: &str) -> File {

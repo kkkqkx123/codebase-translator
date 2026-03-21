@@ -7,7 +7,7 @@ use std::path::PathBuf;
 
 use codebase_translate::core::models::{File, TranslationUnit};
 use codebase_translate::parser::coordinator::ParserCoordinator;
-use codebase_translate::parser::tree_sitter::ParserConfig;
+use codebase_translate::parser::engine::ParserConfig;
 
 const OUTPUT_DIR: &str = "tests/parser_integration/output";
 

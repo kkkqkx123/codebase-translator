@@ -15,9 +15,9 @@ pub mod r#trait;
 pub use concurrent::{ConcurrentWriteStats, ConcurrentWriter, WriteResult};
 pub use file::{FileWriter, WriterConfig};
 
-use crate::core::models::TranslationUnit;
 use crate::config::project::ProjectConfig;
 use crate::core::error::Result;
+use crate::core::models::TranslationUnit;
 use tracing::{debug, info};
 
 /// Factory for creating writers

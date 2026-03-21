@@ -4,3 +4,4 @@ fn main() {
     // Another comment
     println!("Hello world");
 }
+

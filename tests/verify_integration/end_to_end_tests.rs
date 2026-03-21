@@ -10,7 +10,7 @@ use codebase_translate::commands::verify::{
 };
 use codebase_translate::core::models::{File, PatternType};
 use codebase_translate::parser::coordinator::ParserCoordinator;
-use codebase_translate::parser::tree_sitter::ParserConfig;
+use codebase_translate::parser::engine::ParserConfig;
 
 const FIXTURE_DIR: &str = "tests/verify_integration/fixtures";
 const OUTPUT_DIR: &str = "tests/verify_integration/output";

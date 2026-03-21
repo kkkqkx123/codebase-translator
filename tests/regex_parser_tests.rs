@@ -7,10 +7,10 @@
 use std::path::PathBuf;
 
 use codebase_translate::core::models::File;
+use codebase_translate::parser::engine::ParserConfig;
 use codebase_translate::parser::regex_parsers::{
     FallbackParser, HtmlParser, ShellParser, SqlParser,
 };
-use codebase_translate::parser::tree_sitter::ParserConfig;
 use codebase_translate::Parser;
 
 fn create_test_file(content: &str, path: &str) -> File {

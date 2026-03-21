@@ -8,6 +8,7 @@
 
 use std::path::PathBuf;
 use std::sync::Arc;
+use std::time::Duration;
 
 use tokio::sync::{mpsc, Semaphore};
 use tokio::task::JoinSet;
@@ -77,6 +78,9 @@ impl ConcurrentWriter {
         let mut join_set = JoinSet::new();
         let project_path = self.project_path.clone();
 
+        // Per-file timeout to prevent indefinite blocking
+        const FILE_WRITE_TIMEOUT: Duration = Duration::from_secs(60);
+
         for (file, units) in files {
             let permit = semaphore
                 .clone()
@@ -86,7 +90,7 @@ impl ConcurrentWriter {
             let config = self.config.clone();
             let project_path = project_path.clone();
 
-            // Use async file I/O via FileWriter
+            // Use async file I/O via FileWriter with timeout
             join_set.spawn(async move {
                 let _permit = permit;
                 let writer = if let Some(ref path) = project_path {
@@ -97,8 +101,9 @@ impl ConcurrentWriter {
                 let path = file.path.clone();
                 let unit_count = units.len();
 
-                match writer.write(&file, &units).await {
-                    Ok(()) => {
+                // Apply timeout to individual file write
+                match tokio::time::timeout(FILE_WRITE_TIMEOUT, writer.write(&file, &units)).await {
+                    Ok(Ok(())) => {
                         debug!(
                             file = %path.display(),
                             units_written = unit_count,
@@ -111,7 +116,7 @@ impl ConcurrentWriter {
                             units_written: unit_count,
                         }
                     }
-                    Err(e) => {
+                    Ok(Err(e)) => {
                         error!(
                             file = %path.display(),
                             error = %e,
@@ -121,6 +126,22 @@ impl ConcurrentWriter {
                             path,
                             success: false,
                             error: Some(format!("{}", e)),
+                            units_written: 0,
+                        }
+                    }
+                    Err(_) => {
+                        error!(
+                            file = %path.display(),
+                            "File write timed out after {:?}",
+                            FILE_WRITE_TIMEOUT
+                        );
+                        WriteResult {
+                            path,
+                            success: false,
+                            error: Some(format!(
+                                "File write timed out after {:?}",
+                                FILE_WRITE_TIMEOUT
+                            )),
                             units_written: 0,
                         }
                     }
@@ -168,6 +189,9 @@ impl ConcurrentWriter {
         let config = self.config.clone();
         let project_path = self.project_path.clone();
 
+        // Per-file timeout for streaming mode
+        const FILE_WRITE_TIMEOUT: Duration = Duration::from_secs(60);
+
         tokio::spawn(async move {
             while let Some((file, units)) = file_receiver.recv().await {
                 let permit = match semaphore.clone().acquire_owned().await {
@@ -178,7 +202,7 @@ impl ConcurrentWriter {
                 let writer_config = config.clone();
                 let project_path = project_path.clone();
 
-                // Use async file I/O
+                // Use async file I/O with timeout
                 tokio::spawn(async move {
                     let _permit = permit;
                     let writer = if let Some(ref path) = project_path {
@@ -189,20 +213,32 @@ impl ConcurrentWriter {
                     let path = file.path.clone();
                     let unit_count = units.len();
 
-                    let result = match writer.write(&file, &units).await {
-                        Ok(()) => WriteResult {
-                            path,
-                            success: true,
-                            error: None,
-                            units_written: unit_count,
-                        },
-                        Err(e) => WriteResult {
-                            path,
-                            success: false,
-                            error: Some(format!("{}", e)),
-                            units_written: 0,
-                        },
-                    };
+                    let result =
+                        match tokio::time::timeout(FILE_WRITE_TIMEOUT, writer.write(&file, &units))
+                            .await
+                        {
+                            Ok(Ok(())) => WriteResult {
+                                path,
+                                success: true,
+                                error: None,
+                                units_written: unit_count,
+                            },
+                            Ok(Err(e)) => WriteResult {
+                                path,
+                                success: false,
+                                error: Some(format!("{}", e)),
+                                units_written: 0,
+                            },
+                            Err(_) => WriteResult {
+                                path,
+                                success: false,
+                                error: Some(format!(
+                                    "File write timed out after {:?}",
+                                    FILE_WRITE_TIMEOUT
+                                )),
+                                units_written: 0,
+                            },
+                        };
 
                     let _ = sender.send(result).await;
                 });

@@ -316,3 +316,4 @@ async fn test_weighted_with_zero_weights_fallback() {
     let provider = pool.get_provider().await;
     assert!(provider.is_ok());
 }
+

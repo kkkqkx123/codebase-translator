@@ -6,14 +6,13 @@ use std::sync::Arc;
 
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, PatternType, TranslationUnit};
-use crate::parser::filter::ContentFilter;
+use crate::parser::abstraction::filter::ContentFilter;
+use crate::parser::abstraction::parser::Parser as ParserTrait;
+use crate::parser::abstraction::strategy::{ExtractionConfig, ExtractionStrategyImpl};
+use crate::parser::engine::{ParserConfig, TreeSitterParser, TreeSitterParserFactory};
 use crate::parser::regex::custom_pattern_matcher::CustomPatternMatcher;
 use crate::parser::regex::state_machine::StateMachineMatcher;
-
 use crate::parser::regex_parsers::FallbackParser;
-use crate::parser::strategy::{ExtractionConfig, ExtractionStrategyImpl};
-use crate::parser::tree_sitter::{ParserConfig, TreeSitterParser, TreeSitterParserFactory};
-use crate::parser::Parser as ParserTrait;
 
 use super::ParserType;
 
@@ -44,8 +43,8 @@ pub struct ParserCoordinator {
 impl ParserCoordinator {
     /// Creates a new parser coordinator with default configuration.
     pub fn with_defaults(config: ParserConfig) -> Result<Self> {
-        use crate::parser::filter::default_filter;
-        use crate::parser::strategy::default_strategy;
+        use crate::parser::abstraction::filter::default_filter;
+        use crate::parser::abstraction::strategy::default_strategy;
 
         let strategy = Arc::new(default_strategy());
         let filter = Arc::new(default_filter()?);
@@ -62,8 +61,8 @@ impl ParserCoordinator {
         config: ParserConfig,
         project_config: &crate::config::project::ProjectConfig,
     ) -> Result<Self> {
-        use crate::parser::filter::from_project_config;
-        use crate::parser::strategy::default_strategy;
+        use crate::parser::abstraction::filter::from_project_config;
+        use crate::parser::abstraction::strategy::default_strategy;
 
         let strategy = Arc::new(default_strategy());
         let filter = Arc::new(from_project_config(
@@ -84,8 +83,8 @@ impl ParserCoordinator {
         project_config: &crate::config::project::ProjectConfig,
         translator_max_length: Option<usize>,
     ) -> Result<Self> {
-        use crate::parser::filter::from_project_config_with_translator;
-        use crate::parser::strategy::default_strategy;
+        use crate::parser::abstraction::filter::from_project_config_with_translator;
+        use crate::parser::abstraction::strategy::default_strategy;
 
         let strategy = Arc::new(default_strategy());
         let filter = Arc::new(from_project_config_with_translator(
@@ -102,7 +101,8 @@ impl ParserCoordinator {
     /// This method ensures consistency between ParserConfig and ExtractionConfig
     /// by deriving the strategy configuration from the parser configuration.
     pub fn with_unified_config(config: ParserConfig) -> Result<Self> {
-        use crate::parser::filter::default_filter;
+        use crate::parser::abstraction::filter::default_filter;
+        use crate::parser::abstraction::strategy::ConfigBasedStrategy;
 
         // Derive ExtractionConfig from ParserConfig to ensure consistency
         let extraction_config = ExtractionConfig {
@@ -113,7 +113,7 @@ impl ParserCoordinator {
         };
 
         let strategy = Arc::new(ExtractionStrategyImpl::ConfigBased(
-            crate::parser::strategy::ConfigBasedStrategy::new(extraction_config),
+            ConfigBasedStrategy::new(extraction_config),
         ));
         let filter = Arc::new(default_filter()?);
 
@@ -245,6 +245,8 @@ impl ParserCoordinator {
         tree_sitter_parsers: Vec<TreeSitterParser>,
         fallback_parser: FallbackParser,
     ) -> Self {
+        use crate::parser::abstraction::filter::{ContentFilter, FilterConfig};
+
         Self {
             tree_sitter_parsers,
             fallback_parser,
@@ -253,10 +255,8 @@ impl ParserCoordinator {
             state_machine_matchers: Vec::new(),
             extension_to_matchers: HashMap::new(),
             filter: Arc::new(
-                crate::parser::filter::ContentFilter::new(
-                    crate::parser::filter::FilterConfig::default(),
-                )
-                .expect("Failed to create default filter"),
+                ContentFilter::new(FilterConfig::default())
+                    .expect("Failed to create default filter"),
             ),
         }
     }

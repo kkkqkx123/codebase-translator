@@ -4,9 +4,9 @@ use tracing::debug;
 
 use crate::core::error::Result;
 use crate::core::models::{File, TranslationUnit};
+use crate::parser::abstraction::parser::Parser as ParserTrait;
+use crate::parser::engine::ParserConfig;
 use crate::parser::regex::{RegexParser, RegexParserConfig};
-use crate::parser::tree_sitter::ParserConfig;
-use crate::parser::Parser as ParserTrait;
 
 /// HTML/XML parser
 pub struct HtmlParser {

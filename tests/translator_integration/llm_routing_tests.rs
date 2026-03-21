@@ -301,3 +301,4 @@ fn test_capacity_provider_weight() {
     let provider = CapacityProvider::new(&config).expect("Should create provider");
     assert_eq!(provider.weight(), 5);
 }
+

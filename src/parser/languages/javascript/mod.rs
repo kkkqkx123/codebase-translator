@@ -9,3 +9,4 @@ pub mod queries;
 
 pub use parser::JavaScriptParser;
 pub use patterns::JavaScriptPatterns;
+

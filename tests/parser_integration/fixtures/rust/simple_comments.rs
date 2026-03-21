@@ -17,3 +17,4 @@ fn main() {
     let result = test();
     println!("Result: {}", result);
 }
+

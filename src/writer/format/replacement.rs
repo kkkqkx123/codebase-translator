@@ -109,7 +109,7 @@ mod tests {
         let raw = "println!(\"Hello world\");";
         let extracted = "Hello world";
         let translated = "你好世界";
-        
+
         let result = replace_in_raw_match(raw, extracted, translated);
         assert_eq!(result, "println!(\"你好世界\");");
     }
@@ -119,7 +119,7 @@ mod tests {
         let raw = "// Line 1\n// Line 2";
         let extracted = "Line 1\nLine 2";
         let translated = "第一行\n第二行";
-        
+
         let result = replace_in_raw_match(raw, extracted, translated);
         assert!(result.contains("// 第一行"));
         assert!(result.contains("// 第二行"));

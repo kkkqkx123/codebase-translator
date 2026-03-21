@@ -3,3 +3,4 @@
 fn nested_function() {
     println!("Nested");
 }
+

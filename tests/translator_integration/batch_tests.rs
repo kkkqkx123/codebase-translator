@@ -308,3 +308,4 @@ fn test_translate_response_with_data() {
     assert_eq!(response.target_lang, "ZH");
     assert_eq!(response.alternatives.len(), 1);
 }
+

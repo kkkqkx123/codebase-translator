@@ -9,12 +9,12 @@ use tree_sitter::{Language as TSLanguage, Node, Parser, Query, QueryCursor, Tree
 
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, Position, TranslationUnit};
-use crate::parser::core::{CommentType, StringProcessor};
-use crate::parser::filter::ContentFilter;
-use crate::parser::strategy::{
+use crate::parser::abstraction::filter::ContentFilter;
+use crate::parser::abstraction::parser::Parser as ParserTrait;
+use crate::parser::abstraction::strategy::{
     ExtractionContext, ExtractionStrategy, ExtractionStrategyImpl, StrategyNodeType,
 };
-use crate::parser::Parser as ParserTrait;
+use crate::parser::core::{CommentType, StringProcessor};
 
 /// Language configuration for tree-sitter
 #[derive(Debug, Clone)]
@@ -95,8 +95,8 @@ impl TreeSitterParser {
 
     /// Create a new tree-sitter parser with default strategy and filter
     pub fn with_defaults(language_config: LanguageConfig, config: ParserConfig) -> Result<Self> {
-        use crate::parser::filter::default_filter;
-        use crate::parser::strategy::default_strategy;
+        use crate::parser::abstraction::filter::default_filter;
+        use crate::parser::abstraction::strategy::default_strategy;
 
         Self::new(
             language_config,
@@ -685,12 +685,12 @@ impl TreeSitterParserFactory {
 
     /// Create all available parsers with default strategy and filter
     pub fn create_all_parsers_with_defaults(config: ParserConfig) -> Vec<Result<TreeSitterParser>> {
-        use crate::parser::filter::default_filter;
-        use crate::parser::strategy::default_strategy;
+        use crate::parser::abstraction::filter::default_filter;
+        use crate::parser::abstraction::strategy::default_strategy;
 
         let strategy = Arc::new(default_strategy());
         let filter = Arc::new(default_filter().unwrap_or_else(|_| {
-            ContentFilter::new(crate::parser::filter::FilterConfig::default()).unwrap()
+            ContentFilter::new(crate::parser::abstraction::filter::FilterConfig::default()).unwrap()
         }));
 
         Self::create_all_parsers(config, strategy, filter)
@@ -704,7 +704,7 @@ const RUST_COMMENT_QUERY: &str = r#"
   (#not-match? @comment "^///"))
 
 ((block_comment) @comment
-  (#not-match? @comment "^/\\*\\*"))
+  (#not-match? @comment "^/\*\*"))
 "#;
 
 const RUST_DOCSTRING_QUERY: &str = r#"
@@ -712,7 +712,7 @@ const RUST_DOCSTRING_QUERY: &str = r#"
   (#match? @docstring "^///"))
 
 ((block_comment) @docstring
-  (#match? @docstring "^/\\*\\*"))
+  (#match? @docstring "^/\*\*"))
 "#;
 
 const RUST_STRING_QUERY: &str = r#"
@@ -752,7 +752,7 @@ const JS_COMMENT_QUERY: &str = r#"
 
 const JS_DOCSTRING_QUERY: &str = r#"
 ((comment) @docstring
-  (#match? @docstring "^/\\*\\*"))
+  (#match? @docstring "^/\*\*"))
 "#;
 
 const JS_STRING_QUERY: &str = r#"
@@ -767,7 +767,7 @@ const JAVA_COMMENT_QUERY: &str = r#"
 
 const JAVA_DOCSTRING_QUERY: &str = r#"
 ((block_comment) @docstring
-  (#match? @docstring "^/\\*\\*"))
+  (#match? @docstring "^/\*\*"))
 "#;
 
 const JAVA_STRING_QUERY: &str = r#"
@@ -791,7 +791,7 @@ const CSHARP_DOCSTRING_QUERY: &str = r#"
   (#match? @docstring "^///"))
 
 ((comment) @docstring
-  (#match? @docstring "^/\\*\\*"))
+  (#match? @docstring "^/\*\*"))
 "#;
 
 const CSHARP_STRING_QUERY: &str = r#"
@@ -803,8 +803,8 @@ const CSHARP_STRING_QUERY: &str = r#"
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::filter::FilterConfig;
-    use crate::parser::strategy::{ConfigBasedStrategy, ExtractionConfig};
+    use crate::parser::abstraction::filter::FilterConfig;
+    use crate::parser::abstraction::strategy::{ConfigBasedStrategy, ExtractionConfig};
     use std::path::PathBuf;
 
     fn create_test_file(content: &str, path: &str) -> File {

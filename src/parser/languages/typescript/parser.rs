@@ -7,16 +7,17 @@ use tree_sitter::{Node, Parser, Tree};
 
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, TranslationUnit};
-use crate::parser::core::query_executor::QueryExecutor;
-use crate::parser::core::{CommentType, StringProcessor};
-use crate::parser::filter::ContentFilter;
-use crate::parser::languages::typescript::patterns::TypeScriptPatterns;
-use crate::parser::languages::typescript::queries::TypeScriptQueries;
-use crate::parser::strategy::{
+use crate::parser::abstraction::filter::ContentFilter;
+use crate::parser::abstraction::function_patterns::FunctionCategory;
+use crate::parser::abstraction::parser::Parser as ParserTrait;
+use crate::parser::abstraction::strategy::{
     ExtractionContext, ExtractionStrategy, ExtractionStrategyImpl, StrategyNodeType,
 };
-use crate::parser::tree_sitter::ParserConfig;
-use crate::parser::Parser as ParserTrait;
+use crate::parser::core::query_executor::QueryExecutor;
+use crate::parser::core::{CommentType, StringProcessor};
+use crate::parser::engine::ParserConfig;
+use crate::parser::languages::typescript::patterns::TypeScriptPatterns;
+use crate::parser::languages::typescript::queries::TypeScriptQueries;
 use tracing::{debug, error, info, instrument};
 
 /// TypeScript language parser
@@ -263,12 +264,8 @@ impl TypeScriptParser {
 
                     // Classify function
                     let strategy_node_type = match self.patterns.classify_function(&current_func) {
-                        Some(crate::parser::function_patterns::FunctionCategory::Error) => {
-                            StrategyNodeType::ErrorMessage
-                        }
-                        Some(crate::parser::function_patterns::FunctionCategory::Log) => {
-                            StrategyNodeType::LogMessage
-                        }
+                        Some(FunctionCategory::Error) => StrategyNodeType::ErrorMessage,
+                        Some(FunctionCategory::Log) => StrategyNodeType::LogMessage,
                         _ => continue, // Skip unknown functions
                     };
 
@@ -433,8 +430,8 @@ impl ParserTrait for TypeScriptParser {
 mod tests {
     use super::*;
     use crate::core::models::NodeType;
-    use crate::parser::filter::FilterConfig;
-    use crate::parser::strategy::{ConfigBasedStrategy, ExtractionConfig};
+    use crate::parser::abstraction::filter::FilterConfig;
+    use crate::parser::abstraction::strategy::{ConfigBasedStrategy, ExtractionConfig};
     use std::path::PathBuf;
 
     fn create_test_file(content: &str, path: &str) -> File {
@@ -606,3 +603,4 @@ export const Button: React.FC<ButtonProps> = ({ label, onClick }) => {
         assert_eq!(parser.supported_extensions(), &["ts", "tsx", "mts", "cts"]);
     }
 }
+

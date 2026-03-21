@@ -1,6 +1,6 @@
 //! C#-specific patterns for method classification
 
-use crate::parser::function_patterns::{FunctionCategory, LanguageFunctionPatterns};
+use crate::parser::abstraction::function_patterns::{FunctionCategory, LanguageFunctionPatterns};
 
 /// C# patterns for method classification
 #[derive(Clone)]
@@ -156,3 +156,4 @@ mod tests {
         assert!(!patterns.is_format_method("Console.WriteLine"));
     }
 }
+

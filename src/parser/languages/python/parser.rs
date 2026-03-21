@@ -7,17 +7,18 @@ use tree_sitter::{Node, Parser, Tree};
 
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, TranslationUnit};
+use crate::parser::abstraction::filter::ContentFilter;
+use crate::parser::abstraction::function_patterns::FunctionCategory;
+use crate::parser::abstraction::parser::Parser as ParserTrait;
+use crate::parser::abstraction::strategy::{
+    ExtractionContext, ExtractionStrategy, ExtractionStrategyImpl, StrategyNodeType,
+};
 use crate::parser::core::query_executor::QueryExecutor;
 use crate::parser::core::string_processor::{CleanedString, CommentType};
 use crate::parser::core::StringProcessor;
-use crate::parser::filter::ContentFilter;
+use crate::parser::engine::ParserConfig;
 use crate::parser::languages::python::patterns::PythonPatterns;
 use crate::parser::languages::python::queries::PythonQueries;
-use crate::parser::strategy::{
-    ExtractionContext, ExtractionStrategy, ExtractionStrategyImpl, StrategyNodeType,
-};
-use crate::parser::tree_sitter::ParserConfig;
-use crate::parser::Parser as ParserTrait;
 use tracing::{debug, error, info, instrument, warn};
 
 /// Python language parser
@@ -422,7 +423,7 @@ impl PythonParser {
                     // Classify function
                     let strategy_node_type = match self.patterns.classify_function(&full_func_name)
                     {
-                        Some(crate::parser::function_patterns::FunctionCategory::Error) => {
+                        Some(FunctionCategory::Error) => {
                             debug!(
                                 file = %file_path,
                                 function = %full_func_name,
@@ -430,7 +431,7 @@ impl PythonParser {
                             );
                             StrategyNodeType::ErrorMessage
                         }
-                        Some(crate::parser::function_patterns::FunctionCategory::Format) => {
+                        Some(FunctionCategory::Format) => {
                             debug!(
                                 file = %file_path,
                                 function = %full_func_name,
@@ -438,7 +439,7 @@ impl PythonParser {
                             );
                             StrategyNodeType::FormatString
                         }
-                        Some(crate::parser::function_patterns::FunctionCategory::Log) => {
+                        Some(FunctionCategory::Log) => {
                             debug!(
                                 file = %file_path,
                                 function = %full_func_name,
@@ -581,8 +582,8 @@ impl ParserTrait for PythonParser {
 mod tests {
     use super::*;
     use crate::core::models::NodeType;
-    use crate::parser::filter::FilterConfig;
-    use crate::parser::strategy::{ConfigBasedStrategy, ExtractionConfig};
+    use crate::parser::abstraction::filter::FilterConfig;
+    use crate::parser::abstraction::strategy::{ConfigBasedStrategy, ExtractionConfig};
     use std::path::PathBuf;
 
     fn create_test_file(content: &str, path: &str) -> File {
@@ -766,3 +767,4 @@ def test():
         assert!(!units.is_empty());
     }
 }
+

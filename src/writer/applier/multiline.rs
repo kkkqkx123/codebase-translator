@@ -253,7 +253,8 @@ mod tests {
     #[test]
     fn test_apply_multiline_units() {
         let content = "/*\n * Hello\n * World\n */\nother code";
-        let mut unit = create_multiline_unit("Hello\nWorld", "/*\n * Hello\n * World\n */", 1, 4, 0, 25);
+        let mut unit =
+            create_multiline_unit("Hello\nWorld", "/*\n * Hello\n * World\n */", 1, 4, 0, 25);
         unit.set_translated("你好\n世界");
 
         let units: Vec<&TranslationUnit> = vec![&unit];

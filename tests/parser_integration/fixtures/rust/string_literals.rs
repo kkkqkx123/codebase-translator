@@ -18,3 +18,4 @@ fn handle_error() {
 fn format_string(name: &str) -> String {
     format!("Hello, {}!", name)
 }
+

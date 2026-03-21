@@ -265,3 +265,4 @@ fn test_factory_error_propagation() {
     let err_string = err.to_string();
     assert!(err_string.contains("LLM") || err_string.contains("configuration"));
 }
+

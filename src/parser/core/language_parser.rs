@@ -8,13 +8,14 @@ use tree_sitter::{Language, Node, Tree};
 
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::TranslationUnit;
-use crate::parser::core::query_executor::QueryExecutor;
-use crate::parser::core::StringProcessor;
-use crate::parser::filter::ContentFilter;
-use crate::parser::strategy::{
+use crate::parser::abstraction::filter::ContentFilter;
+use crate::parser::abstraction::function_patterns::FunctionCategory;
+use crate::parser::abstraction::strategy::{
     ExtractionContext, ExtractionStrategy, ExtractionStrategyImpl, StrategyNodeType,
 };
-use crate::parser::tree_sitter::ParserConfig;
+use crate::parser::core::query_executor::QueryExecutor;
+use crate::parser::core::StringProcessor;
+use crate::parser::engine::ParserConfig;
 use tracing::{debug, error, instrument};
 
 /// Generic language parser trait
@@ -128,7 +129,7 @@ pub trait LanguageParser: Send + Sync {
         classify_function: F,
     ) -> Result<Vec<TranslationUnit>>
     where
-        F: Fn(&str) -> Option<crate::parser::function_patterns::FunctionCategory>,
+        F: Fn(&str) -> Option<FunctionCategory>,
     {
         let executor = QueryExecutor::from_string(&self.tree_sitter_language(), query)?;
         let matches = executor.execute(root_node, content)?;
@@ -158,18 +159,10 @@ pub trait LanguageParser: Send + Sync {
 
                     // Classify function
                     let strategy_node_type = match classify_function(&current_func) {
-                        Some(crate::parser::function_patterns::FunctionCategory::Error) => {
-                            StrategyNodeType::ErrorMessage
-                        }
-                        Some(crate::parser::function_patterns::FunctionCategory::Format) => {
-                            StrategyNodeType::FormatString
-                        }
-                        Some(crate::parser::function_patterns::FunctionCategory::Log) => {
-                            StrategyNodeType::LogMessage
-                        }
-                        Some(crate::parser::function_patterns::FunctionCategory::Debug) => {
-                            StrategyNodeType::LogMessage
-                        }
+                        Some(FunctionCategory::Error) => StrategyNodeType::ErrorMessage,
+                        Some(FunctionCategory::Format) => StrategyNodeType::FormatString,
+                        Some(FunctionCategory::Log) => StrategyNodeType::LogMessage,
+                        Some(FunctionCategory::Debug) => StrategyNodeType::LogMessage,
                         None => continue, // Skip unknown functions
                     };
 
@@ -205,7 +198,7 @@ pub trait LanguageParser: Send + Sync {
         classify_function: F,
     ) -> Result<Vec<TranslationUnit>>
     where
-        F: Fn(&str) -> Option<crate::parser::function_patterns::FunctionCategory>,
+        F: Fn(&str) -> Option<FunctionCategory>,
     {
         let executor = QueryExecutor::from_string(&self.tree_sitter_language(), query)?;
         let matches = executor.execute(root_node, content)?;
@@ -242,18 +235,10 @@ pub trait LanguageParser: Send + Sync {
                     }
 
                     let strategy_node_type = match classify_function(&full_func_name) {
-                        Some(crate::parser::function_patterns::FunctionCategory::Error) => {
-                            StrategyNodeType::ErrorMessage
-                        }
-                        Some(crate::parser::function_patterns::FunctionCategory::Format) => {
-                            StrategyNodeType::FormatString
-                        }
-                        Some(crate::parser::function_patterns::FunctionCategory::Log) => {
-                            StrategyNodeType::LogMessage
-                        }
-                        Some(crate::parser::function_patterns::FunctionCategory::Debug) => {
-                            StrategyNodeType::LogMessage
-                        }
+                        Some(FunctionCategory::Error) => StrategyNodeType::ErrorMessage,
+                        Some(FunctionCategory::Format) => StrategyNodeType::FormatString,
+                        Some(FunctionCategory::Log) => StrategyNodeType::LogMessage,
+                        Some(FunctionCategory::Debug) => StrategyNodeType::LogMessage,
                         None => continue,
                     };
 

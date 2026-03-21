@@ -181,7 +181,8 @@ mod workflow_factory {
     fn test_create_translator() {
         let global_config = create_test_global_config();
         let project_config = create_test_project_config();
-        let translator = codebase_translate::create_translation_service(&global_config, &project_config);
+        let translator =
+            codebase_translate::create_translation_service(&global_config, &project_config);
         assert!(translator.is_ok());
     }
 

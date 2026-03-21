@@ -68,10 +68,15 @@ fn process_chinese(value: i32) -> i32 {
 
     // Set translations (Chinese to English)
     units[0].set_translated("英文文档注释\n@param value - 要处理的值");
-    units[1].set_translated("Chinese documentation comments\n@param value - the value to be processed");
+    units[1]
+        .set_translated("Chinese documentation comments\n@param value - the value to be processed");
 
     let result = TranslationApplier::apply_translations(content, &units);
-    assert!(result.is_ok(), "apply_translations failed: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "apply_translations failed: {:?}",
+        result.err()
+    );
 
     let modified = result.unwrap();
     println!("\n=== Modified content ===\n{}", modified);
@@ -123,8 +128,7 @@ fn process_english(value: i32) -> i32 {
     let mut units = vec![TranslationUnit {
         id: "1".to_string(),
         node_type: NodeType::DocString,
-        content: "English documentation comment\n@param value - The value to process"
-            .to_string(),
+        content: "English documentation comment\n@param value - The value to process".to_string(),
         // Note: end_pos.offset should point to the end of the last doc comment line
         // In the original content, line 2 ends at byte 85 (including the newline)
         start_pos: Position::new(1, 1, 0),
@@ -143,7 +147,11 @@ fn process_english(value: i32) -> i32 {
     units[0].set_translated("英文文档注释\n@param value - 要处理的值");
 
     let result = TranslationApplier::apply_translations(content, &units);
-    assert!(result.is_ok(), "apply_translations failed: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "apply_translations failed: {:?}",
+        result.err()
+    );
 
     let modified = result.unwrap();
     println!("\n=== Modified content ===\n{}", modified);
@@ -154,5 +162,8 @@ fn process_english(value: i32) -> i32 {
         "Newline should be preserved"
     );
 
-    assert!(!modified.contains("processfn"), "Should not have concatenated text");
+    assert!(
+        !modified.contains("processfn"),
+        "Should not have concatenated text"
+    );
 }

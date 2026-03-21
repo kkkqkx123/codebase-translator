@@ -1,6 +1,6 @@
 //! JavaScript-specific patterns for function and method classification
 
-use crate::parser::function_patterns::{FunctionCategory, LanguageFunctionPatterns};
+use crate::parser::abstraction::function_patterns::{FunctionCategory, LanguageFunctionPatterns};
 
 /// JavaScript patterns for function classification
 #[derive(Clone)]
@@ -173,3 +173,4 @@ mod tests {
         assert!(underlying.is_error_function("Error"));
     }
 }
+

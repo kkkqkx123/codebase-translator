@@ -1,6 +1,6 @@
 //! Go-specific patterns for function classification
 
-use crate::parser::function_patterns::{FunctionCategory, LanguageFunctionPatterns};
+use crate::parser::abstraction::function_patterns::{FunctionCategory, LanguageFunctionPatterns};
 
 /// Go patterns for function classification
 #[derive(Clone)]
@@ -204,3 +204,4 @@ mod tests {
         assert!(underlying.is_log_function("log.Println"));
     }
 }
+

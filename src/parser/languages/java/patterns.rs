@@ -1,6 +1,6 @@
 //! Java-specific patterns for method and function classification
 
-use crate::parser::function_patterns::{FunctionCategory, LanguageFunctionPatterns};
+use crate::parser::abstraction::function_patterns::{FunctionCategory, LanguageFunctionPatterns};
 
 /// Java patterns for method classification
 #[derive(Clone)]
@@ -172,3 +172,4 @@ mod tests {
         assert!(underlying.is_debug_function("toString"));
     }
 }
+

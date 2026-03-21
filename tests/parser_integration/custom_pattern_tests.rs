@@ -10,10 +10,10 @@ use codebase_translate::config::project::{
     StateTransition, StringLiteralCategory,
 };
 use codebase_translate::core::models::File;
+use codebase_translate::parser::abstraction::filter::{ContentFilter, FilterConfig};
 use codebase_translate::parser::coordinator::ParserCoordinator;
-use codebase_translate::parser::filter::{ContentFilter, FilterConfig};
-use codebase_translate::parser::strategy;
-use codebase_translate::parser::tree_sitter::ParserConfig;
+use codebase_translate::parser::engine::ParserConfig;
+use codebase_translate::parser::abstraction::strategy;
 
 fn create_test_file(content: &str, path: &str) -> File {
     File::new(PathBuf::from(path), content.as_bytes().to_vec(), "utf-8")
@@ -300,3 +300,4 @@ fn test_pattern_with_wildcard_extension() {
         "Should apply to Markdown file"
     );
 }
+

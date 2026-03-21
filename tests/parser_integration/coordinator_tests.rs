@@ -8,12 +8,12 @@ use std::sync::Arc;
 
 use codebase_translate::core::models::File;
 use codebase_translate::parser::coordinator::{ParserCoordinator, ParserType};
-use codebase_translate::parser::filter::{ContentFilter, FilterConfig};
+use codebase_translate::parser::abstraction::filter::{ContentFilter, FilterConfig};
 use codebase_translate::parser::regex::RegexParser;
-use codebase_translate::parser::strategy::{
+use codebase_translate::parser::abstraction::strategy::{
     default_strategy, ConfigBasedStrategy, ExtractionConfig, ExtractionStrategyImpl,
 };
-use codebase_translate::parser::tree_sitter::ParserConfig;
+use codebase_translate::parser::engine::ParserConfig;
 
 fn create_test_file(content: &str, path: &str) -> File {
     File::new(PathBuf::from(path), content.as_bytes().to_vec(), "utf-8")
@@ -284,7 +284,7 @@ fn test_coordinator_with_custom_strategy() {
 
 #[test]
 fn test_coordinator_with_parsers_constructor() {
-    let tree_sitter_parsers: Vec<codebase_translate::parser::tree_sitter::TreeSitterParser> =
+    let tree_sitter_parsers: Vec<codebase_translate::parser::engine::TreeSitterParser> =
         Vec::new();
     let regex_parser = RegexParser::create_fallback_parser(ParserConfig::default());
 
@@ -315,3 +315,4 @@ fn test_multi_language_project_parsing() {
         );
     }
 }
+

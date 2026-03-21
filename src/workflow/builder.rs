@@ -59,7 +59,8 @@ impl WorkflowBuilder {
         let cache = CacheFactory::create(&self.project_config.cache, &self.root_path)?;
         let translator = create_translation_service(&self.global_config, &self.project_config)?;
         let parser = ParserFactory::create(&self.project_config)?;
-        let writer = WriterFactory::from_project_config(&self.project_config, Some(&self.root_path))?;
+        let writer =
+            WriterFactory::from_project_config(&self.project_config, Some(&self.root_path))?;
         let detector = Detector::default();
         let encoder = Encoder::default();
 

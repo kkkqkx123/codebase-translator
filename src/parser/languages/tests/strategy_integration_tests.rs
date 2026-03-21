@@ -7,14 +7,14 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use crate::core::models::{File, NodeType};
-use crate::parser::filter::{ContentFilter, FilterConfig};
-use crate::parser::languages::*;
-use crate::parser::strategy::{
+use crate::parser::abstraction::filter::{ContentFilter, FilterConfig};
+use crate::parser::abstraction::parser::Parser;
+use crate::parser::abstraction::strategy::{
     ConfigBasedStrategy, ExtractionConfig, ExtractionStrategy, ExtractionStrategyImpl,
     StrategyNodeType,
 };
-use crate::parser::tree_sitter::ParserConfig;
-use crate::parser::Parser;
+use crate::parser::engine::ParserConfig;
+use crate::parser::languages::*;
 
 fn create_test_file(content: &str, path: &str) -> File {
     File::new(PathBuf::from(path), content.as_bytes().to_vec(), "utf-8")
@@ -490,7 +490,7 @@ fn test_strategy_node_type_mapping() {
 /// Test strategy with context (function name)
 #[test]
 fn test_strategy_with_function_context() {
-    use crate::parser::strategy::ExtractionContext;
+    use crate::parser::abstraction::strategy::ExtractionContext;
 
     let strategy = ConfigBasedStrategy::new(ExtractionConfig {
         error_messages: true,
@@ -508,3 +508,4 @@ fn test_strategy_with_function_context() {
     });
     assert!(!strategy_disabled.should_extract(StrategyNodeType::ErrorMessage, &ctx));
 }
+

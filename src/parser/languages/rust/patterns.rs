@@ -1,6 +1,6 @@
 //! Rust-specific patterns for macro and function classification
 
-use crate::parser::function_patterns::{FunctionCategory, LanguageFunctionPatterns};
+use crate::parser::abstraction::function_patterns::{FunctionCategory, LanguageFunctionPatterns};
 
 /// Rust patterns for macro classification
 #[derive(Clone)]
@@ -192,3 +192,4 @@ mod tests {
         assert!(underlying.is_debug_function("dbg!"));
     }
 }
+

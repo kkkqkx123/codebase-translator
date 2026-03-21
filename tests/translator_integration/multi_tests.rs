@@ -273,3 +273,4 @@ fn test_selection_strategy_copy() {
     let copied: SelectionStrategy = round_robin;
     assert_eq!(round_robin, copied);
 }
+

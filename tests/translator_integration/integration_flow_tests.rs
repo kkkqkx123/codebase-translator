@@ -357,3 +357,4 @@ fn test_batch_options_integration() {
     let batch2 = create_batch_translator(Arc::new(translator), custom_options);
     assert_eq!(batch2.name(), "deeplx");
 }
+

@@ -173,3 +173,4 @@ fn test_conversion_roundtrip() {
     assert!(back_to_chars >= original_chars);
     assert!(back_to_chars <= original_chars + 15); // Within 1.5 char tolerance
 }
+

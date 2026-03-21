@@ -168,3 +168,4 @@ mod tests {
         assert!(doc_query.contains("//!"));
     }
 }
+

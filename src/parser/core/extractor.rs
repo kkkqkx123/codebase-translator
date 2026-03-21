@@ -6,7 +6,7 @@ use tree_sitter::Node;
 
 use crate::core::error::Result;
 use crate::core::models::{Position, TranslationUnit};
-use crate::parser::strategy::StrategyNodeType;
+use crate::parser::abstraction::strategy::StrategyNodeType;
 
 /// Extraction type categorization
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

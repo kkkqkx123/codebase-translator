@@ -193,3 +193,4 @@ mod tests {
         assert!(!PythonQueries::log_functions().is_empty());
     }
 }
+

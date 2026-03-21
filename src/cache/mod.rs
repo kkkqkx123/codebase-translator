@@ -12,7 +12,10 @@ pub struct CacheFactory;
 
 impl CacheFactory {
     /// Create cache instance
-    pub fn create(cache_config: &CacheConfig, project_path: &str) -> Result<binary::BinaryCache, crate::core::error::TranslateError> {
+    pub fn create(
+        cache_config: &CacheConfig,
+        project_path: &str,
+    ) -> Result<binary::BinaryCache, crate::core::error::TranslateError> {
         info!(
             cache_type = %cache_config.mode,
             cache_dir = %project_path,

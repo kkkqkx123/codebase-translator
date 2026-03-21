@@ -9,3 +9,4 @@ fn process_english(value: i32) -> i32 {
 fn process_chinese(value: i32) -> i32 {
     value * 2
 }
+

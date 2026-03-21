@@ -5,7 +5,7 @@ use std::path::PathBuf;
 
 use codebase_translate::core::models::File;
 use codebase_translate::parser::coordinator::ParserCoordinator;
-use codebase_translate::parser::tree_sitter::ParserConfig;
+use codebase_translate::parser::engine::ParserConfig;
 
 #[test]
 fn test_raw_match_format() {
