@@ -89,7 +89,7 @@ fn init_global_config(_loader: &ConfigLoader, force: bool) -> Result<()> {
 fn init_project_config(loader: &ConfigLoader, force: bool) -> Result<()> {
     info!("Initializing project configuration");
 
-    let config_path = std::env::current_dir()?.join(".translator.toml");
+    let config_path = std::env::current_dir()?.join(".translator");
     debug!(config_path = %config_path.display(), "Project config path");
 
     if config_path.exists() && !force {

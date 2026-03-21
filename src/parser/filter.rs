@@ -76,7 +76,7 @@ fn default_min_length() -> usize {
 }
 
 fn default_max_length() -> usize {
-    10000
+    100000
 }
 
 fn default_true() -> bool {
@@ -393,7 +393,40 @@ fn is_punctuation(c: char) -> bool {
 fn quick_detect_cjk(text: &str) -> bool {
     text.chars().take(32).any(|c| {
         // Check if character is in CJK Unified Ideographs block
-        matches!(c, '\u{4E00}'..='\u{9FFF}' | '\u{3400}'..='\u{4DBF}')
+        matches!(c,
+            // CJK Unified Ideographs (Chinese, Japanese, Korean)
+            '\u{4E00}'..='\u{9FFF}' |
+            // CJK Unified Ideographs Extension A
+            '\u{3400}'..='\u{4DBF}' |
+            // CJK Unified Ideographs Extension B
+            '\u{20000}'..='\u{2A6DF}' |
+            // CJK Unified Ideographs Extension C, D, E, F, G, H
+            '\u{2A700}'..='\u{2B81F}' |
+            '\u{2B820}'..='\u{2CEAF}' |
+            '\u{2CEB0}'..='\u{2EBEF}' |
+            '\u{30000}'..='\u{3134F}' |
+            '\u{31350}'..='\u{323AF}' |
+            // Hiragana (Japanese)
+            '\u{3040}'..='\u{309F}' |
+            // Katakana (Japanese)
+            '\u{30A0}'..='\u{30FF}' |
+            // Hangul Syllables (Korean)
+            '\u{AC00}'..='\u{D7AF}' |
+            // Hangul Jamo (Korean)
+            '\u{1100}'..='\u{11FF}' |
+            // CJK Compatibility Ideographs
+            '\u{F900}'..='\u{FAFF}' |
+            // CJK Radicals Supplement
+            '\u{2E80}'..='\u{2EFF}' |
+            // Kangxi Radicals
+            '\u{2F00}'..='\u{2FDF}' |
+            // Ideographic Description Characters
+            '\u{2FF0}'..='\u{2FFF}' |
+            // CJK Symbols and Punctuation
+            '\u{3000}'..='\u{303F}' |
+            // Halfwidth and Fullwidth Forms (CJK)
+            '\u{FF00}'..='\u{FFEF}'
+        )
     })
 }
 
@@ -568,7 +601,7 @@ pub fn from_project_config(
         include_patterns: config.include_patterns.clone(),
         min_length: config.min_length,
         max_length: if config.max_length == 0 {
-            10000
+            100000
         } else {
             config.max_length
         },
@@ -585,7 +618,7 @@ pub fn from_project_config_with_translator(
     translator_max_length: Option<usize>,
 ) -> crate::core::error::Result<ContentFilter> {
     let max_length = match (project_config.max_length, translator_max_length) {
-        (0, None) => 10000,
+        (0, None) => 100000,
         (0, Some(translator_max)) => translator_max,
         (project_max, None) => project_max,
         (project_max, Some(translator_max)) => project_max.min(translator_max),

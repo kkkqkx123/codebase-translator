@@ -5,9 +5,11 @@
 //!
 //! Note: All file writing operations are asynchronous and use Tokio runtime.
 
+pub mod applier;
 pub mod concurrent;
 pub mod core;
 pub mod file;
+pub mod format;
 pub mod r#trait;
 
 pub use concurrent::{ConcurrentWriteStats, ConcurrentWriter, WriteResult};

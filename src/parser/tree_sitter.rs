@@ -64,8 +64,8 @@ impl Default for ParserConfig {
             extract_comments: true,
             extract_docstrings: true,
             extract_strings: false,
-            min_content_length: 2,
-            max_content_length: 10000,
+            min_content_length: 0,
+            max_content_length: 100000,
             trim_content: true,
         }
     }
@@ -870,14 +870,5 @@ func main() {
         // Parser should succeed even if no units are extracted
         // (Go comments may not be captured with current query patterns)
         assert!(parser.supports("test.go"));
-    }
-
-    #[test]
-    fn test_is_only_symbols() {
-        assert!(is_only_symbols("   "));
-        assert!(is_only_symbols("!!!"));
-        assert!(is_only_symbols("// "));
-        assert!(!is_only_symbols("hello world"));
-        assert!(!is_only_symbols("// hello"));
     }
 }

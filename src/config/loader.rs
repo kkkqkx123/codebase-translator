@@ -293,7 +293,7 @@ mod tests {
     #[test]
     fn test_load_project_config() {
         let temp_dir = TempDir::new().expect("Failed to create temp directory");
-        let config_path = temp_dir.path().join(".translator.toml");
+        let config_path = temp_dir.path().join(".translator");
 
         let config_content = r#"
 [translate]
@@ -320,10 +320,21 @@ directory = ".translator"
 
     #[test]
     fn test_default_config() {
+        let temp_dir = TempDir::new().expect("Failed to create temp directory");
+        let original_dir = std::env::current_dir().expect("Failed to get current dir");
+        std::env::set_current_dir(temp_dir.path()).expect("Failed to set current dir");
+
+        // Create an empty .translator file to avoid searching up the directory tree
+        let config_path = temp_dir.path().join(".translator");
+        std::fs::write(&config_path, "").expect("Failed to create empty config file");
+
         let loader = ConfigLoader::new();
         let config = loader
             .load_project()
             .expect("Failed to load project config");
+
+        // Restore original directory
+        std::env::set_current_dir(original_dir).expect("Failed to restore current dir");
 
         assert_eq!(config.translate.target_lang, "en");
         assert!(!config.writer.dry_run);
@@ -333,7 +344,7 @@ directory = ".translator"
     #[test]
     fn test_find_project_config() {
         let temp_dir = TempDir::new().expect("Failed to create temp directory");
-        let config_path = temp_dir.path().join(".translator.toml");
+        let config_path = temp_dir.path().join(".translator");
 
         std::fs::write(&config_path, "").expect("Failed to write config file");
 
@@ -352,7 +363,7 @@ directory = ".translator"
     #[test]
     fn test_project_config_validation() {
         let temp_dir = TempDir::new().expect("Failed to create temp directory");
-        let config_path = temp_dir.path().join(".translator.toml");
+        let config_path = temp_dir.path().join(".translator");
 
         let config_content = r#"
 [translate]
@@ -374,7 +385,7 @@ target_lang = "AUTO"
     #[test]
     fn test_normalize_patterns() {
         let temp_dir = TempDir::new().expect("Failed to create temp directory");
-        let config_path = temp_dir.path().join(".translator.toml");
+        let config_path = temp_dir.path().join(".translator");
 
         let config_content = r#"
 [include]
