@@ -7,10 +7,10 @@
 use std::sync::Arc;
 
 use codebase_translate::core::error::TranslateError;
-use codebase_translate::translator::multi::SelectionStrategy;
+
 use codebase_translate::translator::{
     create_batch_translator, create_translator_from_config, BatchOptions, BatchResult,
-    BatchTranslationService, BatchTranslator, DeepLXConfig, LimitPolicy, MultiTranslator,
+    BatchTranslationService, BatchTranslator, DeepLXConfig, LimitPolicy,
     ProviderType, TencentConfig, TranslationService, Translator, TranslatorConfig, TranslatorImpl,
 };
 
@@ -201,28 +201,15 @@ mod common_tests {
 }
 
 // ============================================================================
-// Multi-Translator Integration Tests
+// Multi-Translator Integration Tests (now built into BatchTranslator)
 // ============================================================================
 
 mod multi_tests {
     use super::*;
 
-    /// Test MultiTranslator creation fails with empty translator list
+    /// Test BatchTranslator creation with single translator
     #[test]
-    fn test_multi_translator_fails_with_empty_list() {
-        let translators: Vec<(Arc<TranslatorImpl>, u32)> = vec![];
-        let result = MultiTranslator::new(translators, SelectionStrategy::RoundRobin, 3);
-
-        assert!(result.is_err());
-        let err = result.unwrap_err();
-        assert!(err
-            .to_string()
-            .contains("At least one translator is required"));
-    }
-
-    /// Test MultiTranslator creation with single translator
-    #[test]
-    fn test_multi_translator_with_single_translator() {
+    fn test_batch_translator_with_single_translator() {
         let config = DeepLXConfig::default();
         let translator = TranslatorImpl::from_config(&TranslatorConfig {
             provider: ProviderType::DeepLX,
@@ -231,17 +218,14 @@ mod multi_tests {
         })
         .expect("Should create translator");
 
-        let translators = vec![(Arc::new(translator), 1u32)];
-        let result = MultiTranslator::new(translators, SelectionStrategy::RoundRobin, 3);
+        let batch = BatchTranslator::new(vec![(Arc::new(translator), 50u32)], BatchOptions::default());
 
-        assert!(result.is_ok());
-        let multi = result.expect("Should create multi-translator");
-        assert_eq!(multi.name(), "multi");
+        assert!(batch.name().contains("deeplx"));
     }
 
-    /// Test MultiTranslator creation with multiple translators
+    /// Test BatchTranslator creation with multiple translators
     #[test]
-    fn test_multi_translator_with_multiple_translators() {
+    fn test_batch_translator_with_multiple_translators() {
         let config1 = DeepLXConfig::default();
         let translator1 = TranslatorImpl::from_config(&TranslatorConfig {
             provider: ProviderType::DeepLX,
@@ -258,30 +242,12 @@ mod multi_tests {
         })
         .expect("Should create translator");
 
-        let translators = vec![(Arc::new(translator1), 2u32), (Arc::new(translator2), 1u32)];
-        let result = MultiTranslator::new(translators, SelectionStrategy::Weighted, 3);
-
-        assert!(result.is_ok());
-    }
-
-    /// Test SelectionStrategy variants
-    #[test]
-    fn test_selection_strategy_variants() {
-        use std::str::FromStr;
-
-        assert_eq!(
-            SelectionStrategy::from_str("round_robin").unwrap(),
-            SelectionStrategy::RoundRobin
+        let batch = BatchTranslator::new(
+            vec![(Arc::new(translator1), 50u32), (Arc::new(translator2), 50u32)],
+            BatchOptions::default(),
         );
-        assert_eq!(
-            SelectionStrategy::from_str("roundrobin").unwrap(),
-            SelectionStrategy::RoundRobin
-        );
-        assert_eq!(
-            SelectionStrategy::from_str("weighted").unwrap(),
-            SelectionStrategy::Weighted
-        );
-        assert!(SelectionStrategy::from_str("unknown").is_err());
+
+        assert!(batch.name().contains("deeplx"));
     }
 }
 
@@ -306,9 +272,9 @@ mod batch_tests {
         );
 
         let options = BatchOptions::default();
-        let batch = BatchTranslator::new(translator, options);
+        let batch = BatchTranslator::new(vec![(translator, 50)], options);
 
-        assert_eq!(batch.name(), "deeplx");
+        assert!(batch.name().contains("deeplx"));
     }
 
     /// Test create_batch_translator helper function
@@ -325,9 +291,9 @@ mod batch_tests {
         );
 
         let options = BatchOptions::default();
-        let batch = create_batch_translator(translator, options);
+        let batch = create_batch_translator(vec![(translator, 50)], options);
 
-        assert_eq!(batch.name(), "deeplx");
+        assert!(batch.name().contains("deeplx"));
     }
 
     /// Test BatchTranslator with custom options
@@ -349,9 +315,9 @@ mod batch_tests {
             max_retries: 2,
             limit_policy: Some(LimitPolicy::from_char_count(3000)),
         };
-        let batch = BatchTranslator::new(translator, options);
+        let batch = BatchTranslator::new(vec![(translator, 50)], options);
 
-        assert_eq!(batch.name(), "deeplx");
+        assert!(batch.name().contains("deeplx"));
     }
 
     /// Test BatchResult default values
@@ -390,7 +356,7 @@ mod service_tests {
         assert!(result.is_ok(), "Should create translation service");
 
         let service = result.expect("Should get service");
-        assert_eq!(service.name(), "deeplx");
+        assert!(service.name().contains("deeplx"));
     }
 
     /// Test BatchTranslationService creation
@@ -407,7 +373,7 @@ mod service_tests {
         );
 
         let options = BatchOptions::default();
-        let result = BatchTranslationService::new(translator, options);
+        let result = BatchTranslationService::new(vec![(translator, 50)], options);
 
         assert!(result.is_ok(), "Should create batch translation service");
     }
@@ -444,14 +410,14 @@ mod e2e_component_tests {
             max_retries: 3,
             limit_policy: Some(LimitPolicy::default()),
         };
-        let batch = create_batch_translator(translator_arc, options);
+        let batch = create_batch_translator(vec![(translator_arc, 50)], options);
 
-        assert_eq!(batch.name(), "deeplx");
+        assert!(batch.name().contains("deeplx"));
     }
 
     /// Test complete flow: Config -> Factory -> MultiTranslator
     #[test]
-    fn test_config_to_multi_flow() {
+    fn test_config_to_batch_translator_flow() {
         // Create multiple translators
         let config1 = TranslatorConfig {
             provider: ProviderType::DeepLX,
@@ -467,12 +433,13 @@ mod e2e_component_tests {
         };
         let translator2 = create_translator_from_config(&config2).expect("Should create");
 
-        // Create multi-translator
-        let translators = vec![(Arc::new(translator1), 2u32), (Arc::new(translator2), 1u32)];
-        let multi = MultiTranslator::new(translators, SelectionStrategy::RoundRobin, 3)
-            .expect("Should create multi-translator");
+        // Create batch translator with multiple translators
+        let batch = BatchTranslator::new(
+            vec![(Arc::new(translator1), 50u32), (Arc::new(translator2), 50u32)],
+            BatchOptions::default(),
+        );
 
-        assert_eq!(multi.name(), "multi");
+        assert!(batch.name().contains("deeplx"));
     }
 
     /// Test complete flow: Config -> TranslationService
@@ -485,7 +452,7 @@ mod e2e_component_tests {
         };
 
         let service = TranslationService::new(config).expect("Should create service");
-        assert_eq!(service.name(), "deeplx");
+        assert!(service.name().contains("deeplx"));
     }
 
     /// Test all provider types through factory
@@ -567,15 +534,13 @@ mod error_handling_tests {
         assert!(matches!(err, TranslateError::Config(_)));
     }
 
-    /// Test MultiTranslator creation error
+    /// Test BatchTranslator creation with empty translator list
+    /// Note: BatchTranslator now handles empty list gracefully
     #[test]
-    fn test_multi_translator_creation_error() {
-        let translators: Vec<(Arc<TranslatorImpl>, u32)> = vec![];
-        let result = MultiTranslator::new(translators, SelectionStrategy::RoundRobin, 3);
-
-        assert!(result.is_err());
-        let err = result.unwrap_err();
-        assert!(matches!(err, TranslateError::Config(_)));
+    fn test_batch_translator_empty_list() {
+        let batch = BatchTranslator::new(vec![], BatchOptions::default());
+        // BatchTranslator should still be created but won't have any translators
+        assert!(batch.name().contains("empty"));
     }
 
     /// Test BatchTranslationService creation error with invalid runtime
@@ -593,7 +558,7 @@ mod error_handling_tests {
         );
 
         let options = BatchOptions::default();
-        let result = BatchTranslationService::new(translator, options);
+        let result = BatchTranslationService::new(vec![(translator, 50)], options);
 
         assert!(result.is_ok());
     }

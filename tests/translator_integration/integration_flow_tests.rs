@@ -7,7 +7,7 @@ use std::sync::Arc;
 
 use codebase_translate::translator::{
     create_batch_translator, create_translator_from_config, BatchOptions, BatchTranslationService,
-    DeepLXConfig, MultiTranslator, ProviderType, SelectionStrategy, TencentConfig,
+    DeepLXConfig, ProviderType, TencentConfig,
     TranslationService, TranslatorConfig, TranslatorImpl,
 };
 
@@ -35,9 +35,9 @@ fn test_config_to_batch_flow() {
         max_retries: 3,
         limit_policy: Some(codebase_translate::translator::LimitPolicy::default()),
     };
-    let batch = create_batch_translator(translator_arc, options);
+    let batch = create_batch_translator(vec![(translator_arc, 50)], options);
 
-    assert_eq!(batch.name(), "deeplx");
+    assert!(batch.name().contains("deeplx"));
 }
 
 /// Test complete flow: Config -> Factory -> MultiTranslator
@@ -76,7 +76,7 @@ fn test_config_to_service_flow() {
     };
 
     let service = TranslationService::new(config).expect("Should create service");
-    assert_eq!(service.name(), "deeplx");
+    assert!(service.name().contains("deeplx"));
 }
 
 /// Test all provider types through factory

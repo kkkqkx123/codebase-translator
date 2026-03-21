@@ -81,7 +81,7 @@ async fn test_deeplx_batch_translation() {
     };
 
     let batch_translator =
-        codebase_translate::translator::BatchTranslator::new(translator, batch_options);
+        codebase_translate::translator::BatchTranslator::new(vec![(translator, 50)], batch_options);
 
     let texts = vec![
         "Hello".to_string(),

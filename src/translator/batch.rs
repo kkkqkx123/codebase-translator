@@ -2,9 +2,11 @@
 //!
 //! This module provides batch translation with rate limiting and retry logic.
 //! Uses static dispatch via TranslatorImpl for better performance.
+//! Supports multiple translators with load balancing and failover.
 
 use governor::{Quota, RateLimiter};
 use std::num::NonZeroU32;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::sync::{RwLock, Semaphore};
@@ -14,10 +16,54 @@ use crate::core::error::{Result, TranslateError};
 use crate::translator::common::{BatchOptions, BatchResult, LimitPolicy, TranslateResponse};
 use crate::translator::{Translator, TranslatorImpl};
 
-/// Batch translator with rate limiting
+/// Translator entry with metadata for load balancing
+#[derive(Debug)]
+struct TranslatorEntry {
+    translator: Arc<TranslatorImpl>,
+    name: String,
+    weight: u32,
+    healthy: AtomicU64,
+    failure_count: AtomicU64,
+}
+
+impl TranslatorEntry {
+    fn new(translator: Arc<TranslatorImpl>, weight: u32) -> Self {
+        let name = translator.name().to_string();
+        Self {
+            translator,
+            name,
+            weight,
+            healthy: AtomicU64::new(1),
+            failure_count: AtomicU64::new(0),
+        }
+    }
+
+    fn is_healthy(&self) -> bool {
+        self.healthy.load(Ordering::Relaxed) == 1
+    }
+
+    fn mark_healthy(&self) {
+        self.healthy.store(1, Ordering::Relaxed);
+        self.failure_count.store(0, Ordering::Relaxed);
+    }
+
+    fn mark_unhealthy(&self) {
+        self.healthy.store(0, Ordering::Relaxed);
+    }
+
+    fn increment_failure(&self) {
+        let count = self.failure_count.fetch_add(1, Ordering::Relaxed) + 1;
+        if count >= 1 {
+            self.mark_unhealthy();
+        }
+    }
+}
+
+/// Batch translator with rate limiting and multi-provider support
 /// Uses static dispatch via TranslatorImpl for better performance.
 pub struct BatchTranslator {
-    translator: Arc<TranslatorImpl>,
+    translators: Vec<TranslatorEntry>,
+    current_index: AtomicU64,
     rate_limiter: Arc<
         RwLock<
             Option<
@@ -35,9 +81,9 @@ pub struct BatchTranslator {
 }
 
 impl BatchTranslator {
-    /// Create a new batch translator
-    pub fn new(translator: Arc<TranslatorImpl>, options: BatchOptions) -> Self {
-        debug!("Creating batch translator");
+    /// Create a new batch translator with multiple translators
+    pub fn new(translators: Vec<(Arc<TranslatorImpl>, u32)>, options: BatchOptions) -> Self {
+        debug!(translator_count = translators.len(), "Creating batch translator");
         let limit_policy = options.limit_policy.unwrap_or_default();
 
         debug!(
@@ -58,14 +104,21 @@ impl BatchTranslator {
 
         let semaphore = Arc::new(Semaphore::new(options.workers.max(1)));
 
-        debug!(
+        let translator_entries: Vec<TranslatorEntry> = translators
+            .into_iter()
+            .map(|(t, w)| TranslatorEntry::new(t, w))
+            .collect();
+
+        info!(
+            translator_count = translator_entries.len(),
             rate_limiter_enabled = rate_limiter.is_some(),
             semaphore_permits = options.workers.max(1),
-            "Batch translator created"
+            "Batch translator created with multiple providers"
         );
 
         Self {
-            translator,
+            translators: translator_entries,
+            current_index: AtomicU64::new(0),
             rate_limiter: Arc::new(RwLock::new(rate_limiter)),
             semaphore,
             max_retries: options.max_retries.max(1),
@@ -97,6 +150,40 @@ impl BatchTranslator {
         } else {
             *limiter = None;
         }
+    }
+
+    /// Select next healthy translator using round-robin
+    fn select_translator(&self) -> Option<&TranslatorEntry> {
+        let healthy_translators: Vec<&TranslatorEntry> = self
+            .translators
+            .iter()
+            .filter(|t| t.is_healthy())
+            .collect();
+
+        if healthy_translators.is_empty() {
+            // If no healthy translators, try all translators
+            let total = self.translators.len();
+            let index = self.current_index.fetch_add(1, Ordering::Relaxed) as usize % total;
+            return self.translators.get(index);
+        }
+
+        let total_weight: u32 = healthy_translators.iter().map(|t| t.weight).sum();
+        if total_weight == 0 {
+            let index = self.current_index.fetch_add(1, Ordering::Relaxed) as usize % healthy_translators.len();
+            return healthy_translators.get(index).copied();
+        }
+
+        let target = self.current_index.fetch_add(1, Ordering::Relaxed) as u32 % total_weight;
+        let mut current_weight = 0u32;
+
+        for entry in &healthy_translators {
+            current_weight += entry.weight;
+            if target < current_weight {
+                return Some(entry);
+            }
+        }
+
+        healthy_translators.first().copied()
     }
 
     /// Translate a batch of texts
@@ -191,13 +278,14 @@ impl BatchTranslator {
         })
     }
 
-    /// Translate with exponential backoff retry
+    /// Translate with exponential backoff retry and failover
     async fn translate_with_retry(
         &self,
         text: &str,
         target_lang: &str,
     ) -> Result<TranslateResponse> {
         let mut last_error = None;
+        let mut attempted_translators = std::collections::HashSet::new();
 
         for attempt in 0..self.max_retries {
             // Check character limit and split if needed
@@ -206,13 +294,43 @@ impl BatchTranslator {
                 return Box::pin(self.translate_with_split(text, target_lang)).await;
             }
 
-            match self
+            // Select a translator that hasn't been attempted yet
+            let entry = loop {
+                let candidate = self.select_translator();
+                match candidate {
+                    Some(e) if !attempted_translators.contains(&e.name) => break e,
+                    Some(_) => {
+                        // This translator was already attempted, try next
+                        if attempted_translators.len() >= self.translators.len() {
+                            break candidate.unwrap();
+                        }
+                        continue;
+                    }
+                    None => {
+                        return Err(TranslateError::Translation(
+                            "No translator available".to_string(),
+                        ));
+                    }
+                }
+            };
+
+            attempted_translators.insert(entry.name.clone());
+
+            debug!(
+                attempt = attempt + 1,
+                max_retries = self.max_retries,
+                translator = %entry.name,
+                "Attempting translation"
+            );
+
+            match entry
                 .translator
                 .translate(&[text.to_string()], target_lang)
                 .await
             {
                 Ok(translated) => {
                     if let Some(translated_text) = translated.first() {
+                        entry.mark_healthy();
                         return Ok(TranslateResponse {
                             original_text: text.to_string(),
                             translated_text: translated_text.clone(),
@@ -223,7 +341,13 @@ impl BatchTranslator {
                     }
                 }
                 Err(e) => {
-                    warn!("Translation attempt {} failed: {}", attempt + 1, e);
+                    warn!(
+                        attempt = attempt + 1,
+                        translator = %entry.name,
+                        error = %e,
+                        "Translation attempt failed"
+                    );
+                    entry.increment_failure();
                     last_error = Some(e);
 
                     // Exponential backoff (starting from 1 second)
@@ -353,17 +477,23 @@ impl BatchTranslator {
             .collect()
     }
 
-    /// Get translator name
-    pub fn name(&self) -> &str {
-        self.translator.name()
+    /// Get translator names
+    pub fn name(&self) -> String {
+        self.translators
+            .iter()
+            .map(|t| t.name.clone())
+            .collect::<Vec<_>>()
+            .join(", ")
     }
 }
 
-/// Create a batch translator from a translator instance
+/// Create a batch translator from multiple translator instances
 /// Uses static dispatch via TranslatorImpl for better performance.
 pub fn create_batch_translator(
-    translator: Arc<TranslatorImpl>,
+    translators: Vec<(Arc<TranslatorImpl>, u32)>,
     options: BatchOptions,
 ) -> BatchTranslator {
-    BatchTranslator::new(translator, options)
+    BatchTranslator::new(translators, options)
 }
+
+

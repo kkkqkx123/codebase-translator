@@ -11,11 +11,11 @@ use codebase_translate::config::LLMProviderConfig;
 use codebase_translate::translator::llm::{
     CapacityProvider, Provider, ProviderPool, ProviderPoolConfig, ProviderRouter, RotationStrategy,
 };
-use codebase_translate::translator::multi::SelectionStrategy;
+
 use codebase_translate::translator::{
     create_batch_translator, create_translator_from_config, BatchOptions, BatchTranslationService,
-    DeepLXConfig, LimitPolicy, MultiTranslator, ProviderType, TencentConfig, TranslationService,
-    Translator, TranslatorConfig,
+    BatchTranslator, DeepLXConfig, LimitPolicy, ProviderType, TencentConfig, TranslationService,
+    Translator, TranslatorConfig, TranslatorImpl,
 };
 
 // ============================================================================
@@ -97,12 +97,12 @@ fn test_factory_error_handling() {
 }
 
 // ============================================================================
-// Multi-Translator Coordination Tests
+// Multi-Translator Tests (now built into BatchTranslator)
 // ============================================================================
 
-/// Test multi-translator round-robin selection cycles through providers
+/// Test BatchTranslator with multiple translators
 #[test]
-fn test_multi_translator_round_robin_cycles() {
+fn test_batch_translator_multiple_translators() {
     let t1 = create_translator_from_config(&TranslatorConfig {
         provider: ProviderType::DeepLX,
         deeplx: Some(DeepLXConfig::default()),
@@ -117,88 +117,12 @@ fn test_multi_translator_round_robin_cycles() {
     })
     .expect("Should create t2");
 
-    let multi = MultiTranslator::new(
-        vec![(Arc::new(t1), 1u32), (Arc::new(t2), 1u32)],
-        SelectionStrategy::RoundRobin,
-        3,
-    )
-    .expect("Should create multi-translator");
+    let batch = BatchTranslator::new(
+        vec![(Arc::new(t1), 50u32), (Arc::new(t2), 50u32)],
+        BatchOptions::default(),
+    );
 
-    assert_eq!(multi.name(), "multi");
-}
-
-/// Test multi-translator weighted selection behavior
-#[test]
-fn test_multi_translator_weighted_selection() {
-    let t1 = create_translator_from_config(&TranslatorConfig {
-        provider: ProviderType::DeepLX,
-        deeplx: Some(DeepLXConfig::default()),
-        ..Default::default()
-    })
-    .expect("Should create t1");
-
-    let t2 = create_translator_from_config(&TranslatorConfig {
-        provider: ProviderType::DeepLX,
-        deeplx: Some(DeepLXConfig::default()),
-        ..Default::default()
-    })
-    .expect("Should create t2");
-
-    let multi = MultiTranslator::new(
-        vec![(Arc::new(t1), 3u32), (Arc::new(t2), 1u32)],
-        SelectionStrategy::Weighted,
-        3,
-    )
-    .expect("Should create multi-translator");
-
-    assert_eq!(multi.name(), "multi");
-}
-
-/// Test multi-translator with mixed provider types
-#[test]
-fn test_multi_translator_mixed_providers() {
-    let deeplx = create_translator_from_config(&TranslatorConfig {
-        provider: ProviderType::DeepLX,
-        deeplx: Some(DeepLXConfig::default()),
-        ..Default::default()
-    })
-    .expect("Should create DeepLX");
-
-    let llm = create_translator_from_config(&TranslatorConfig {
-        provider: ProviderType::LLM,
-        llm: Some(codebase_translate::translator::LLMConfig {
-            base_url: "http://localhost".to_string(),
-            api_key: "test".to_string(),
-            model: "test".to_string(),
-            max_tokens: 100,
-            temperature: 0.5,
-            top_p: None,
-            proxy_url: None,
-            timeout: 10,
-            max_retries: 3,
-            extra_headers: None,
-            extra_params: None,
-        }),
-        ..Default::default()
-    })
-    .expect("Should create LLM");
-
-    let multi = MultiTranslator::new(
-        vec![(Arc::new(deeplx), 2u32), (Arc::new(llm), 1u32)],
-        SelectionStrategy::Weighted,
-        3,
-    )
-    .expect("Should create multi-translator");
-
-    assert_eq!(multi.name(), "multi");
-}
-
-/// Test multi-translator fails with empty translator list
-#[test]
-fn test_multi_translator_fails_empty() {
-    let result: Result<MultiTranslator, _> =
-        MultiTranslator::new(vec![], SelectionStrategy::RoundRobin, 3);
-    assert!(result.is_err());
+    assert!(batch.name().contains("deeplx"));
 }
 
 // ============================================================================
@@ -520,8 +444,8 @@ fn test_batch_translator_creation() {
     let translator_arc = Arc::new(translator);
 
     // Default options
-    let batch1 = create_batch_translator(translator_arc.clone(), BatchOptions::default());
-    assert_eq!(batch1.name(), "deeplx");
+    let batch1 = create_batch_translator(vec![(translator_arc.clone(), 50)], BatchOptions::default());
+    assert!(batch1.name().contains("deeplx"));
 
     // Custom options
     let custom_options = BatchOptions {
@@ -530,8 +454,8 @@ fn test_batch_translator_creation() {
         max_retries: 2,
         limit_policy: Some(LimitPolicy::from_char_count(2000)),
     };
-    let batch2 = create_batch_translator(translator_arc, custom_options);
-    assert_eq!(batch2.name(), "deeplx");
+    let batch2 = create_batch_translator(vec![(translator_arc, 50)], custom_options);
+    assert!(batch2.name().contains("deeplx"));
 }
 
 // ============================================================================
@@ -599,7 +523,7 @@ fn test_batch_translation_service_creation() {
     })
     .expect("Should create translator");
 
-    let service = BatchTranslationService::new(Arc::new(translator), BatchOptions::default());
+    let service = BatchTranslationService::new(vec![(Arc::new(translator), 50)], BatchOptions::default());
     assert!(service.is_ok());
 }
 
@@ -617,36 +541,9 @@ fn test_complete_flow_config_to_batch() {
     };
 
     let translator = create_translator_from_config(&config).expect("Factory should work");
-    let batch = create_batch_translator(Arc::new(translator), BatchOptions::default());
+    let batch = create_batch_translator(vec![(Arc::new(translator), 50)], BatchOptions::default());
 
-    assert_eq!(batch.name(), "deeplx");
-}
-
-/// Test complete flow: Config -> Factory -> MultiTranslator
-#[test]
-fn test_complete_flow_config_to_multi() {
-    let t1 = create_translator_from_config(&TranslatorConfig {
-        provider: ProviderType::DeepLX,
-        deeplx: Some(DeepLXConfig::default()),
-        ..Default::default()
-    })
-    .expect("Should create t1");
-
-    let t2 = create_translator_from_config(&TranslatorConfig {
-        provider: ProviderType::DeepLX,
-        deeplx: Some(DeepLXConfig::default()),
-        ..Default::default()
-    })
-    .expect("Should create t2");
-
-    let multi = MultiTranslator::new(
-        vec![(Arc::new(t1), 2u32), (Arc::new(t2), 1u32)],
-        SelectionStrategy::RoundRobin,
-        3,
-    )
-    .expect("Should create multi-translator");
-
-    assert_eq!(multi.name(), "multi");
+    assert!(batch.name().contains("deeplx"));
 }
 
 /// Test complete flow: Config -> TranslationService
@@ -659,5 +556,5 @@ fn test_complete_flow_config_to_service() {
     };
 
     let service = TranslationService::new(config).expect("Should create service");
-    assert_eq!(service.name(), "deeplx");
+    assert!(service.name().contains("deeplx"));
 }

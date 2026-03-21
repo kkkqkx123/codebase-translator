@@ -24,9 +24,9 @@ fn test_batch_translator_creation() {
     );
 
     let options = BatchOptions::default();
-    let batch = BatchTranslator::new(translator, options);
+    let batch = BatchTranslator::new(vec![(translator, 50)], options);
 
-    assert_eq!(batch.name(), "deeplx");
+    assert!(batch.name().contains("deeplx"));
 }
 
 /// Test create_batch_translator helper function
@@ -43,9 +43,9 @@ fn test_create_batch_translator_helper() {
     );
 
     let options = BatchOptions::default();
-    let batch = create_batch_translator(translator, options);
+    let batch = create_batch_translator(vec![(translator, 50)], options);
 
-    assert_eq!(batch.name(), "deeplx");
+    assert!(batch.name().contains("deeplx"));
 }
 
 /// Test BatchTranslator with custom options
@@ -67,9 +67,9 @@ fn test_batch_translator_custom_options() {
         max_retries: 2,
         limit_policy: Some(LimitPolicy::from_char_count(3000)),
     };
-    let batch = BatchTranslator::new(translator, options);
+    let batch = BatchTranslator::new(vec![(translator, 50)], options);
 
-    assert_eq!(batch.name(), "deeplx");
+    assert!(batch.name().contains("deeplx"));
 }
 
 /// Test BatchResult default values
