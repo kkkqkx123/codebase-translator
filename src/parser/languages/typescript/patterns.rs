@@ -1,6 +1,6 @@
 //! TypeScript-specific patterns for function and method classification
 
-use crate::parser::abstraction::function_patterns::{FunctionCategory, LanguageFunctionPatterns};
+use crate::parser::patterns::{FunctionCategory, LanguageFunctionPatterns};
 
 /// TypeScript patterns for function classification
 #[derive(Clone)]

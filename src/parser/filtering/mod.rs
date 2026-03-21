@@ -1,0 +1,52 @@
+//! Content filtering module
+//!
+//! This module provides a layered filtering system for determining which content
+//! should be translated. The filtering is organized into multiple layers, each
+//! handling a specific aspect:
+//!
+//! # Filter Layers
+//!
+//! 1. **Basic Layer** (`layers::basic`) - O(1) constant-time checks
+//!    - Empty text detection
+//!    - Length validation (min/max)
+//!
+//! 2. **Language Layer** (`layers::language`) - O(k) quick detection
+//!    - Source language matching
+//!    - CJK character detection
+//!
+//! 3. **Pattern Layer** (`layers::pattern`) - O(n) regex matching
+//!    - Keyword exclusion
+//!    - Pattern exclusion/inclusion
+//!    - Placeholder detection
+//!    - Code pattern detection
+//!
+//! 4. **Content Layer** (`layers::content`) - O(len) deep analysis
+//!    - Symbol-only text detection
+//!
+//! # Usage
+//!
+//! ```rust
+//! use parser::filtering::{CompositeFilter, FilterConfig};
+//!
+//! let config = FilterConfig::default();
+//! let filter = CompositeFilter::new(config).unwrap();
+//!
+//! assert!(filter.should_translate("Hello world"));
+//! assert!(!filter.should_translate("TODO: fix this"));
+//! ```
+
+pub mod composite;
+pub mod config;
+pub mod layers;
+pub mod traits;
+
+// Re-export main types
+pub use composite::CompositeFilter as ContentFilter;
+pub use composite::{
+    default_filter, from_project_config, from_project_config_with_translator,
+};
+pub use config::FilterConfig;
+pub use traits::Filter;
+
+// Re-export layers for advanced usage
+pub use layers::{BasicFilter, ContentFilter as ContentLayerFilter, LanguageFilter, PatternFilter};

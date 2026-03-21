@@ -8,11 +8,11 @@ use tree_sitter::{Language, Node, Tree};
 
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::TranslationUnit;
-use crate::parser::abstraction::filter::ContentFilter;
-use crate::parser::abstraction::function_patterns::FunctionCategory;
 use crate::parser::abstraction::strategy::{
-    ExtractionContext, ExtractionStrategy, ExtractionStrategyImpl, StrategyNodeType,
+    ExtractionContext, ExtractionStrategy, StrategyNodeType,
 };
+use crate::parser::filtering::traits::Filter;
+use crate::parser::{ContentFilter, ExtractionStrategyImpl, FunctionCategory};
 use crate::parser::core::query_executor::QueryExecutor;
 use crate::parser::core::StringProcessor;
 use crate::parser::engine::ParserConfig;

@@ -7,12 +7,9 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use crate::core::models::{File, NodeType};
-use crate::parser::abstraction::filter::{ContentFilter, FilterConfig};
 use crate::parser::abstraction::parser::Parser;
-use crate::parser::abstraction::strategy::{
-    ConfigBasedStrategy, ExtractionConfig, ExtractionStrategy, ExtractionStrategyImpl,
-    StrategyNodeType,
-};
+use crate::parser::abstraction::strategy::{ExtractionConfig, ExtractionStrategy, StrategyNodeType};
+use crate::parser::{ConfigBasedStrategy, ContentFilter, ExtractionStrategyImpl, FilterConfig};
 use crate::parser::engine::ParserConfig;
 use crate::parser::languages::*;
 

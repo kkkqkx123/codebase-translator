@@ -63,9 +63,6 @@ impl ProjectConfig {
         if !other.filter.include_patterns.is_empty() {
             self.filter.include_patterns = other.filter.include_patterns;
         }
-        if other.filter.min_length > 0 {
-            self.filter.min_length = other.filter.min_length;
-        }
         if other.filter.max_length > 0 {
             self.filter.max_length = other.filter.max_length;
         }
@@ -352,9 +349,6 @@ pub struct FilterConfig {
     /// Regex patterns to include (higher priority than exclude)
     #[serde(default)]
     pub include_patterns: Vec<String>,
-    /// Minimum text length
-    #[serde(default)]
-    pub min_length: usize,
     /// Maximum text length
     #[serde(default)]
     pub max_length: usize,
@@ -385,7 +379,6 @@ impl Default for FilterConfig {
                 r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}".to_string(),
             ],
             include_patterns: Vec::new(),
-            min_length: 0,
             max_length: 0,
             allow_placeholders: false,
             detect_code_patterns: true,

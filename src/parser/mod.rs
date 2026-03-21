@@ -8,17 +8,19 @@
 //!
 //! The parser module is organized into several submodules:
 //!
-//! - `abstraction/`: Core abstractions including Parser trait, strategies, and filters
+//! - `abstraction/`: Core abstractions including Parser trait and extraction strategies
 //! - `core/`: Generic extraction framework reusable across languages
 //! - `detection/`: Language detection capabilities
 //! - `engine/`: Parsing engines (tree-sitter based)
+//! - `filtering/`: Content filtering system with layered architecture
+//! - `patterns/`: Function and macro pattern definitions
 //! - `queries/`: Tree-sitter query builders and predefined queries
 //! - `languages/`: Language-specific parser implementations
 //! - `coordinator/`: High-level coordination for parsing operations
 //! - `regex/`: Regex-based fallback parsers
 //! - `regex_parsers/`: Type-specific regex parsers for simple file types
 
-// Core abstractions (Parser trait, strategies, filters, patterns)
+// Core abstractions (Parser trait, strategies)
 pub mod abstraction;
 
 // Core extraction framework
@@ -29,6 +31,12 @@ pub mod detection;
 
 // Parsing engines
 pub mod engine;
+
+// Content filtering
+pub mod filtering;
+
+// Function patterns
+pub mod patterns;
 
 // Parser coordinator
 pub mod coordinator;
@@ -47,10 +55,19 @@ pub mod regex_parsers;
 
 // Re-export commonly used types from abstraction
 pub use abstraction::{
-    from_project_config, from_project_config_with_translator, ConfigBasedStrategy, ContentFilter,
-    ExtractionConfig, ExtractionContext, ExtractionStrategy, ExtractionStrategyImpl, FilterConfig,
-    FunctionCategory, LanguageFunctionPatterns, Parser, StrategyNodeType,
+    ExtractionConfig, ExtractionContext, ExtractionStrategy, StrategyNodeType, Parser,
 };
+
+// Re-export from core (strategies)
+pub use core::{ConfigBasedStrategy, ExtractionStrategyImpl};
+
+// Re-export from filtering
+pub use filtering::{
+    from_project_config, from_project_config_with_translator, ContentFilter, FilterConfig,
+};
+
+// Re-export from patterns
+pub use patterns::{FunctionCategory, LanguageFunctionPatterns};
 
 // Re-export from detection
 pub use detection::{LanguageDetector, LanguageInfo, Script};

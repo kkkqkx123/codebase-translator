@@ -9,11 +9,12 @@ use tree_sitter::{Language as TSLanguage, Node, Parser, Query, QueryCursor, Tree
 
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, Position, TranslationUnit};
-use crate::parser::abstraction::filter::ContentFilter;
 use crate::parser::abstraction::parser::Parser as ParserTrait;
 use crate::parser::abstraction::strategy::{
-    ExtractionContext, ExtractionStrategy, ExtractionStrategyImpl, StrategyNodeType,
+    ExtractionContext, ExtractionStrategy, StrategyNodeType,
 };
+use crate::parser::filtering::traits::Filter;
+use crate::parser::{ContentFilter, ExtractionStrategyImpl};
 use crate::parser::core::{CommentType, StringProcessor};
 
 /// Language configuration for tree-sitter
@@ -95,13 +96,13 @@ impl TreeSitterParser {
 
     /// Create a new tree-sitter parser with default strategy and filter
     pub fn with_defaults(language_config: LanguageConfig, config: ParserConfig) -> Result<Self> {
-        use crate::parser::abstraction::filter::default_filter;
-        use crate::parser::abstraction::strategy::default_strategy;
+        use crate::parser::core::strategies::strategy_impl::ExtractionStrategyImpl;
+        use crate::parser::filtering::default_filter;
 
         Self::new(
             language_config,
             config,
-            Arc::new(default_strategy()),
+            Arc::new(ExtractionStrategyImpl::default_config()),
             Arc::new(default_filter()?),
         )
     }
@@ -685,12 +686,12 @@ impl TreeSitterParserFactory {
 
     /// Create all available parsers with default strategy and filter
     pub fn create_all_parsers_with_defaults(config: ParserConfig) -> Vec<Result<TreeSitterParser>> {
-        use crate::parser::abstraction::filter::default_filter;
-        use crate::parser::abstraction::strategy::default_strategy;
+        use crate::parser::filtering::default_filter;
+        use crate::parser::core::strategies::strategy_impl::ExtractionStrategyImpl;
 
-        let strategy = Arc::new(default_strategy());
+        let strategy = Arc::new(ExtractionStrategyImpl::default_config());
         let filter = Arc::new(default_filter().unwrap_or_else(|_| {
-            ContentFilter::new(crate::parser::abstraction::filter::FilterConfig::default()).unwrap()
+            ContentFilter::new(crate::parser::FilterConfig::default()).unwrap()
         }));
 
         Self::create_all_parsers(config, strategy, filter)
@@ -803,7 +804,7 @@ const CSHARP_STRING_QUERY: &str = r#"
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::abstraction::filter::FilterConfig;
+    use crate::parser::filtering::FilterConfig;
     use crate::parser::abstraction::strategy::{ConfigBasedStrategy, ExtractionConfig};
     use std::path::PathBuf;
 
