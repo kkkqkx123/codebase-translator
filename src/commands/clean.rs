@@ -126,7 +126,7 @@ fn clean_backup_files(
     } else if let Some(config_dir) = &project_config.writer.backup_dir {
         PathBuf::from(config_dir)
     } else {
-        current_dir.join("translator")
+        current_dir.join(".translator").join("backups")
     };
 
     debug!(backup_dir = %backup_dir.display(), "Backup directory");

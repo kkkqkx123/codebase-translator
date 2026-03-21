@@ -150,7 +150,8 @@ fn init_file_logger(config: &LoggingConfig, filter: EnvFilter, format: &str) -> 
                 .with_writer(non_blocking)
                 .with_target(true)
                 .with_level(true)
-                .with_span_events(FmtSpan::CLOSE),
+                .with_span_events(FmtSpan::CLOSE)
+                .with_ansi(false),
         ),
         "compact" => Box::new(
             tracing_subscriber::fmt::layer()
@@ -158,14 +159,16 @@ fn init_file_logger(config: &LoggingConfig, filter: EnvFilter, format: &str) -> 
                 .with_writer(non_blocking)
                 .with_target(true)
                 .with_level(true)
-                .with_span_events(FmtSpan::CLOSE),
+                .with_span_events(FmtSpan::CLOSE)
+                .with_ansi(false),
         ),
         _ => Box::new(
             tracing_subscriber::fmt::layer()
                 .with_writer(non_blocking)
                 .with_target(true)
                 .with_level(true)
-                .with_span_events(FmtSpan::CLOSE),
+                .with_span_events(FmtSpan::CLOSE)
+                .with_ansi(false),
         ),
     };
 

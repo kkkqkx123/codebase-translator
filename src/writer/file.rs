@@ -40,21 +40,9 @@ impl Default for WriterConfig {
 }
 
 impl WriterConfig {
-    /// Create a new writer config with validation
+    /// Create a new writer config
     pub fn new() -> Self {
         Self::default()
-    }
-
-    /// Validate the configuration
-    pub fn validate(&self) -> Result<()> {
-        if let Some(ref dir) = self.backup_dir {
-            if !dir.is_absolute() {
-                return Err(TranslateError::Config(
-                    "Backup directory must be absolute".to_string(),
-                ));
-            }
-        }
-        Ok(())
     }
 }
 
@@ -294,10 +282,10 @@ impl FileWriter {
             // User specified backup directory
             Some(backup_dir.clone())
         } else {
-            // Use translator subdirectory in project path, or None if no project path
+            // Use .translator/backups subdirectory in project path, or None if no project path
             self.project_path
                 .as_ref()
-                .map(|project_path| project_path.join("translator"))
+                .map(|project_path| project_path.join(".translator").join("backups"))
         };
 
         // Determine backup path

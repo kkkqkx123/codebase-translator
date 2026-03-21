@@ -76,8 +76,6 @@ impl WriterFactory {
             strict_encoding: false,
         };
 
-        writer_config.validate()?;
-
         let writer = if let Some(path) = project_path {
             FileWriter::with_project_path(writer_config, std::path::PathBuf::from(path))
         } else {
@@ -112,17 +110,4 @@ mod tests {
         assert!(!config.strict_encoding);
     }
 
-    #[test]
-    fn test_writer_config_validate() {
-        let config = WriterConfig::default();
-        assert!(config.validate().is_ok());
-
-        // Test with valid absolute path (use current dir for cross-platform compatibility)
-        let abs_path = std::env::current_dir().expect("Should get current dir");
-        let config_with_backup = WriterConfig {
-            backup_dir: Some(abs_path),
-            ..Default::default()
-        };
-        assert!(config_with_backup.validate().is_ok());
-    }
 }

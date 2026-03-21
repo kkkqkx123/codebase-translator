@@ -147,7 +147,7 @@ impl ConfigLoader {
 
     /// Find project config by searching up the directory tree
     fn find_project_config(start_dir: &Path) -> Option<PathBuf> {
-        let config_names = [".translator"];
+        let config_names = [".translator.toml"];
 
         let mut current = Some(start_dir);
         while let Some(dir) = current {
@@ -293,7 +293,7 @@ mod tests {
     #[test]
     fn test_load_project_config() {
         let temp_dir = TempDir::new().expect("Failed to create temp directory");
-        let config_path = temp_dir.path().join(".translator");
+        let config_path = temp_dir.path().join(".translator.toml");
 
         let config_content = r#"
 [translate]
@@ -302,7 +302,7 @@ source_langs = ["en"]
 
 [cache]
 enabled = true
-directory = ".translator"
+directory = ".translator/cache"
 "#;
 
         std::fs::write(&config_path, config_content).expect("Failed to write config file");
@@ -315,7 +315,7 @@ directory = ".translator"
         assert_eq!(config.translate.target_lang, "zh");
         assert_eq!(config.translate.source_langs, vec!["en"]);
         assert!(config.cache.enabled);
-        assert_eq!(config.cache.directory, ".translator");
+        assert_eq!(config.cache.directory, ".translator/cache");
     }
 
     #[test]
@@ -324,8 +324,8 @@ directory = ".translator"
         let original_dir = std::env::current_dir().expect("Failed to get current dir");
         std::env::set_current_dir(temp_dir.path()).expect("Failed to set current dir");
 
-        // Create an empty .translator file to avoid searching up the directory tree
-        let config_path = temp_dir.path().join(".translator");
+        // Create an empty .translator.toml file to avoid searching up the directory tree
+        let config_path = temp_dir.path().join(".translator.toml");
         std::fs::write(&config_path, "").expect("Failed to create empty config file");
 
         let loader = ConfigLoader::new();
@@ -344,7 +344,7 @@ directory = ".translator"
     #[test]
     fn test_find_project_config() {
         let temp_dir = TempDir::new().expect("Failed to create temp directory");
-        let config_path = temp_dir.path().join(".translator");
+        let config_path = temp_dir.path().join(".translator.toml");
 
         std::fs::write(&config_path, "").expect("Failed to write config file");
 
@@ -363,7 +363,7 @@ directory = ".translator"
     #[test]
     fn test_project_config_validation() {
         let temp_dir = TempDir::new().expect("Failed to create temp directory");
-        let config_path = temp_dir.path().join(".translator");
+        let config_path = temp_dir.path().join(".translator.toml");
 
         let config_content = r#"
 [translate]
@@ -385,7 +385,7 @@ target_lang = "AUTO"
     #[test]
     fn test_normalize_patterns() {
         let temp_dir = TempDir::new().expect("Failed to create temp directory");
-        let config_path = temp_dir.path().join(".translator");
+        let config_path = temp_dir.path().join(".translator.toml");
 
         let config_content = r#"
 [include]
