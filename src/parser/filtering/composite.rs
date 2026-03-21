@@ -1,22 +1,22 @@
 //! Composite filter module
 //!
-//! This module provides a composite filter that orchestrates all filter layers.
-//! Layers are applied in order of complexity for optimal performance.
+//! This module provides a composite filter that orchestrates all filter checks.
+//! Checks are applied in order of complexity for optimal performance.
 
 use crate::parser::filtering::config::FilterConfig;
-use crate::parser::filtering::layers::{BasicFilter, ContentFilter, LanguageFilter, PatternFilter};
+use crate::parser::filtering::checks::{LengthFilter, ContentFilter, LanguageFilter, PatternFilter};
 use crate::parser::filtering::traits::Filter;
 use tracing::debug;
 
-/// Composite filter that orchestrates all filter layers
+/// Composite filter that orchestrates all filter checks
 ///
-/// Layers are applied in order:
-/// 1. BasicFilter - O(1) checks (empty, length)
+/// Checks are applied in order:
+/// 1. LengthFilter - O(1) checks (empty, max length)
 /// 2. LanguageFilter - O(k) language detection
 /// 3. PatternFilter - O(n) regex matching
 /// 4. ContentFilter - O(len) content analysis
 pub struct CompositeFilter {
-    basic: BasicFilter,
+    length: LengthFilter,
     language: LanguageFilter,
     pattern: PatternFilter,
     content: ContentFilter,
@@ -26,7 +26,7 @@ impl CompositeFilter {
     /// Create a new composite filter
     pub fn new(config: FilterConfig) -> crate::core::error::Result<Self> {
         Ok(Self {
-            basic: BasicFilter::new(&config),
+            length: LengthFilter::new(&config),
             language: LanguageFilter::new(&config),
             pattern: PatternFilter::new(&config)?,
             content: ContentFilter::new(),
@@ -57,27 +57,27 @@ impl CompositeFilter {
 
 impl Filter for CompositeFilter {
     fn should_translate(&self, text: &str) -> bool {
-        // Layer 1: Basic checks (fastest)
-        if !self.basic.should_translate(text) {
+        // Check 1: Length checks (fastest)
+        if !self.length.should_translate(text) {
             return false;
         }
 
-        // Layer 2: Language detection
+        // Check 2: Language detection
         if !self.language.should_translate(text) {
             return false;
         }
 
-        // Layer 3: Pattern matching
+        // Check 3: Pattern matching
         if !self.pattern.should_translate(text) {
             return false;
         }
 
-        // Layer 4: Content analysis (slowest)
+        // Check 4: Content analysis (slowest)
         if !self.content.should_translate(text) {
             return false;
         }
 
-        debug!(text = %text, "Text passed all filter layers");
+        debug!(text = %text, "Text passed all filter checks");
         true
     }
 
@@ -89,7 +89,7 @@ impl Filter for CompositeFilter {
 impl std::fmt::Debug for CompositeFilter {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("CompositeFilter")
-            .field("layers", &vec!["Basic", "Language", "Pattern", "Content"])
+            .field("checks", &vec!["Length", "Language", "Pattern", "Content"])
             .finish()
     }
 }
@@ -159,12 +159,12 @@ mod tests {
     }
 
     #[test]
-    fn test_layer_ordering() {
-        // Empty text should be rejected by basic layer
+    fn test_check_ordering() {
+        // Empty text should be rejected by length check
         let filter = CompositeFilter::default().unwrap();
         assert!(!filter.should_translate(""));
 
-        // Keyword should be rejected by pattern layer
+        // Keyword should be rejected by pattern check
         assert!(!filter.should_translate("TODO"));
     }
 }

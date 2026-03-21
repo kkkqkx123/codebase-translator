@@ -1,26 +1,26 @@
 //! Content filtering module
 //!
 //! This module provides a layered filtering system for determining which content
-//! should be translated. The filtering is organized into multiple layers, each
+//! should be translated. The filtering is organized into multiple checks, each
 //! handling a specific aspect:
 //!
-//! # Filter Layers
+//! # Filter Checks
 //!
-//! 1. **Basic Layer** (`layers::basic`) - O(1) constant-time checks
+//! 1. **Length Check** (`checks::length`) - O(1) constant-time checks
 //!    - Empty text detection
-//!    - Length validation (min/max)
+//!    - Maximum length validation
 //!
-//! 2. **Language Layer** (`layers::language`) - O(k) quick detection
+//! 2. **Language Check** (`checks::language`) - O(k) quick detection
 //!    - Source language matching
 //!    - CJK character detection
 //!
-//! 3. **Pattern Layer** (`layers::pattern`) - O(n) regex matching
+//! 3. **Pattern Check** (`checks::pattern`) - O(n) regex matching
 //!    - Keyword exclusion
 //!    - Pattern exclusion/inclusion
 //!    - Placeholder detection
 //!    - Code pattern detection
 //!
-//! 4. **Content Layer** (`layers::content`) - O(len) deep analysis
+//! 4. **Content Check** (`checks::content`) - O(len) deep analysis
 //!    - Symbol-only text detection
 //!
 //! # Usage
@@ -37,7 +37,7 @@
 
 pub mod composite;
 pub mod config;
-pub mod layers;
+pub mod checks;
 pub mod traits;
 
 // Re-export main types
@@ -48,5 +48,5 @@ pub use composite::{
 pub use config::FilterConfig;
 pub use traits::Filter;
 
-// Re-export layers for advanced usage
-pub use layers::{BasicFilter, ContentFilter as ContentLayerFilter, LanguageFilter, PatternFilter};
+// Re-export checks for advanced usage
+pub use checks::{LengthFilter, ContentFilter as ContentCheckFilter, LanguageFilter, PatternFilter};

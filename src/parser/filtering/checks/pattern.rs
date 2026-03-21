@@ -1,6 +1,6 @@
-//! Pattern filter layer
+//! Pattern check
 //!
-//! Layer 3: Regex pattern matching (O(n) where n is number of patterns)
+//! Check 3: Regex pattern matching (O(n) where n is number of patterns)
 //! - Keyword exclusion
 //! - Pattern exclusion/inclusion
 //! - Placeholder detection
@@ -107,7 +107,7 @@ impl Filter for PatternFilter {
         // Exclude keywords check
         for pattern in &self.exclude_keywords_regex {
             if pattern.is_match(text) {
-                debug!(reason = "excluded_keyword", "Text filtered by pattern layer");
+                debug!(reason = "excluded_keyword", "Text filtered by pattern check");
                 return false;
             }
         }
@@ -115,7 +115,7 @@ impl Filter for PatternFilter {
         // Exclude patterns check
         for pattern in &self.exclude_patterns_regex {
             if pattern.is_match(text) {
-                debug!(reason = "excluded_pattern", "Text filtered by pattern layer");
+                debug!(reason = "excluded_pattern", "Text filtered by pattern check");
                 return false;
             }
         }
@@ -126,7 +126,7 @@ impl Filter for PatternFilter {
             if !included {
                 debug!(
                     reason = "not_in_include_patterns",
-                    "Text filtered by pattern layer"
+                    "Text filtered by pattern check"
                 );
                 return false;
             }
@@ -138,7 +138,7 @@ impl Filter for PatternFilter {
                 if pattern.is_match(text) {
                     debug!(
                         reason = "contains_placeholder",
-                        "Text filtered by pattern layer"
+                        "Text filtered by pattern check"
                     );
                     return false;
                 }
@@ -151,7 +151,7 @@ impl Filter for PatternFilter {
                 if pattern.is_match(text) {
                     debug!(
                         reason = "contains_code_pattern",
-                        "Text filtered by pattern layer"
+                        "Text filtered by pattern check"
                     );
                     return false;
                 }

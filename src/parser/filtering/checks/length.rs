@@ -1,20 +1,20 @@
-//! Basic filter layer
+//! Length check
 //!
-//! Layer 1: O(1) constant-time checks
-//! - Empty text check
+//! Check 1: O(1) constant-time checks
+//! - Empty text detection
 //! - Maximum length validation
 
 use crate::parser::filtering::config::FilterConfig;
 use crate::parser::filtering::traits::Filter;
 use tracing::debug;
 
-/// Basic filter for O(1) constant-time checks
-pub struct BasicFilter {
+/// Length filter for O(1) constant-time checks
+pub struct LengthFilter {
     max_length: usize,
 }
 
-impl BasicFilter {
-    /// Create a new basic filter
+impl LengthFilter {
+    /// Create a new length filter
     pub fn new(config: &FilterConfig) -> Self {
         Self {
             max_length: config.max_length,
@@ -22,11 +22,11 @@ impl BasicFilter {
     }
 }
 
-impl Filter for BasicFilter {
+impl Filter for LengthFilter {
     fn should_translate(&self, text: &str) -> bool {
         // Empty check
         if text.is_empty() {
-            debug!(reason = "empty", "Text filtered by basic layer");
+            debug!(reason = "empty", "Text filtered by length check");
             return false;
         }
 
@@ -37,7 +37,7 @@ impl Filter for BasicFilter {
                 length = len,
                 max_length = self.max_length,
                 reason = "too_long",
-                "Text filtered by basic layer"
+                "Text filtered by length check"
             );
             return false;
         }
@@ -46,7 +46,7 @@ impl Filter for BasicFilter {
     }
 
     fn name(&self) -> &str {
-        "BasicFilter"
+        "LengthFilter"
     }
 }
 
@@ -57,7 +57,7 @@ mod tests {
     #[test]
     fn test_empty_text() {
         let config = FilterConfig::default();
-        let filter = BasicFilter::new(&config);
+        let filter = LengthFilter::new(&config);
         assert!(!filter.should_translate(""));
     }
 
@@ -67,7 +67,7 @@ mod tests {
             max_length: 10,
             ..Default::default()
         };
-        let filter = BasicFilter::new(&config);
+        let filter = LengthFilter::new(&config);
 
         assert!(filter.should_translate("abc")); // short is ok
         assert!(filter.should_translate("abcdefghij")); // exact max
@@ -80,7 +80,7 @@ mod tests {
             max_length: 0,
             ..Default::default()
         };
-        let filter = BasicFilter::new(&config);
+        let filter = LengthFilter::new(&config);
 
         assert!(filter.should_translate("a"));
         assert!(filter.should_translate("this is a very long text that exceeds normal limits"));

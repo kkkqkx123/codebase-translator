@@ -1,6 +1,6 @@
-//! Content filter layer
+//! Content check
 //!
-//! Layer 4: Content analysis (O(len) - most expensive)
+//! Check 4: Content analysis (O(len) - most expensive)
 //! - Symbol-only text detection
 //! - Character type analysis
 
@@ -70,7 +70,7 @@ impl Filter for ContentFilter {
     fn should_translate(&self, text: &str) -> bool {
         // Symbol-only check
         if Self::is_only_symbols(text) {
-            debug!(reason = "only_symbols", "Text filtered by content layer");
+            debug!(reason = "only_symbols", "Text filtered by content check");
             return false;
         }
 

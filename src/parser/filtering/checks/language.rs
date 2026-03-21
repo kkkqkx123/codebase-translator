@@ -1,6 +1,6 @@
-//! Language filter layer
+//! Language check
 //!
-//! Layer 2: Quick language detection (O(k) where k=32)
+//! Check 2: Quick language detection (O(k) where k=32)
 //! - Source language matching
 //! - CJK character detection
 
@@ -28,7 +28,7 @@ impl LanguageFilter {
             matches!(c,
                 '\u{4E00}'..='\u{9FFF}' |  // CJK Unified Ideographs
                 '\u{3400}'..='\u{4DBF}' |  // CJK Extension A
-                '\u{20000}'..='\u{2A6DF}' | // CJK Extension B
+                '\u{20000}'..='\u{2A6DF}' |  // CJK Extension B
                 '\u{3040}'..='\u{309F}' |  // Hiragana
                 '\u{30A0}'..='\u{30FF}' |  // Katakana
                 '\u{AC00}'..='\u{D7AF}' |  // Hangul Syllables
@@ -81,7 +81,7 @@ impl Filter for LanguageFilter {
             debug!(
                 source_langs = ?self.source_langs,
                 reason = "no_target_language",
-                "Text filtered by language layer"
+                "Text filtered by language check"
             );
             return false;
         }
