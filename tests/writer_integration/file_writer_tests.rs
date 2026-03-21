@@ -275,13 +275,13 @@ async fn test_file_writer_set_preview_mode() {
     let config = WriterConfig::default();
     let writer = FileWriter::new(config);
 
-    assert_eq!(writer.config().await.unwrap().preview_only, false);
+    assert!(!writer.config().await.unwrap().preview_only);
 
     writer.set_preview_mode(true).await;
-    assert_eq!(writer.config().await.unwrap().preview_only, true);
+    assert!(writer.config().await.unwrap().preview_only);
 
     writer.set_preview_mode(false).await;
-    assert_eq!(writer.config().await.unwrap().preview_only, false);
+    assert!(!writer.config().await.unwrap().preview_only);
 }
 
 #[tokio::test]
@@ -289,13 +289,13 @@ async fn test_file_writer_set_backup_mode() {
     let config = WriterConfig::default();
     let writer = FileWriter::new(config);
 
-    assert_eq!(writer.config().await.unwrap().backup, true);
+    assert!(writer.config().await.unwrap().backup);
 
     writer.set_backup_mode(false).await;
-    assert_eq!(writer.config().await.unwrap().backup, false);
+    assert!(!writer.config().await.unwrap().backup);
 
     writer.set_backup_mode(true).await;
-    assert_eq!(writer.config().await.unwrap().backup, true);
+    assert!(writer.config().await.unwrap().backup);
 }
 
 #[tokio::test]

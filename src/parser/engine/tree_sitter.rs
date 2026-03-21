@@ -255,11 +255,7 @@ impl TreeSitterParser {
 
         // Check if they have the same indentation level (similar column position)
         // This prevents merging comments from different code blocks
-        let column_diff = if prev.start_pos.column > current.start_pos.column {
-            prev.start_pos.column - current.start_pos.column
-        } else {
-            current.start_pos.column - prev.start_pos.column
-        };
+        let column_diff = prev.start_pos.column.abs_diff(current.start_pos.column);
 
         // Allow small column differences (up to 4 spaces) but not large ones
         // This prevents merging comments from different nesting levels
@@ -312,10 +308,10 @@ impl TreeSitterParser {
         );
         let mut merged_unit = TranslationUnit::new_with_pattern(
             merged_id,
-            first.node_type.clone(),
+            first.node_type,
             merged_content,
-            first.start_pos.clone(),
-            last.end_pos.clone(),
+            first.start_pos,
+            last.end_pos,
             crate::core::models::PatternType::Builtin,
             String::new(),
         );
@@ -391,9 +387,7 @@ impl TreeSitterParser {
                     StrategyNodeType::DocString => {
                         // Clean doc comment markers
                         let trimmed = node_text.trim();
-                        if trimmed.starts_with("///") || trimmed.starts_with("//!") {
-                            processor.clean_comment(trimmed, CommentType::Doc)
-                        } else if trimmed.starts_with("/**") {
+                        if trimmed.starts_with("///") || trimmed.starts_with("//!") || trimmed.starts_with("/**") {
                             processor.clean_comment(trimmed, CommentType::Doc)
                         } else if trimmed.starts_with("/*") {
                             // Handle block comments that were mistakenly extracted as docstrings

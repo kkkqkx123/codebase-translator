@@ -1,5 +1,5 @@
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use tempfile::TempDir;
 
 use codebase_translate::{
@@ -56,7 +56,7 @@ region = "ap-guangzhou"
     config
 }
 
-fn create_test_files(temp_dir: &PathBuf) -> Result<Vec<PathBuf>> {
+fn create_test_files(temp_dir: &Path) -> Result<Vec<PathBuf>> {
     let files = vec![
         (
             "test1.rs",
@@ -128,11 +128,11 @@ fn test_reporter_integration_with_workflow() -> Result<()> {
 
     let result = workflow.execute()?;
 
-    assert!(result.files_processed >= 0, "Should process files");
+    assert!(result.files_processed > 0, "Should process files");
 
     let stats = reporter.get_stats();
-    assert!(stats.total_files >= 0);
-    assert!(stats.total_units >= 0, "Should have translation units");
+    assert!(stats.total_files > 0);
+    assert!(stats.total_units > 0, "Should have translation units");
 
     Ok(())
 }

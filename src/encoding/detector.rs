@@ -19,14 +19,18 @@ impl Detector {
     }
 
     pub fn with_encodings(encodings: Vec<String>) -> Self {
-        let mut config = DetectorConfig::default();
-        config.detect_encodings = encodings;
+        let config = DetectorConfig {
+            detect_encodings: encodings,
+            ..Default::default()
+        };
         Self::new(config)
     }
 
     pub fn with_min_confidence(min_confidence: f64) -> Self {
-        let mut config = DetectorConfig::default();
-        config.min_confidence = min_confidence;
+        let config = DetectorConfig {
+            min_confidence,
+            ..Default::default()
+        };
         Self::new(config)
     }
 

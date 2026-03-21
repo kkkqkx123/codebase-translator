@@ -274,7 +274,7 @@ impl<'a> FileProcessor<'a> {
             &file_hash,
             file_path.to_string_lossy(),
             modified_time,
-            &self.project_config.cache.mode.to_string(),
+            self.project_config.cache.mode.to_string(),
             "",
         );
         cache_entry.mark_as_translated();

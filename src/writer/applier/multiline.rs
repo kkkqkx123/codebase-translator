@@ -327,10 +327,10 @@ impl MultilineApplier {
 
         // If there's remaining translated content, append it before the closing triple quote
         if translated_idx < translated_content_lines.len() {
-            for i in translated_idx..translated_content_lines.len() {
+            for line in translated_content_lines.iter().skip(translated_idx) {
                 result.push('\n');
                 result.push_str(&content_indent);
-                result.push_str(translated_content_lines[i]);
+                result.push_str(line);
             }
         }
 

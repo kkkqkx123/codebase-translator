@@ -80,7 +80,7 @@ impl LLMTranslator {
             ));
         }
 
-        let timeout = Duration::from_secs(config.timeout.max(1).min(600));
+        let timeout = Duration::from_secs(config.timeout.clamp(1, 600));
 
         let client_builder = Client::builder()
             .timeout(timeout)

@@ -97,7 +97,7 @@ impl TencentTranslator {
             ));
         }
 
-        let timeout = Duration::from_secs(config.timeout.max(1).min(300));
+        let timeout = Duration::from_secs(config.timeout.clamp(1, 300));
 
         let client_builder = Client::builder()
             .timeout(timeout)

@@ -185,13 +185,7 @@ impl MultiTranslator {
             }
         }
 
-        for i in 0..total {
-            if !attempted.get(&i).copied().unwrap_or(false) {
-                return Some(i);
-            }
-        }
-
-        None
+        (0..total).find(|&i| !attempted.get(&i).copied().unwrap_or(false))
     }
 
     /// Weighted selection

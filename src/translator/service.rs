@@ -152,7 +152,7 @@ impl TranslationService {
             let batch_translator = batch_translator.clone();
             self.runtime.block_on(async move {
                 let result = batch_translator
-                    .translate_batch(&[text.clone()], &target_lang)
+                    .translate_batch(std::slice::from_ref(&text), &target_lang)
                     .await?;
                 if let Some(first) = result.results.first() {
                     Ok(first.translated_text.clone())

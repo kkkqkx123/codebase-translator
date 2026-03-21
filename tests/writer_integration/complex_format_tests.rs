@@ -113,7 +113,7 @@ async fn test_multiline_string_literal() {
     content.push_str("multiline\n");
     content.push_str("string literal\"#;\n");
     content.push_str("    println!(\"{}\", message);\n");
-    content.push_str("}");
+    content.push('}');
 
     let file = create_test_file(&temp_path, "multiline_string.rs", &content).await;
 

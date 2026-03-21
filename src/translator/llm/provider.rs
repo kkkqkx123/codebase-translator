@@ -286,38 +286,38 @@ pub trait Provider: Send + Sync {
 /// This enum provides static dispatch for all provider implementations,
 #[derive(Clone, Debug)]
 pub enum ProviderImpl {
-    LLM(LLMProvider),
+    Llm(LLMProvider),
 }
 
 #[async_trait]
 impl Provider for ProviderImpl {
     fn id(&self) -> &str {
         match self {
-            Self::LLM(p) => p.id(),
+            Self::Llm(p) => p.id(),
         }
     }
 
     fn weight(&self) -> u32 {
         match self {
-            Self::LLM(p) => p.weight(),
+            Self::Llm(p) => p.weight(),
         }
     }
 
     async fn is_healthy(&self) -> bool {
         match self {
-            Self::LLM(p) => p.is_healthy().await,
+            Self::Llm(p) => p.is_healthy().await,
         }
     }
 
     async fn mark_healthy(&self) {
         match self {
-            Self::LLM(p) => p.mark_healthy().await,
+            Self::Llm(p) => p.mark_healthy().await,
         }
     }
 
     async fn mark_unhealthy(&self) {
         match self {
-            Self::LLM(p) => p.mark_unhealthy().await,
+            Self::Llm(p) => p.mark_unhealthy().await,
         }
     }
 
@@ -328,25 +328,25 @@ impl Provider for ProviderImpl {
         target_lang: &str,
     ) -> Result<TranslateResponse> {
         match self {
-            Self::LLM(p) => p.translate(text, source_lang, target_lang).await,
+            Self::Llm(p) => p.translate(text, source_lang, target_lang).await,
         }
     }
 
     async fn health_check(&self) -> Result<()> {
         match self {
-            Self::LLM(p) => p.health_check().await,
+            Self::Llm(p) => p.health_check().await,
         }
     }
 
     async fn close(&self) -> Result<()> {
         match self {
-            Self::LLM(p) => p.close().await,
+            Self::Llm(p) => p.close().await,
         }
     }
 
     fn translator(&self) -> &Arc<LLMTranslator> {
         match self {
-            Self::LLM(p) => p.translator(),
+            Self::Llm(p) => p.translator(),
         }
     }
 }

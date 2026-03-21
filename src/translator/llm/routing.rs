@@ -29,7 +29,7 @@ pub struct CapacityProvider {
 impl CapacityProvider {
     /// Create a new capacity-aware provider wrapper
     pub fn new(config: &LLMProviderConfig) -> Result<Self> {
-        let provider = Arc::new(ProviderImpl::LLM(LLMProvider::new(config)?));
+        let provider = Arc::new(ProviderImpl::Llm(LLMProvider::new(config)?));
         let max_chars = provider.translator().max_input_chars();
 
         Ok(Self {

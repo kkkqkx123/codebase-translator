@@ -56,7 +56,7 @@ fn test_include_single_extension() {
             entry
                 .relative_path
                 .extension()
-                .map_or(false, |ext| ext == "rs"),
+                .is_some_and(|ext| ext == "rs"),
             "All files should have .rs extension"
         );
     }
@@ -201,7 +201,7 @@ fn test_recursive_pattern() {
             entry
                 .relative_path
                 .extension()
-                .map_or(false, |ext| ext == "rs"),
+                .is_some_and(|ext| ext == "rs"),
             "All files should have .rs extension"
         );
     }

@@ -2,7 +2,7 @@
 
 use codebase_translate::core::models::{File, NodeType, Position, TranslationUnit};
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 const OUTPUT_DIR: &str = "tests/writer_integration/output";
 
@@ -26,7 +26,7 @@ pub fn write_output(filename: &str, content: &str) {
 }
 
 /// Create a test file with given content
-pub async fn create_test_file(dir: &PathBuf, name: &str, content: &str) -> File {
+pub async fn create_test_file(dir: &Path, name: &str, content: &str) -> File {
     let file_path = dir.join(name);
     tokio::fs::write(&file_path, content)
         .await
@@ -87,13 +87,6 @@ pub async fn read_file_content(path: &PathBuf) -> String {
     tokio::fs::read_to_string(path)
         .await
         .expect("Failed to read file")
-}
-
-/// Clean up test files
-pub async fn cleanup_test_files(files: Vec<PathBuf>) {
-    for file in files {
-        let _ = tokio::fs::remove_file(&file).await;
-    }
 }
 
 /// Create a temporary directory for testing

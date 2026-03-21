@@ -1,5 +1,5 @@
 use clap::Parser;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use tracing::{debug, info, warn};
 
 use crate::{
@@ -74,7 +74,7 @@ fn execute_clean_command(project_config: &ProjectConfig, args: &CleanArgs) -> Re
 fn clean_cache_files(
     project_config: &ProjectConfig,
     args: &CleanArgs,
-    current_dir: &PathBuf,
+    current_dir: &Path,
 ) -> Result<()> {
     info!("Cleaning cache files...");
 
@@ -117,7 +117,7 @@ fn clean_cache_files(
 fn clean_backup_files(
     project_config: &ProjectConfig,
     args: &CleanArgs,
-    current_dir: &PathBuf,
+    current_dir: &Path,
 ) -> Result<()> {
     info!("Cleaning backup files...");
 
@@ -187,7 +187,7 @@ fn find_backup_files(dir: &PathBuf) -> Result<Vec<PathBuf>> {
 fn filter_by_age(
     entries: &[crate::core::models::CacheEntryInfo],
     older_than_days: Option<u32>,
-    cache_dir: &PathBuf,
+    cache_dir: &Path,
 ) -> Result<Vec<crate::core::models::CacheEntryInfo>> {
     if older_than_days.is_none() {
         return Ok(entries.to_vec());

@@ -5,7 +5,7 @@
 
 use codebase_translate::core::models::{File, NodeType, Position, TranslationUnit};
 use codebase_translate::writer::{FileWriter, WriterConfig};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use tempfile::TempDir;
 
 const OUTPUT_DIR: &str = "tests/writer_integration/output";
@@ -21,7 +21,7 @@ fn write_output(filename: &str, content: &str) {
     println!("Output written to: {}", output_path.display());
 }
 
-async fn create_test_file(dir: &PathBuf, name: &str, content: &str) -> File {
+async fn create_test_file(dir: &Path, name: &str, content: &str) -> File {
     let file_path = dir.join(name);
     tokio::fs::write(&file_path, content)
         .await

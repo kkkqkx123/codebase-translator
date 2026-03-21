@@ -733,9 +733,11 @@ mod tests {
 
     #[test]
     fn test_validate_empty_providers() {
-        let mut config = GlobalConfig::default();
-        config.enabled_providers = Vec::new();
-        config.provider = ProviderType::LLM;
+        let mut config = GlobalConfig {
+            enabled_providers: Vec::new(),
+            provider: ProviderType::LLM,
+            ..Default::default()
+        };
         config.llm.providers = Vec::new();
 
         let result = config.validate();
@@ -747,8 +749,10 @@ mod tests {
 
     #[test]
     fn test_validate_invalid_provider() {
-        let mut config = GlobalConfig::default();
-        config.enabled_providers = vec!["invalid".to_string()];
+        let mut config = GlobalConfig {
+            enabled_providers: vec!["invalid".to_string()],
+            ..Default::default()
+        };
 
         let result = config.validate();
         assert!(result.is_err());
@@ -883,12 +887,17 @@ mod tests {
 
     #[test]
     fn test_get_enabled_providers() {
-        let mut config = GlobalConfig::default();
-        config.enabled_providers = vec!["deeplx".to_string(), "llm".to_string()];
+        let config = GlobalConfig {
+            enabled_providers: vec!["deeplx".to_string(), "llm".to_string()],
+            ..Default::default()
+        };
         let providers = config.get_enabled_providers();
         assert_eq!(providers, vec!["deeplx", "llm"]);
 
-        config.enabled_providers = Vec::new();
+        let config = GlobalConfig {
+            enabled_providers: Vec::new(),
+            ..Default::default()
+        };
         let providers = config.get_enabled_providers();
         assert_eq!(providers, vec!["deeplx"]);
     }

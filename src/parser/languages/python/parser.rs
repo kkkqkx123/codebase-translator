@@ -60,13 +60,12 @@ impl PythonParser {
             .trim_start()
             .trim_end_matches(|c: char| c.is_whitespace() && c != '\n');
 
-        let content = if trimmed.starts_with("\"\"\"") && trimmed.ends_with("\"\"\"") {
+        let content = if (trimmed.starts_with("\"\"\"") && trimmed.ends_with("\"\"\"")) 
+            || (trimmed.starts_with("'''") && trimmed.ends_with("'''")) {
             &trimmed[3..trimmed.len() - 3]
-        } else if trimmed.starts_with("'''") && trimmed.ends_with("'''") {
-            &trimmed[3..trimmed.len() - 3]
-        } else if trimmed.starts_with('"') && trimmed.ends_with('"') && trimmed.len() > 1 {
-            &trimmed[1..trimmed.len() - 1]
-        } else if trimmed.starts_with('\'') && trimmed.ends_with('\'') && trimmed.len() > 1 {
+        } else if (trimmed.starts_with('"') || trimmed.starts_with('\'')) 
+            && (trimmed.ends_with('"') || trimmed.ends_with('\'')) 
+            && trimmed.len() > 1 {
             &trimmed[1..trimmed.len() - 1]
         } else {
             return CleanedString {

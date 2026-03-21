@@ -69,7 +69,7 @@ impl ProviderPool {
         let mut total_weight = 0u32;
 
         for provider_config in configs {
-            let provider = Arc::new(ProviderImpl::LLM(LLMProvider::new(provider_config)?));
+            let provider = Arc::new(ProviderImpl::Llm(LLMProvider::new(provider_config)?));
             total_weight += provider.weight();
             providers.push(provider);
         }
