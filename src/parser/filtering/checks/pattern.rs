@@ -148,6 +148,11 @@ impl Filter for PatternFilter {
         // Code pattern check
         if self.detect_code_patterns {
             for pattern in &self.code_pattern_regex {
+                // Skip brace pattern check when placeholders are allowed
+                // since braces like {name} are commonly used as placeholders
+                if self.allow_placeholders && pattern.as_str() == r"\{[^}]*\}" {
+                    continue;
+                }
                 if pattern.is_match(text) {
                     debug!(
                         reason = "contains_code_pattern",

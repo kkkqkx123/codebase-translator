@@ -426,7 +426,8 @@ mod tests {
     use super::*;
     use crate::core::models::NodeType;
     use crate::parser::filtering::FilterConfig;
-    use crate::parser::abstraction::strategy::{ConfigBasedStrategy, ExtractionConfig};
+    use crate::parser::abstraction::strategy::ExtractionConfig;
+    use crate::parser::core::strategies::ConfigBasedStrategy;
     use std::path::PathBuf;
 
     fn create_test_file(content: &str, path: &str) -> File {
