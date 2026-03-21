@@ -6,14 +6,15 @@
 use std::path::PathBuf;
 
 use codebase_translate::config::project::{
-    CustomRegexPattern, ExtractionConfig, ExtractionRule, PatternState, StateMachinePattern,
+    CustomRegexPattern, ExtractionConfig as ProjectExtractionConfig, ExtractionRule, PatternState, StateMachinePattern,
     StateTransition, StringLiteralCategory,
 };
 use codebase_translate::core::models::File;
-use codebase_translate::parser::abstraction::filter::{ContentFilter, FilterConfig};
+use codebase_translate::parser::filtering::{ContentFilter, FilterConfig, default_filter};
 use codebase_translate::parser::coordinator::ParserCoordinator;
 use codebase_translate::parser::engine::ParserConfig;
-use codebase_translate::parser::abstraction::strategy;
+use codebase_translate::parser::core::strategies::{ConfigBasedStrategy, ExtractionStrategyImpl};
+use codebase_translate::parser::abstraction::strategy::ExtractionConfig;
 
 fn create_test_file(content: &str, path: &str) -> File {
     File::new(PathBuf::from(path), content.as_bytes().to_vec(), "utf-8")
@@ -29,16 +30,18 @@ fn test_custom_pattern_applied_to_tree_sitter_files() {
         group: 1,
     }];
 
-    let extraction_config = ExtractionConfig {
+    let project_extraction_config = ProjectExtractionConfig {
         custom_patterns,
         ..Default::default()
     };
 
     let coordinator = ParserCoordinator::with_extraction_config(
         ParserConfig::default(),
-        std::sync::Arc::new(strategy::default_strategy()),
-        std::sync::Arc::new(ContentFilter::new(FilterConfig::default()).unwrap()),
-        Some(extraction_config),
+        std::sync::Arc::new(ExtractionStrategyImpl::ConfigBased(
+            ConfigBasedStrategy::new(ExtractionConfig::default()),
+        )),
+        std::sync::Arc::new(default_filter().unwrap()),
+        Some(project_extraction_config),
     )
     .unwrap();
 
@@ -78,16 +81,18 @@ fn test_custom_pattern_applied_to_regex_parser_files() {
         group: 1,
     }];
 
-    let extraction_config = ExtractionConfig {
+    let project_extraction_config = ProjectExtractionConfig {
         custom_patterns,
         ..Default::default()
     };
 
     let coordinator = ParserCoordinator::with_extraction_config(
         ParserConfig::default(),
-        std::sync::Arc::new(strategy::default_strategy()),
-        std::sync::Arc::new(ContentFilter::new(FilterConfig::default()).unwrap()),
-        Some(extraction_config),
+        std::sync::Arc::new(ExtractionStrategyImpl::ConfigBased(
+            ConfigBasedStrategy::new(ExtractionConfig::default()),
+        )),
+        std::sync::Arc::new(default_filter().unwrap()),
+        Some(project_extraction_config),
     )
     .unwrap();
 
@@ -139,16 +144,18 @@ fn test_state_machine_applied_to_tree_sitter_files() {
         accepting_states: vec!["extract".to_string()],
     }];
 
-    let extraction_config = ExtractionConfig {
+    let project_extraction_config = ProjectExtractionConfig {
         state_machine_patterns,
         ..Default::default()
     };
 
     let coordinator = ParserCoordinator::with_extraction_config(
         ParserConfig::default(),
-        std::sync::Arc::new(strategy::default_strategy()),
-        std::sync::Arc::new(ContentFilter::new(FilterConfig::default()).unwrap()),
-        Some(extraction_config),
+        std::sync::Arc::new(ExtractionStrategyImpl::ConfigBased(
+            ConfigBasedStrategy::new(ExtractionConfig::default()),
+        )),
+        std::sync::Arc::new(default_filter().unwrap()),
+        Some(project_extraction_config),
     )
     .unwrap();
 
@@ -210,7 +217,7 @@ fn test_both_patterns_applied_to_same_file() {
         accepting_states: vec!["extract".to_string()],
     }];
 
-    let extraction_config = ExtractionConfig {
+    let project_extraction_config = ProjectExtractionConfig {
         custom_patterns,
         state_machine_patterns,
         ..Default::default()
@@ -218,9 +225,11 @@ fn test_both_patterns_applied_to_same_file() {
 
     let coordinator = ParserCoordinator::with_extraction_config(
         ParserConfig::default(),
-        std::sync::Arc::new(strategy::default_strategy()),
-        std::sync::Arc::new(ContentFilter::new(FilterConfig::default()).unwrap()),
-        Some(extraction_config),
+        std::sync::Arc::new(ExtractionStrategyImpl::ConfigBased(
+            ConfigBasedStrategy::new(ExtractionConfig::default()),
+        )),
+        std::sync::Arc::new(default_filter().unwrap()),
+        Some(project_extraction_config),
     )
     .unwrap();
 
@@ -262,16 +271,18 @@ fn test_pattern_with_wildcard_extension() {
         group: 1,
     }];
 
-    let extraction_config = ExtractionConfig {
+    let project_extraction_config = ProjectExtractionConfig {
         custom_patterns,
         ..Default::default()
     };
 
     let coordinator = ParserCoordinator::with_extraction_config(
         ParserConfig::default(),
-        std::sync::Arc::new(strategy::default_strategy()),
-        std::sync::Arc::new(ContentFilter::new(FilterConfig::default()).unwrap()),
-        Some(extraction_config),
+        std::sync::Arc::new(ExtractionStrategyImpl::ConfigBased(
+            ConfigBasedStrategy::new(ExtractionConfig::default()),
+        )),
+        std::sync::Arc::new(default_filter().unwrap()),
+        Some(project_extraction_config),
     )
     .unwrap();
 

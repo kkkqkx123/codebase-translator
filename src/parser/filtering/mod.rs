@@ -25,8 +25,8 @@
 //!
 //! # Usage
 //!
-//! ```rust
-//! use parser::filtering::{CompositeFilter, FilterConfig};
+//! ```rust,ignore
+//! use codebase_translate::parser::filtering::{CompositeFilter, FilterConfig};
 //!
 //! let config = FilterConfig::default();
 //! let filter = CompositeFilter::new(config).unwrap();

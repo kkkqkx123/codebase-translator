@@ -1,9 +1,10 @@
 //! Go parser integration tests for writer
 
-use codebase_translate::parser::abstraction::filter::{ContentFilter, FilterConfig};
-use codebase_translate::parser::abstraction::strategy::{
-    ConfigBasedStrategy, ExtractionConfig, ExtractionStrategyImpl,
+use codebase_translate::parser::filtering::{ContentFilter, FilterConfig};
+use codebase_translate::parser::core::strategies::{
+    ConfigBasedStrategy, ExtractionStrategyImpl,
 };
+use codebase_translate::parser::abstraction::strategy::ExtractionConfig;
 use codebase_translate::parser::engine::{ParserConfig, TreeSitterParserFactory};
 use codebase_translate::parser::Parser;
 use codebase_translate::writer::{FileWriter, WriterConfig};
