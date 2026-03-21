@@ -30,8 +30,8 @@ Total files: 1
 Total matches: 11
 
 Patterns used:
-  - : 2
   - rust: 9
+  - : 2
 
 By category:
   - variables: 8

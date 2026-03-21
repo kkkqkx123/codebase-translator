@@ -5,12 +5,12 @@ Translation completed successfully!
 
 Files processed: 4
 Total files: 4
-Total units: 30
-Translated units: 30
+Total units: 25
+Translated units: 25
 Cached files: 0
 Skipped units: 0
 Errors: 0
-Duration: 35.17s
+Duration: 33.74s
 
 
 Directory Contents:
@@ -26,9 +26,9 @@ Directory Contents:
 Translated Files:
 ==================
 
---- C:\Users\33530\AppData\Local\Temp\.tmp3naTM8\simple_javascript.js ---
-// This is a simple JavaScript file to test the translation function// This is a simple JavaScript file to test the translation function
-// Includes notes in Chinese// Includes notes in Chinese
+--- C:\Users\33530\AppData\Local\Temp\.tmpqi9ksc\simple_javascript.js ---
+// This is a simple JavaScript file to test the translation function
+// Includes Chinese comments
 
 /**
  * 计算两个数的和
@@ -50,7 +50,7 @@ function subtract(a, b) {
     return a - b;
 }
 
-// simple class// simple class
+// simple class
 class Calculator {
     /**
      * 创建计算器实例
@@ -69,7 +69,7 @@ class Calculator {
     }
 }
 
-// main function// main function
+// main function
 function main() {
     console.log("测试翻译功能");
     const result = add(10, 20);
@@ -78,7 +78,7 @@ function main() {
 
 main();
 
---- C:\Users\33530\AppData\Local\Temp\.tmp3naTM8\simple_markdown.md ---
+--- C:\Users\33530\AppData\Local\Temp\.tmpqi9ksc\simple_markdown.md ---
 # Testing the translation function
 
 这是一个简单的Markdown文件，用于测试翻译功能。
@@ -88,7 +88,8 @@ main();
 
 本工具可以自动翻译代码注释和文档字符串。
 
-## Languages supported
+#
+### Languages supported
 
 - Rust
 - Python
@@ -96,7 +97,8 @@ main();
 - Go
 - Java
 
-## Usage
+#
+### Usage
 
 1. 配置翻译服务
 2. 运行翻译命令
@@ -124,7 +126,7 @@ fn main() {
 - [项目主页](https://github.com/example/translator)
 - [文档](https://docs.example.com)
 
---- C:\Users\33530\AppData\Local\Temp\.tmp3naTM8\simple_python.py ---
+--- C:\Users\33530\AppData\Local\Temp\.tmpqi9ksc\simple_python.py ---
 # This is a simple Python file to test the translation function
 # Contains Chinese comments and document strings
 
@@ -175,7 +177,7 @@ if __name__ == "__main__":
     result = add(10, 20)
     print(f"结果: {result}")
 
---- C:\Users\33530\AppData\Local\Temp\.tmp3naTM8\simple_rust.rs ---
+--- C:\Users\33530\AppData\Local\Temp\.tmpqi9ksc\simple_rust.rs ---
 // This is a simple Rust file for testing translation functionality
 // Contains Chinese comments and document strings
 

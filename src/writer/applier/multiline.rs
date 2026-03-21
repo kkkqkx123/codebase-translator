@@ -170,6 +170,16 @@ impl MultilineApplier {
             return translated.to_string();
         }
 
+        // Check if this is a Python docstring (starts with """ or ''')
+        let is_python_docstring = raw_lines.first().map(|line| {
+            let trimmed = line.trim_start();
+            trimmed.starts_with("\"\"\"") || trimmed.starts_with("'''")
+        }).unwrap_or(false);
+
+        if is_python_docstring {
+            return Self::format_python_docstring(raw_lines, translated_lines, translated);
+        }
+
         if raw_lines.len() == translated_lines.len() {
             let mut result = String::new();
             for (i, raw_line) in raw_lines.iter().enumerate() {
@@ -247,6 +257,102 @@ impl MultilineApplier {
 
             result
         }
+    }
+
+    /// Format Python docstring preserving triple quotes and indentation
+    fn format_python_docstring(
+        raw_lines: &[&str],
+        translated_lines: &[&str],
+        _translated: &str,
+    ) -> String {
+        let mut result = String::new();
+
+        // Determine the base indentation from the opening triple quote line
+        let base_indent = raw_lines.first().map(|line| {
+            let trimmed = line.trim_start();
+            let leading_whitespace = &line[..(line.len() - trimmed.len())];
+            leading_whitespace.to_string()
+        }).unwrap_or_default();
+
+        // Determine the content indentation (from the first non-empty content line)
+        let content_indent = raw_lines.iter().skip(1).find(|line| {
+            let trimmed = line.trim();
+            !trimmed.is_empty() && !trimmed.starts_with("\"\"\"") && !trimmed.starts_with("'''")
+        }).map(|line| {
+            let trimmed = line.trim_start();
+            let leading_whitespace = &line[..(line.len() - trimmed.len())];
+            leading_whitespace.to_string()
+        }).unwrap_or_else(|| base_indent.clone() + "    ");
+
+        // Filter out empty lines from translated_lines to get only content lines
+        let translated_content_lines: Vec<&str> = translated_lines.iter()
+            .filter(|line| !line.trim().is_empty())
+            .copied()
+            .collect();
+
+        // Count content lines in raw (excluding triple quotes and empty lines)
+        let raw_content_line_count = raw_lines.iter()
+            .filter(|line| {
+                let trimmed = line.trim();
+                let trimmed_start = line.trim_start();
+                !trimmed.is_empty()
+                    && !trimmed_start.starts_with("\"\"\"")
+                    && !trimmed_start.starts_with("'''")
+            })
+            .count();
+
+        // Check if the number of content lines matches
+        let line_counts_match = raw_content_line_count == translated_content_lines.len();
+
+        // Build the result
+        let mut translated_idx = 0;
+
+        for (i, raw_line) in raw_lines.iter().enumerate() {
+            let trimmed = raw_line.trim();
+            let trimmed_start = raw_line.trim_start();
+
+            let is_triple_quote = trimmed_start.starts_with("\"\"\"") || trimmed_start.starts_with("'''");
+            let is_empty = trimmed.is_empty();
+
+            if is_triple_quote {
+                // Preserve triple quote line with its original indentation
+                result.push_str(raw_line);
+            } else if is_empty {
+                // Preserve empty lines with original indentation
+                result.push_str(raw_line);
+            } else {
+                // This is a content line with actual text
+                if line_counts_match && translated_idx < translated_content_lines.len() {
+                    // Line counts match - use corresponding translated content line
+                    result.push_str(&content_indent);
+                    result.push_str(translated_content_lines[translated_idx]);
+                    translated_idx += 1;
+                } else if translated_idx < translated_content_lines.len() {
+                    // Line count mismatch - use sequential mapping
+                    result.push_str(&content_indent);
+                    result.push_str(translated_content_lines[translated_idx]);
+                    translated_idx += 1;
+                } else {
+                    // No more translated content, preserve original line
+                    result.push_str(raw_line);
+                }
+            }
+
+            if i < raw_lines.len() - 1 {
+                result.push('\n');
+            }
+        }
+
+        // If there's remaining translated content, append it before the closing triple quote
+        if translated_idx < translated_content_lines.len() {
+            for i in translated_idx..translated_content_lines.len() {
+                result.push('\n');
+                result.push_str(&content_indent);
+                result.push_str(translated_content_lines[i]);
+            }
+        }
+
+        result
     }
 }
 

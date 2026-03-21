@@ -17,9 +17,9 @@ Second Translation Run (should use cache):
 ==========================================
 Files processed: 1
 Total files: 1
-Total units: 8
-Translated units: 8
+Total units: 5
+Translated units: 5
 Cached files: 0
 Skipped units: 0
 Errors: 0
-Duration: 11.73s
+Duration: 5.83s

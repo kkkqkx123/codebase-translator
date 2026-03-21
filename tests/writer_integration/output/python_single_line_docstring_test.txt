@@ -1,0 +1,18 @@
+Test: Python Single Line Docstring
+===================================
+
+Original content:
+class Calculator:
+    """简单的计算器类"""
+    
+    def __init__(self, name):
+        pass
+
+
+Written content:
+class Calculator:
+    """Simple Calculator Class""")器类"""
+    
+    def __init__(self, name):
+        pass
+

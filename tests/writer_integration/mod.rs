@@ -8,6 +8,7 @@ pub mod debug_parser;
 pub mod doc_comment_newline_issue;
 pub mod file_writer_tests;
 pub mod go_parser_tests;
+pub mod python_docstring_tests;
 pub mod raw_match_tests;
 pub mod test_chinese_replacement;
 pub mod translation_applier_tests;

@@ -1,0 +1,64 @@
+Test: Python Docstring Format Preservation
+===========================================
+
+Original content:
+def add(a, b):
+    """
+    计算两个数的和
+    
+    Args:
+        a: 第一个数字
+        b: 第二个数字
+    
+    Returns:
+        两个数的和
+    """
+    return a + b
+
+
+Written content:
+def add(a, b):
+    """
+    Compute the sum of two numbers
+    
+    Args:
+        a: first number
+        b: second number
+    
+    Returns:
+        The sum of the two numbers
+    """
+    return a + b
+
+
+Raw match used:
+    """
+    计算两个数的和
+    
+    Args:
+        a: 第一个数字
+        b: 第二个数字
+    
+    Returns:
+        两个数的和
+    """
+
+Extracted content:
+计算两个数的和
+
+Args:
+    a: 第一个数字
+    b: 第二个数字
+
+Returns:
+    两个数的和
+
+Translated content:
+Compute the sum of two numbers
+
+Args:
+    a: first number
+    b: second number
+
+Returns:
+    The sum of the two numbers

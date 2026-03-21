@@ -1,0 +1,18 @@
+Test: Python Multiline Comment
+===============================
+
+Original content:
+# 这是一个简单的Python文件，用于测试翻译功能
+# 包含中文注释和文档字符串
+
+def hello():
+    pass
+
+
+Written content:
+# This is a simple Python file for testing translation
+# Contains Chinese comments and docstrings
+
+def hello():
+    pass
+
