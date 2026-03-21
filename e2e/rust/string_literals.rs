@@ -1,4 +1,4 @@
-// 用于测试的 Rust 字符串字面量
+// Rust String Literals for Testing
 fn main() {
     let message = "Hello, world!";
     let greeting = "Welcome to the application";

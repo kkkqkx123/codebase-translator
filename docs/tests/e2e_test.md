@@ -1,1 +1,1 @@
-.\bin\translator.exe translate e2e --target-lang en
+.\translator.exe translate e2e --target-lang en

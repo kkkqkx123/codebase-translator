@@ -1,4 +1,4 @@
-// 用于测试的 JavaScript 字符串字面量
+// JavaScript string literals for testing
 const message = "Hello, world!";
 const greeting = "Welcome to the application";
 const error_msg = "An error occurred while processing";

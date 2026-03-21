@@ -1,9 +1,9 @@
-// 用于语言过滤测试的混合内容 Rust 文件
+// Mixed Content Rust Files for Language Filtering Testing
 
-// 这是一条英语评论
+// This is an English comment.
 const ENGLISH_CONST: i32 = 42;
 
-// 这是一个中文注释
+// This is a Chinese note
 const CHINESE_CONST: i32 = 100;
 
 /*
@@ -23,13 +23,13 @@ fn chinese_function() {
 }
 
 fn mixed_function() {
-    // 带有一些中文词汇的英文评论
+    // English comments with some Chinese words
     let message = "Hello 世界";
-    // 带有一些中文词汇的英文评论
+    // English comments with some Chinese words
     
-    // 带英文单词的中文评论
+    // Chinese reviews with English words
     let greeting = "你好 World";
-    // 带英文单词的中文评论
+    // Chinese reviews with English words
 }
 
 /// English documentation comment

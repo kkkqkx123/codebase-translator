@@ -1,4 +1,4 @@
-# 用于测试的 Python 字符串字面量
+# Python String Literals for Testing
 
 MESSAGE = "Hello, world!"
 GREETING = "Welcome to the application"

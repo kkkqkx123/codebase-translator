@@ -1,5 +1,5 @@
-# 字符串格式保存测试文件
-# 该文件用于测试各种 Python 字符串字面类型
+# Save test file in string format
+# This file is used to test various Python string literal types
 
 def test_regular_strings():
     s1 = "Hello, world!"

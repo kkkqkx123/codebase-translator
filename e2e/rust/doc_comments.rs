@@ -1,18 +1,18 @@
-// 用于测试的 Rust 文档注释
+// Rust documentation comments for testing
 
-/// 这是模块级文档注释
-/// 这是结构文档注释
-/// 字段文档
+/// This is a module-level documentation note
+/// This is the structure document annotation
+/// Field Documentation
         pub value: i32,
     }
     
     impl Example {
-        /// 创建一个新的示例实例
+        /// Create a new example instance
         pub fn new(value: i32) -> Self {
             Example { value }
         }
         
-        /// 返回值
+        /// return value
         pub fn get_value(&self) -> i32 {
             self.value
         }
