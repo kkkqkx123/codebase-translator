@@ -123,7 +123,7 @@ pub fn resolve_cache_dir(
             let project_id = generate_project_id(project_dir);
             global_dir.join(project_id).join("translator")
         }
-        crate::core::models::CacheMode::Local => project_dir.join(".translator").join("cache"),
+        crate::core::models::CacheMode::Local => project_dir.join(".translator"),
     }
 }
 

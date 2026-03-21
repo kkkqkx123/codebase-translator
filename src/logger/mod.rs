@@ -12,7 +12,7 @@ use crate::core::error::{Result, TranslateError};
 
 mod config;
 
-pub use config::{get_format_string, get_output_string, parse_level, validate_config};
+pub use config::{get_format_string, get_log_file_path, get_output_string, parse_level, validate_config};
 
 /// Global guard to keep the log appender alive
 pub static LOG_GUARD: OnceLock<Box<dyn std::any::Any + Send + Sync>> = OnceLock::new();
@@ -123,11 +123,8 @@ fn init_stderr_logger(filter: EnvFilter, format: &str) -> Result<()> {
 
 /// Initialize file logger
 fn init_file_logger(config: &LoggingConfig, filter: EnvFilter, format: &str) -> Result<()> {
-    let file_path = config
-        .file
-        .as_ref()
-        .map(Path::new)
-        .ok_or_else(|| TranslateError::Config("Log file path not specified".to_string()))?;
+    let file_path_str = get_log_file_path(config);
+    let file_path = Path::new(&file_path_str);
 
     if let Some(parent) = file_path.parent() {
         std::fs::create_dir_all(parent)?;
@@ -233,7 +230,8 @@ mod tests {
     #[test]
     fn test_validate_config_file_without_path() {
         let config = create_test_config("info", "file", "pretty", None);
-        assert!(validate_config(&config).is_err());
+        // Now file output without explicit path uses default, so validation passes
+        assert!(validate_config(&config).is_ok());
     }
 
     #[test]

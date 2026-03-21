@@ -59,7 +59,7 @@ fn default_cache_enabled() -> bool {
 }
 
 fn default_cache_dir() -> String {
-    ".translator/cache".to_string()
+    ".translator".to_string()
 }
 
 fn default_cache_format() -> String {

@@ -3,7 +3,7 @@
 use tracing::Level;
 
 use crate::config::global::LoggingConfig;
-use crate::core::error::{Result, TranslateError};
+use crate::core::error::Result;
 
 /// Parse log level string to tracing::Level
 pub fn parse_level(level: &str) -> Level {
@@ -17,17 +17,22 @@ pub fn parse_level(level: &str) -> Level {
     }
 }
 
+/// Default log file path
+pub const DEFAULT_LOG_FILE: &str = ".translator/translator.log";
+
 /// Validate logging configuration
 pub fn validate_config(config: &LoggingConfig) -> Result<()> {
     parse_level(&config.level);
 
-    if config.output == "file" && config.file.is_none() {
-        return Err(TranslateError::Config(
-            "Log file path must be specified when output is 'file'".to_string(),
-        ));
-    }
-
     Ok(())
+}
+
+/// Get log file path with default fallback
+pub fn get_log_file_path(config: &LoggingConfig) -> String {
+    config
+        .file
+        .clone()
+        .unwrap_or_else(|| DEFAULT_LOG_FILE.to_string())
 }
 
 /// Get the output format string
@@ -84,7 +89,32 @@ mod tests {
             file: None,
         };
 
-        assert!(validate_config(&config).is_err());
+        // Now file output without explicit path uses default, so validation passes
+        assert!(validate_config(&config).is_ok());
+    }
+
+    #[test]
+    fn test_get_log_file_path_default() {
+        let config = LoggingConfig {
+            level: "info".to_string(),
+            output: "file".to_string(),
+            format: "pretty".to_string(),
+            file: None,
+        };
+
+        assert_eq!(get_log_file_path(&config), DEFAULT_LOG_FILE);
+    }
+
+    #[test]
+    fn test_get_log_file_path_custom() {
+        let config = LoggingConfig {
+            level: "info".to_string(),
+            output: "file".to_string(),
+            format: "pretty".to_string(),
+            file: Some("custom.log".to_string()),
+        };
+
+        assert_eq!(get_log_file_path(&config), "custom.log");
     }
 
     #[test]

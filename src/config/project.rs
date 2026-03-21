@@ -778,7 +778,7 @@ mod tests {
         assert_eq!(config.translate.target_lang, "en");
         assert_eq!(config.translate.source_langs, vec!["AUTO"]);
         assert_eq!(config.cache.format, "binary");
-        assert_eq!(config.cache.directory, ".translator/cache");
+        assert_eq!(config.cache.directory, ".translator");
         assert!(config.cache.enabled);
         assert!(!config.writer.dry_run);
         assert!(config.writer.backup);
