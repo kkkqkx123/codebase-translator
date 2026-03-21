@@ -1,9 +1,9 @@
-// Rust String Literals for Testing
+// Rust string literals for testing
 fn main() {
     let message = "Hello, world!";
     let greeting = "Welcome to the application";
     let error_msg = "An error occurred while processing";
-
+    
     println!("{}", message);
 }
 

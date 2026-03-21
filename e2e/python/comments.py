@@ -1,30 +1,30 @@
-// // # Python comments for testing
+# Python comments for testing
 
-// // # It's a one-line comment
+# This is a single-line comment
 value = 42
 
-/// """
-/// This is a multi-line comment
-/// Contains multiple lines of text
-/// """
+"""
+This is a multi-line comment
+with multiple lines of text
+"""
 
 def test():
-    // // # Another comment inside the function
+    # Another comment inside function
     return value
 
 def greet(name):
-/// """
-///     Documentation string for the greet function
-///     parameters:
-///         name: the name to be greeted
-///     return return return value value value value
-///         Greeting message
-///     """
+    """
+    Documentation string for greet function
+    Args:
+        name: The name to greet
+    Returns:
+        A greeting message
+    """
     return f"Hello, {name}!"
 
 class Example:
-    /// ""用于测试的示例类"""
-
+    """Example class for testing"""
+    
     def method(self):
-        /// ""方法文档""
+        """Method documentation"""
         pass

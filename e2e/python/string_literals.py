@@ -1,4 +1,4 @@
-// // # Python string literals for testing
+# Python string literals for testing
 
 MESSAGE = "Hello, world!"
 GREETING = "Welcome to the application"
@@ -13,6 +13,6 @@ def handle_error():
 class Example:
     def __init__(self):
         self.name = "Example class"
-
+        
     def greet(self, name):
         return f"Hello, {name}!"

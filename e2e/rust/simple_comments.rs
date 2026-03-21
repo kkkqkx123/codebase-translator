@@ -1,4 +1,4 @@
-// Rust comments for testing
+// Rust simple comments for testing
 
 // This is a single-line comment
 const VALUE: i32 = 42;

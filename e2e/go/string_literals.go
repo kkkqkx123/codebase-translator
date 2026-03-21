@@ -1,4 +1,4 @@
-// Go String Literals for Testing
+// Go string literals for testing
 package main
 
 import "fmt"

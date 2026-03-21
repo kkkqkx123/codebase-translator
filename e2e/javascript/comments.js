@@ -1,13 +1,14 @@
 // JavaScript comments for testing
-// This is a single line comment
+// This is a single-line comment
 const value = 42;
 
 /*
  * This is a multi-line comment
- * Multi-line text */
+ * with multiple lines of text
+ */
 
 function test() {
-    // Another comment inside the function
+    // Another comment inside function
     return value;
 }
 
