@@ -186,13 +186,13 @@ impl QueryExecutor {
         &'a self,
         root_node: &'a Node,
         content: &'a str,
-        mut processor: F,
+        processor: F,
     ) -> Result<Vec<T>>
     where
         F: FnMut(&QueryMatch<'a>) -> Option<T>,
     {
         let matches = self.execute(root_node, content)?;
-        Ok(matches.iter().filter_map(|m| processor(m)).collect())
+        Ok(matches.iter().filter_map(processor).collect())
     }
 }
 

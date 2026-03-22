@@ -138,15 +138,15 @@ impl OutputFormatter {
             "summary": summary,
             "matches": matches
         });
-        Ok(serde_json::to_string_pretty(&output)
-            .map_err(|e| TranslateError::Parse(format!("Failed to serialize JSON: {}", e)))?)
+        serde_json::to_string_pretty(&output)
+            .map_err(|e| TranslateError::Parse(format!("Failed to serialize JSON: {}", e)))
     }
 
     fn format_csv(matches: &[VerifyMatch], detailed: bool) -> Result<String> {
         let mut wtr = csv::Writer::from_writer(vec![]);
 
         if detailed {
-            wtr.write_record(&[
+            wtr.write_record([
                 "pattern",
                 "type",
                 "category",
@@ -158,7 +158,7 @@ impl OutputFormatter {
             ])
             .map_err(|e| TranslateError::Parse(format!("Failed to write CSV header: {}", e)))?;
         } else {
-            wtr.write_record(&[
+            wtr.write_record([
                 "pattern",
                 "type",
                 "category",
@@ -171,7 +171,7 @@ impl OutputFormatter {
 
         for m in matches {
             if detailed {
-                wtr.write_record(&[
+                wtr.write_record([
                     &m.pattern_name,
                     &format!("{}", m.pattern_type),
                     &m.category,
@@ -183,7 +183,7 @@ impl OutputFormatter {
                 ])
                 .map_err(|e| TranslateError::Parse(format!("Failed to write CSV record: {}", e)))?;
             } else {
-                wtr.write_record(&[
+                wtr.write_record([
                     &m.pattern_name,
                     &format!("{}", m.pattern_type),
                     &m.category,

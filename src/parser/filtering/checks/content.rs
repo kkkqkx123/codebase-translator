@@ -231,7 +231,7 @@ mod tests {
     #[test]
     fn test_default_constructor() {
         let filter1 = ContentFilter::new();
-        let filter2 = ContentFilter::default();
+        let filter2 = ContentFilter;
 
         // 两者行为应该一致
         assert_eq!(filter1.should_translate("test"), filter2.should_translate("test"));

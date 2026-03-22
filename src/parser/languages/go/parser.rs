@@ -8,7 +8,7 @@ use tree_sitter::{Node, Parser, Tree};
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, TranslationUnit};
 use crate::parser::core::traits::{
-    ExtractionContext, ExtractionStrategy, Parser as ParserTrait, StrategyNodeType,
+    ExtractionConfig, Parser as ParserTrait, StrategyNodeType,
 };
 use crate::parser::filtering::traits::Filter;
 use crate::parser::{ContentFilter, FunctionCategory};
@@ -22,7 +22,7 @@ use tracing::{debug, error, info, instrument};
 /// Go language parser
 pub struct GoParser {
     config: ParserConfig,
-    strategy: Arc<dyn ExtractionStrategy>,
+    extraction_config: ExtractionConfig,
     filter: Arc<ContentFilter>,
     patterns: GoPatterns,
     string_processor: StringProcessor,
@@ -32,12 +32,12 @@ impl GoParser {
     /// Create a new Go parser
     pub fn new(
         config: ParserConfig,
-        strategy: Arc<dyn ExtractionStrategy>,
+        extraction_config: ExtractionConfig,
         filter: Arc<ContentFilter>,
     ) -> Result<Self> {
         Ok(Self {
             config,
-            strategy,
+            extraction_config,
             filter,
             patterns: GoPatterns::new(),
             string_processor: StringProcessor::new(),
@@ -134,17 +134,16 @@ impl GoParser {
                 continue;
             }
 
-            // Apply strategy
-            let ctx = ExtractionContext::new(&text);
+            // Apply extraction config
             if !self
-                .strategy
-                .should_extract(StrategyNodeType::Comment, &ctx)
+                .extraction_config
+                .should_extract(StrategyNodeType::Comment)
             {
                 continue;
             }
 
             let id = format!("{}_comment_{}", file_path, match_idx);
-            let node_type = self.strategy.get_node_type(StrategyNodeType::Comment);
+            let node_type = self.extraction_config.get_node_type(StrategyNodeType::Comment);
             let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
             units.push(unit);
             match_idx += 1;
@@ -199,17 +198,16 @@ impl GoParser {
                 continue;
             }
 
-            // Apply strategy
-            let ctx = ExtractionContext::new(&text);
+            // Apply extraction config
             if !self
-                .strategy
-                .should_extract(StrategyNodeType::DocString, &ctx)
+                .extraction_config
+                .should_extract(StrategyNodeType::DocString)
             {
                 continue;
             }
 
             let id = format!("{}_docstring_{}", file_path, match_idx);
-            let node_type = self.strategy.get_node_type(StrategyNodeType::DocString);
+            let node_type = self.extraction_config.get_node_type(StrategyNodeType::DocString);
             let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
             units.push(unit);
             match_idx += 1;
@@ -275,14 +273,13 @@ impl GoParser {
                         _ => continue, // Skip unknown functions
                     };
 
-                    // Apply strategy
-                    let ctx = ExtractionContext::new(&text).with_function_name(&full_func_name);
-                    if !self.strategy.should_extract(strategy_node_type, &ctx) {
+                    // Apply extraction config
+                    if !self.extraction_config.should_extract(strategy_node_type) {
                         continue;
                     }
 
                     let id = format!("{}_func_{}", file_path, match_idx);
-                    let node_type = self.strategy.get_node_type(strategy_node_type);
+                    let node_type = self.extraction_config.get_node_type(strategy_node_type);
                     let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
                     units.push(unit);
                     match_idx += 1;
@@ -381,7 +378,6 @@ mod tests {
     use crate::core::models::NodeType;
     use crate::parser::filtering::FilterConfig;
     use crate::parser::core::traits::ExtractionConfig;
-    use crate::parser::core::strategies::ConfigBasedStrategy;
     use std::path::PathBuf;
 
     fn create_test_file(content: &str, path: &str) -> File {
@@ -397,10 +393,9 @@ mod tests {
             format_strings: true,
             ..Default::default()
         };
-        let strategy: Arc<dyn ExtractionStrategy> = Arc::new(ConfigBasedStrategy::new(extraction_config));
         let filter = Arc::new(ContentFilter::new(FilterConfig::default()).unwrap());
 
-        GoParser::new(config, strategy, filter).unwrap()
+        GoParser::new(config, extraction_config, filter).unwrap()
     }
 
     #[tokio::test]

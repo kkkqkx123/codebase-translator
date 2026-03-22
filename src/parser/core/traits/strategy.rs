@@ -1,11 +1,9 @@
-//! Extraction strategy trait
+//! Extraction strategy types
 //!
-//! This module provides the core trait for extraction strategies.
-//! Concrete implementations are located in `parser::core::strategies`.
+//! This module provides types for extraction configuration and decisions.
 
 use crate::core::models::NodeType;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 /// Strategy node type for extraction decisions
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -56,55 +54,6 @@ impl std::fmt::Display for StrategyNodeType {
     }
 }
 
-/// Context for extraction decisions
-#[derive(Debug, Clone, Default)]
-pub struct ExtractionContext {
-    /// Content to extract
-    pub content: String,
-    /// Function name (if applicable)
-    pub function_name: Option<String>,
-    /// Whether the item is exported/public
-    pub is_exported: bool,
-    /// Additional metadata
-    pub metadata: HashMap<String, String>,
-}
-
-impl ExtractionContext {
-    /// Create a new extraction context
-    pub fn new(content: impl Into<String>) -> Self {
-        Self {
-            content: content.into(),
-            function_name: None,
-            is_exported: false,
-            metadata: HashMap::new(),
-        }
-    }
-
-    /// Set function name
-    pub fn with_function(mut self, name: impl Into<String>) -> Self {
-        self.function_name = Some(name.into());
-        self
-    }
-
-    /// Set function name (alias for with_function)
-    pub fn with_function_name(mut self, name: impl Into<String>) -> Self {
-        self.function_name = Some(name.into());
-        self
-    }
-
-    /// Set exported flag
-    pub fn with_exported(mut self, exported: bool) -> Self {
-        self.is_exported = exported;
-        self
-    }
-
-    /// Add metadata
-    pub fn with_metadata(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
-        self.metadata.insert(key.into(), value.into());
-        self
-    }
-}
-
 /// Configuration for extraction
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExtractionConfig {
@@ -135,14 +84,47 @@ impl Default for ExtractionConfig {
     }
 }
 
-/// Extraction strategy trait
-pub trait ExtractionStrategy: Send + Sync {
-    /// Determine if a node should be extracted
-    fn should_extract(&self, node_type: StrategyNodeType, ctx: &ExtractionContext) -> bool;
+impl ExtractionConfig {
+    /// Determine if a node should be extracted based on configuration
+    pub fn should_extract(&self, node_type: StrategyNodeType) -> bool {
+        match node_type {
+            StrategyNodeType::Comment => self.comments,
+            StrategyNodeType::DocString => self.docstrings,
+            StrategyNodeType::ErrorMessage => self.error_messages,
+            StrategyNodeType::FormatString => self.format_strings,
+            StrategyNodeType::LogMessage => self.log_messages,
+            StrategyNodeType::StringLiteral => self.string_literals,
+            StrategyNodeType::MarkdownParagraph
+            | StrategyNodeType::MarkdownHeading
+            | StrategyNodeType::MarkdownListItem
+            | StrategyNodeType::MarkdownTableCell => true,
+        }
+    }
 
     /// Get the node type for a strategy node type
-    fn get_node_type(&self, node_type: StrategyNodeType) -> NodeType;
+    pub fn get_node_type(&self, node_type: StrategyNodeType) -> NodeType {
+        match node_type {
+            StrategyNodeType::Comment => NodeType::Comment,
+            StrategyNodeType::DocString => NodeType::DocString,
+            StrategyNodeType::ErrorMessage => NodeType::ErrorMessage,
+            StrategyNodeType::FormatString => NodeType::FormatString,
+            StrategyNodeType::LogMessage => NodeType::LogMessage,
+            StrategyNodeType::StringLiteral => NodeType::StringLiteral,
+            StrategyNodeType::MarkdownParagraph => NodeType::Comment,
+            StrategyNodeType::MarkdownHeading => NodeType::Comment,
+            StrategyNodeType::MarkdownListItem => NodeType::Comment,
+            StrategyNodeType::MarkdownTableCell => NodeType::Comment,
+        }
+    }
 
-    /// Get strategy name
-    fn name(&self) -> &str;
+    /// Load from a TOML file
+    pub fn from_file(path: &std::path::Path) -> crate::core::error::Result<Self> {
+        let content = std::fs::read_to_string(path).map_err(|e| {
+            crate::core::error::TranslateError::Config(format!("Failed to read config file: {}", e))
+        })?;
+        let config: Self = toml::from_str(&content).map_err(|e| {
+            crate::core::error::TranslateError::Config(format!("Failed to parse config: {}", e))
+        })?;
+        Ok(config)
+    }
 }

@@ -259,7 +259,7 @@ fn test_multiple_cache_hits() {
         let file_hash = hash_utils::generate_test_hash(&format!("file_{}", i));
         let mut entry = CacheEntry::new(
             &file_hash,
-            &format!("/path/to/file_{}.txt", i),
+            format!("/path/to/file_{}.txt", i),
             123456i64 + i as i64,
             "local",
             fingerprint.clone(),

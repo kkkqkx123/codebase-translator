@@ -537,8 +537,10 @@ pub struct CustomRegexPattern {
 /// Extraction rule for state machine patterns
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
+#[derive(Default)]
 pub enum ExtractionRule {
     /// No extraction, use raw content as is
+    #[default]
     None,
     /// Remove surrounding quotes (single or double)
     RemoveQuotes,
@@ -562,11 +564,6 @@ pub enum ExtractionRule {
     },
 }
 
-impl Default for ExtractionRule {
-    fn default() -> Self {
-        ExtractionRule::None
-    }
-}
 
 /// State machine pattern for complex extraction
 /// Allows matching sequences of tokens with conditions

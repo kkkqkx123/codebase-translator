@@ -9,8 +9,10 @@ use codebase_translate::parser::ParserConfig;
 
 #[test]
 fn test_raw_match_format() {
-    let mut config = ParserConfig::default();
-    config.extract_strings = true;
+    let config = ParserConfig {
+        extract_strings: true,
+        ..Default::default()
+    };
 
     let coordinator =
         ParserCoordinator::with_unified_config(config).expect("Failed to create coordinator");

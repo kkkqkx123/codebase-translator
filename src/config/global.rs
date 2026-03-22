@@ -498,6 +498,7 @@ fn default_deeplx_url() -> String {
 
 /// LLM global configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Default)]
 pub struct LLMGlobalConfig {
     /// Health check configuration
     #[serde(default)]
@@ -507,14 +508,6 @@ pub struct LLMGlobalConfig {
     pub providers: Vec<LLMProviderConfig>,
 }
 
-impl Default for LLMGlobalConfig {
-    fn default() -> Self {
-        Self {
-            health_check: HealthCheckConfig::default(),
-            providers: Vec::new(),
-        }
-    }
-}
 
 /// Health check configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]

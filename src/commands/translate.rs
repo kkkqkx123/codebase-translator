@@ -49,7 +49,7 @@ impl Command for TranslateArgs {
         if let Some(prov) = &self.provider {
             project_config.translate.provider = prov
                 .parse()
-                .map_err(|e| TranslateError::InvalidArgument(e))?;
+                .map_err(TranslateError::InvalidArgument)?;
         }
         if let Some(inc) = &self.include {
             project_config.include.patterns =

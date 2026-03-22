@@ -25,18 +25,15 @@ use crate::translator::llm::provider::LLMProvider;
 
 /// Selection strategy for provider routing
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Default)]
 pub enum SelectionStrategy {
     /// Pure random selection weighted by rate_limit
     RateBasedRandom,
     /// Smooth round-robin weighted by rate_limit (better distribution over time)
+    #[default]
     SmoothRateBasedRoundRobin,
 }
 
-impl Default for SelectionStrategy {
-    fn default() -> Self {
-        SelectionStrategy::SmoothRateBasedRoundRobin
-    }
-}
 
 /// Provider entry with selection state for smooth rate-based round-robin
 #[derive(Debug)]

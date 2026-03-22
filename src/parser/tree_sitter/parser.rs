@@ -10,7 +10,7 @@ use tree_sitter::{Language as TSLanguage, Node, Parser, Query, QueryCursor, Tree
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, Position, TranslationUnit};
 use crate::parser::core::traits::{
-    ExtractionContext, ExtractionStrategy, Parser as ParserTrait, StrategyNodeType,
+    ExtractionConfig, Parser as ParserTrait, StrategyNodeType,
 };
 use crate::parser::filtering::traits::Filter;
 use crate::parser::ContentFilter;
@@ -46,7 +46,7 @@ pub struct LanguageConfig {
 pub struct TreeSitterParser {
     config: crate::parser::ParserConfig,
     language_config: LanguageConfig,
-    strategy: Arc<dyn ExtractionStrategy>,
+    extraction_config: ExtractionConfig,
     filter: Arc<ContentFilter>,
 }
 
@@ -55,7 +55,7 @@ impl TreeSitterParser {
     pub fn new(
         language_config: LanguageConfig,
         config: crate::parser::ParserConfig,
-        strategy: Arc<dyn ExtractionStrategy>,
+        extraction_config: ExtractionConfig,
         filter: Arc<ContentFilter>,
     ) -> Result<Self> {
         // Validate that the language can be set
@@ -67,21 +67,19 @@ impl TreeSitterParser {
         Ok(Self {
             config,
             language_config,
-            strategy,
+            extraction_config,
             filter,
         })
     }
 
-    /// Create a new tree-sitter parser with default strategy and filter
+    /// Create a new tree-sitter parser with default extraction config and filter
     pub fn with_defaults(language_config: LanguageConfig, config: crate::parser::ParserConfig) -> Result<Self> {
-        use crate::parser::core::strategies::ConfigBasedStrategy;
-        use crate::parser::core::traits::ExtractionConfig;
         use crate::parser::filtering::default_filter;
 
         Self::new(
             language_config,
             config,
-            Arc::new(ConfigBasedStrategy::new(ExtractionConfig::default())),
+            ExtractionConfig::default(),
             Arc::new(default_filter()?),
         )
     }
@@ -409,13 +407,12 @@ impl TreeSitterParser {
                     }
                 }
 
-                // Apply extraction strategy
-                let ctx = ExtractionContext::new(&text);
-                if !self.strategy.should_extract(strategy_node_type, &ctx) {
+                // Apply extraction config
+                if !self.extraction_config.should_extract(strategy_node_type) {
                     continue;
                 }
 
-                let node_type = self.strategy.get_node_type(strategy_node_type);
+                let node_type = self.extraction_config.get_node_type(strategy_node_type);
                 let id = format!("{}_{}_{}", file_path, node_type, match_idx);
                 let start_pos = Position::new(
                     node.start_position().row + 1,
@@ -481,7 +478,7 @@ impl TreeSitterParserFactory {
     /// Create a parser for Rust files
     pub fn create_rust_parser(
         config: crate::parser::ParserConfig,
-        strategy: Arc<dyn ExtractionStrategy>,
+        extraction_config: ExtractionConfig,
         filter: Arc<ContentFilter>,
     ) -> Result<TreeSitterParser> {
         let language_config = LanguageConfig {
@@ -492,13 +489,13 @@ impl TreeSitterParserFactory {
             docstring_query: Some(RustQueries::doc_comments().to_string()),
             string_query: Some(RustQueries::all_strings().to_string()),
         };
-        TreeSitterParser::new(language_config, config, strategy, filter)
+        TreeSitterParser::new(language_config, config, extraction_config, filter)
     }
 
     /// Create a parser for Go files
     pub fn create_go_parser(
         config: crate::parser::ParserConfig,
-        strategy: Arc<dyn ExtractionStrategy>,
+        extraction_config: ExtractionConfig,
         filter: Arc<ContentFilter>,
     ) -> Result<TreeSitterParser> {
         let language_config = LanguageConfig {
@@ -509,13 +506,13 @@ impl TreeSitterParserFactory {
             docstring_query: None, // Go uses regular comments for docs
             string_query: Some(GoQueries::all_strings().to_string()),
         };
-        TreeSitterParser::new(language_config, config, strategy, filter)
+        TreeSitterParser::new(language_config, config, extraction_config, filter)
     }
 
     /// Create a parser for Python files
     pub fn create_python_parser(
         config: crate::parser::ParserConfig,
-        strategy: Arc<dyn ExtractionStrategy>,
+        extraction_config: ExtractionConfig,
         filter: Arc<ContentFilter>,
     ) -> Result<TreeSitterParser> {
         let language_config = LanguageConfig {
@@ -526,13 +523,13 @@ impl TreeSitterParserFactory {
             docstring_query: Some(PythonQueries::docstrings().to_string()),
             string_query: Some(PythonQueries::all_strings().to_string()),
         };
-        TreeSitterParser::new(language_config, config, strategy, filter)
+        TreeSitterParser::new(language_config, config, extraction_config, filter)
     }
 
     /// Create a parser for JavaScript files
     pub fn create_javascript_parser(
         config: crate::parser::ParserConfig,
-        strategy: Arc<dyn ExtractionStrategy>,
+        extraction_config: ExtractionConfig,
         filter: Arc<ContentFilter>,
     ) -> Result<TreeSitterParser> {
         let language_config = LanguageConfig {
@@ -543,13 +540,13 @@ impl TreeSitterParserFactory {
             docstring_query: Some(JavaScriptQueries::jsdoc_comments().to_string()),
             string_query: Some(JavaScriptQueries::all_strings().to_string()),
         };
-        TreeSitterParser::new(language_config, config, strategy, filter)
+        TreeSitterParser::new(language_config, config, extraction_config, filter)
     }
 
     /// Create a parser for TypeScript files
     pub fn create_typescript_parser(
         config: crate::parser::ParserConfig,
-        strategy: Arc<dyn ExtractionStrategy>,
+        extraction_config: ExtractionConfig,
         filter: Arc<ContentFilter>,
     ) -> Result<TreeSitterParser> {
         let language_config = LanguageConfig {
@@ -560,13 +557,13 @@ impl TreeSitterParserFactory {
             docstring_query: Some(TypeScriptQueries::jsdoc_comments().to_string()),
             string_query: Some(TypeScriptQueries::all_strings().to_string()),
         };
-        TreeSitterParser::new(language_config, config, strategy, filter)
+        TreeSitterParser::new(language_config, config, extraction_config, filter)
     }
 
     /// Create a parser for TSX files
     pub fn create_tsx_parser(
         config: crate::parser::ParserConfig,
-        strategy: Arc<dyn ExtractionStrategy>,
+        extraction_config: ExtractionConfig,
         filter: Arc<ContentFilter>,
     ) -> Result<TreeSitterParser> {
         let language_config = LanguageConfig {
@@ -577,13 +574,13 @@ impl TreeSitterParserFactory {
             docstring_query: Some(TypeScriptQueries::jsdoc_comments().to_string()),
             string_query: Some(TypeScriptQueries::all_strings().to_string()),
         };
-        TreeSitterParser::new(language_config, config, strategy, filter)
+        TreeSitterParser::new(language_config, config, extraction_config, filter)
     }
 
     /// Create a parser for Java files
     pub fn create_java_parser(
         config: crate::parser::ParserConfig,
-        strategy: Arc<dyn ExtractionStrategy>,
+        extraction_config: ExtractionConfig,
         filter: Arc<ContentFilter>,
     ) -> Result<TreeSitterParser> {
         let language_config = LanguageConfig {
@@ -594,13 +591,13 @@ impl TreeSitterParserFactory {
             docstring_query: Some(JavaQueries::javadoc_comments().to_string()),
             string_query: Some(JavaQueries::all_strings().to_string()),
         };
-        TreeSitterParser::new(language_config, config, strategy, filter)
+        TreeSitterParser::new(language_config, config, extraction_config, filter)
     }
 
     /// Create a parser for C files
     pub fn create_c_parser(
         config: crate::parser::ParserConfig,
-        strategy: Arc<dyn ExtractionStrategy>,
+        extraction_config: ExtractionConfig,
         filter: Arc<ContentFilter>,
     ) -> Result<TreeSitterParser> {
         let language_config = LanguageConfig {
@@ -611,13 +608,13 @@ impl TreeSitterParserFactory {
             docstring_query: Some(CQueries::doc_comments().to_string()),
             string_query: Some(CQueries::all_strings().to_string()),
         };
-        TreeSitterParser::new(language_config, config, strategy, filter)
+        TreeSitterParser::new(language_config, config, extraction_config, filter)
     }
 
     /// Create a parser for C++ files
     pub fn create_cpp_parser(
         config: crate::parser::ParserConfig,
-        strategy: Arc<dyn ExtractionStrategy>,
+        extraction_config: ExtractionConfig,
         filter: Arc<ContentFilter>,
     ) -> Result<TreeSitterParser> {
         let language_config = LanguageConfig {
@@ -634,13 +631,13 @@ impl TreeSitterParserFactory {
             docstring_query: Some(CppQueries::doc_comments().to_string()),
             string_query: Some(CppQueries::all_strings().to_string()),
         };
-        TreeSitterParser::new(language_config, config, strategy, filter)
+        TreeSitterParser::new(language_config, config, extraction_config, filter)
     }
 
     /// Create a parser for C# files
     pub fn create_csharp_parser(
         config: crate::parser::ParserConfig,
-        strategy: Arc<dyn ExtractionStrategy>,
+        extraction_config: ExtractionConfig,
         filter: Arc<ContentFilter>,
     ) -> Result<TreeSitterParser> {
         let language_config = LanguageConfig {
@@ -651,41 +648,39 @@ impl TreeSitterParserFactory {
             docstring_query: None, // C# uses /// comments which are handled by all_comments
             string_query: Some(CSharpQueries::all_strings().to_string()),
         };
-        TreeSitterParser::new(language_config, config, strategy, filter)
+        TreeSitterParser::new(language_config, config, extraction_config, filter)
     }
 
-    /// Create all available parsers with given strategy and filter
+    /// Create all available parsers with given extraction config and filter
     pub fn create_all_parsers(
         config: crate::parser::ParserConfig,
-        strategy: Arc<dyn ExtractionStrategy>,
+        extraction_config: ExtractionConfig,
         filter: Arc<ContentFilter>,
     ) -> Vec<Result<TreeSitterParser>> {
         vec![
-            Self::create_rust_parser(config.clone(), strategy.clone(), filter.clone()),
-            Self::create_go_parser(config.clone(), strategy.clone(), filter.clone()),
-            Self::create_python_parser(config.clone(), strategy.clone(), filter.clone()),
-            Self::create_javascript_parser(config.clone(), strategy.clone(), filter.clone()),
-            Self::create_typescript_parser(config.clone(), strategy.clone(), filter.clone()),
-            Self::create_tsx_parser(config.clone(), strategy.clone(), filter.clone()),
-            Self::create_java_parser(config.clone(), strategy.clone(), filter.clone()),
-            Self::create_c_parser(config.clone(), strategy.clone(), filter.clone()),
-            Self::create_cpp_parser(config.clone(), strategy.clone(), filter.clone()),
-            Self::create_csharp_parser(config.clone(), strategy.clone(), filter.clone()),
+            Self::create_rust_parser(config.clone(), extraction_config.clone(), filter.clone()),
+            Self::create_go_parser(config.clone(), extraction_config.clone(), filter.clone()),
+            Self::create_python_parser(config.clone(), extraction_config.clone(), filter.clone()),
+            Self::create_javascript_parser(config.clone(), extraction_config.clone(), filter.clone()),
+            Self::create_typescript_parser(config.clone(), extraction_config.clone(), filter.clone()),
+            Self::create_tsx_parser(config.clone(), extraction_config.clone(), filter.clone()),
+            Self::create_java_parser(config.clone(), extraction_config.clone(), filter.clone()),
+            Self::create_c_parser(config.clone(), extraction_config.clone(), filter.clone()),
+            Self::create_cpp_parser(config.clone(), extraction_config.clone(), filter.clone()),
+            Self::create_csharp_parser(config.clone(), extraction_config.clone(), filter.clone()),
         ]
     }
 
-    /// Create all available parsers with default strategy and filter
+    /// Create all available parsers with default extraction config and filter
     pub fn create_all_parsers_with_defaults(config: crate::parser::ParserConfig) -> Vec<Result<TreeSitterParser>> {
         use crate::parser::filtering::default_filter;
-        use crate::parser::core::strategies::ConfigBasedStrategy;
-        use crate::parser::core::traits::ExtractionConfig;
 
-        let strategy: Arc<dyn ExtractionStrategy> = Arc::new(ConfigBasedStrategy::new(ExtractionConfig::default()));
+        let extraction_config = ExtractionConfig::default();
         let filter = Arc::new(default_filter().unwrap_or_else(|_| {
             ContentFilter::new(crate::parser::FilterConfig::default()).unwrap()
         }));
 
-        Self::create_all_parsers(config, strategy, filter)
+        Self::create_all_parsers(config, extraction_config, filter)
     }
 }
 
@@ -694,7 +689,6 @@ mod tests {
     use super::*;
     use crate::parser::filtering::FilterConfig;
     use crate::parser::core::traits::ExtractionConfig;
-    use crate::parser::core::strategies::ConfigBasedStrategy;
     use crate::parser::ParserConfig;
     use std::path::PathBuf;
 
@@ -702,8 +696,8 @@ mod tests {
         File::new(PathBuf::from(path), content.as_bytes().to_vec(), "utf-8")
     }
 
-    fn create_test_strategy() -> Arc<dyn ExtractionStrategy> {
-        Arc::new(ConfigBasedStrategy::new(ExtractionConfig::default()))
+    fn create_test_extraction_config() -> ExtractionConfig {
+        ExtractionConfig::default()
     }
 
     fn create_test_filter() -> Arc<ContentFilter> {
@@ -713,9 +707,9 @@ mod tests {
     #[tokio::test]
     async fn test_rust_parser() {
         let config = ParserConfig::default();
-        let strategy = create_test_strategy();
+        let extraction_config = create_test_extraction_config();
         let filter = create_test_filter();
-        let parser = TreeSitterParserFactory::create_rust_parser(config, strategy, filter)
+        let parser = TreeSitterParserFactory::create_rust_parser(config, extraction_config, filter)
             .expect("Failed to create Rust parser");
 
         let content = r#"
@@ -737,9 +731,9 @@ fn main() {
     #[tokio::test]
     async fn test_go_parser() {
         let config = ParserConfig::default();
-        let strategy = create_test_strategy();
+        let extraction_config = create_test_extraction_config();
         let filter = create_test_filter();
-        let parser = TreeSitterParserFactory::create_go_parser(config, strategy, filter)
+        let parser = TreeSitterParserFactory::create_go_parser(config, extraction_config, filter)
             .expect("Failed to create Go parser");
 
         // Go comments use the capture name "comment" which doesn't contain "content" or "text"

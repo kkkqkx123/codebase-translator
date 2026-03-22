@@ -30,8 +30,10 @@ fn create_test_file(content: &str, path: &str) -> File {
 }
 
 fn create_test_coordinator() -> ParserCoordinator {
-    let mut config = ParserConfig::default();
-    config.extract_strings = true;
+    let config = ParserConfig {
+        extract_strings: true,
+        ..Default::default()
+    };
 
     ParserCoordinator::with_unified_config(config).expect("Failed to create coordinator")
 }

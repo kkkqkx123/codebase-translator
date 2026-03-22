@@ -892,7 +892,7 @@ mod tests {
         
         let tokens = config.estimate_tokens(chinese);
         // CJK tokens: 4 / 1.5 = 2.67 -> 3 + 50 system = 53
-        assert!(tokens >= 52 && tokens <= 54, "Expected ~53 tokens, got {}", tokens);
+        assert!((52..=54).contains(&tokens), "Expected ~53 tokens, got {}", tokens);
     }
 
     #[test]
@@ -902,7 +902,7 @@ mod tests {
         let english = "Hello world";
         let tokens = config.estimate_tokens(english);
         // 11 chars / 4 chars/token = 2.75 -> 3 + 50 system = 53
-        assert!(tokens >= 50 && tokens <= 55);
+        assert!((50..=55).contains(&tokens));
     }
 
     #[test]
@@ -912,7 +912,7 @@ mod tests {
         let mixed = "Hello 世界";
         let tokens = config.estimate_tokens(mixed);
         // 2 CJK / 1.5 = 1.33, 6 non-CJK / 4 = 1.5, total ~2.83 -> 3 + 50 = 53
-        assert!(tokens >= 52 && tokens <= 54, "Expected ~53 tokens, got {}", tokens);
+        assert!((52..=54).contains(&tokens), "Expected ~53 tokens, got {}", tokens);
     }
 
     #[test]

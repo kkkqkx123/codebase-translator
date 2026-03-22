@@ -1,7 +1,7 @@
 //! Generic language parser trait
 //!
 //! This module provides a common trait for language parsers to reduce code duplication
-//! and ensure consistent strategy integration across all language implementations.
+//! and ensure consistent extraction configuration across all language implementations.
 
 use std::sync::Arc;
 use tree_sitter::{Language, Node, Tree};
@@ -9,7 +9,7 @@ use tree_sitter::{Language, Node, Tree};
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::TranslationUnit;
 use crate::parser::core::traits::{
-    ExtractionContext, ExtractionStrategy, StrategyNodeType,
+    ExtractionConfig, StrategyNodeType,
 };
 use crate::parser::filtering::traits::Filter;
 use crate::parser::{ContentFilter, FunctionCategory};
@@ -26,8 +26,8 @@ pub trait LanguageParser: Send + Sync {
     /// Get the parser configuration
     fn config(&self) -> &ParserConfig;
 
-    /// Get the extraction strategy
-    fn strategy(&self) -> &Arc<dyn ExtractionStrategy>;
+    /// Get the extraction configuration
+    fn extraction_config(&self) -> &ExtractionConfig;
 
     /// Get the content filter
     fn filter(&self) -> &Arc<ContentFilter>;
@@ -101,14 +101,13 @@ pub trait LanguageParser: Send + Sync {
                 continue;
             }
 
-            // Apply strategy
-            let ctx = ExtractionContext::new(text);
-            if !self.strategy().should_extract(strategy_node_type, &ctx) {
+            // Apply extraction config
+            if !self.extraction_config().should_extract(strategy_node_type) {
                 continue;
             }
 
             let id = format!("{}_{}_{}", file_path, id_prefix, idx);
-            let node_type = self.strategy().get_node_type(strategy_node_type);
+            let node_type = self.extraction_config().get_node_type(strategy_node_type);
             let unit =
                 TranslationUnit::new(id, node_type, text.to_string(), m.start_pos, m.end_pos);
             units.push(unit);
@@ -166,14 +165,13 @@ pub trait LanguageParser: Send + Sync {
                         None => continue, // Skip unknown functions
                     };
 
-                    // Apply strategy
-                    let ctx = ExtractionContext::new(&text).with_function_name(&current_func);
-                    if !self.strategy().should_extract(strategy_node_type, &ctx) {
+                    // Apply extraction config
+                    if !self.extraction_config().should_extract(strategy_node_type) {
                         continue;
                     }
 
                     let id = format!("{}_func_{}", file_path, match_idx);
-                    let node_type = self.strategy().get_node_type(strategy_node_type);
+                    let node_type = self.extraction_config().get_node_type(strategy_node_type);
                     let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
                     units.push(unit);
                     match_idx += 1;
@@ -242,13 +240,12 @@ pub trait LanguageParser: Send + Sync {
                         None => continue,
                     };
 
-                    let ctx = ExtractionContext::new(&text).with_function_name(&full_func_name);
-                    if !self.strategy().should_extract(strategy_node_type, &ctx) {
+                    if !self.extraction_config().should_extract(strategy_node_type) {
                         continue;
                     }
 
                     let id = format!("{}_func_{}", file_path, match_idx);
-                    let node_type = self.strategy().get_node_type(strategy_node_type);
+                    let node_type = self.extraction_config().get_node_type(strategy_node_type);
                     let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
                     units.push(unit);
                     match_idx += 1;
@@ -281,13 +278,12 @@ pub trait LanguageParser: Send + Sync {
                 continue;
             }
 
-            let ctx = ExtractionContext::new(&text);
-            if !self.strategy().should_extract(strategy_node_type, &ctx) {
+            if !self.extraction_config().should_extract(strategy_node_type) {
                 continue;
             }
 
             let id = format!("{}_{}_{}", file_path, id_prefix, idx);
-            let node_type = self.strategy().get_node_type(strategy_node_type);
+            let node_type = self.extraction_config().get_node_type(strategy_node_type);
             let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
             units.push(unit);
         }

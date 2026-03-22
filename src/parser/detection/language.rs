@@ -165,41 +165,36 @@ impl LanguageDetector {
         }
 
         // Check Arabic
-        if self.should_check_script(Script::Arabic) {
-            if contains_arabic(text) {
+        if self.should_check_script(Script::Arabic)
+            && contains_arabic(text) {
                 return LanguageInfo::new(Script::Arabic, vec!["AR".to_string()], true);
             }
-        }
 
         // Check Hebrew
-        if self.should_check_script(Script::Hebrew) {
-            if contains_hebrew(text) {
+        if self.should_check_script(Script::Hebrew)
+            && contains_hebrew(text) {
                 return LanguageInfo::new(Script::Hebrew, vec!["HE".to_string()], true);
             }
-        }
 
         // Check Greek
-        if self.should_check_script(Script::Greek) {
-            if contains_greek(text) {
+        if self.should_check_script(Script::Greek)
+            && contains_greek(text) {
                 return LanguageInfo::new(Script::Greek, vec!["EL".to_string()], true);
             }
-        }
 
         // Check Cyrillic
-        if self.should_check_script(Script::Cyrillic) {
-            if contains_cyrillic(text) {
+        if self.should_check_script(Script::Cyrillic)
+            && contains_cyrillic(text) {
                 let langs = detect_cyrillic_langs(text, self.allowed_langs.as_ref());
                 return LanguageInfo::new(Script::Cyrillic, langs, true);
             }
-        }
 
         // Check Latin (default)
-        if self.should_check_script(Script::Latin) {
-            if contains_latin(text) {
+        if self.should_check_script(Script::Latin)
+            && contains_latin(text) {
                 let langs = detect_latin_langs(self.allowed_langs.as_ref());
                 return LanguageInfo::new(Script::Latin, langs, true);
             }
-        }
 
         LanguageInfo::new(Script::Unknown, Vec::new(), false)
     }
@@ -461,7 +456,7 @@ fn is_bulgarian_specific(c: char) -> bool {
 /// Check if character should be skipped for detection
 fn should_skip_for_detection(c: char) -> bool {
     // Skip emojis
-    if c >= '\u{1F300}' && c <= '\u{1F9FF}' {
+    if ('\u{1F300}'..='\u{1F9FF}').contains(&c) {
         return true;
     }
     // Skip punctuation
@@ -498,45 +493,45 @@ fn is_only_symbols(text: &str) -> bool {
 /// Unicode blocks helper module
 mod unicode_blocks {
     pub fn is_cjk(c: char) -> bool {
-        (c >= '\u{4E00}' && c <= '\u{9FFF}')    // CJK Unified Ideographs
-            || (c >= '\u{3400}' && c <= '\u{4DBF}') // CJK Extension A
-            || (c >= '\u{20000}' && c <= '\u{2A6DF}') // CJK Extension B
+        ('\u{4E00}'..='\u{9FFF}').contains(&c)    // CJK Unified Ideographs
+            || ('\u{3400}'..='\u{4DBF}').contains(&c) // CJK Extension A
+            || ('\u{20000}'..='\u{2A6DF}').contains(&c) // CJK Extension B
     }
 
     pub fn is_hiragana(c: char) -> bool {
-        c >= '\u{3040}' && c <= '\u{309F}'
+        ('\u{3040}'..='\u{309F}').contains(&c)
     }
 
     pub fn is_katakana(c: char) -> bool {
-        c >= '\u{30A0}' && c <= '\u{30FF}'
+        ('\u{30A0}'..='\u{30FF}').contains(&c)
     }
 
     pub fn is_hangul(c: char) -> bool {
-        (c >= '\u{AC00}' && c <= '\u{D7AF}')    // Hangul Syllables
-            || (c >= '\u{1100}' && c <= '\u{11FF}') // Hangul Jamo
+        ('\u{AC00}'..='\u{D7AF}').contains(&c)    // Hangul Syllables
+            || ('\u{1100}'..='\u{11FF}').contains(&c) // Hangul Jamo
     }
 
     pub fn is_arabic(c: char) -> bool {
-        (c >= '\u{0600}' && c <= '\u{06FF}')    // Arabic
-            || (c >= '\u{0750}' && c <= '\u{077F}') // Arabic Supplement
+        ('\u{0600}'..='\u{06FF}').contains(&c)    // Arabic
+            || ('\u{0750}'..='\u{077F}').contains(&c) // Arabic Supplement
     }
 
     pub fn is_hebrew(c: char) -> bool {
-        c >= '\u{0590}' && c <= '\u{05FF}'
+        ('\u{0590}'..='\u{05FF}').contains(&c)
     }
 
     pub fn is_greek(c: char) -> bool {
-        (c >= '\u{0370}' && c <= '\u{03FF}')    // Greek and Coptic
-            || (c >= '\u{1F00}' && c <= '\u{1FFF}') // Greek Extended
+        ('\u{0370}'..='\u{03FF}').contains(&c)    // Greek and Coptic
+            || ('\u{1F00}'..='\u{1FFF}').contains(&c) // Greek Extended
     }
 
     pub fn is_cyrillic(c: char) -> bool {
-        (c >= '\u{0400}' && c <= '\u{04FF}')    // Cyrillic
-            || (c >= '\u{0500}' && c <= '\u{052F}') // Cyrillic Supplement
+        ('\u{0400}'..='\u{04FF}').contains(&c)    // Cyrillic
+            || ('\u{0500}'..='\u{052F}').contains(&c) // Cyrillic Supplement
     }
 
     pub fn is_latin(c: char) -> bool {
-        (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '\u{00C0}' && c <= '\u{024F}')
+        c.is_ascii_uppercase() || c.is_ascii_lowercase() || ('\u{00C0}'..='\u{024F}').contains(&c)
     }
 }
 

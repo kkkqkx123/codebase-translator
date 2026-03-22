@@ -8,7 +8,7 @@ use tree_sitter::{Node, Parser, Tree};
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, TranslationUnit};
 use crate::parser::core::traits::{
-    ExtractionContext, ExtractionStrategy, Parser as ParserTrait, StrategyNodeType,
+    ExtractionConfig, Parser as ParserTrait, StrategyNodeType,
 };
 use crate::parser::filtering::traits::Filter;
 use crate::parser::{ContentFilter, FunctionCategory};
@@ -23,7 +23,7 @@ use tracing::{debug, error, info, instrument, warn};
 /// Python language parser
 pub struct PythonParser {
     config: ParserConfig,
-    strategy: Arc<dyn ExtractionStrategy>,
+    extraction_config: ExtractionConfig,
     filter: Arc<ContentFilter>,
     patterns: PythonPatterns,
     string_processor: StringProcessor,
@@ -33,12 +33,12 @@ impl PythonParser {
     /// Create a new Python parser
     pub fn new(
         config: ParserConfig,
-        strategy: Arc<dyn ExtractionStrategy>,
+        extraction_config: ExtractionConfig,
         filter: Arc<ContentFilter>,
     ) -> Result<Self> {
         Ok(Self {
             config,
-            strategy,
+            extraction_config,
             filter,
             patterns: PythonPatterns::new(),
             string_processor: StringProcessor::new(),
@@ -205,22 +205,21 @@ impl PythonParser {
                 continue;
             }
 
-            // Apply strategy
-            let ctx = ExtractionContext::new(&text);
+            // Apply extraction config
             if !self
-                .strategy
-                .should_extract(StrategyNodeType::Comment, &ctx)
+                .extraction_config
+                .should_extract(StrategyNodeType::Comment)
             {
                 debug!(
                     file = %file_path,
                     text = %text,
-                    "Comment filtered: extraction strategy"
+                    "Comment filtered: extraction config"
                 );
                 continue;
             }
 
             let id = format!("{}_comment_{}", file_path, match_idx);
-            let node_type = self.strategy.get_node_type(StrategyNodeType::Comment);
+            let node_type = self.extraction_config.get_node_type(StrategyNodeType::Comment);
             let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
             units.push(unit);
             match_idx += 1;
@@ -312,22 +311,21 @@ impl PythonParser {
                 continue;
             }
 
-            // Apply strategy
-            let ctx = ExtractionContext::new(&text);
+            // Apply extraction config
             if !self
-                .strategy
-                .should_extract(StrategyNodeType::DocString, &ctx)
+                .extraction_config
+                .should_extract(StrategyNodeType::DocString)
             {
                 debug!(
                     file = %file_path,
                     text = %text,
-                    "Docstring filtered: extraction strategy"
+                    "Docstring filtered: extraction config"
                 );
                 continue;
             }
 
             let id = format!("{}_docstring_{}", file_path, match_idx);
-            let node_type = self.strategy.get_node_type(StrategyNodeType::DocString);
+            let node_type = self.extraction_config.get_node_type(StrategyNodeType::DocString);
             let mut unit = TranslationUnit::new_with_pattern(
                 id,
                 node_type,
@@ -455,20 +453,19 @@ impl PythonParser {
                         }
                     };
 
-                    // Apply strategy
-                    let ctx = ExtractionContext::new(&cleaned).with_function_name(&full_func_name);
-                    if !self.strategy.should_extract(strategy_node_type, &ctx) {
+                    // Apply extraction config
+                    if !self.extraction_config.should_extract(strategy_node_type) {
                         debug!(
                             file = %file_path,
                             function = %full_func_name,
                             text = %cleaned,
-                            "Function string filtered: extraction strategy"
+                            "Function string filtered: extraction config"
                         );
                         continue;
                     }
 
                     let id = format!("{}_func_{}", file_path, match_idx);
-                    let node_type = self.strategy.get_node_type(strategy_node_type);
+                    let node_type = self.extraction_config.get_node_type(strategy_node_type);
                     let mut unit = TranslationUnit::new_with_pattern(
                         id,
                         node_type,
@@ -582,7 +579,6 @@ mod tests {
     use crate::core::models::NodeType;
     use crate::parser::filtering::FilterConfig;
     use crate::parser::core::traits::ExtractionConfig;
-    use crate::parser::core::strategies::ConfigBasedStrategy;
     use std::path::PathBuf;
 
     fn create_test_file(content: &str, path: &str) -> File {
@@ -598,10 +594,9 @@ mod tests {
             format_strings: true,
             ..Default::default()
         };
-        let strategy: Arc<dyn ExtractionStrategy> = Arc::new(ConfigBasedStrategy::new(extraction_config));
         let filter = Arc::new(ContentFilter::new(FilterConfig::default()).unwrap());
 
-        PythonParser::new(config, strategy, filter).unwrap()
+        PythonParser::new(config, extraction_config, filter).unwrap()
     }
 
     #[tokio::test]

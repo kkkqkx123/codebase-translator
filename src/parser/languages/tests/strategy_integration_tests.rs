@@ -7,8 +7,8 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use crate::core::models::{File, NodeType};
-use crate::parser::core::traits::{ExtractionConfig, ExtractionStrategy, Parser, StrategyNodeType};
-use crate::parser::{ConfigBasedStrategy, ContentFilter, FilterConfig};
+use crate::parser::core::traits::{ExtractionConfig, Parser, StrategyNodeType};
+use crate::parser::{ContentFilter, FilterConfig};
 use crate::parser::ParserConfig;
 use crate::parser::languages::*;
 
@@ -23,10 +23,6 @@ fn create_test_parser_config() -> ParserConfig {
         extract_strings: true,
         ..Default::default()
     }
-}
-
-fn create_strategy_with_config(config: ExtractionConfig) -> Arc<dyn ExtractionStrategy> {
-    Arc::new(ConfigBasedStrategy::new(config))
 }
 
 fn create_filter() -> Arc<ContentFilter> {
@@ -44,7 +40,7 @@ fn test_strategy_comment_filtering() {
 
     let parser = RustParser::new(
         create_test_parser_config(),
-        create_strategy_with_config(config),
+        config,
         create_filter(),
     )
     .unwrap();
@@ -85,7 +81,7 @@ fn test_strategy_docstring_filtering() {
 
     let parser = PythonParser::new(
         create_test_parser_config(),
-        create_strategy_with_config(config),
+        config,
         create_filter(),
     )
     .unwrap();
@@ -125,7 +121,7 @@ fn test_strategy_error_message_filtering() {
 
     let parser = RustParser::new(
         create_test_parser_config(),
-        create_strategy_with_config(config),
+        config,
         create_filter(),
     )
     .unwrap();
@@ -165,7 +161,7 @@ fn test_strategy_format_string_filtering() {
 
     let parser = JavaScriptParser::new(
         create_test_parser_config(),
-        create_strategy_with_config(config),
+        config,
         create_filter(),
     )
     .unwrap();
@@ -204,7 +200,7 @@ fn test_strategy_log_message_filtering() {
 
     let parser = GoParser::new(
         create_test_parser_config(),
-        create_strategy_with_config(config),
+        config,
         create_filter(),
     )
     .unwrap();
@@ -247,7 +243,7 @@ fn test_c_parser_docstring_strategy() {
 
     let parser = CParser::new(
         create_test_parser_config(),
-        create_strategy_with_config(config),
+        config,
         create_filter(),
     )
     .unwrap();
@@ -292,7 +288,7 @@ fn test_cpp_parser_docstring_strategy() {
 
     let parser = CppParser::new(
         create_test_parser_config(),
-        create_strategy_with_config(config),
+        config,
         create_filter(),
     )
     .unwrap();
@@ -337,7 +333,7 @@ fn test_java_parser_strategy_integration() {
 
     let parser = JavaParser::new(
         create_test_parser_config(),
-        create_strategy_with_config(config),
+        config,
         create_filter(),
     )
     .unwrap();
@@ -381,7 +377,7 @@ fn test_csharp_parser_strategy_integration() {
 
     let parser = CSharpParser::new(
         create_test_parser_config(),
-        create_strategy_with_config(config),
+        config,
         create_filter(),
     )
     .unwrap();
@@ -418,7 +414,7 @@ fn test_typescript_template_string_strategy() {
 
     let parser = TypeScriptParser::new(
         parser_config,
-        create_strategy_with_config(config),
+        config,
         create_filter(),
     )
     .unwrap();
@@ -452,54 +448,51 @@ const message = `Hello, World!`;
 /// Test that all node types are correctly mapped
 #[test]
 fn test_strategy_node_type_mapping() {
-    let strategy = ConfigBasedStrategy::new(ExtractionConfig::default());
+    let config = ExtractionConfig::default();
 
     // Verify all StrategyNodeType variants map to correct NodeType
     assert_eq!(
-        strategy.get_node_type(StrategyNodeType::Comment),
+        config.get_node_type(StrategyNodeType::Comment),
         NodeType::Comment
     );
     assert_eq!(
-        strategy.get_node_type(StrategyNodeType::DocString),
+        config.get_node_type(StrategyNodeType::DocString),
         NodeType::DocString
     );
     assert_eq!(
-        strategy.get_node_type(StrategyNodeType::ErrorMessage),
+        config.get_node_type(StrategyNodeType::ErrorMessage),
         NodeType::ErrorMessage
     );
     assert_eq!(
-        strategy.get_node_type(StrategyNodeType::FormatString),
+        config.get_node_type(StrategyNodeType::FormatString),
         NodeType::FormatString
     );
     assert_eq!(
-        strategy.get_node_type(StrategyNodeType::LogMessage),
+        config.get_node_type(StrategyNodeType::LogMessage),
         NodeType::LogMessage
     );
     assert_eq!(
-        strategy.get_node_type(StrategyNodeType::StringLiteral),
+        config.get_node_type(StrategyNodeType::StringLiteral),
         NodeType::StringLiteral
     );
 }
 
-/// Test strategy with context (function name)
+/// Test extraction config
 #[test]
-fn test_strategy_with_function_context() {
-    use crate::parser::core::traits::ExtractionContext;
-
-    let strategy = ConfigBasedStrategy::new(ExtractionConfig {
+fn test_extraction_config() {
+    let config = ExtractionConfig {
         error_messages: true,
         ..Default::default()
-    });
+    };
 
-    // Test with error message context
-    let ctx = ExtractionContext::new("Error occurred").with_function_name("panic");
-    assert!(strategy.should_extract(StrategyNodeType::ErrorMessage, &ctx));
+    // Test with error message enabled
+    assert!(config.should_extract(StrategyNodeType::ErrorMessage));
 
     // Test with disabled error messages
-    let strategy_disabled = ConfigBasedStrategy::new(ExtractionConfig {
+    let config_disabled = ExtractionConfig {
         error_messages: false,
         ..Default::default()
-    });
-    assert!(!strategy_disabled.should_extract(StrategyNodeType::ErrorMessage, &ctx));
+    };
+    assert!(!config_disabled.should_extract(StrategyNodeType::ErrorMessage));
 }
 

@@ -6,9 +6,9 @@ use std::sync::Arc;
 
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, PatternType, TranslationUnit};
-use crate::parser::core::traits::{ExtractionConfig, ExtractionStrategy, Parser as ParserTrait};
+use crate::parser::core::traits::{ExtractionConfig, Parser as ParserTrait};
 use crate::parser::filtering::traits::Filter;
-use crate::parser::{ConfigBasedStrategy, ContentFilter};
+use crate::parser::{ContentFilter};
 use crate::parser::{ParserConfig, TreeSitterParser, TreeSitterParserFactory};
 use crate::parser::regex::custom_pattern_matcher::CustomPatternMatcher;
 use crate::parser::regex::state_machine::StateMachineMatcher;
@@ -45,10 +45,10 @@ impl ParserCoordinator {
     pub fn with_defaults(config: ParserConfig) -> Result<Self> {
         use crate::parser::filtering::default_filter;
 
-        let strategy: Arc<dyn ExtractionStrategy> = Arc::new(ConfigBasedStrategy::new(ExtractionConfig::default()));
+        let extraction_config = ExtractionConfig::default();
         let filter = Arc::new(default_filter()?);
 
-        Self::new(config, strategy, filter)
+        Self::new(config, extraction_config, filter)
     }
 
     /// Creates a new parser coordinator from project configuration.
@@ -62,13 +62,13 @@ impl ParserCoordinator {
     ) -> Result<Self> {
         use crate::parser::filtering::from_project_config;
 
-        let strategy: Arc<dyn ExtractionStrategy> = Arc::new(ConfigBasedStrategy::new(ExtractionConfig::default()));
+        let extraction_config = ExtractionConfig::default();
         let filter = Arc::new(from_project_config(
             &project_config.filter,
             &project_config.translate,
         )?);
 
-        Self::new(config, strategy, filter)
+        Self::new(config, extraction_config, filter)
     }
 
     /// Creates a new parser coordinator from project and translator configuration.
@@ -83,20 +83,20 @@ impl ParserCoordinator {
     ) -> Result<Self> {
         use crate::parser::filtering::from_project_config_with_translator;
 
-        let strategy: Arc<dyn ExtractionStrategy> = Arc::new(ConfigBasedStrategy::new(ExtractionConfig::default()));
+        let extraction_config = ExtractionConfig::default();
         let filter = Arc::new(from_project_config_with_translator(
             &project_config.filter,
             &project_config.translate,
             translator_max_length,
         )?);
 
-        Self::new(config, strategy, filter)
+        Self::new(config, extraction_config, filter)
     }
 
     /// Creates a new parser coordinator with unified configuration.
     ///
     /// This method ensures consistency between ParserConfig and ExtractionConfig
-    /// by deriving the strategy configuration from the parser configuration.
+    /// by deriving the extraction configuration from the parser configuration.
     pub fn with_unified_config(config: ParserConfig) -> Result<Self> {
         use crate::parser::filtering::default_filter;
 
@@ -108,32 +108,31 @@ impl ParserCoordinator {
             ..Default::default()
         };
 
-        let strategy: Arc<dyn ExtractionStrategy> = Arc::new(ConfigBasedStrategy::new(extraction_config));
         let filter = Arc::new(default_filter()?);
 
-        Self::new(config, strategy, filter)
+        Self::new(config, extraction_config, filter)
     }
 
-    /// Creates a new parser coordinator with custom strategy and filter.
+    /// Creates a new parser coordinator with custom extraction config and filter.
     pub fn new(
         config: ParserConfig,
-        strategy: Arc<dyn ExtractionStrategy>,
+        extraction_config: ExtractionConfig,
         filter: Arc<ContentFilter>,
     ) -> Result<Self> {
-        Self::with_extraction_config(config, strategy, filter, None)
+        Self::with_extraction_config(config, extraction_config, filter, None)
     }
 
     /// Creates a new parser coordinator with extraction config for state machine patterns.
     pub fn with_extraction_config(
         config: ParserConfig,
-        strategy: Arc<dyn ExtractionStrategy>,
+        extraction_config: ExtractionConfig,
         filter: Arc<ContentFilter>,
-        extraction_config: Option<crate::config::project::ExtractionConfig>,
+        project_extraction_config: Option<crate::config::project::ExtractionConfig>,
     ) -> Result<Self> {
         let mut tree_sitter_parsers: Vec<TreeSitterParser> = Vec::new();
 
         for parser_result in
-            TreeSitterParserFactory::create_all_parsers(config.clone(), strategy, filter.clone())
+            TreeSitterParserFactory::create_all_parsers(config.clone(), extraction_config.clone(), filter.clone())
         {
             match parser_result {
                 Ok(parser) => tree_sitter_parsers.push(parser),
@@ -145,8 +144,8 @@ impl ParserCoordinator {
 
         let fallback_parser = FallbackParser::new(config.clone());
 
-        // Load custom patterns from extraction config
-        let custom_patterns = extraction_config
+        // Load custom patterns from project extraction config
+        let custom_patterns = project_extraction_config
             .as_ref()
             .and_then(|cfg| {
                 if cfg.custom_patterns.is_empty() {
@@ -180,8 +179,8 @@ impl ParserCoordinator {
             }
         }
 
-        // Load state machine patterns from extraction config
-        let state_machine_patterns = extraction_config
+        // Load state machine patterns from project extraction config
+        let state_machine_patterns = project_extraction_config
             .and_then(|cfg| {
                 if cfg.state_machine_patterns.is_empty() {
                     None

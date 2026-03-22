@@ -73,8 +73,7 @@ pub mod regex_parsers;
 
 // Re-export from core (traits and types)
 pub use core::{
-    ConfigBasedStrategy, ExportedOnlyStrategy,
-    ExtractionConfig, ExtractionContext, ExtractionStrategy, Parser, StrategyNodeType,
+    ExtractionConfig, Parser, StrategyNodeType,
     FunctionCategory, LanguageFunctionPatterns,
 };
 

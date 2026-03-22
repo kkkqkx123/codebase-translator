@@ -10,10 +10,7 @@ use codebase_translate::core::models::File;
 use codebase_translate::parser::coordinator::{ParserCoordinator, ParserType};
 use codebase_translate::parser::filtering::{ContentFilter, FilterConfig};
 use codebase_translate::parser::regex::RegexParser;
-use codebase_translate::parser::core::traits::{
-    ExtractionConfig, ExtractionStrategy,
-};
-use codebase_translate::parser::core::strategies::ConfigBasedStrategy;
+use codebase_translate::parser::core::traits::ExtractionConfig;
 use codebase_translate::parser::ParserConfig;
 
 fn create_test_file(content: &str, path: &str) -> File {
@@ -270,15 +267,12 @@ fn test_coordinator_with_custom_strategy() {
         log_messages: true,
         custom_patterns: vec![],
     };
-    let strategy = Arc::new(
-        ConfigBasedStrategy::new(strategy_config).expect("Failed to create strategy"),
-    );
     let filter = Arc::new(
         ContentFilter::new(FilterConfig::default()).expect("Failed to create filter"),
     );
 
     let coordinator =
-        ParserCoordinator::new(config, strategy, filter).expect("Failed to create coordinator");
+        ParserCoordinator::new(config, strategy_config, filter).expect("Failed to create coordinator");
 
     assert!(coordinator.tree_sitter_parser_count() > 0);
 }

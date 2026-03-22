@@ -187,7 +187,7 @@ impl Detector {
                 total_multi_byte += 1;
                 if i + 1 < data.len() {
                     let next = data[i + 1];
-                    if (next >= 0x40 && next <= 0x7E) || (next >= 0x80 && next <= 0xFE) {
+                    if (0x40..=0x7E).contains(&next) || (0x80..=0xFE).contains(&next) {
                         valid_count += 1;
                         i += 2;
                         continue;
@@ -221,7 +221,7 @@ impl Detector {
                 total_multi_byte += 1;
                 if i + 1 < data.len() {
                     let next = data[i + 1];
-                    if (next >= 0x40 && next <= 0x7E) || (next >= 0xA1 && next <= 0xFE) {
+                    if (0x40..=0x7E).contains(&next) || (0xA1..=0xFE).contains(&next) {
                         valid_count += 1;
                         i += 2;
                         continue;
@@ -255,7 +255,7 @@ impl Detector {
                 total_multi_byte += 1;
                 if i + 1 < data.len() {
                     let next = data[i + 1];
-                    if (next >= 0x40 && next <= 0x7E) || (next >= 0x80 && next <= 0xFC) {
+                    if (0x40..=0x7E).contains(&next) || (0x80..=0xFC).contains(&next) {
                         valid_count += 1;
                         i += 2;
                         continue;

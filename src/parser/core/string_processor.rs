@@ -152,9 +152,9 @@ impl StringProcessor {
         }
 
         // Handle block doc comments: /** */ (same as block comments but with extra leading '*')
-        if text.starts_with("/**") {
+        if let Some(after_prefix) = text.strip_prefix("/**") {
             // Find the position of */ and extract everything before it
-            let after_prefix = &text[3..]; // Skip "/**"
+            // Skip "/**"
             let content = if let Some(pos) = after_prefix.find("*/") {
                 &after_prefix[..pos]
             } else {

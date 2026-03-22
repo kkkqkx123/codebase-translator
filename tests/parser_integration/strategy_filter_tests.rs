@@ -8,10 +8,7 @@ use std::sync::Arc;
 use codebase_translate::core::models::{File, NodeType};
 use codebase_translate::parser::coordinator::ParserCoordinator;
 use codebase_translate::parser::filtering::{ContentFilter, FilterConfig};
-use codebase_translate::parser::core::traits::{
-    ExtractionConfig, ExtractionContext, ExtractionStrategy, StrategyNodeType,
-};
-use codebase_translate::parser::core::strategies::ConfigBasedStrategy;
+use codebase_translate::parser::core::traits::{ExtractionConfig, StrategyNodeType};
 use codebase_translate::parser::ParserConfig;
 
 fn create_test_file(content: &str, path: &str) -> File {
@@ -22,149 +19,110 @@ mod strategy_tests {
     use super::*;
 
     #[test]
-    fn test_config_based_strategy_comments_only() {
+    fn test_extraction_config_comments_only() {
         let config = ExtractionConfig {
             comments: true,
             docstrings: false,
             error_messages: false,
             format_strings: false,
             log_messages: false,
-            custom_patterns: vec![],
+            ..Default::default()
         };
 
-        let strategy = ConfigBasedStrategy::new(config).expect("Failed to create strategy");
-
-        let comment_ctx = ExtractionContext::new("This is a comment");
-        let doc_ctx = ExtractionContext::new("This is a docstring");
-
         assert!(
-            strategy.should_extract(StrategyNodeType::Comment, &comment_ctx),
+            config.should_extract(StrategyNodeType::Comment),
             "Should extract comments"
         );
         assert!(
-            !strategy.should_extract(StrategyNodeType::DocString, &doc_ctx),
+            !config.should_extract(StrategyNodeType::DocString),
             "Should not extract docstrings"
         );
     }
 
     #[test]
-    fn test_config_based_strategy_docstrings_only() {
+    fn test_extraction_config_docstrings_only() {
         let config = ExtractionConfig {
             comments: false,
             docstrings: true,
             error_messages: false,
             format_strings: false,
             log_messages: false,
-            custom_patterns: vec![],
+            ..Default::default()
         };
 
-        let strategy = ConfigBasedStrategy::new(config).expect("Failed to create strategy");
-
-        let comment_ctx = ExtractionContext::new("This is a comment");
-        let doc_ctx = ExtractionContext::new("This is a docstring");
-
         assert!(
-            !strategy.should_extract(StrategyNodeType::Comment, &comment_ctx),
+            !config.should_extract(StrategyNodeType::Comment),
             "Should not extract comments"
         );
         assert!(
-            strategy.should_extract(StrategyNodeType::DocString, &doc_ctx),
+            config.should_extract(StrategyNodeType::DocString),
             "Should extract docstrings"
         );
     }
 
     #[test]
-    fn test_config_based_strategy_error_messages() {
+    fn test_extraction_config_error_messages() {
         let config = ExtractionConfig {
             comments: false,
             docstrings: false,
             error_messages: true,
             format_strings: false,
             log_messages: false,
-            custom_patterns: vec![],
+            ..Default::default()
         };
 
-        let strategy = ConfigBasedStrategy::new(config).expect("Failed to create strategy");
-
-        let error_ctx = ExtractionContext::new("Error: something went wrong")
-            .with_function_name("panic");
-        let log_ctx = ExtractionContext::new("Log message")
-            .with_function_name("println");
-
         assert!(
-            strategy.should_extract(StrategyNodeType::ErrorMessage, &error_ctx),
+            config.should_extract(StrategyNodeType::ErrorMessage),
             "Should extract error messages"
         );
         assert!(
-            !strategy.should_extract(StrategyNodeType::LogMessage, &log_ctx),
+            !config.should_extract(StrategyNodeType::LogMessage),
             "Should not extract log messages"
         );
     }
 
     #[test]
-    fn test_config_based_strategy_all_enabled() {
+    fn test_extraction_config_all_enabled() {
         let config = ExtractionConfig {
             comments: true,
             docstrings: true,
             error_messages: true,
             format_strings: true,
             log_messages: true,
-            custom_patterns: vec![],
+            ..Default::default()
         };
 
-        let strategy = ConfigBasedStrategy::new(config).expect("Failed to create strategy");
-
-        let comment_ctx = ExtractionContext::new("comment");
-        let doc_ctx = ExtractionContext::new("docstring");
-        let error_ctx = ExtractionContext::new("error");
-        let format_ctx = ExtractionContext::new("format");
-        let log_ctx = ExtractionContext::new("log");
-
-        assert!(strategy.should_extract(StrategyNodeType::Comment, &comment_ctx));
-        assert!(strategy.should_extract(StrategyNodeType::DocString, &doc_ctx));
-        assert!(strategy.should_extract(StrategyNodeType::ErrorMessage, &error_ctx));
-        assert!(strategy.should_extract(StrategyNodeType::FormatString, &format_ctx));
-        assert!(strategy.should_extract(StrategyNodeType::LogMessage, &log_ctx));
+        assert!(config.should_extract(StrategyNodeType::Comment));
+        assert!(config.should_extract(StrategyNodeType::DocString));
+        assert!(config.should_extract(StrategyNodeType::ErrorMessage));
+        assert!(config.should_extract(StrategyNodeType::FormatString));
+        assert!(config.should_extract(StrategyNodeType::LogMessage));
     }
 
     #[test]
-    fn test_strategy_node_type_mapping() {
+    fn test_extraction_config_node_type_mapping() {
         let config = ExtractionConfig::default();
-        let strategy = ConfigBasedStrategy::new(config).expect("Failed to create strategy");
 
         assert_eq!(
-            strategy.get_node_type(StrategyNodeType::Comment),
+            config.get_node_type(StrategyNodeType::Comment),
             NodeType::Comment
         );
         assert_eq!(
-            strategy.get_node_type(StrategyNodeType::DocString),
+            config.get_node_type(StrategyNodeType::DocString),
             NodeType::DocString
         );
         assert_eq!(
-            strategy.get_node_type(StrategyNodeType::ErrorMessage),
+            config.get_node_type(StrategyNodeType::ErrorMessage),
             NodeType::ErrorMessage
         );
         assert_eq!(
-            strategy.get_node_type(StrategyNodeType::FormatString),
+            config.get_node_type(StrategyNodeType::FormatString),
             NodeType::FormatString
         );
         assert_eq!(
-            strategy.get_node_type(StrategyNodeType::LogMessage),
+            config.get_node_type(StrategyNodeType::LogMessage),
             NodeType::LogMessage
         );
-    }
-
-    #[test]
-    fn test_strategy_with_metadata() {
-        let config = ExtractionConfig::default();
-        let strategy = ConfigBasedStrategy::new(config).expect("Failed to create strategy");
-
-        let ctx = ExtractionContext::new("Test content")
-            .with_function_name("test_func")
-            .with_exported(true)
-            .with_metadata("key", "value");
-
-        assert!(strategy.should_extract(StrategyNodeType::Comment, &ctx));
     }
 }
 
@@ -380,9 +338,6 @@ mod integration_tests {
             log_messages: false,
             custom_patterns: vec![],
         };
-        let strategy = Arc::new(
-            ConfigBasedStrategy::new(strategy_config).expect("Failed to create strategy"),
-        );
 
         let filter_config = FilterConfig {
             exclude_keywords: vec!["TODO".to_string()],
@@ -392,7 +347,7 @@ mod integration_tests {
 
         let parser_config = ParserConfig::default();
         let coordinator =
-            ParserCoordinator::new(parser_config, strategy, filter).expect("Failed to create coordinator");
+            ParserCoordinator::new(parser_config, strategy_config, filter).expect("Failed to create coordinator");
 
         let content = r#"
 /// This is a doc comment
@@ -422,9 +377,6 @@ fn main() {
             log_messages: false,
             custom_patterns: vec![],
         };
-        let strategy = Arc::new(
-            ConfigBasedStrategy::new(strategy_config).expect("Failed to create strategy"),
-        );
 
         let filter_config = FilterConfig {
             exclude_keywords: vec!["NOTE".to_string(), "XXX".to_string()],
@@ -437,7 +389,7 @@ fn main() {
 
         let parser_config = ParserConfig::default();
         let coordinator =
-            ParserCoordinator::new(parser_config, strategy, filter).expect("Failed to create coordinator");
+            ParserCoordinator::new(parser_config, strategy_config, filter).expect("Failed to create coordinator");
 
         let content = r#"
 fn main() {
@@ -469,15 +421,12 @@ fn main() {
             log_messages: false,
             custom_patterns: vec![],
         };
-        let strategy = Arc::new(
-            ConfigBasedStrategy::new(strategy_config).expect("Failed to create strategy"),
-        );
 
         let filter = Arc::new(ContentFilter::default());
 
         let parser_config = ParserConfig::default();
         let coordinator =
-            ParserCoordinator::new(parser_config, strategy, filter).expect("Failed to create coordinator");
+            ParserCoordinator::new(parser_config, strategy_config, filter).expect("Failed to create coordinator");
 
         let content = r#"# Header
 

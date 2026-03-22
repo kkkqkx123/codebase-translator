@@ -7,7 +7,7 @@
 //!   - e:\project\codebase-translator\.env (环境变量)
 
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use codebase_translate::config::{
     ConfigLoader, EnvLoader, GlobalConfig, ProjectConfig,
@@ -491,7 +491,7 @@ fn build_project_config_summary(config: &ProjectConfig) -> ProjectConfigSummary 
     }
 }
 
-fn write_validation_report(output_dir: &PathBuf, result: &ConfigValidationResult) {
+fn write_validation_report(output_dir: &Path, result: &ConfigValidationResult) {
     let report_path = output_dir.join("validation_report.txt");
 
     let mut report = String::new();
@@ -599,7 +599,7 @@ fn write_validation_report(output_dir: &PathBuf, result: &ConfigValidationResult
                     ));
                 }
             } else {
-                report.push_str(&format!("    - 模型模式: 单模型\n"));
+                report.push_str("    - 模型模式: 单模型\n");
                 report.push_str(&format!("    - 模型: {}\n", provider.model));
             }
             
@@ -681,7 +681,7 @@ fn write_validation_report(output_dir: &PathBuf, result: &ConfigValidationResult
     println!("\n验证报告已写入: {}", report_path.display());
 }
 
-fn write_detailed_config(output_dir: &PathBuf, result: &ConfigValidationResult) {
+fn write_detailed_config(output_dir: &Path, result: &ConfigValidationResult) {
     // 写入 JSON 格式的详细配置（不包含敏感信息）
     let json_path = output_dir.join("config_summary.json");
 

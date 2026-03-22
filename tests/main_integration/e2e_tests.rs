@@ -33,7 +33,7 @@ fn copy_fixture_to_temp(fixture_name: &str) -> (TempDir, PathBuf) {
     let dest_path = temp_dir.path().join(fixture_name);
 
     fs::copy(&fixture_path, &dest_path)
-        .expect(&format!("Failed to copy fixture: {}", fixture_name));
+        .unwrap_or_else(|_| panic!("Failed to copy fixture: {}", fixture_name));
 
     (temp_dir, dest_path)
 }
@@ -50,7 +50,7 @@ fn copy_all_fixtures_to_temp() -> TempDir {
         if src_path.is_file() {
             let dest_path = temp_dir.path().join(entry.file_name());
             fs::copy(&src_path, &dest_path)
-                .expect(&format!("Failed to copy fixture: {:?}", src_path));
+                .unwrap_or_else(|_| panic!("Failed to copy fixture: {:?}", src_path));
         }
     }
 
@@ -60,12 +60,12 @@ fn copy_all_fixtures_to_temp() -> TempDir {
 fn write_test_output(filename: &str, content: &str) {
     ensure_output_dir();
     let output_path = PathBuf::from(OUTPUT_DIR).join(filename);
-    fs::write(&output_path, content).expect(&format!("Failed to write output: {}", filename));
+    fs::write(&output_path, content).unwrap_or_else(|_| panic!("Failed to write output: {}", filename));
     println!("Output written to: {}", output_path.display());
 }
 
 fn read_file_content(path: &Path) -> String {
-    fs::read_to_string(path).expect(&format!("Failed to read file: {}", path.display()))
+    fs::read_to_string(path).unwrap_or_else(|_| panic!("Failed to read file: {}", path.display()))
 }
 
 fn check_file_exists(path: &Path) -> bool {
@@ -211,7 +211,7 @@ fn test_e2e_translation_rust_file() {
 
     match result {
         Ok(workflow_result) => {
-            output.push_str(&format!("Translation completed successfully!\n\n"));
+            output.push_str("Translation completed successfully!\n\n");
             output.push_str(&format!(
                 "Files processed: {}\n",
                 workflow_result.files_processed
@@ -319,7 +319,7 @@ fn test_e2e_translation_python_file() {
 
     match result {
         Ok(workflow_result) => {
-            output.push_str(&format!("Translation completed successfully!\n\n"));
+            output.push_str("Translation completed successfully!\n\n");
             output.push_str(&format!(
                 "Files processed: {}\n",
                 workflow_result.files_processed
@@ -427,7 +427,7 @@ fn test_e2e_translation_javascript_file() {
 
     match result {
         Ok(workflow_result) => {
-            output.push_str(&format!("Translation completed successfully!\n\n"));
+            output.push_str("Translation completed successfully!\n\n");
             output.push_str(&format!(
                 "Files processed: {}\n",
                 workflow_result.files_processed
@@ -535,7 +535,7 @@ fn test_e2e_translation_markdown_file() {
 
     match result {
         Ok(workflow_result) => {
-            output.push_str(&format!("Translation completed successfully!\n\n"));
+            output.push_str("Translation completed successfully!\n\n");
             output.push_str(&format!(
                 "Files processed: {}\n",
                 workflow_result.files_processed
@@ -643,7 +643,7 @@ fn test_e2e_translation_multiple_files() {
 
     match result {
         Ok(workflow_result) => {
-            output.push_str(&format!("Translation completed successfully!\n\n"));
+            output.push_str("Translation completed successfully!\n\n");
             output.push_str(&format!(
                 "Files processed: {}\n",
                 workflow_result.files_processed
@@ -692,7 +692,7 @@ fn test_e2e_translation_multiple_files() {
         let path = entry.path();
 
         if path.is_file()
-            && path.extension().map_or(false, |ext| {
+            && path.extension().is_some_and(|ext| {
                 matches!(ext.to_str(), Some("rs" | "py" | "js" | "md"))
             })
         {

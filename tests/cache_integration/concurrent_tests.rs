@@ -70,7 +70,7 @@ fn test_concurrent_writes() {
         let hash = hash_utils::generate_test_hash(&format!("file{}", i));
         let mut entry = CacheEntry::new(
             &hash,
-            &format!("/path/to/file{}.txt", i),
+            format!("/path/to/file{}.txt", i),
             123456i64 + i as i64,
             "local",
             fingerprint.clone(),
@@ -106,7 +106,7 @@ fn test_concurrent_read_write() {
             let hash = hash_utils::generate_test_hash(&format!("file{}", i));
             let mut entry = CacheEntry::new(
                 &hash,
-                &format!("/path/to/file{}.txt", i),
+                format!("/path/to/file{}.txt", i),
                 123456i64 + i as i64,
                 "local",
                 fingerprint_clone,
@@ -199,7 +199,7 @@ fn test_concurrent_clear() {
         let hash = hash_utils::generate_test_hash(&format!("file{}", i));
         let mut entry = CacheEntry::new(
             &hash,
-            &format!("/path/to/file{}.txt", i),
+            format!("/path/to/file{}.txt", i),
             123456i64 + i as i64,
             "local",
             fingerprint.clone(),
@@ -235,7 +235,7 @@ fn test_concurrent_stats() {
         let hash = hash_utils::generate_test_hash(&format!("file{}", i));
         let mut entry = CacheEntry::new(
             &hash,
-            &format!("/path/to/file{}.txt", i),
+            format!("/path/to/file{}.txt", i),
             123456i64 + i as i64,
             "local",
             fingerprint.clone(),
@@ -276,7 +276,7 @@ fn test_concurrent_list_entries() {
         let hash = hash_utils::generate_test_hash(&format!("file{}", i));
         let mut entry = CacheEntry::new(
             &hash,
-            &format!("/path/to/file{}.txt", i),
+            format!("/path/to/file{}.txt", i),
             123456i64 + i as i64,
             "local",
             fingerprint.clone(),
@@ -318,7 +318,7 @@ fn test_concurrent_mixed_operations() {
         let hash = hash_utils::generate_test_hash(&format!("file{}", i));
         let mut entry = CacheEntry::new(
             &hash,
-            &format!("/path/to/file{}.txt", i),
+            format!("/path/to/file{}.txt", i),
             123456i64 + i as i64,
             "local",
             fingerprint.clone(),

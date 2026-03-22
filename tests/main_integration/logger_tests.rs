@@ -26,7 +26,7 @@ fn get_project_root() -> PathBuf {
 fn write_test_output(filename: &str, content: &str) {
     ensure_output_dir();
     let output_path = PathBuf::from(OUTPUT_DIR).join(filename);
-    fs::write(&output_path, content).expect(&format!("Failed to write output: {}", filename));
+    fs::write(&output_path, content).unwrap_or_else(|_| panic!("Failed to write output: {}", filename));
     println!("Output written to: {}", output_path.display());
 }
 

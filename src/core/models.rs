@@ -6,18 +6,15 @@ use tracing::debug;
 /// Cache mode
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[derive(Default)]
 pub enum CacheMode {
     /// Local mode: cache in target project directory
+    #[default]
     Local,
     /// Global mode: cache in global storage directory
     Global,
 }
 
-impl Default for CacheMode {
-    fn default() -> Self {
-        Self::Local
-    }
-}
 
 impl std::fmt::Display for CacheMode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -196,7 +193,9 @@ impl std::fmt::Display for NodeType {
 
 /// Pattern type classification for extraction rules
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Default)]
 pub enum PatternType {
+    #[default]
     Builtin,
     CustomRegex,
     StateMachine,
@@ -212,11 +211,6 @@ impl std::fmt::Display for PatternType {
     }
 }
 
-impl Default for PatternType {
-    fn default() -> Self {
-        Self::Builtin
-    }
-}
 
 /// A unit of text that can be translated
 #[derive(Debug, Clone, Serialize, Deserialize)]

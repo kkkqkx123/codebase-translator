@@ -9,8 +9,10 @@ use codebase_translate::parser::ParserConfig;
 
 #[test]
 fn test_parse_chinese_rust_file() {
-    let mut config = ParserConfig::default();
-    config.extract_strings = true;
+    let config = ParserConfig {
+        extract_strings: true,
+        ..Default::default()
+    };
 
     let coordinator =
         ParserCoordinator::with_unified_config(config).expect("Failed to create coordinator");
@@ -52,7 +54,7 @@ fn test_parse_chinese_rust_file() {
             output.push_str(&format!("Raw Match:\n{}\n", raw));
         }
         output.push_str(&format!("Should Translate: {}\n", unit.should_translate));
-        output.push_str("\n");
+        output.push('\n');
     }
 
     fs::write(&output_path, output).expect("Failed to write output file");
