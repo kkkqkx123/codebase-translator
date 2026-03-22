@@ -5,7 +5,7 @@ use tracing::{debug, info, warn};
 
 use crate::core::error::Result;
 use crate::core::models::{File, NodeType, TranslationUnit};
-use crate::parser::abstraction::parser::Parser as ParserTrait;
+use crate::parser::core::traits::Parser as ParserTrait;
 use crate::parser::core::StringProcessor;
 use crate::parser::ParserConfig;
 

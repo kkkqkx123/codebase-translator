@@ -7,9 +7,8 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use crate::core::models::{File, NodeType};
-use crate::parser::abstraction::parser::Parser;
-use crate::parser::abstraction::strategy::{ExtractionConfig, ExtractionStrategy, StrategyNodeType};
-use crate::parser::{ConfigBasedStrategy, ContentFilter, ExtractionStrategyImpl, FilterConfig};
+use crate::parser::core::traits::{ExtractionConfig, ExtractionStrategy, Parser, StrategyNodeType};
+use crate::parser::{ConfigBasedStrategy, ContentFilter, FilterConfig};
 use crate::parser::ParserConfig;
 use crate::parser::languages::*;
 
@@ -26,10 +25,8 @@ fn create_test_parser_config() -> ParserConfig {
     }
 }
 
-fn create_strategy_with_config(config: ExtractionConfig) -> Arc<ExtractionStrategyImpl> {
-    Arc::new(ExtractionStrategyImpl::ConfigBased(
-        ConfigBasedStrategy::new(config),
-    ))
+fn create_strategy_with_config(config: ExtractionConfig) -> Arc<dyn ExtractionStrategy> {
+    Arc::new(ConfigBasedStrategy::new(config))
 }
 
 fn create_filter() -> Arc<ContentFilter> {
@@ -487,7 +484,7 @@ fn test_strategy_node_type_mapping() {
 /// Test strategy with context (function name)
 #[test]
 fn test_strategy_with_function_context() {
-    use crate::parser::abstraction::strategy::ExtractionContext;
+    use crate::parser::core::traits::ExtractionContext;
 
     let strategy = ConfigBasedStrategy::new(ExtractionConfig {
         error_messages: true,

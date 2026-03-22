@@ -1,6 +1,6 @@
 //! C#-specific patterns for method classification
 
-use crate::parser::patterns::{FunctionCategory, LanguageFunctionPatterns};
+use crate::parser::core::types::{FunctionCategory, LanguageFunctionPatterns};
 
 /// C# patterns for method classification
 #[derive(Clone)]

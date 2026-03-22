@@ -3,7 +3,7 @@
 //! This module provides a strategy that only extracts exported/public items.
 
 use crate::core::models::NodeType;
-use crate::parser::abstraction::strategy::{
+use crate::parser::core::traits::{
     ExtractionContext, ExtractionStrategy, StrategyNodeType,
 };
 
@@ -45,7 +45,7 @@ impl<S: ExtractionStrategy> ExtractionStrategy for ExportedOnlyStrategy<S> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::abstraction::strategy::ExtractionConfig;
+    use crate::parser::core::traits::ExtractionConfig;
     use crate::parser::core::strategies::ConfigBasedStrategy;
 
     #[test]

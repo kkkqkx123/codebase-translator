@@ -1,20 +1,16 @@
 //! Go parser integration tests for writer
 
 use codebase_translate::parser::filtering::{ContentFilter, FilterConfig};
-use codebase_translate::parser::core::strategies::{
-    ConfigBasedStrategy, ExtractionStrategyImpl,
-};
-use codebase_translate::parser::abstraction::strategy::ExtractionConfig;
+use codebase_translate::parser::core::strategies::ConfigBasedStrategy;
+use codebase_translate::parser::core::traits::ExtractionConfig;
 use codebase_translate::parser::{ParserConfig, TreeSitterParserFactory};
 use codebase_translate::parser::Parser;
 use codebase_translate::writer::{FileWriter, WriterConfig};
 
 use super::common::*;
 
-fn create_test_strategy() -> std::sync::Arc<ExtractionStrategyImpl> {
-    std::sync::Arc::new(ExtractionStrategyImpl::ConfigBased(
-        ConfigBasedStrategy::new(ExtractionConfig::default()),
-    ))
+fn create_test_strategy() -> std::sync::Arc<dyn codebase_translate::parser::core::traits::ExtractionStrategy> {
+    std::sync::Arc::new(ConfigBasedStrategy::new(ExtractionConfig::default()))
 }
 
 fn create_test_filter() -> std::sync::Arc<ContentFilter> {

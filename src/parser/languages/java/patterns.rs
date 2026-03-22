@@ -1,6 +1,6 @@
 //! Java-specific patterns for method and function classification
 
-use crate::parser::patterns::{FunctionCategory, LanguageFunctionPatterns};
+use crate::parser::core::types::{FunctionCategory, LanguageFunctionPatterns};
 
 /// Java patterns for method classification
 #[derive(Clone)]

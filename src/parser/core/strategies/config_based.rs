@@ -3,7 +3,7 @@
 //! This module provides a strategy implementation based on configuration settings.
 
 use crate::core::models::NodeType;
-use crate::parser::abstraction::strategy::{
+use crate::parser::core::traits::{
     ExtractionConfig, ExtractionContext, ExtractionStrategy, StrategyNodeType,
 };
 use tracing::debug;

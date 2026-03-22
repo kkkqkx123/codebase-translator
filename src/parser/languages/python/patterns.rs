@@ -1,6 +1,6 @@
 //! Python-specific patterns for function classification
 
-use crate::parser::patterns::{FunctionCategory, LanguageFunctionPatterns};
+use crate::parser::core::types::{FunctionCategory, LanguageFunctionPatterns};
 
 /// Python patterns for function classification
 #[derive(Clone)]

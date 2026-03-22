@@ -7,12 +7,11 @@ use tree_sitter::{Node, Parser, Tree};
 
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, TranslationUnit};
-use crate::parser::abstraction::parser::Parser as ParserTrait;
-use crate::parser::abstraction::strategy::{
-    ExtractionContext, ExtractionStrategy, StrategyNodeType,
+use crate::parser::core::traits::{
+    ExtractionContext, ExtractionStrategy, Parser as ParserTrait, StrategyNodeType,
 };
 use crate::parser::filtering::traits::Filter;
-use crate::parser::{ContentFilter, ExtractionStrategyImpl, FunctionCategory};
+use crate::parser::{ContentFilter, FunctionCategory};
 use crate::parser::core::query_executor::QueryExecutor;
 use crate::parser::core::StringProcessor;
 use crate::parser::ParserConfig;
@@ -23,7 +22,7 @@ use tracing::{debug, error, info, instrument};
 /// C language parser
 pub struct CParser {
     config: ParserConfig,
-    strategy: Arc<ExtractionStrategyImpl>,
+    strategy: Arc<dyn ExtractionStrategy>,
     filter: Arc<ContentFilter>,
     patterns: CPatterns,
     string_processor: StringProcessor,
@@ -33,7 +32,7 @@ impl CParser {
     /// Create a new C parser
     pub fn new(
         config: ParserConfig,
-        strategy: Arc<ExtractionStrategyImpl>,
+        strategy: Arc<dyn ExtractionStrategy>,
         filter: Arc<ContentFilter>,
     ) -> Result<Self> {
         Ok(Self {
@@ -429,7 +428,7 @@ mod tests {
     use super::*;
     use crate::core::models::NodeType;
     use crate::parser::filtering::FilterConfig;
-    use crate::parser::abstraction::strategy::ExtractionConfig;
+    use crate::parser::core::traits::ExtractionConfig;
     use crate::parser::core::strategies::ConfigBasedStrategy;
     use std::path::PathBuf;
 
@@ -439,9 +438,7 @@ mod tests {
 
     fn create_test_parser() -> CParser {
         let config = ParserConfig::default();
-        let strategy = Arc::new(ExtractionStrategyImpl::ConfigBased(
-            ConfigBasedStrategy::new(ExtractionConfig::default()),
-        ));
+        let strategy: Arc<dyn ExtractionStrategy> = Arc::new(ConfigBasedStrategy::new(ExtractionConfig::default()));
         let filter = Arc::new(ContentFilter::new(FilterConfig::default()).unwrap());
 
         CParser::new(config, strategy, filter).unwrap()
@@ -456,9 +453,7 @@ mod tests {
             format_strings: true,
             ..Default::default()
         };
-        let strategy = Arc::new(ExtractionStrategyImpl::ConfigBased(
-            ConfigBasedStrategy::new(extraction_config),
-        ));
+        let strategy: Arc<dyn ExtractionStrategy> = Arc::new(ConfigBasedStrategy::new(extraction_config));
         let filter = Arc::new(ContentFilter::new(FilterConfig::default()).unwrap());
 
         CParser::new(config, strategy, filter).unwrap()

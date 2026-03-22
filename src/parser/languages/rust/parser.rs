@@ -7,12 +7,11 @@ use tree_sitter::{Node, Parser, Tree};
 
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, TranslationUnit};
-use crate::parser::abstraction::parser::Parser as ParserTrait;
-use crate::parser::abstraction::strategy::{
-    ExtractionContext, ExtractionStrategy, StrategyNodeType,
+use crate::parser::core::traits::{
+    ExtractionContext, ExtractionStrategy, Parser as ParserTrait, StrategyNodeType,
 };
 use crate::parser::filtering::traits::Filter;
-use crate::parser::{ContentFilter, ExtractionStrategyImpl, FunctionCategory};
+use crate::parser::{ContentFilter, FunctionCategory};
 use crate::parser::core::query_executor::QueryExecutor;
 use crate::parser::core::string_processor::{CleanedComment, CommentType};
 use crate::parser::core::StringProcessor;
@@ -24,7 +23,7 @@ use tracing::{debug, error, info, instrument};
 /// Rust language parser
 pub struct RustParser {
     config: ParserConfig,
-    strategy: Arc<ExtractionStrategyImpl>,
+    strategy: Arc<dyn ExtractionStrategy>,
     filter: Arc<ContentFilter>,
     patterns: RustPatterns,
     string_processor: StringProcessor,
@@ -34,7 +33,7 @@ impl RustParser {
     /// Create a new Rust parser
     pub fn new(
         config: ParserConfig,
-        strategy: Arc<ExtractionStrategyImpl>,
+        strategy: Arc<dyn ExtractionStrategy>,
         filter: Arc<ContentFilter>,
     ) -> Result<Self> {
         Ok(Self {
@@ -426,7 +425,7 @@ mod tests {
     use super::*;
     use crate::core::models::NodeType;
     use crate::parser::filtering::FilterConfig;
-    use crate::parser::abstraction::strategy::ExtractionConfig;
+    use crate::parser::core::traits::ExtractionConfig;
     use crate::parser::core::strategies::ConfigBasedStrategy;
     use std::path::PathBuf;
 
@@ -436,9 +435,7 @@ mod tests {
 
     fn create_test_parser() -> RustParser {
         let config = ParserConfig::default();
-        let strategy = Arc::new(ExtractionStrategyImpl::ConfigBased(
-            ConfigBasedStrategy::new(ExtractionConfig::default()),
-        ));
+        let strategy: Arc<dyn ExtractionStrategy> = Arc::new(ConfigBasedStrategy::new(ExtractionConfig::default()));
         let filter = Arc::new(ContentFilter::new(FilterConfig::default()).unwrap());
 
         RustParser::new(config, strategy, filter).unwrap()

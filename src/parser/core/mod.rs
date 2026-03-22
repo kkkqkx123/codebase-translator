@@ -9,10 +9,16 @@ pub mod position_tracker;
 pub mod query_executor;
 pub mod string_processor;
 pub mod strategies;
+pub mod traits;
+pub mod types;
 
 pub use extractor::{ExtractionCandidate, ExtractionType, Extractor};
 pub use language_parser::LanguageParser;
 pub use position_tracker::PositionTracker;
 pub use query_executor::{QueryExecutor, QueryMatch};
 pub use string_processor::{CommentType, StringProcessor};
-pub use strategies::{ConfigBasedStrategy, ExportedOnlyStrategy, ExtractionStrategyImpl};
+pub use strategies::{ConfigBasedStrategy, ExportedOnlyStrategy};
+pub use traits::{
+    ExtractionConfig, ExtractionContext, ExtractionStrategy, Parser, StrategyNodeType,
+};
+pub use types::{FunctionCategory, LanguageFunctionPatterns};

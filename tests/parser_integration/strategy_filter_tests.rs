@@ -7,11 +7,11 @@ use std::sync::Arc;
 
 use codebase_translate::core::models::{File, NodeType};
 use codebase_translate::parser::coordinator::ParserCoordinator;
-use codebase_translate::parser::abstraction::filter::{ContentFilter, FilterConfig};
-use codebase_translate::parser::abstraction::strategy::{
-    ConfigBasedStrategy, ExtractionConfig, ExtractionContext, ExtractionStrategy,
-    ExtractionStrategyImpl, StrategyNodeType,
+use codebase_translate::parser::filtering::{ContentFilter, FilterConfig};
+use codebase_translate::parser::core::traits::{
+    ExtractionConfig, ExtractionContext, ExtractionStrategy, StrategyNodeType,
 };
+use codebase_translate::parser::core::strategies::ConfigBasedStrategy;
 use codebase_translate::parser::ParserConfig;
 
 fn create_test_file(content: &str, path: &str) -> File {

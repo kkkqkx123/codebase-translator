@@ -9,12 +9,11 @@ use tree_sitter::{Language as TSLanguage, Node, Parser, Query, QueryCursor, Tree
 
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, Position, TranslationUnit};
-use crate::parser::abstraction::parser::Parser as ParserTrait;
-use crate::parser::abstraction::strategy::{
-    ExtractionContext, ExtractionStrategy, StrategyNodeType,
+use crate::parser::core::traits::{
+    ExtractionContext, ExtractionStrategy, Parser as ParserTrait, StrategyNodeType,
 };
 use crate::parser::filtering::traits::Filter;
-use crate::parser::{ContentFilter, ExtractionStrategyImpl};
+use crate::parser::ContentFilter;
 use crate::parser::core::{CommentType, StringProcessor};
 use crate::parser::languages::rust::queries::RustQueries;
 use crate::parser::languages::python::queries::PythonQueries;
@@ -47,7 +46,7 @@ pub struct LanguageConfig {
 pub struct TreeSitterParser {
     config: crate::parser::ParserConfig,
     language_config: LanguageConfig,
-    strategy: Arc<ExtractionStrategyImpl>,
+    strategy: Arc<dyn ExtractionStrategy>,
     filter: Arc<ContentFilter>,
 }
 
@@ -56,7 +55,7 @@ impl TreeSitterParser {
     pub fn new(
         language_config: LanguageConfig,
         config: crate::parser::ParserConfig,
-        strategy: Arc<ExtractionStrategyImpl>,
+        strategy: Arc<dyn ExtractionStrategy>,
         filter: Arc<ContentFilter>,
     ) -> Result<Self> {
         // Validate that the language can be set
@@ -75,13 +74,14 @@ impl TreeSitterParser {
 
     /// Create a new tree-sitter parser with default strategy and filter
     pub fn with_defaults(language_config: LanguageConfig, config: crate::parser::ParserConfig) -> Result<Self> {
-        use crate::parser::core::strategies::strategy_impl::ExtractionStrategyImpl;
+        use crate::parser::core::strategies::ConfigBasedStrategy;
+        use crate::parser::core::traits::ExtractionConfig;
         use crate::parser::filtering::default_filter;
 
         Self::new(
             language_config,
             config,
-            Arc::new(ExtractionStrategyImpl::default_config()),
+            Arc::new(ConfigBasedStrategy::new(ExtractionConfig::default())),
             Arc::new(default_filter()?),
         )
     }
@@ -481,7 +481,7 @@ impl TreeSitterParserFactory {
     /// Create a parser for Rust files
     pub fn create_rust_parser(
         config: crate::parser::ParserConfig,
-        strategy: Arc<ExtractionStrategyImpl>,
+        strategy: Arc<dyn ExtractionStrategy>,
         filter: Arc<ContentFilter>,
     ) -> Result<TreeSitterParser> {
         let language_config = LanguageConfig {
@@ -498,7 +498,7 @@ impl TreeSitterParserFactory {
     /// Create a parser for Go files
     pub fn create_go_parser(
         config: crate::parser::ParserConfig,
-        strategy: Arc<ExtractionStrategyImpl>,
+        strategy: Arc<dyn ExtractionStrategy>,
         filter: Arc<ContentFilter>,
     ) -> Result<TreeSitterParser> {
         let language_config = LanguageConfig {
@@ -515,7 +515,7 @@ impl TreeSitterParserFactory {
     /// Create a parser for Python files
     pub fn create_python_parser(
         config: crate::parser::ParserConfig,
-        strategy: Arc<ExtractionStrategyImpl>,
+        strategy: Arc<dyn ExtractionStrategy>,
         filter: Arc<ContentFilter>,
     ) -> Result<TreeSitterParser> {
         let language_config = LanguageConfig {
@@ -532,7 +532,7 @@ impl TreeSitterParserFactory {
     /// Create a parser for JavaScript files
     pub fn create_javascript_parser(
         config: crate::parser::ParserConfig,
-        strategy: Arc<ExtractionStrategyImpl>,
+        strategy: Arc<dyn ExtractionStrategy>,
         filter: Arc<ContentFilter>,
     ) -> Result<TreeSitterParser> {
         let language_config = LanguageConfig {
@@ -549,7 +549,7 @@ impl TreeSitterParserFactory {
     /// Create a parser for TypeScript files
     pub fn create_typescript_parser(
         config: crate::parser::ParserConfig,
-        strategy: Arc<ExtractionStrategyImpl>,
+        strategy: Arc<dyn ExtractionStrategy>,
         filter: Arc<ContentFilter>,
     ) -> Result<TreeSitterParser> {
         let language_config = LanguageConfig {
@@ -566,7 +566,7 @@ impl TreeSitterParserFactory {
     /// Create a parser for TSX files
     pub fn create_tsx_parser(
         config: crate::parser::ParserConfig,
-        strategy: Arc<ExtractionStrategyImpl>,
+        strategy: Arc<dyn ExtractionStrategy>,
         filter: Arc<ContentFilter>,
     ) -> Result<TreeSitterParser> {
         let language_config = LanguageConfig {
@@ -583,7 +583,7 @@ impl TreeSitterParserFactory {
     /// Create a parser for Java files
     pub fn create_java_parser(
         config: crate::parser::ParserConfig,
-        strategy: Arc<ExtractionStrategyImpl>,
+        strategy: Arc<dyn ExtractionStrategy>,
         filter: Arc<ContentFilter>,
     ) -> Result<TreeSitterParser> {
         let language_config = LanguageConfig {
@@ -600,7 +600,7 @@ impl TreeSitterParserFactory {
     /// Create a parser for C files
     pub fn create_c_parser(
         config: crate::parser::ParserConfig,
-        strategy: Arc<ExtractionStrategyImpl>,
+        strategy: Arc<dyn ExtractionStrategy>,
         filter: Arc<ContentFilter>,
     ) -> Result<TreeSitterParser> {
         let language_config = LanguageConfig {
@@ -617,7 +617,7 @@ impl TreeSitterParserFactory {
     /// Create a parser for C++ files
     pub fn create_cpp_parser(
         config: crate::parser::ParserConfig,
-        strategy: Arc<ExtractionStrategyImpl>,
+        strategy: Arc<dyn ExtractionStrategy>,
         filter: Arc<ContentFilter>,
     ) -> Result<TreeSitterParser> {
         let language_config = LanguageConfig {
@@ -640,7 +640,7 @@ impl TreeSitterParserFactory {
     /// Create a parser for C# files
     pub fn create_csharp_parser(
         config: crate::parser::ParserConfig,
-        strategy: Arc<ExtractionStrategyImpl>,
+        strategy: Arc<dyn ExtractionStrategy>,
         filter: Arc<ContentFilter>,
     ) -> Result<TreeSitterParser> {
         let language_config = LanguageConfig {
@@ -657,7 +657,7 @@ impl TreeSitterParserFactory {
     /// Create all available parsers with given strategy and filter
     pub fn create_all_parsers(
         config: crate::parser::ParserConfig,
-        strategy: Arc<ExtractionStrategyImpl>,
+        strategy: Arc<dyn ExtractionStrategy>,
         filter: Arc<ContentFilter>,
     ) -> Vec<Result<TreeSitterParser>> {
         vec![
@@ -677,9 +677,10 @@ impl TreeSitterParserFactory {
     /// Create all available parsers with default strategy and filter
     pub fn create_all_parsers_with_defaults(config: crate::parser::ParserConfig) -> Vec<Result<TreeSitterParser>> {
         use crate::parser::filtering::default_filter;
-        use crate::parser::core::strategies::strategy_impl::ExtractionStrategyImpl;
+        use crate::parser::core::strategies::ConfigBasedStrategy;
+        use crate::parser::core::traits::ExtractionConfig;
 
-        let strategy = Arc::new(ExtractionStrategyImpl::default_config());
+        let strategy: Arc<dyn ExtractionStrategy> = Arc::new(ConfigBasedStrategy::new(ExtractionConfig::default()));
         let filter = Arc::new(default_filter().unwrap_or_else(|_| {
             ContentFilter::new(crate::parser::FilterConfig::default()).unwrap()
         }));
@@ -692,7 +693,7 @@ impl TreeSitterParserFactory {
 mod tests {
     use super::*;
     use crate::parser::filtering::FilterConfig;
-    use crate::parser::abstraction::strategy::ExtractionConfig;
+    use crate::parser::core::traits::ExtractionConfig;
     use crate::parser::core::strategies::ConfigBasedStrategy;
     use crate::parser::ParserConfig;
     use std::path::PathBuf;
@@ -701,10 +702,8 @@ mod tests {
         File::new(PathBuf::from(path), content.as_bytes().to_vec(), "utf-8")
     }
 
-    fn create_test_strategy() -> Arc<ExtractionStrategyImpl> {
-        Arc::new(ExtractionStrategyImpl::ConfigBased(
-            ConfigBasedStrategy::new(ExtractionConfig::default()),
-        ))
+    fn create_test_strategy() -> Arc<dyn ExtractionStrategy> {
+        Arc::new(ConfigBasedStrategy::new(ExtractionConfig::default()))
     }
 
     fn create_test_filter() -> Arc<ContentFilter> {

@@ -8,11 +8,12 @@ use std::sync::Arc;
 
 use codebase_translate::core::models::File;
 use codebase_translate::parser::coordinator::{ParserCoordinator, ParserType};
-use codebase_translate::parser::abstraction::filter::{ContentFilter, FilterConfig};
+use codebase_translate::parser::filtering::{ContentFilter, FilterConfig};
 use codebase_translate::parser::regex::RegexParser;
-use codebase_translate::parser::abstraction::strategy::{
-    default_strategy, ConfigBasedStrategy, ExtractionConfig, ExtractionStrategyImpl,
+use codebase_translate::parser::core::traits::{
+    ExtractionConfig, ExtractionStrategy,
 };
+use codebase_translate::parser::core::strategies::ConfigBasedStrategy;
 use codebase_translate::parser::ParserConfig;
 
 fn create_test_file(content: &str, path: &str) -> File {

@@ -6,10 +6,9 @@ use std::sync::Arc;
 
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, PatternType, TranslationUnit};
-use crate::parser::abstraction::parser::Parser as ParserTrait;
-use crate::parser::abstraction::strategy::ExtractionConfig;
+use crate::parser::core::traits::{ExtractionConfig, ExtractionStrategy, Parser as ParserTrait};
 use crate::parser::filtering::traits::Filter;
-use crate::parser::{ConfigBasedStrategy, ContentFilter, ExtractionStrategyImpl};
+use crate::parser::{ConfigBasedStrategy, ContentFilter};
 use crate::parser::{ParserConfig, TreeSitterParser, TreeSitterParserFactory};
 use crate::parser::regex::custom_pattern_matcher::CustomPatternMatcher;
 use crate::parser::regex::state_machine::StateMachineMatcher;
@@ -44,10 +43,9 @@ pub struct ParserCoordinator {
 impl ParserCoordinator {
     /// Creates a new parser coordinator with default configuration.
     pub fn with_defaults(config: ParserConfig) -> Result<Self> {
-        use crate::parser::core::strategies::strategy_impl::ExtractionStrategyImpl;
         use crate::parser::filtering::default_filter;
 
-        let strategy = Arc::new(ExtractionStrategyImpl::default_config());
+        let strategy: Arc<dyn ExtractionStrategy> = Arc::new(ConfigBasedStrategy::new(ExtractionConfig::default()));
         let filter = Arc::new(default_filter()?);
 
         Self::new(config, strategy, filter)
@@ -62,10 +60,9 @@ impl ParserCoordinator {
         config: ParserConfig,
         project_config: &crate::config::project::ProjectConfig,
     ) -> Result<Self> {
-        use crate::parser::core::strategies::strategy_impl::ExtractionStrategyImpl;
         use crate::parser::filtering::from_project_config;
 
-        let strategy = Arc::new(ExtractionStrategyImpl::default_config());
+        let strategy: Arc<dyn ExtractionStrategy> = Arc::new(ConfigBasedStrategy::new(ExtractionConfig::default()));
         let filter = Arc::new(from_project_config(
             &project_config.filter,
             &project_config.translate,
@@ -84,10 +81,9 @@ impl ParserCoordinator {
         project_config: &crate::config::project::ProjectConfig,
         translator_max_length: Option<usize>,
     ) -> Result<Self> {
-        use crate::parser::core::strategies::strategy_impl::ExtractionStrategyImpl;
         use crate::parser::filtering::from_project_config_with_translator;
 
-        let strategy = Arc::new(ExtractionStrategyImpl::default_config());
+        let strategy: Arc<dyn ExtractionStrategy> = Arc::new(ConfigBasedStrategy::new(ExtractionConfig::default()));
         let filter = Arc::new(from_project_config_with_translator(
             &project_config.filter,
             &project_config.translate,
@@ -112,9 +108,7 @@ impl ParserCoordinator {
             ..Default::default()
         };
 
-        let strategy = Arc::new(ExtractionStrategyImpl::ConfigBased(
-            ConfigBasedStrategy::new(extraction_config),
-        ));
+        let strategy: Arc<dyn ExtractionStrategy> = Arc::new(ConfigBasedStrategy::new(extraction_config));
         let filter = Arc::new(default_filter()?);
 
         Self::new(config, strategy, filter)
@@ -123,7 +117,7 @@ impl ParserCoordinator {
     /// Creates a new parser coordinator with custom strategy and filter.
     pub fn new(
         config: ParserConfig,
-        strategy: Arc<ExtractionStrategyImpl>,
+        strategy: Arc<dyn ExtractionStrategy>,
         filter: Arc<ContentFilter>,
     ) -> Result<Self> {
         Self::with_extraction_config(config, strategy, filter, None)
@@ -132,7 +126,7 @@ impl ParserCoordinator {
     /// Creates a new parser coordinator with extraction config for state machine patterns.
     pub fn with_extraction_config(
         config: ParserConfig,
-        strategy: Arc<ExtractionStrategyImpl>,
+        strategy: Arc<dyn ExtractionStrategy>,
         filter: Arc<ContentFilter>,
         extraction_config: Option<crate::config::project::ExtractionConfig>,
     ) -> Result<Self> {

@@ -8,11 +8,11 @@ use tree_sitter::{Language, Node, Tree};
 
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::TranslationUnit;
-use crate::parser::abstraction::strategy::{
+use crate::parser::core::traits::{
     ExtractionContext, ExtractionStrategy, StrategyNodeType,
 };
 use crate::parser::filtering::traits::Filter;
-use crate::parser::{ContentFilter, ExtractionStrategyImpl, FunctionCategory};
+use crate::parser::{ContentFilter, FunctionCategory};
 use crate::parser::core::query_executor::QueryExecutor;
 use crate::parser::core::StringProcessor;
 use crate::parser::ParserConfig;
@@ -27,7 +27,7 @@ pub trait LanguageParser: Send + Sync {
     fn config(&self) -> &ParserConfig;
 
     /// Get the extraction strategy
-    fn strategy(&self) -> &Arc<ExtractionStrategyImpl>;
+    fn strategy(&self) -> &Arc<dyn ExtractionStrategy>;
 
     /// Get the content filter
     fn filter(&self) -> &Arc<ContentFilter>;

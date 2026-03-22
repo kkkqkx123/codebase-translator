@@ -8,12 +8,10 @@
 //!
 //! The parser module is organized into several submodules:
 //!
-//! - `abstraction/`: Core abstractions including Parser trait and extraction strategies
-//! - `core/`: Generic extraction framework reusable across languages
+//! - `core/`: Core extraction framework including traits, types, and implementations
 //! - `detection/`: Language detection capabilities
 //! - `tree_sitter/`: Tree-sitter based parser implementation and query builder
 //! - `filtering/`: Content filtering system with layered architecture
-//! - `patterns/`: Function and macro pattern definitions
 //! - `languages/`: Language-specific parser implementations and queries
 //! - `coordinator/`: High-level coordination for parsing operations
 //! - `regex/`: Regex-based fallback parsers
@@ -49,10 +47,7 @@ impl Default for ParserConfig {
     }
 }
 
-// Core abstractions (Parser trait, strategies)
-pub mod abstraction;
-
-// Core extraction framework
+// Core extraction framework (traits, types, and implementations)
 pub mod core;
 
 // Language detection
@@ -64,13 +59,8 @@ pub mod tree_sitter;
 // Content filtering
 pub mod filtering;
 
-// Function patterns
-pub mod patterns;
-
 // Parser coordinator
 pub mod coordinator;
-
-// Note: QueryBuilder is now in tree_sitter module
 
 // Language-specific parsers
 pub mod languages;
@@ -81,21 +71,17 @@ pub mod regex;
 // Type-specific regex parsers
 pub mod regex_parsers;
 
-// Re-export commonly used types from abstraction
-pub use abstraction::{
-    ExtractionConfig, ExtractionContext, ExtractionStrategy, StrategyNodeType, Parser,
+// Re-export from core (traits and types)
+pub use core::{
+    ConfigBasedStrategy, ExportedOnlyStrategy,
+    ExtractionConfig, ExtractionContext, ExtractionStrategy, Parser, StrategyNodeType,
+    FunctionCategory, LanguageFunctionPatterns,
 };
-
-// Re-export from core (strategies)
-pub use core::{ConfigBasedStrategy, ExtractionStrategyImpl};
 
 // Re-export from filtering
 pub use filtering::{
     from_project_config, from_project_config_with_translator, ContentFilter, FilterConfig,
 };
-
-// Re-export from patterns
-pub use patterns::{FunctionCategory, LanguageFunctionPatterns};
 
 // Re-export from detection
 pub use detection::{LanguageDetector, LanguageInfo, Script};
@@ -103,7 +89,7 @@ pub use detection::{LanguageDetector, LanguageInfo, Script};
 // Re-export from tree_sitter
 pub use tree_sitter::{LanguageConfig, QueryBuilder, TreeSitterParser, TreeSitterParserFactory};
 
-// Re-export from core
+// Re-export from core (utilities)
 pub use core::{ExtractionCandidate, ExtractionType, Extractor, QueryExecutor, StringProcessor};
 
 // Re-export from regex

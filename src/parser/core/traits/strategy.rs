@@ -1,6 +1,6 @@
-//! Extraction strategy module
+//! Extraction strategy trait
 //!
-//! This module provides the core abstractions for extraction strategies.
+//! This module provides the core trait for extraction strategies.
 //! Concrete implementations are located in `parser::core::strategies`.
 
 use crate::core::models::NodeType;
@@ -81,6 +81,12 @@ impl ExtractionContext {
     }
 
     /// Set function name
+    pub fn with_function(mut self, name: impl Into<String>) -> Self {
+        self.function_name = Some(name.into());
+        self
+    }
+
+    /// Set function name (alias for with_function)
     pub fn with_function_name(mut self, name: impl Into<String>) -> Self {
         self.function_name = Some(name.into());
         self
@@ -99,58 +105,21 @@ impl ExtractionContext {
     }
 }
 
-/// Extraction strategy trait
-///
-/// Implement this trait to define custom extraction strategies.
-pub trait ExtractionStrategy: Send + Sync {
-    /// Determine if a node should be extracted
-    fn should_extract(&self, node_type: StrategyNodeType, ctx: &ExtractionContext) -> bool;
-
-    /// Get the corresponding NodeType for a StrategyNodeType
-    fn get_node_type(&self, node_type: StrategyNodeType) -> NodeType;
-
-    /// Get strategy name
-    fn name(&self) -> &str;
-}
-
-/// Extraction configuration
+/// Configuration for extraction
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExtractionConfig {
     /// Extract comments
-    #[serde(default = "default_true")]
     pub comments: bool,
-
     /// Extract docstrings
-    #[serde(default = "default_true")]
     pub docstrings: bool,
-
-    /// Extract error messages
-    #[serde(default = "default_true")]
-    pub error_messages: bool,
-
-    /// Extract format strings
-    #[serde(default = "default_false")]
-    pub format_strings: bool,
-
-    /// Extract log messages
-    #[serde(default = "default_true")]
-    pub log_messages: bool,
-
     /// Extract string literals
-    #[serde(default = "default_false")]
     pub string_literals: bool,
-
-    /// Custom extraction patterns
-    #[serde(default)]
-    pub custom_patterns: Vec<String>,
-}
-
-fn default_true() -> bool {
-    true
-}
-
-fn default_false() -> bool {
-    false
+    /// Extract error messages
+    pub error_messages: bool,
+    /// Extract format strings
+    pub format_strings: bool,
+    /// Extract log messages
+    pub log_messages: bool,
 }
 
 impl Default for ExtractionConfig {
@@ -158,22 +127,22 @@ impl Default for ExtractionConfig {
         Self {
             comments: true,
             docstrings: true,
-            error_messages: true,
-            format_strings: false,
-            log_messages: true,
             string_literals: false,
-            custom_patterns: Vec::new(),
+            error_messages: true,
+            format_strings: true,
+            log_messages: true,
         }
     }
 }
 
-/// How to combine multiple strategies
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum CombineMode {
-    /// All strategies must agree (AND)
-    All,
-    /// At least one strategy must agree (OR)
-    Any,
-    /// First strategy that decides wins
-    First,
+/// Extraction strategy trait
+pub trait ExtractionStrategy: Send + Sync {
+    /// Determine if a node should be extracted
+    fn should_extract(&self, node_type: StrategyNodeType, ctx: &ExtractionContext) -> bool;
+
+    /// Get the node type for a strategy node type
+    fn get_node_type(&self, node_type: StrategyNodeType) -> NodeType;
+
+    /// Get strategy name
+    fn name(&self) -> &str;
 }
