@@ -17,7 +17,7 @@ use crate::{
 };
 use std::path::Path;
 use std::sync::Arc;
-use tracing::{debug, info};
+use tracing::{debug, info, warn};
 
 /// Result of processing a single file
 #[derive(Debug, Default)]
@@ -34,6 +34,10 @@ pub struct FileProcessResult {
     pub errors: usize,
     /// Whether the file was written
     pub was_written: bool,
+    /// Number of API calls made
+    pub api_calls: usize,
+    /// Number of cache misses
+    pub cache_misses: usize,
 }
 
 impl FileProcessResult {
@@ -44,6 +48,8 @@ impl FileProcessResult {
         self.cached_files += other.cached_files;
         self.skipped_units += other.skipped_units;
         self.errors += other.errors;
+        self.api_calls += other.api_calls;
+        self.cache_misses += other.cache_misses;
     }
 }
 
@@ -55,6 +61,7 @@ impl From<FileProcessResult> for TranslationStats {
         stats.translated_units = result.translated_units;
         stats.processed_files = if result.cached_files > 0 { 0 } else { 1 };
         stats.cache_hit_count = result.cached_files;
+        stats.cache_miss_count = result.cache_misses;
         stats.skipped_files = if result.cached_files > 0
             || (result.skipped_units > 0 && result.translated_units == 0)
         {
@@ -63,6 +70,7 @@ impl From<FileProcessResult> for TranslationStats {
             0
         };
         stats.error_count = result.errors;
+        stats.api_call_count = result.api_calls;
         stats
     }
 }
@@ -144,6 +152,7 @@ impl<'a> FileProcessor<'a> {
                 file = %file_path.display(),
                 "Cache miss"
             );
+            result.cache_misses = 1;
             if let Some(ref reporter) = self.reporter {
                 reporter.report_cache_miss();
             }
@@ -178,10 +187,32 @@ impl<'a> FileProcessor<'a> {
             "File parsed"
         );
 
+        // Always save cache entry for files that have been processed
+        // This allows the file to be skipped on subsequent runs even if it has no translatable content
+        let save_cache = || -> Result<()> {
+            info!(file = %file_path.display(), "Saving cache entry");
+            let mut cache_entry = CacheEntry::new(
+                &file_hash,
+                file_path.to_string_lossy(),
+                modified_time,
+                self.project_config.cache.mode.to_string(),
+                self.cache.project_fingerprint(),
+                &config_hash,
+            );
+            cache_entry.mark_as_translated();
+            self.cache.set(&cache_entry)?;
+            info!(file = %file_path.display(), "Cache entry saved successfully");
+            Ok(())
+        };
+
         if units.is_empty() {
             debug!("No translatable content found");
             if let Some(ref reporter) = self.reporter {
                 reporter.report_skipped(file_path);
+            }
+            // Save cache even for files with no translatable content
+            if let Err(e) = save_cache() {
+                warn!(error = %e, "Failed to save cache entry");
             }
             return Ok(result);
         }
@@ -194,6 +225,10 @@ impl<'a> FileProcessor<'a> {
             result.skipped_units = units.len();
             if let Some(ref reporter) = self.reporter {
                 reporter.report_skipped(file_path);
+            }
+            // Save cache even for files with no units to translate
+            if let Err(e) = save_cache() {
+                warn!(error = %e, "Failed to save cache entry");
             }
             return Ok(result);
         }
@@ -228,6 +263,7 @@ impl<'a> FileProcessor<'a> {
             &self.project_config.translate.target_lang,
         )?;
 
+        result.api_calls = 1;
         if let Some(ref reporter) = self.reporter {
             reporter.report_api_call(1);
         }
@@ -334,6 +370,8 @@ mod tests {
             skipped_units: 2,
             errors: 0,
             was_written: true,
+            api_calls: 1,
+            cache_misses: 1,
         };
 
         let result2 = FileProcessResult {
@@ -343,6 +381,8 @@ mod tests {
             skipped_units: 2,
             errors: 1,
             was_written: false,
+            api_calls: 1,
+            cache_misses: 1,
         };
 
         result1.merge(&result2);
@@ -352,6 +392,8 @@ mod tests {
         assert_eq!(result1.cached_files, 2);
         assert_eq!(result1.skipped_units, 4);
         assert_eq!(result1.errors, 1);
+        assert_eq!(result1.api_calls, 2);
+        assert_eq!(result1.cache_misses, 2);
         assert!(result1.was_written); // Should remain true
     }
 
@@ -365,5 +407,7 @@ mod tests {
         assert_eq!(result.skipped_units, 0);
         assert_eq!(result.errors, 0);
         assert!(!result.was_written);
+        assert_eq!(result.api_calls, 0);
+        assert_eq!(result.cache_misses, 0);
     }
 }

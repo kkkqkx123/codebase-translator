@@ -272,14 +272,12 @@ impl RustParser {
         content: &str,
         file_path: &str,
     ) -> Result<Vec<TranslationUnit>> {
-        println!("extract_macro_strings called");
         let executor = QueryExecutor::from_string(
             &tree_sitter_rust::LANGUAGE.into(),
             RustQueries::macro_strings(),
         )?;
 
         let matches = executor.execute(root_node, content)?;
-        println!("extract_macro_strings found {} matches", matches.len());
         let mut units = Vec::new();
         let mut match_idx = 0usize;
 
@@ -287,10 +285,6 @@ impl RustParser {
         let mut current_macro = String::new();
 
         for m in matches {
-            println!(
-                "  Match: capture_name='{}', text='{}'",
-                m.capture_name, m.text
-            );
             match m.capture_name.as_str() {
                 "macro_name" => {
                     current_macro = m.text.to_string();
@@ -375,20 +369,6 @@ impl RustParser {
         let should_extract_macros = self.extraction_config.error_messages
             || self.extraction_config.format_strings
             || self.extraction_config.log_messages;
-
-        println!(
-            "Extract macro strings: should_extract_macros = {}",
-            should_extract_macros
-        );
-        println!(
-            "  error_messages = {}",
-            self.extraction_config.error_messages
-        );
-        println!(
-            "  format_strings = {}",
-            self.extraction_config.format_strings
-        );
-        println!("  log_messages = {}", self.extraction_config.log_messages);
 
         if should_extract_macros {
             let macro_units = self.extract_macro_strings(&root_node, content, file_path)?;

@@ -3,10 +3,12 @@
 use async_trait::async_trait;
 use reqwest::{Client, Proxy};
 use serde::{Deserialize, Serialize};
-use std::time::Duration;
+use std::sync::Arc;
+use std::time::{Duration, Instant};
 use tracing::{debug, error, info, warn};
 
 use crate::core::error::{Result, TranslateError};
+use crate::reporter::Reporter;
 use crate::translator::common::{DeepLXConfig, TranslateResponse};
 use crate::translator::Translator;
 
@@ -34,6 +36,7 @@ pub struct DeepLXTranslator {
     client: Client,
     config: DeepLXConfig,
     api_url: String,
+    reporter: Option<Arc<dyn Reporter>>,
 }
 
 impl std::fmt::Debug for DeepLXTranslator {
@@ -90,16 +93,20 @@ impl DeepLXTranslator {
             client,
             config,
             api_url,
+            reporter: None,
         })
     }
 
-    /// Translate a single text
+    /// Translate a single text with statistics tracking
     async fn translate_single_internal(
         &self,
         text: &str,
         source_lang: &str,
         target_lang: &str,
     ) -> Result<TranslateResponse> {
+        let start_time = Instant::now();
+        let chars = text.len();
+
         if text.is_empty() {
             return Ok(TranslateResponse {
                 original_text: text.to_string(),
@@ -129,53 +136,64 @@ impl DeepLXTranslator {
             "Sending DeepLX translation request"
         );
 
-        let response = self
-            .client
-            .post(&api_url)
-            .header("Content-Type", "application/json")
-            .header("Accept", "application/json")
-            .json(&req_body)
-            .send()
-            .await
-            .map_err(|e| TranslateError::Http(e.to_string()))?;
+        let result = async {
+            let response = self
+                .client
+                .post(&api_url)
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/json")
+                .json(&req_body)
+                .send()
+                .await
+                .map_err(|e| TranslateError::Http(e.to_string()))?;
 
-        let status = response.status();
-        let response_text = response
-            .text()
-            .await
-            .map_err(|e| TranslateError::Http(e.to_string()))?;
+            let status = response.status();
+            let response_text = response
+                .text()
+                .await
+                .map_err(|e| TranslateError::Http(e.to_string()))?;
 
-        if !status.is_success() {
-            error!(
-                status = %status,
-                response_body = %response_text,
-                "DeepLX API error"
-            );
-            return Err(TranslateError::Translation(format!(
-                "DeepLX API error: {} - {}",
-                status, response_text
-            )));
+            if !status.is_success() {
+                error!(
+                    status = %status,
+                    response_body = %response_text,
+                    "DeepLX API error"
+                );
+                return Err(TranslateError::Translation(format!(
+                    "DeepLX API error: {} - {}",
+                    status, response_text
+                )));
+            }
+
+            let deeplx_resp: DeepLXResponse = serde_json::from_str(&response_text).map_err(|e| {
+                error!(
+                    error = %e,
+                    response_body = %response_text,
+                    "Failed to parse DeepLX response"
+                );
+                TranslateError::Parse(format!(
+                    "Failed to parse DeepLX response: {} - {}",
+                    e, response_text
+                ))
+            })?;
+
+            Ok(TranslateResponse {
+                original_text: text.to_string(),
+                translated_text: deeplx_resp.data,
+                source_lang: source_lang.to_string(),
+                target_lang: target_lang.to_string(),
+                ..Default::default()
+            })
+        }.await;
+
+        // Report statistics
+        let latency_ms = start_time.elapsed().as_millis() as u64;
+        let success = result.is_ok();
+        if let Some(ref reporter) = self.reporter {
+            reporter.report_translator_call("deeplx", latency_ms, success, chars);
         }
 
-        let deeplx_resp: DeepLXResponse = serde_json::from_str(&response_text).map_err(|e| {
-            error!(
-                error = %e,
-                response_body = %response_text,
-                "Failed to parse DeepLX response"
-            );
-            TranslateError::Parse(format!(
-                "Failed to parse DeepLX response: {} - {}",
-                e, response_text
-            ))
-        })?;
-
-        Ok(TranslateResponse {
-            original_text: text.to_string(),
-            translated_text: deeplx_resp.data,
-            source_lang: source_lang.to_string(),
-            target_lang: target_lang.to_string(),
-            ..Default::default()
-        })
+        result
     }
 }
 
@@ -237,6 +255,14 @@ impl Translator for DeepLXTranslator {
 
     fn max_input_chars(&self) -> usize {
         5000
+    }
+
+    fn set_reporter(&mut self, reporter: Arc<dyn Reporter>) {
+        self.reporter = Some(reporter);
+    }
+
+    fn reporter(&self) -> Option<Arc<dyn Reporter>> {
+        self.reporter.clone()
     }
 }
 

@@ -87,6 +87,14 @@ fn test_translator_trait_requires_source_lang() {
         fn max_input_chars(&self) -> usize {
             5000
         }
+
+        fn set_reporter(&mut self, _reporter: std::sync::Arc<dyn codebase_translate::reporter::Reporter>) {
+            // No-op for test
+        }
+
+        fn reporter(&self) -> Option<std::sync::Arc<dyn codebase_translate::reporter::Reporter>> {
+            None
+        }
     }
 
     // If this compiles, the trait signature is correct

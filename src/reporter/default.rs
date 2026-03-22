@@ -107,6 +107,73 @@ impl DefaultReporter {
             report.push('\n');
         }
 
+        // Translator Statistics
+        if !stats.translator_stats.is_empty() {
+            report.push_str("Translator Statistics:\n");
+            for (name, stat) in &stats.translator_stats {
+                report.push_str(&format!("  {}:\n", name));
+                report.push_str(&format!(
+                    "    Calls:      {} (success: {}, failed: {})\n",
+                    stat.total_calls, stat.successful_calls, stat.failed_calls
+                ));
+                report.push_str(&format!(
+                    "    Characters: {}\n",
+                    stat.total_chars
+                ));
+                report.push_str(&format!(
+                    "    Latency:    avg {:.1}ms",
+                    stat.average_latency_ms
+                ));
+                if let Some(min) = stat.min_latency_ms {
+                    report.push_str(&format!(", min {:.1}ms",
+                        min
+                    ));
+                }
+                if let Some(max) = stat.max_latency_ms {
+                    report.push_str(&format!(", max {:.1}ms",
+                        max
+                    ));
+                }
+                report.push('\n');
+            }
+            report.push('\n');
+        }
+
+        // LLM Provider Statistics
+        if !stats.llm_provider_stats.is_empty() {
+            report.push_str("LLM Provider Statistics:\n");
+            for (id, stat) in &stats.llm_provider_stats {
+                report.push_str(&format!(
+                    "  {} ({} / {}):\n",
+                    id, stat.provider_name, stat.model
+                ));
+                report.push_str(&format!(
+                    "    Calls:      {} (success: {}, failed: {})\n",
+                    stat.total_calls, stat.successful_calls, stat.failed_calls
+                ));
+                report.push_str(&format!(
+                    "    Characters: {}\n",
+                    stat.total_chars
+                ));
+                report.push_str(&format!(
+                    "    Latency:    avg {:.1}ms",
+                    stat.average_latency_ms
+                ));
+                if let Some(min) = stat.min_latency_ms {
+                    report.push_str(&format!(", min {:.1}ms",
+                        min
+                    ));
+                }
+                if let Some(max) = stat.max_latency_ms {
+                    report.push_str(&format!(", max {:.1}ms",
+                        max
+                    ));
+                }
+                report.push('\n');
+            }
+            report.push('\n');
+        }
+
         report.push_str(&format!("{}\n", "=".repeat(60)));
 
         Ok(report)
@@ -181,6 +248,44 @@ impl Reporter for DefaultReporter {
     fn report_cache_miss(&self) {
         debug!("Reporting cache miss");
         // Only for logging, does not affect stats
+    }
+
+    fn report_translator_call(
+        &self,
+        translator_type: &str,
+        latency_ms: u64,
+        success: bool,
+        chars: usize,
+    ) {
+        debug!(
+            translator = translator_type,
+            latency_ms = latency_ms,
+            success = success,
+            chars = chars,
+            "Reporting translator call"
+        );
+        // Statistics are recorded externally in TranslationStats
+    }
+
+    fn report_llm_provider_call(
+        &self,
+        provider_id: &str,
+        provider_name: &str,
+        model: &str,
+        latency_ms: u64,
+        success: bool,
+        chars: usize,
+    ) {
+        debug!(
+            provider_id = provider_id,
+            provider_name = provider_name,
+            model = model,
+            latency_ms = latency_ms,
+            success = success,
+            chars = chars,
+            "Reporting LLM provider call"
+        );
+        // Statistics are recorded externally in TranslationStats
     }
 
     fn final_report(

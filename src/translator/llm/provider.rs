@@ -11,6 +11,7 @@ use tracing::{debug, error, info, warn};
 
 use crate::config::LLMProviderConfig;
 use crate::core::error::{Result, TranslateError};
+use crate::reporter::Reporter;
 use crate::translator::common::TranslateResponse;
 use crate::translator::Translator;
 
@@ -243,6 +244,9 @@ pub struct LLMProvider {
     rate_limit: u32,
     current_key_index: Arc<AtomicU32>,
     health_config: HealthConfig,
+
+    // Reporter for statistics tracking
+    reporter: Option<Arc<dyn Reporter>>,
 }
 
 impl std::fmt::Debug for LLMProvider {
@@ -390,7 +394,18 @@ impl LLMProvider {
             rate_limit: config.rate_limit,
             current_key_index: Arc::new(AtomicU32::new(0)),
             health_config,
+            reporter: None,
         })
+    }
+
+    /// Set reporter for statistics tracking
+    pub fn set_reporter(&mut self, reporter: Arc<dyn Reporter>) {
+        self.reporter = Some(reporter);
+    }
+
+    /// Get reporter if set
+    pub fn reporter(&self) -> Option<Arc<dyn Reporter>> {
+        self.reporter.clone()
     }
 
     // -------------------------------------------------------------------------
@@ -704,6 +719,7 @@ Text to translate:
         target_lang: &str,
     ) -> Result<TranslateResponse> {
         let start_time = Instant::now();
+        let chars = text.len();
 
         // Check capacity
         if !text.is_empty() && !self.can_handle(text.len()) {
@@ -732,16 +748,23 @@ Text to translate:
         let latency = start_time.elapsed();
 
         // Update statistics and health status
-        self.update_stats_and_health(&result, latency).await;
+        self.update_stats_and_health(&result, latency, chars).await;
 
         result
     }
 
     /// Update statistics and health based on result
-    async fn update_stats_and_health(&self, result: &Result<TranslateResponse>, latency: Duration) {
+    async fn update_stats_and_health(
+        &self,
+        result: &Result<TranslateResponse>,
+        latency: Duration,
+        chars: usize,
+    ) {
         let mut stats = self.stats.write().await;
         stats.total_requests += 1;
         stats.last_request_time = Some(Instant::now());
+
+        let success = result.is_ok();
 
         match result {
             Ok(_) => {
@@ -760,6 +783,18 @@ Text to translate:
                 drop(stats); // Release lock before async call
                 self.record_failure().await;
             }
+        }
+
+        // Report to external reporter if available
+        if let Some(ref reporter) = self.reporter {
+            reporter.report_llm_provider_call(
+                &self.id,
+                &self.name,
+                &self.model,
+                latency.as_millis() as u64,
+                success,
+                chars,
+            );
         }
     }
 
@@ -844,6 +879,14 @@ impl Translator for LLMProvider {
 
     fn max_input_chars(&self) -> usize {
         self.max_input_chars
+    }
+
+    fn set_reporter(&mut self, reporter: Arc<dyn Reporter>) {
+        self.reporter = Some(reporter);
+    }
+
+    fn reporter(&self) -> Option<Arc<dyn Reporter>> {
+        self.reporter.clone()
     }
 }
 

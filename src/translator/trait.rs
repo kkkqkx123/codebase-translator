@@ -3,8 +3,10 @@
 //! This module defines the Translator trait for translation services.
 
 use async_trait::async_trait;
+use std::sync::Arc;
 
 use crate::core::error::Result;
+use crate::reporter::Reporter;
 use crate::translator::deeplx::DeepLXTranslator;
 use crate::translator::llm::MultiProviderTranslator;
 use crate::translator::tencent::TencentTranslator;
@@ -71,6 +73,12 @@ pub trait Translator: Send + Sync {
     async fn close(&self) -> Result<()> {
         Ok(())
     }
+
+    /// Set reporter for statistics tracking
+    fn set_reporter(&mut self, reporter: Arc<dyn Reporter>);
+
+    /// Get reporter if set
+    fn reporter(&self) -> Option<Arc<dyn Reporter>>;
 }
 
 /// Provider type for translation services
@@ -193,6 +201,22 @@ impl Translator for TranslatorImpl {
             Self::DeepLX(t) => t.close().await,
             Self::LLM(t) => t.close().await,
             Self::Tencent(t) => t.close().await,
+        }
+    }
+
+    fn set_reporter(&mut self, reporter: Arc<dyn Reporter>) {
+        match self {
+            Self::DeepLX(t) => t.set_reporter(reporter),
+            Self::LLM(t) => t.set_reporter(reporter),
+            Self::Tencent(t) => t.set_reporter(reporter),
+        }
+    }
+
+    fn reporter(&self) -> Option<Arc<dyn Reporter>> {
+        match self {
+            Self::DeepLX(t) => t.reporter(),
+            Self::LLM(t) => t.reporter(),
+            Self::Tencent(t) => t.reporter(),
         }
     }
 }

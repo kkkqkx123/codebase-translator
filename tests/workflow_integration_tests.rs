@@ -124,6 +124,8 @@ mod workflow_file_processor {
             skipped_units: 2,
             errors: 0,
             was_written: true,
+            api_calls: 5,
+            cache_misses: 2,
         };
 
         let result2 = FileProcessResult {
@@ -133,6 +135,8 @@ mod workflow_file_processor {
             skipped_units: 2,
             errors: 1,
             was_written: false,
+            api_calls: 4,
+            cache_misses: 1,
         };
 
         result1.merge(&result2);

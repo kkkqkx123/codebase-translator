@@ -43,6 +43,26 @@ pub trait Reporter: Send + Sync {
     /// Report cache miss (for logging only)
     fn report_cache_miss(&self);
 
+    /// Report translator call statistics
+    fn report_translator_call(
+        &self,
+        translator_type: &str,
+        latency_ms: u64,
+        success: bool,
+        chars: usize,
+    );
+
+    /// Report LLM provider call statistics
+    fn report_llm_provider_call(
+        &self,
+        provider_id: &str,
+        provider_name: &str,
+        model: &str,
+        latency_ms: u64,
+        success: bool,
+        chars: usize,
+    );
+
     /// Generate final report in specified format using the provided stats
     fn final_report(
         &self,

@@ -5,10 +5,12 @@ use hmac::{Hmac, Mac};
 use reqwest::{Client, Proxy};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::sync::Arc;
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use tracing::{debug, error, info, warn};
 
 use crate::core::error::{Result, TranslateError};
+use crate::reporter::Reporter;
 use crate::translator::common::{TencentConfig, TranslateResponse};
 use crate::translator::Translator;
 
@@ -73,6 +75,7 @@ struct ApiError {
 pub struct TencentTranslator {
     client: Client,
     config: TencentConfig,
+    reporter: Option<Arc<dyn Reporter>>,
 }
 
 impl std::fmt::Debug for TencentTranslator {
@@ -126,7 +129,11 @@ impl TencentTranslator {
 
         info!("Tencent translator created with region: {}", config.region);
 
-        Ok(Self { client, config })
+        Ok(Self {
+            client,
+            config,
+            reporter: None,
+        })
     }
 
     /// Generate signature for Tencent Cloud API
@@ -197,13 +204,16 @@ impl TencentTranslator {
         datetime.format("%Y-%m-%d").to_string()
     }
 
-    /// Translate a single text
+    /// Translate a single text with statistics tracking
     async fn translate_single_internal(
         &self,
         text: &str,
         source_lang: &str,
         target_lang: &str,
     ) -> Result<TranslateResponse> {
+        let start_time = Instant::now();
+        let chars = text.len();
+
         if text.is_empty() {
             return Ok(TranslateResponse {
                 original_text: text.to_string(),
@@ -215,6 +225,11 @@ impl TencentTranslator {
         }
 
         if text.len() >= 6000 {
+            // Report failure before returning
+            let latency_ms = start_time.elapsed().as_millis() as u64;
+            if let Some(ref reporter) = self.reporter {
+                reporter.report_translator_call("tencent", latency_ms, false, chars);
+            }
             return Err(TranslateError::Translation(
                 "Text length exceeds 6000 characters limit".to_string(),
             ));
@@ -257,66 +272,77 @@ impl TencentTranslator {
             timestamp, ACTION
         );
 
-        let response = self
-            .client
-            .post(API_URL)
-            .header("Content-Type", "application/json; charset=utf-8")
-            .header("Host", API_HOST)
-            .header("X-TC-Action", ACTION)
-            .header("X-TC-Version", VERSION)
-            .header("X-TC-Timestamp", timestamp.to_string())
-            .header("X-TC-Region", &self.config.region)
-            .header("Authorization", authorization)
-            .header("X-TC-Date", date)
-            .body(payload)
-            .send()
-            .await
-            .map_err(|e| TranslateError::Http(e.to_string()))?;
+        let result = async {
+            let response = self
+                .client
+                .post(API_URL)
+                .header("Content-Type", "application/json; charset=utf-8")
+                .header("Host", API_HOST)
+                .header("X-TC-Action", ACTION)
+                .header("X-TC-Version", VERSION)
+                .header("X-TC-Timestamp", timestamp.to_string())
+                .header("X-TC-Region", &self.config.region)
+                .header("Authorization", authorization)
+                .header("X-TC-Date", date)
+                .body(payload)
+                .send()
+                .await
+                .map_err(|e| TranslateError::Http(e.to_string()))?;
 
-        let status = response.status();
-        let response_text = response
-            .text()
-            .await
-            .map_err(|e| TranslateError::Http(e.to_string()))?;
+            let status = response.status();
+            let response_text = response
+                .text()
+                .await
+                .map_err(|e| TranslateError::Http(e.to_string()))?;
 
-        if !status.is_success() {
-            error!(
-                "Tencent API error: status={}, body={}",
-                status, response_text
-            );
-            return Err(TranslateError::Translation(format!(
-                "Tencent API error: {} - {}",
-                status, response_text
-            )));
+            if !status.is_success() {
+                error!(
+                    "Tencent API error: status={}, body={}",
+                    status, response_text
+                );
+                return Err(TranslateError::Translation(format!(
+                    "Tencent API error: {} - {}",
+                    status, response_text
+                )));
+            }
+
+            let tencent_resp: TencentTranslateResponse =
+                serde_json::from_str(&response_text).map_err(|e| {
+                    TranslateError::Parse(format!(
+                        "Failed to parse Tencent response: {} - {}",
+                        e, response_text
+                    ))
+                })?;
+
+            // Check for API error in response body
+            if let Some(ref api_err) = tencent_resp.response.error {
+                error!(
+                    "Tencent API error: code={}, message={}",
+                    api_err.code, api_err.message
+                );
+                return Err(TranslateError::Translation(format!(
+                    "Tencent API error: {} - {}",
+                    api_err.code, api_err.message
+                )));
+            }
+
+            Ok(TranslateResponse {
+                original_text: text.to_string(),
+                translated_text: tencent_resp.response.target_text,
+                source_lang: tencent_resp.response.source,
+                target_lang: tencent_resp.response.target,
+                ..Default::default()
+            })
+        }.await;
+
+        // Report statistics
+        let latency_ms = start_time.elapsed().as_millis() as u64;
+        let success = result.is_ok();
+        if let Some(ref reporter) = self.reporter {
+            reporter.report_translator_call("tencent", latency_ms, success, chars);
         }
 
-        let tencent_resp: TencentTranslateResponse =
-            serde_json::from_str(&response_text).map_err(|e| {
-                TranslateError::Parse(format!(
-                    "Failed to parse Tencent response: {} - {}",
-                    e, response_text
-                ))
-            })?;
-
-        // Check for API error in response body
-        if let Some(ref api_err) = tencent_resp.response.error {
-            error!(
-                "Tencent API error: code={}, message={}",
-                api_err.code, api_err.message
-            );
-            return Err(TranslateError::Translation(format!(
-                "Tencent API error: {} - {}",
-                api_err.code, api_err.message
-            )));
-        }
-
-        Ok(TranslateResponse {
-            original_text: text.to_string(),
-            translated_text: tencent_resp.response.target_text,
-            source_lang: tencent_resp.response.source,
-            target_lang: tencent_resp.response.target,
-            ..Default::default()
-        })
+        result
     }
 }
 
@@ -378,6 +404,14 @@ impl Translator for TencentTranslator {
 
     fn max_input_chars(&self) -> usize {
         6000
+    }
+
+    fn set_reporter(&mut self, reporter: Arc<dyn Reporter>) {
+        self.reporter = Some(reporter);
+    }
+
+    fn reporter(&self) -> Option<Arc<dyn Reporter>> {
+        self.reporter.clone()
     }
 }
 

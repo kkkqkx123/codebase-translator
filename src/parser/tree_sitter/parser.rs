@@ -119,17 +119,8 @@ impl TreeSitterParser {
         }
 
         // Extract docstrings
-        println!(
-            "Extract docstrings: config.extract_docstrings = {}",
-            self.config.extract_docstrings
-        );
-        println!(
-            "Extract docstrings: language_config.docstring_query = {:?}",
-            self.language_config.docstring_query
-        );
         if self.config.extract_docstrings {
             if let Some(ref query) = self.language_config.docstring_query {
-                println!("Extract docstrings: calling extract_with_query");
                 let doc_units = self.extract_with_query(
                     &root_node,
                     content,
@@ -137,13 +128,8 @@ impl TreeSitterParser {
                     StrategyNodeType::DocString,
                     file_path,
                 )?;
-                println!("Extract docstrings: found {} units", doc_units.len());
                 units.extend(doc_units);
-            } else {
-                println!("Extract docstrings: docstring_query is None");
             }
-        } else {
-            println!("Extract docstrings: extract_docstrings is false");
         }
 
         // Extract string literals

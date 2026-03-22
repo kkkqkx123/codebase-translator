@@ -130,7 +130,7 @@ fn test_reporter_integration_with_workflow() -> Result<()> {
 
     assert!(result.files_processed > 0, "Should process files");
 
-    let stats = reporter.get_stats();
+    let stats = reporter.get_stats().expect("Stats should be available");
     assert!(stats.total_files > 0);
     assert!(stats.total_units > 0, "Should have translation units");
 
@@ -157,7 +157,7 @@ fn test_reporter_records_file_processing() -> Result<()> {
 
     workflow.execute()?;
 
-    let stats = reporter.get_stats();
+    let stats = reporter.get_stats().expect("Stats should be available");
     assert!(stats.processed_files > 0, "Should record processed files");
     assert!(stats.total_units > 0, "Should record total units");
 
@@ -184,7 +184,7 @@ fn test_reporter_records_cache_operations() -> Result<()> {
 
     workflow.execute()?;
 
-    let stats = reporter.get_stats();
+    let stats = reporter.get_stats().expect("Stats should be available");
     let total_cache_ops = stats.cache_hit_count + stats.cache_miss_count;
     assert!(total_cache_ops > 0, "Should record cache operations");
 
@@ -211,7 +211,7 @@ fn test_reporter_finalization() -> Result<()> {
 
     workflow.execute()?;
 
-    let stats = reporter.get_stats();
+    let stats = reporter.get_stats().expect("Stats should be available");
     assert!(
         stats.end_time.is_some(),
         "Should have end time after finalization"
@@ -271,9 +271,11 @@ fn test_reporter_save_report() -> Result<()> {
 
     workflow.execute()?;
 
+    let stats = reporter.get_stats().expect("Stats should be available");
     let report_path = temp_dir_path.join("report.txt");
     reporter.save_report(
         &report_path,
+        &stats,
         codebase_translate::reporter::ReportFormat::Text,
     )?;
 
@@ -319,9 +321,11 @@ fn test_reporter_save_report_with_template() -> Result<()> {
     let output_dir = temp_dir_path.join("reports");
     fs::create_dir_all(&output_dir)?;
 
+    let stats = reporter.get_stats().expect("Stats should be available");
     let saved_path = reporter.save_report_with_template(
         &output_dir,
         "translation_report_{timestamp}.txt",
+        &stats,
         codebase_translate::reporter::ReportFormat::Text,
     )?;
 
@@ -344,7 +348,7 @@ fn test_reporter_without_workflow() {
     reporter.report_cache_miss();
     reporter.report_api_call(2);
 
-    let stats = reporter.get_stats();
+    let stats = reporter.get_stats().expect("Stats should be available");
     assert_eq!(stats.processed_files, 1);
     assert_eq!(stats.total_units, 5);
     assert_eq!(stats.cache_hit_count, 1);
@@ -375,7 +379,7 @@ fn test_reporter_error_handling() -> Result<()> {
 
     workflow.execute()?;
 
-    let stats = reporter.get_stats();
+    let stats = reporter.get_stats().expect("Stats should be available");
     assert_eq!(stats.error_count, 0, "Should handle errors gracefully");
 
     Ok(())
@@ -404,7 +408,7 @@ fn test_reporter_empty_directory() -> Result<()> {
         "Should process 0 files in empty directory"
     );
 
-    let stats = reporter.get_stats();
+    let stats = reporter.get_stats().expect("Stats should be available");
     assert_eq!(stats.total_files, 0);
     assert_eq!(stats.processed_files, 0);
 

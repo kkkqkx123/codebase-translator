@@ -4,6 +4,7 @@ use tracing::{debug, error, info, warn};
 
 use crate::config::LLMProviderConfig;
 use crate::core::error::{Result, TranslateError};
+use crate::reporter::Reporter;
 use crate::translator::common::TranslateResponse;
 use crate::translator::llm::provider::LLMProvider;
 use crate::translator::llm::routing::{ProviderRouter, SelectionStrategy};
@@ -21,10 +22,20 @@ use crate::translator::Translator;
 /// - Uses threshold-based health tracking (not immediate)
 /// - Provider marked unhealthy after N consecutive failures
 /// - Provider recovers after M consecutive successes
-#[derive(Debug)]
 pub struct MultiProviderTranslator {
     router: ProviderRouter,
     max_retries: usize,
+    reporter: Option<Arc<dyn Reporter>>,
+}
+
+impl std::fmt::Debug for MultiProviderTranslator {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("MultiProviderTranslator")
+            .field("router", &self.router)
+            .field("max_retries", &self.max_retries)
+            .field("has_reporter", &self.reporter.is_some())
+            .finish()
+    }
 }
 
 impl MultiProviderTranslator {
@@ -42,6 +53,7 @@ impl MultiProviderTranslator {
         Ok(Self {
             router,
             max_retries,
+            reporter: None,
         })
     }
 
@@ -64,6 +76,7 @@ impl MultiProviderTranslator {
         Ok(Self {
             router,
             max_retries,
+            reporter: None,
         })
     }
 
@@ -304,5 +317,19 @@ impl Translator for MultiProviderTranslator {
     async fn close(&self) -> Result<()> {
         // No async cleanup needed with the new router-based approach
         Ok(())
+    }
+
+    fn set_reporter(&mut self, reporter: Arc<dyn Reporter>) {
+        self.reporter = Some(reporter.clone());
+        // Also set reporter on all providers
+        for provider in self.router.providers() {
+            if let Some(provider) = Arc::get_mut(&mut provider.clone()) {
+                provider.set_reporter(reporter.clone());
+            }
+        }
+    }
+
+    fn reporter(&self) -> Option<Arc<dyn Reporter>> {
+        self.reporter.clone()
     }
 }

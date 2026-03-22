@@ -4,15 +4,15 @@ Translation Report
 ============================================================
 
 Time:
-  Start:      2026-03-22 11:12:35
-  End:        2026-03-22 11:12:35
-  Duration:   0.256s
-  Speed:      50.8 files/s
+  Start:      2026-03-22 12:49:41
+  End:        2026-03-22 12:49:42
+  Duration:   0.208s
+  Speed:      0.0 files/s
 
 Files:
   Total:      15
-  Processed:  13
-  Skipped:    13
+  Processed:  0
+  Skipped:    15
   Failed:     0
 
 Translation Units:
@@ -22,8 +22,8 @@ API Calls:
   Total:      0
 
 Cache:
-  Hits:       2
-  Misses:     13
-  Hit Rate:   13.3%
+  Hits:       15
+  Misses:     0
+  Hit Rate:   100.0%
 
 ============================================================
