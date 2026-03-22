@@ -1,7 +1,7 @@
 use super::provider::{LLMProviderStats, TranslatorStats};
 use super::translation::TranslationStats;
 use std::sync::{Arc, RwLock};
-use tracing::debug;
+use tracing::{debug, warn};
 
 #[derive(Debug, Clone)]
 pub struct SharedStats {
@@ -17,62 +17,79 @@ impl SharedStats {
     }
 
     pub fn record_processed(&self) {
-        if let Ok(mut stats) = self.inner.write() {
-            stats.record_processed();
+        match self.inner.write() {
+            Ok(mut stats) => stats.record_processed(),
+            Err(e) => warn!(error = %e, "Failed to acquire write lock for record_processed"),
         }
     }
 
     pub fn record_skipped(&self) {
-        if let Ok(mut stats) = self.inner.write() {
-            stats.record_skipped();
+        match self.inner.write() {
+            Ok(mut stats) => stats.record_skipped(),
+            Err(e) => warn!(error = %e, "Failed to acquire write lock for record_skipped"),
         }
     }
 
     pub fn record_failed(&self, file_path: &str, error: &str) {
-        if let Ok(mut stats) = self.inner.write() {
-            stats.record_failed(file_path, error);
+        match self.inner.write() {
+            Ok(mut stats) => stats.record_failed(file_path, error),
+            Err(e) => warn!(error = %e, file_path = %file_path, "Failed to acquire write lock for record_failed"),
         }
     }
 
     pub fn record_total_files(&self, count: usize) {
-        if let Ok(mut stats) = self.inner.write() {
-            stats.record_total_files(count);
+        match self.inner.write() {
+            Ok(mut stats) => stats.record_total_files(count),
+            Err(e) => warn!(error = %e, "Failed to acquire write lock for record_total_files"),
         }
     }
 
     pub fn record_units(&self, count: usize) {
-        if let Ok(mut stats) = self.inner.write() {
-            stats.record_units(count);
+        match self.inner.write() {
+            Ok(mut stats) => stats.record_units(count),
+            Err(e) => warn!(error = %e, "Failed to acquire write lock for record_units"),
         }
     }
 
     pub fn record_translated(&self, count: usize) {
-        if let Ok(mut stats) = self.inner.write() {
-            stats.record_translated(count);
+        match self.inner.write() {
+            Ok(mut stats) => stats.record_translated(count),
+            Err(e) => warn!(error = %e, "Failed to acquire write lock for record_translated"),
         }
     }
 
     pub fn record_api_call(&self, count: usize) {
-        if let Ok(mut stats) = self.inner.write() {
-            stats.record_api_call(count);
+        match self.inner.write() {
+            Ok(mut stats) => stats.record_api_call(count),
+            Err(e) => warn!(error = %e, "Failed to acquire write lock for record_api_call"),
         }
     }
 
     pub fn record_cache_hit(&self) {
-        if let Ok(mut stats) = self.inner.write() {
-            stats.record_cache_hit();
+        match self.inner.write() {
+            Ok(mut stats) => stats.record_cache_hit(),
+            Err(e) => warn!(error = %e, "Failed to acquire write lock for record_cache_hit"),
         }
     }
 
     pub fn record_cache_miss(&self) {
-        if let Ok(mut stats) = self.inner.write() {
-            stats.record_cache_miss();
+        match self.inner.write() {
+            Ok(mut stats) => stats.record_cache_miss(),
+            Err(e) => warn!(error = %e, "Failed to acquire write lock for record_cache_miss"),
+        }
+    }
+
+    pub fn record_progress(&self, current: usize, total: usize) {
+        match self.inner.write() {
+            Ok(mut stats) => stats.record_progress(current, total),
+            Err(e) => warn!(error = %e, "Failed to acquire write lock for record_progress"),
         }
     }
 
     pub fn finalize(&self) {
-        if let Ok(mut stats) = self.inner.write() {
-            stats.finalize();
+        match self.inner.write() {
+            Ok(mut stats) => stats.finalize(),
+            Err(e) => warn!(error = %e, "Failed to acquire write lock for finalize"),
         }
     }
 
@@ -104,8 +121,9 @@ impl SharedStats {
 
     pub fn reset(&self) {
         debug!("Resetting shared statistics");
-        if let Ok(mut stats) = self.inner.write() {
-            *stats = TranslationStats::new();
+        match self.inner.write() {
+            Ok(mut stats) => *stats = TranslationStats::new(),
+            Err(e) => warn!(error = %e, "Failed to acquire write lock for reset"),
         }
     }
 
@@ -116,8 +134,9 @@ impl SharedStats {
         success: bool,
         chars: usize,
     ) {
-        if let Ok(mut stats) = self.inner.write() {
-            stats.record_translator_call(translator_type, latency_ms, success, chars);
+        match self.inner.write() {
+            Ok(mut stats) => stats.record_translator_call(translator_type, latency_ms, success, chars),
+            Err(e) => warn!(error = %e, "Failed to acquire write lock for record_translator_call"),
         }
     }
 
@@ -130,15 +149,16 @@ impl SharedStats {
         success: bool,
         chars: usize,
     ) {
-        if let Ok(mut stats) = self.inner.write() {
-            stats.record_llm_provider_call(
+        match self.inner.write() {
+            Ok(mut stats) => stats.record_llm_provider_call(
                 provider_id,
                 provider_name,
                 model,
                 latency_ms,
                 success,
                 chars,
-            );
+            ),
+            Err(e) => warn!(error = %e, "Failed to acquire write lock for record_llm_provider_call"),
         }
     }
 

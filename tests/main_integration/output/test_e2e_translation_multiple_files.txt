@@ -10,7 +10,7 @@ Translated units: 25
 Cached files: 0
 Skipped units: 0
 Errors: 0
-Duration: 35.28s
+Duration: 16.05s
 
 
 Directory Contents:
@@ -26,7 +26,7 @@ Directory Contents:
 Translated Files:
 ==================
 
---- C:\Users\33530\AppData\Local\Temp\.tmpzY8WWl\simple_javascript.js ---
+--- C:\Users\33530\AppData\Local\Temp\.tmp2EkD7M\simple_javascript.js ---
 // This is a simple JavaScript file to test the translation function
 // Includes Chinese comments
 
@@ -78,7 +78,7 @@ function main() {
 
 main();
 
---- C:\Users\33530\AppData\Local\Temp\.tmpzY8WWl\simple_markdown.md ---
+--- C:\Users\33530\AppData\Local\Temp\.tmp2EkD7M\simple_markdown.md ---
 # Testing the translation function
 
 这是一个简单的Markdown文件，用于测试翻译功能。
@@ -89,7 +89,7 @@ main();
 本工具可以自动翻译代码注释和文档字符串。
 
 #
-### Languages supported
+###Supported languages
 
 - Rust
 - Python
@@ -98,14 +98,14 @@ main();
 - Java
 
 #
-### How to use it
+### Usage
 
 1. 配置翻译服务
 2. 运行翻译命令
 3. 查看翻译结果
 
 #
-## typical example
+## Example
 
 ```rust
 fn main() {
@@ -126,38 +126,38 @@ fn main() {
 - [项目主页](https://github.com/example/translator)
 - [文档](https://docs.example.com)
 
---- C:\Users\33530\AppData\Local\Temp\.tmpzY8WWl\simple_python.py ---
-# This is a simple Python file to test the translation function
+--- C:\Users\33530\AppData\Local\Temp\.tmp2EkD7M\simple_python.py ---
+# This is a simple Python file used to test translation capabilities
 # Contains Chinese comments and document strings
 
 def add(a, b):
     """
-    Calculate the sum of two numbers
+    Compute the sum of two numbers
     
-        Args:
-            a: The first number
-            b: The second number
+        Args.
+            a: first number
+            b: second number
     
-        Returns:
-        The sum of the two numbers
+        Returns.
+            The sum of the two numbers
     """
     return a + b
 
 def subtract(a, b):
     """
-    Compute the difference between two numbers
+    Calculate the difference between two numbers
     
-        Args.
-            a: subtracted number
-            b: subtracted number
+        Args:
+            a: The number from which subtraction is to be performed
+            b: The number by which subtraction is to be performed
     
-        Returns.
-            Difference between two numbers
+        Returns:
+        The difference between the two numbers
     """
     return a - b
 
 class Calculator:
-    """A simple calculator class"""
+    """Simple calculator class"""
     
     def __init__(self, name):
         """
@@ -177,8 +177,8 @@ if __name__ == "__main__":
     result = add(10, 20)
     print(f"结果: {result}")
 
---- C:\Users\33530\AppData\Local\Temp\.tmpzY8WWl\simple_rust.rs ---
-// This is a simple Rust file for testing translation functionality
+--- C:\Users\33530\AppData\Local\Temp\.tmp2EkD7M\simple_rust.rs ---
+// This is a simple Rust file used to test translation capabilities
 // Contains Chinese comments and document strings
 
 /// 计算两个数的和
@@ -208,7 +208,7 @@ pub fn subtract(a: i32, b: i32) -> i32 {
     a - b
 }
 
-/// Multiplication operation
+/// multiplication operation
 pub fn multiply(a: i32, b: i32) -> i32 {
     a * b
 }
@@ -231,7 +231,7 @@ impl Calculator {
         }
     }
 
-    /// Obtain the name of the calculator.
+    /// Get Calculator Name
     pub fn get_name(&self) -> &str {
         &self.name
     }

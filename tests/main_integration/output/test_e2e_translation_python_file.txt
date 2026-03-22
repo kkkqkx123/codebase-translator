@@ -10,7 +10,7 @@ Translated units: 6
 Cached files: 0
 Skipped units: 0
 Errors: 0
-Duration: 10.86s
+Duration: 8.04s
 
 
 Directory Contents:
@@ -34,7 +34,7 @@ def add(a, b):
             b: The second number
     
         Returns:
-        The sum of the two numbers
+            The sum of the two numbers
     """
     return a + b
 
@@ -43,11 +43,11 @@ def subtract(a, b):
     Calculate the difference between two numbers
     
         Args:
-            a: The number being subtracted
-            b: The number subtracting from the first number
+            a: Minuend
+            b: Reduction
     
         Returns:
-        The difference between the two numbers
+            difference between two numbers
     """
     return a - b
 
@@ -64,7 +64,7 @@ class Calculator:
         self.name = name
     
     def get_name(self):
-        """Get Calculator Name"""
+        """Get calculator name"""
         return self.name
 
 if __name__ == "__main__":

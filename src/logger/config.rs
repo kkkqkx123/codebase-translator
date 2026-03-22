@@ -43,8 +43,12 @@ pub fn validate_config(config: &LoggingConfig) -> Result<()> {
         )));
     }
 
-    // File output is always valid, will use default path if not specified
-    // The actual path resolution happens in get_log_file_path
+    // File output requires a file path
+    if config.output == "file" && config.file.is_none() {
+        return Err(crate::core::error::TranslateError::Config(
+            "File output requires a file path".to_string()
+        ));
+    }
 
     Ok(())
 }
@@ -132,8 +136,8 @@ mod tests {
             file: None,
         };
 
-        // Now file output without explicit path uses default, so validation passes
-        assert!(validate_config(&config).is_ok());
+        // File output without explicit path should fail validation
+        assert!(validate_config(&config).is_err());
     }
 
     #[test]

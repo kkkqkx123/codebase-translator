@@ -1,7 +1,7 @@
 Project Config Loaded:
 ======================
-Source Langs: ["AUTO"]
-Target Lang: EN
+Source Langs: ["auto"]
+Target Lang: en
 Include Patterns: ["**/*.rs", "**/*.py", "**/*.js", "**/*.md"]
 Exclude Patterns: ["vendor/**", "node_modules/**", "target/**"]
 Cache Enabled: true

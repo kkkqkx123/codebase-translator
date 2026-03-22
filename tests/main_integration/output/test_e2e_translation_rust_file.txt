@@ -10,7 +10,7 @@ Translated units: 8
 Cached files: 0
 Skipped units: 0
 Errors: 0
-Duration: 11.07s
+Duration: 7.24s
 
 
 Directory Contents:
@@ -57,9 +57,9 @@ pub fn multiply(a: i32, b: i32) -> i32 {
     a * b
 }
 
-// This is a simple struct.
+// This is a simple structure.
 pub struct Calculator {
-    // Calculator Name
+    // Calculator name
     name: String,
 }
 
@@ -75,7 +75,7 @@ impl Calculator {
         }
     }
 
-    /// Get Calculator Name
+    /// Obtain the name of the calculator.
     pub fn get_name(&self) -> &str {
         &self.name
     }

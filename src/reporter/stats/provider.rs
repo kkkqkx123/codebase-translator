@@ -39,8 +39,10 @@ impl TranslatorStats {
         if success {
             self.successful_calls += 1;
 
-            let total_latency = self.average_latency_ms * (self.successful_calls - 1) as f64;
-            self.average_latency_ms = (total_latency + latency) / self.successful_calls as f64;
+            // Use incremental averaging to reduce floating-point precision issues
+            // NewAvg = OldAvg + (NewValue - OldAvg) / Count
+            let delta = latency - self.average_latency_ms;
+            self.average_latency_ms += delta / self.successful_calls as f64;
 
             if let Some(min) = self.min_latency_ms {
                 self.min_latency_ms = Some(min.min(latency));

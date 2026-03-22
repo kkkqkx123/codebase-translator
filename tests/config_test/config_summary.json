@@ -76,8 +76,8 @@
     }
   },
   "project_config": {
-    "source_langs": ["AUTO"],
-    "target_lang": "EN",
+    "source_langs": ["auto"],
+    "target_lang": "en",
     "provider": "deeplx",
     "include_patterns_count": 22,
     "exclude_patterns_count": 20,

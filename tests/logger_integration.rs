@@ -157,7 +157,7 @@ fn test_init_file_logger_with_project_dir() {
     let project_dir = temp_dir.path().join("project");
     std::fs::create_dir_all(&project_dir).expect("Failed to create project dir");
     
-    let config = create_test_config("info", "file", "pretty", None);
+    let config = create_test_config("info", "file", "pretty", Some(".translator/translator.log".to_string()));
     let result = init(&config, Some(project_dir.as_path()));
     assert!(result.is_ok());
     

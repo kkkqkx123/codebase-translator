@@ -192,7 +192,7 @@ impl TranslationWorkflow {
                     );
                     result.stats.errors += 1;
                     if let Some(ref reporter) = self.reporter {
-                        reporter.report_error(&e);
+                        reporter.report_error(&file_entry.path, &e);
                     }
                 }
             }

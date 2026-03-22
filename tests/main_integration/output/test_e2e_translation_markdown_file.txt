@@ -10,7 +10,7 @@ Translated units: 8
 Cached files: 0
 Skipped units: 0
 Errors: 0
-Duration: 10.52s
+Duration: 4.83s
 
 
 Directory Contents:
@@ -32,7 +32,7 @@ Translated File Content:
 本工具可以自动翻译代码注释和文档字符串。
 
 #
-### Supported Languages
+###Supported languages
 
 - Rust
 - Python
@@ -48,7 +48,7 @@ Translated File Content:
 3. 查看翻译结果
 
 #
-## Example:
+## Example
 
 ```rust
 fn main() {
@@ -57,14 +57,14 @@ fn main() {
 ```
 
 #
-## Precautions
+## caveat
 
 - 请确保API密钥配置正确
 - 翻译结果可能需要人工审核
 - 建议先在小规模代码上测试
 
 #
-## Related links
+## Relevant links
 
 - [项目主页](https://github.com/example/translator)
 - [文档](https://docs.example.com)

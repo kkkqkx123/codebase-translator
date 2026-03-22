@@ -10,7 +10,7 @@ Translated units: 8
 Cached files: 0
 Skipped units: 0
 Errors: 0
-Duration: 13.51s
+Duration: 9.35s
 
 
 Second Translation Run (should use cache):
@@ -22,4 +22,4 @@ Translated units: 5
 Cached files: 0
 Skipped units: 0
 Errors: 0
-Duration: 8.29s
+Duration: 3.80s

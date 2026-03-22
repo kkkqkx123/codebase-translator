@@ -92,13 +92,6 @@ impl DefaultReporter {
         if stats.error_count > 0 {
             report.push_str(&format!("Errors ({}):\n", stats.error_count));
             for (i, err) in stats.errors.iter().enumerate() {
-                if i >= 10 {
-                    report.push_str(&format!(
-                        "  ... and {} more errors\n",
-                        stats.error_count - 10
-                    ));
-                    break;
-                }
                 report.push_str(&format!("  {}. {}: {}\n", i + 1, err.file_path, err.error));
             }
             report.push('\n');
@@ -136,16 +129,18 @@ impl Reporter for DefaultReporter {
         self.stats.record_processed();
     }
 
-    fn report_progress(&self, _current: usize, _total: usize) {
-        debug!(current = _current, total = _total, "Reporting progress");
+    fn report_progress(&self, current: usize, total: usize) {
+        debug!(current = current, total = total, "Reporting progress");
+        self.stats.record_progress(current, total);
     }
 
-    fn report_error(&self, error: &TranslateError) {
+    fn report_error(&self, path: &Path, error: &TranslateError) {
         warn!(
+            file = %path.display(),
             error = %error,
             "Reporting error"
         );
-        self.stats.record_failed("unknown", &error.to_string());
+        self.stats.record_failed(&path.to_string_lossy(), &error.to_string());
     }
 
     fn report_skipped(&self, path: &Path) {
@@ -327,7 +322,7 @@ mod tests {
     fn test_default_reporter_has_errors() {
         let reporter = DefaultReporter::new();
         assert!(!reporter.has_errors());
-        reporter.report_error(&TranslateError::Parse("test error".to_string()));
+        reporter.report_error(Path::new("test.txt"), &TranslateError::Parse("test error".to_string()));
         assert!(reporter.has_errors());
     }
 

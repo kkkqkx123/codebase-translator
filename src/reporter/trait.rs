@@ -26,7 +26,7 @@ pub trait Reporter: Send + Sync {
     fn report_progress(&self, current: usize, total: usize);
 
     /// Report error
-    fn report_error(&self, error: &TranslateError);
+    fn report_error(&self, path: &Path, error: &TranslateError);
 
     /// Report skipped file
     fn report_skipped(&self, path: &Path);

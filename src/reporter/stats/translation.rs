@@ -24,6 +24,9 @@ pub struct TranslationStats {
     pub avg_speed_files_per_sec: f64,
     pub translator_stats: HashMap<String, TranslatorStats>,
     pub llm_provider_stats: HashMap<String, LLMProviderStats>,
+    /// Current progress tracking
+    pub current_progress: usize,
+    pub total_progress: usize,
 }
 
 impl Default for TranslationStats {
@@ -46,6 +49,8 @@ impl Default for TranslationStats {
             avg_speed_files_per_sec: 0.0,
             translator_stats: HashMap::new(),
             llm_provider_stats: HashMap::new(),
+            current_progress: 0,
+            total_progress: 0,
         }
     }
 }
@@ -127,6 +132,12 @@ impl TranslationStats {
             "Recording cache miss"
         );
         self.cache_miss_count += 1;
+    }
+
+    pub fn record_progress(&mut self, current: usize, total: usize) {
+        debug!(current = current, total = total, "Recording progress");
+        self.current_progress = current;
+        self.total_progress = total;
     }
 
     pub fn finalize(&mut self) {
