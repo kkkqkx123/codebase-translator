@@ -33,7 +33,9 @@ impl SharedStats {
     pub fn record_failed(&self, file_path: &str, error: &str) {
         match self.inner.write() {
             Ok(mut stats) => stats.record_failed(file_path, error),
-            Err(e) => warn!(error = %e, file_path = %file_path, "Failed to acquire write lock for record_failed"),
+            Err(e) => {
+                warn!(error = %e, file_path = %file_path, "Failed to acquire write lock for record_failed")
+            }
         }
     }
 
@@ -135,7 +137,9 @@ impl SharedStats {
         chars: usize,
     ) {
         match self.inner.write() {
-            Ok(mut stats) => stats.record_translator_call(translator_type, latency_ms, success, chars),
+            Ok(mut stats) => {
+                stats.record_translator_call(translator_type, latency_ms, success, chars)
+            }
             Err(e) => warn!(error = %e, "Failed to acquire write lock for record_translator_call"),
         }
     }
@@ -158,7 +162,9 @@ impl SharedStats {
                 success,
                 chars,
             ),
-            Err(e) => warn!(error = %e, "Failed to acquire write lock for record_llm_provider_call"),
+            Err(e) => {
+                warn!(error = %e, "Failed to acquire write lock for record_llm_provider_call")
+            }
         }
     }
 

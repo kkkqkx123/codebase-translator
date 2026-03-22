@@ -1,33 +1,35 @@
-// Rust documentation comments for testing
+// Rust doc comments for testing
 
-/// This is a module-level documentation note
-/// This is the structure document annotation
-/// Field Documentation
+/// This is a module-level documentation comment
+mod example {
+    /// This is a struct documentation comment
+    pub struct Example {
+        /// Field documentation
         pub value: i32,
     }
     
     impl Example {
-        /// Create a new example instance
+        /// Creates a new Example instance.
         pub fn new(value: i32) -> Self {
             Example { value }
         }
         
-        /// Return value
+        /// Returns the value
         pub fn get_value(&self) -> i32 {
             self.value
         }
     }
 }
 
-/// 功能文档
+/// Function documentation
 /// 
-/// # 参数
+/// # Arguments
 /// 
-/// * `name` - 要问候的名字
+/// * `name` - A name to greet
 /// 
-/// # 返回
+/// # Returns
 /// 
-/// 问候信息
+/// A greeting message
 pub fn greet(name: &str) -> String {
     format!("Hello, {}!", name)
 }

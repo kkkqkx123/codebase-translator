@@ -208,6 +208,9 @@ mod tests {
         let result = LineApplier::apply(line, &units);
 
         // Should replace the content, not append
-        assert_eq!(result, "// This is a simple JavaScript file to test the translation function");
+        assert_eq!(
+            result,
+            "// This is a simple JavaScript file to test the translation function"
+        );
     }
 }

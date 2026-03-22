@@ -37,14 +37,15 @@ impl Script {
     /// Convert language code to script
     pub fn from_lang_code(lang: &str) -> Option<Self> {
         match lang.to_uppercase().as_str() {
-            "ZH" | "JA" | "KO" | "HANS" | "HANT" | "ZH-CN" | "ZH-TW" | "EN-US" | "EN-GB"
-            => Some(Self::Cjk),
+            "ZH" | "JA" | "KO" | "HANS" | "HANT" | "ZH-CN" | "ZH-TW" | "EN-US" | "EN-GB" => {
+                Some(Self::Cjk)
+            }
             "AR" => Some(Self::Arabic),
             "HE" => Some(Self::Hebrew),
             "EL" => Some(Self::Greek),
             "RU" | "UK" | "BG" | "SR" | "BE" => Some(Self::Cyrillic),
-            "EN" | "DE" | "FR" | "ES" | "IT" | "PT" | "NL" | "SV" | "PL" | "TR" | "CS"
-            | "RO" | "HU" | "DA" | "NO" => Some(Self::Latin),
+            "EN" | "DE" | "FR" | "ES" | "IT" | "PT" | "NL" | "SV" | "PL" | "TR" | "CS" | "RO"
+            | "HU" | "DA" | "NO" => Some(Self::Latin),
             _ => None,
         }
     }

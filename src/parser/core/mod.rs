@@ -16,7 +16,5 @@ pub use language_parser::LanguageParser;
 pub use position_tracker::PositionTracker;
 pub use query_executor::{QueryExecutor, QueryMatch};
 pub use string_processor::{CommentType, StringProcessor};
-pub use traits::{
-    ExtractionConfig, Parser, StrategyNodeType,
-};
+pub use traits::{ExtractionConfig, Parser, StrategyNodeType};
 pub use types::{FunctionCategory, LanguageFunctionPatterns};

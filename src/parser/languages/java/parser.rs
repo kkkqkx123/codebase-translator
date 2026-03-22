@@ -7,16 +7,14 @@ use tree_sitter::{Node, Parser, Tree};
 
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, TranslationUnit};
-use crate::parser::core::traits::{
-    ExtractionConfig, Parser as ParserTrait, StrategyNodeType,
-};
-use crate::parser::filtering::traits::Filter;
-use crate::parser::{ContentFilter, FunctionCategory};
 use crate::parser::core::query_executor::QueryExecutor;
+use crate::parser::core::traits::{ExtractionConfig, Parser as ParserTrait, StrategyNodeType};
 use crate::parser::core::{CommentType, StringProcessor};
-use crate::parser::ParserConfig;
+use crate::parser::filtering::traits::Filter;
 use crate::parser::languages::java::patterns::JavaPatterns;
 use crate::parser::languages::java::queries::JavaQueries;
+use crate::parser::ParserConfig;
+use crate::parser::{ContentFilter, FunctionCategory};
 use tracing::{debug, error, info, instrument};
 
 /// Java language parser
@@ -150,7 +148,9 @@ impl JavaParser {
             }
 
             let id = format!("{}_comment_{}", file_path, match_idx);
-            let node_type = self.extraction_config.get_node_type(StrategyNodeType::Comment);
+            let node_type = self
+                .extraction_config
+                .get_node_type(StrategyNodeType::Comment);
             let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
             units.push(unit);
             match_idx += 1;
@@ -213,7 +213,9 @@ impl JavaParser {
             }
 
             let id = format!("{}_javadoc_{}", file_path, match_idx);
-            let node_type = self.extraction_config.get_node_type(StrategyNodeType::DocString);
+            let node_type = self
+                .extraction_config
+                .get_node_type(StrategyNodeType::DocString);
             let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
             units.push(unit);
             match_idx += 1;
@@ -371,7 +373,7 @@ impl ParserTrait for JavaParser {
 mod tests {
     use super::*;
     use crate::core::models::NodeType;
-    
+
     use crate::parser::core::traits::ExtractionConfig;
     use std::path::PathBuf;
 
@@ -508,4 +510,3 @@ public class Application {
         assert_eq!(parser.supported_extensions(), &["java"]);
     }
 }
-

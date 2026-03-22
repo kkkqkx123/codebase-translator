@@ -84,7 +84,12 @@ impl TranslationService {
     ///
     /// # Returns
     /// Translated texts in the same order as input
-    pub fn translate_batch(&self, texts: &[String], source_lang: &str, target_lang: &str) -> Result<Vec<String>> {
+    pub fn translate_batch(
+        &self,
+        texts: &[String],
+        source_lang: &str,
+        target_lang: &str,
+    ) -> Result<Vec<String>> {
         debug!(
             texts_count = texts.len(),
             source_lang = %source_lang,
@@ -99,7 +104,9 @@ impl TranslationService {
             let batch_translator = batch_translator.clone();
 
             let result = self.runtime.block_on(async move {
-                batch_translator.translate_batch(&texts, &source_lang, &target_lang).await
+                batch_translator
+                    .translate_batch(&texts, &source_lang, &target_lang)
+                    .await
             })?;
 
             debug!(
@@ -117,9 +124,11 @@ impl TranslationService {
             let target_lang = target_lang.to_string();
             let translator = translator.clone();
 
-            let result = self
-                .runtime
-                .block_on(async move { translator.translate(&texts, &source_lang, &target_lang).await })?;
+            let result = self.runtime.block_on(async move {
+                translator
+                    .translate(&texts, &source_lang, &target_lang)
+                    .await
+            })?;
 
             debug!(
                 translated_count = result.len(),
@@ -243,7 +252,12 @@ impl BatchTranslationService {
     }
 
     /// Translate a batch of texts with rate limiting
-    pub fn translate_batch(&self, texts: &[String], source_lang: &str, target_lang: &str) -> Result<BatchResult> {
+    pub fn translate_batch(
+        &self,
+        texts: &[String],
+        source_lang: &str,
+        target_lang: &str,
+    ) -> Result<BatchResult> {
         let texts = texts.to_vec();
         let source_lang = source_lang.to_string();
         let target_lang = target_lang.to_string();

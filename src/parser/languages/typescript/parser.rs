@@ -7,16 +7,14 @@ use tree_sitter::{Node, Parser, Tree};
 
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, TranslationUnit};
-use crate::parser::core::traits::{
-    ExtractionConfig, Parser as ParserTrait, StrategyNodeType,
-};
-use crate::parser::filtering::traits::Filter;
-use crate::parser::{ContentFilter, FunctionCategory};
 use crate::parser::core::query_executor::QueryExecutor;
+use crate::parser::core::traits::{ExtractionConfig, Parser as ParserTrait, StrategyNodeType};
 use crate::parser::core::{CommentType, StringProcessor};
-use crate::parser::ParserConfig;
+use crate::parser::filtering::traits::Filter;
 use crate::parser::languages::typescript::patterns::TypeScriptPatterns;
 use crate::parser::languages::typescript::queries::TypeScriptQueries;
+use crate::parser::ParserConfig;
+use crate::parser::{ContentFilter, FunctionCategory};
 use tracing::{debug, error, info, instrument};
 
 /// TypeScript language parser
@@ -150,7 +148,9 @@ impl TypeScriptParser {
             }
 
             let id = format!("{}_comment_{}", file_path, match_idx);
-            let node_type = self.extraction_config.get_node_type(StrategyNodeType::Comment);
+            let node_type = self
+                .extraction_config
+                .get_node_type(StrategyNodeType::Comment);
             let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
             units.push(unit);
             match_idx += 1;
@@ -213,7 +213,9 @@ impl TypeScriptParser {
             }
 
             let id = format!("{}_jsdoc_{}", file_path, match_idx);
-            let node_type = self.extraction_config.get_node_type(StrategyNodeType::DocString);
+            let node_type = self
+                .extraction_config
+                .get_node_type(StrategyNodeType::DocString);
             let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
             units.push(unit);
             match_idx += 1;
@@ -323,7 +325,9 @@ impl TypeScriptParser {
             }
 
             let id = format!("{}_template_{}", file_path, match_idx);
-            let node_type = self.extraction_config.get_node_type(StrategyNodeType::FormatString);
+            let node_type = self
+                .extraction_config
+                .get_node_type(StrategyNodeType::FormatString);
             let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
             units.push(unit);
             match_idx += 1;
@@ -425,7 +429,7 @@ impl ParserTrait for TypeScriptParser {
 mod tests {
     use super::*;
     use crate::core::models::NodeType;
-    
+
     use crate::parser::core::traits::ExtractionConfig;
     use std::path::PathBuf;
 
@@ -596,4 +600,3 @@ export const Button: React.FC<ButtonProps> = ({ label, onClick }) => {
         assert_eq!(parser.supported_extensions(), &["ts", "tsx", "mts", "cts"]);
     }
 }
-

@@ -215,4 +215,3 @@ mod tests {
         assert!(!GoQueries::log_functions().is_empty());
     }
 }
-

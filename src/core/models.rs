@@ -15,7 +15,6 @@ pub enum CacheMode {
     Global,
 }
 
-
 impl std::fmt::Display for CacheMode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -192,8 +191,7 @@ impl std::fmt::Display for NodeType {
 }
 
 /// Pattern type classification for extraction rules
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[derive(Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum PatternType {
     #[default]
     Builtin,
@@ -210,7 +208,6 @@ impl std::fmt::Display for PatternType {
         }
     }
 }
-
 
 /// A unit of text that can be translated
 #[derive(Debug, Clone, Serialize, Deserialize)]

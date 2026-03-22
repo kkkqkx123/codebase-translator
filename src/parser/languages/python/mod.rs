@@ -9,4 +9,3 @@ pub mod queries;
 
 pub use parser::PythonParser;
 pub use patterns::PythonPatterns;
-

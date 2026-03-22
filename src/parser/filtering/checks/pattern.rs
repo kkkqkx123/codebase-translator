@@ -82,8 +82,9 @@ impl PatternFilter {
         ];
 
         // URL pattern - 优先于代码模式检测
-        let url_pattern_regex = Regex::new(r"https?://[^\s]+|[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
-            .expect("Invalid URL pattern regex");
+        let url_pattern_regex =
+            Regex::new(r"https?://[^\s]+|[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
+                .expect("Invalid URL pattern regex");
 
         Ok(Self {
             exclude_keywords_regex,
@@ -133,7 +134,10 @@ impl Filter for PatternFilter {
         // 3. Exclude keywords check - 数量少，简单匹配
         for pattern in &self.exclude_keywords_regex {
             if pattern.is_match(text) {
-                debug!(reason = "excluded_keyword", "Text filtered by pattern check");
+                debug!(
+                    reason = "excluded_keyword",
+                    "Text filtered by pattern check"
+                );
                 return false;
             }
         }
@@ -141,7 +145,10 @@ impl Filter for PatternFilter {
         // 4. Exclude patterns check - 用户自定义，数量不确定
         for pattern in &self.exclude_patterns_regex {
             if pattern.is_match(text) {
-                debug!(reason = "excluded_pattern", "Text filtered by pattern check");
+                debug!(
+                    reason = "excluded_pattern",
+                    "Text filtered by pattern check"
+                );
                 return false;
             }
         }
@@ -418,7 +425,11 @@ mod tests {
         // 测试关键字正则处理 - regex::escape 会转义特殊字符
         // 所以即使包含正则特殊字符的关键字也能正常编译
         let config = FilterConfig {
-            exclude_keywords: vec!["[invalid".to_string(), "(test".to_string(), "+plus".to_string()],
+            exclude_keywords: vec![
+                "[invalid".to_string(),
+                "(test".to_string(),
+                "+plus".to_string(),
+            ],
             ..Default::default()
         };
         let result = PatternFilter::new(&config);

@@ -30,4 +30,3 @@ pub use javascript::JavaScriptParser;
 pub use python::PythonParser;
 pub use rust::RustParser;
 pub use typescript::TypeScriptParser;
-

@@ -59,7 +59,9 @@ fn test_file_processor_saves_correct_fingerprint() {
         project_config,
         temp_dir.path().to_str().unwrap(),
     );
-    let components = builder.build().expect("Failed to build workflow components");
+    let components = builder
+        .build()
+        .expect("Failed to build workflow components");
 
     // Calculate config hash for cache lookup
     let config_hash = codebase_translate::config::calculate_config_hash(builder.project_config());
@@ -157,8 +159,11 @@ fn test_file_processor_cache_hit() {
             project_config.clone(),
             temp_dir.path().to_str().unwrap(),
         );
-        let components = builder.build().expect("Failed to build workflow components");
-        let config_hash = codebase_translate::config::calculate_config_hash(builder.project_config());
+        let components = builder
+            .build()
+            .expect("Failed to build workflow components");
+        let config_hash =
+            codebase_translate::config::calculate_config_hash(builder.project_config());
 
         let processor = FileProcessor::new(
             &components.cache,
@@ -175,8 +180,10 @@ fn test_file_processor_cache_hit() {
         // Print first processing result
         match &result {
             Ok(r) => {
-                println!("First processing: total_units={}, translated_units={}, cached_files={}",
-                    r.total_units, r.translated_units, r.cached_files);
+                println!(
+                    "First processing: total_units={}, translated_units={}, cached_files={}",
+                    r.total_units, r.translated_units, r.cached_files
+                );
             }
             Err(e) => {
                 println!("First processing failed: {}", e);
@@ -186,8 +193,10 @@ fn test_file_processor_cache_hit() {
         // Verify cache entry exists with correct fingerprint
         let cached_before = components.cache.get(&file_hash, &config_hash).unwrap();
         if let Some(entry) = &cached_before {
-            println!("Cache entry after first processing: fingerprint='{}', is_translated={}",
-                entry.project_fingerprint, entry.is_translated);
+            println!(
+                "Cache entry after first processing: fingerprint='{}', is_translated={}",
+                entry.project_fingerprint, entry.is_translated
+            );
             assert!(
                 !entry.project_fingerprint.is_empty(),
                 "Cache entry should have non-empty fingerprint"
@@ -206,8 +215,11 @@ fn test_file_processor_cache_hit() {
             project_config,
             temp_dir.path().to_str().unwrap(),
         );
-        let components = builder.build().expect("Failed to build workflow components");
-        let _config_hash = codebase_translate::config::calculate_config_hash(builder.project_config());
+        let components = builder
+            .build()
+            .expect("Failed to build workflow components");
+        let _config_hash =
+            codebase_translate::config::calculate_config_hash(builder.project_config());
 
         let processor = FileProcessor::new(
             &components.cache,
@@ -276,8 +288,11 @@ fn test_file_processor_cache_entry_lifecycle() {
             project_config.clone(),
             temp_dir.path().to_str().unwrap(),
         );
-        let components = builder.build().expect("Failed to build workflow components");
-        let _config_hash = codebase_translate::config::calculate_config_hash(builder.project_config());
+        let components = builder
+            .build()
+            .expect("Failed to build workflow components");
+        let _config_hash =
+            codebase_translate::config::calculate_config_hash(builder.project_config());
 
         let processor = FileProcessor::new(
             &components.cache,
@@ -300,14 +315,20 @@ fn test_file_processor_cache_entry_lifecycle() {
             project_config,
             temp_dir.path().to_str().unwrap(),
         );
-        let components = builder.build().expect("Failed to build workflow components");
-        let config_hash = codebase_translate::config::calculate_config_hash(builder.project_config());
+        let components = builder
+            .build()
+            .expect("Failed to build workflow components");
+        let config_hash =
+            codebase_translate::config::calculate_config_hash(builder.project_config());
 
         // Verify we can retrieve the entry
         let entry = components.cache.get(&file_hash, &config_hash).unwrap();
 
         if let Some(e) = &entry {
-            println!("Entry found after restart: fingerprint='{}'", e.project_fingerprint);
+            println!(
+                "Entry found after restart: fingerprint='{}'",
+                e.project_fingerprint
+            );
             assert!(
                 !e.project_fingerprint.is_empty(),
                 "Fingerprint should not be empty"
@@ -358,8 +379,8 @@ fn test_empty_fingerprint_causes_cache_miss() {
     let correct_fingerprint = cache.project_fingerprint().to_string();
 
     // Create a cache entry with EMPTY fingerprint (simulating the bug)
-    use codebase_translate::core::models::CacheEntry;
     use crate::cache_integration::test_utils::{hash_utils, TEST_CONFIG_HASH};
+    use codebase_translate::core::models::CacheEntry;
 
     let file_hash = hash_utils::generate_test_hash("test_file");
     let mut buggy_entry = CacheEntry::new(

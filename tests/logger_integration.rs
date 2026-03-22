@@ -156,11 +156,16 @@ fn test_init_file_logger_with_project_dir() {
     let temp_dir = TempDir::new().expect("Failed to create temp dir");
     let project_dir = temp_dir.path().join("project");
     std::fs::create_dir_all(&project_dir).expect("Failed to create project dir");
-    
-    let config = create_test_config("info", "file", "pretty", Some(".translator/translator.log".to_string()));
+
+    let config = create_test_config(
+        "info",
+        "file",
+        "pretty",
+        Some(".translator/translator.log".to_string()),
+    );
     let result = init(&config, Some(project_dir.as_path()));
     assert!(result.is_ok());
-    
+
     let expected_log_path = project_dir.join(".translator").join("translator.log");
     assert!(expected_log_path.parent().unwrap().exists());
 }
@@ -170,11 +175,11 @@ fn test_init_file_logger_with_relative_path_and_project_dir() {
     let temp_dir = TempDir::new().expect("Failed to create temp dir");
     let project_dir = temp_dir.path().join("project");
     std::fs::create_dir_all(&project_dir).expect("Failed to create project dir");
-    
+
     let config = create_test_config("info", "file", "pretty", Some("logs/app.log".to_string()));
     let result = init(&config, Some(project_dir.as_path()));
     assert!(result.is_ok());
-    
+
     let expected_log_path = project_dir.join("logs").join("app.log");
     assert!(expected_log_path.parent().unwrap().exists());
 }
@@ -184,18 +189,24 @@ fn test_init_file_logger_with_absolute_path_ignores_project_dir() {
     let temp_dir = TempDir::new().expect("Failed to create temp dir");
     let project_dir = temp_dir.path().join("project");
     std::fs::create_dir_all(&project_dir).expect("Failed to create project dir");
-    
+
     let absolute_log_path = temp_dir.path().join("absolute").join("app.log");
-    std::fs::create_dir_all(absolute_log_path.parent().unwrap()).expect("Failed to create absolute log dir");
-    
+    std::fs::create_dir_all(absolute_log_path.parent().unwrap())
+        .expect("Failed to create absolute log dir");
+
     let config = create_test_config(
         "info",
         "file",
         "pretty",
-        Some(absolute_log_path.to_str().expect("Invalid path").to_string()),
+        Some(
+            absolute_log_path
+                .to_str()
+                .expect("Invalid path")
+                .to_string(),
+        ),
     );
     let result = init(&config, Some(project_dir.as_path()));
     assert!(result.is_ok());
-    
+
     assert!(absolute_log_path.parent().unwrap().exists());
 }

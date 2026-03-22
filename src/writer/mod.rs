@@ -110,5 +110,4 @@ mod tests {
         assert!(config.backup_dir.is_none());
         assert!(!config.strict_encoding);
     }
-
 }

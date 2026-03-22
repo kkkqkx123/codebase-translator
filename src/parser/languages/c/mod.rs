@@ -9,4 +9,3 @@ pub mod queries;
 
 pub use parser::CParser;
 pub use patterns::CPatterns;
-

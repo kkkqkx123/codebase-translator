@@ -212,8 +212,11 @@ impl TranslationWorkflow {
             "Workflow execution completed"
         );
 
+        // Finalize stats before passing to reporter
+        result.stats.finalize();
+
         if let Some(ref reporter) = self.reporter {
-            reporter.finalize();
+            reporter.finalize(&result.stats);
         }
 
         // Print summary

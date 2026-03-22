@@ -9,4 +9,3 @@ pub mod queries;
 
 pub use parser::CppParser;
 pub use patterns::CppPatterns;
-

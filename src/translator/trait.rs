@@ -22,7 +22,12 @@ pub trait Translator: Send + Sync {
     ///
     /// # Returns
     /// Translated texts in the same order as input
-    async fn translate(&self, texts: &[String], source_lang: &str, target_lang: &str) -> Result<Vec<String>>;
+    async fn translate(
+        &self,
+        texts: &[String],
+        source_lang: &str,
+        target_lang: &str,
+    ) -> Result<Vec<String>>;
 
     /// Translate a single text with source language specification
     ///
@@ -117,7 +122,12 @@ pub enum TranslatorImpl {
 
 #[async_trait]
 impl Translator for TranslatorImpl {
-    async fn translate(&self, texts: &[String], source_lang: &str, target_lang: &str) -> Result<Vec<String>> {
+    async fn translate(
+        &self,
+        texts: &[String],
+        source_lang: &str,
+        target_lang: &str,
+    ) -> Result<Vec<String>> {
         match self {
             Self::DeepLX(t) => t.translate(texts, source_lang, target_lang).await,
             Self::LLM(t) => t.translate(texts, source_lang, target_lang).await,
@@ -189,7 +199,7 @@ impl Translator for TranslatorImpl {
 
 impl TranslatorImpl {
     /// Create a translator from the given configuration
-    /// 
+    ///
     /// Note: For LLM provider, use `create_llm_multi_provider_translator` in mod.rs instead
     /// to enable multi-provider support with automatic filtering.
     pub fn from_config(config: &crate::translator::factory::TranslatorConfig) -> Result<Self> {
@@ -209,7 +219,8 @@ impl TranslatorImpl {
                 // LLM is now handled by create_llm_multi_provider_translator in mod.rs
                 // This branch should not be reached when using the recommended API
                 Err(crate::core::error::TranslateError::Config(
-                    "LLM provider should be created using create_llm_multi_provider_translator".to_string(),
+                    "LLM provider should be created using create_llm_multi_provider_translator"
+                        .to_string(),
                 ))
             }
             ProviderType::Tencent => {

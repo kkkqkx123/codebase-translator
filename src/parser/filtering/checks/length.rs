@@ -26,7 +26,10 @@ impl Filter for LengthFilter {
     fn should_translate(&self, text: &str) -> bool {
         // Empty or whitespace-only check
         if text.trim().is_empty() {
-            debug!(reason = "empty_or_whitespace", "Text filtered by length check");
+            debug!(
+                reason = "empty_or_whitespace",
+                "Text filtered by length check"
+            );
             return false;
         }
 

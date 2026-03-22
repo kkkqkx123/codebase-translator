@@ -316,10 +316,7 @@ fn default_false() -> bool {
 }
 
 fn default_exclude_patterns() -> Vec<String> {
-    vec![
-        ".translator/**".to_string(),
-        ".translator.toml".to_string(),
-    ]
+    vec![".translator/**".to_string(), ".translator.toml".to_string()]
 }
 
 /// Include file patterns configuration
@@ -588,7 +585,6 @@ pub enum ExtractionRule {
         bracket_type: String,
     },
 }
-
 
 /// State machine pattern for complex extraction
 /// Allows matching sequences of tokens with conditions

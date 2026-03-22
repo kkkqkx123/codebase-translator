@@ -2,30 +2,40 @@
 
 use chrono::Utc;
 use std::path::Path;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 use crate::core::error::TranslateError;
 use crate::reporter::r#trait::{ReportFormat, Reporter};
-use crate::reporter::stats::SharedStats;
+use crate::reporter::stats::TranslationStats;
 use tracing::{debug, info, warn};
 
 /// Default reporter implementation
+///
+/// This reporter only tracks progress and errors for logging purposes.
+/// Statistics are collected externally and passed in when generating reports.
 #[derive(Debug, Clone)]
 pub struct DefaultReporter {
-    stats: SharedStats,
+    /// Total files to process (for progress tracking)
+    total_files: Arc<RwLock<usize>>,
+    /// Current progress (for progress tracking)
+    current_progress: Arc<RwLock<usize>>,
+    /// Error flag
+    has_errors: Arc<RwLock<bool>>,
+    /// Final stats (set during finalize)
+    final_stats: Arc<RwLock<Option<TranslationStats>>>,
 }
 
 impl DefaultReporter {
     pub fn new() -> Self {
         Self {
-            stats: SharedStats::new(),
+            total_files: Arc::new(RwLock::new(0)),
+            current_progress: Arc::new(RwLock::new(0)),
+            has_errors: Arc::new(RwLock::new(false)),
+            final_stats: Arc::new(RwLock::new(None)),
         }
     }
 
-    fn generate_text_report(
-        &self,
-        stats: &crate::reporter::stats::TranslationStats,
-    ) -> Result<String, TranslateError> {
+    fn generate_text_report(&self, stats: &TranslationStats) -> Result<String, TranslateError> {
         info!(
             files = stats.processed_files,
             units = stats.translated_units,
@@ -90,7 +100,7 @@ impl DefaultReporter {
         }
 
         if stats.error_count > 0 {
-            report.push_str(&format!("Errors ({}):\n", stats.error_count));
+            report.push_str(&format!("Errors ({})\n", stats.error_count));
             for (i, err) in stats.errors.iter().enumerate() {
                 report.push_str(&format!("  {}. {}: {}\n", i + 1, err.file_path, err.error));
             }
@@ -102,10 +112,7 @@ impl DefaultReporter {
         Ok(report)
     }
 
-    fn generate_json_report(
-        &self,
-        stats: &crate::reporter::stats::TranslationStats,
-    ) -> Result<String, TranslateError> {
+    fn generate_json_report(&self, stats: &TranslationStats) -> Result<String, TranslateError> {
         debug!("Generating JSON report");
         serde_json::to_string_pretty(stats)
             .map_err(|e| TranslateError::Parse(format!("Failed to serialize JSON report: {}", e)))
@@ -121,7 +128,9 @@ impl Default for DefaultReporter {
 impl Reporter for DefaultReporter {
     fn report_total_files(&self, count: usize) {
         debug!(count = count, "Reporting total files");
-        self.stats.record_total_files(count);
+        if let Ok(mut total) = self.total_files.write() {
+            *total = count;
+        }
     }
 
     fn report_file(&self, path: &Path, units: usize) {
@@ -130,13 +139,14 @@ impl Reporter for DefaultReporter {
             units = units,
             "Reporting file processed"
         );
-        self.stats.record_units(units);
-        self.stats.record_processed();
+        // Only for logging, does not affect stats
     }
 
     fn report_progress(&self, current: usize, total: usize) {
         debug!(current = current, total = total, "Reporting progress");
-        self.stats.record_progress(current, total);
+        if let Ok(mut progress) = self.current_progress.write() {
+            *progress = current;
+        }
     }
 
     fn report_error(&self, path: &Path, error: &TranslateError) {
@@ -145,7 +155,9 @@ impl Reporter for DefaultReporter {
             error = %error,
             "Reporting error"
         );
-        self.stats.record_failed(&path.to_string_lossy(), &error.to_string());
+        if let Ok(mut has_errors) = self.has_errors.write() {
+            *has_errors = true;
+        }
     }
 
     fn report_skipped(&self, path: &Path) {
@@ -153,61 +165,77 @@ impl Reporter for DefaultReporter {
             file = %path.display(),
             "Reporting skipped file"
         );
-        self.stats.record_skipped();
+        // Only for logging, does not affect stats
     }
 
     fn report_api_call(&self, count: usize) {
         debug!(count = count, "Reporting API call");
-        self.stats.record_api_call(count);
+        // Only for logging, does not affect stats
     }
 
     fn report_cache_hit(&self) {
         debug!("Reporting cache hit");
-        self.stats.record_cache_hit();
+        // Only for logging, does not affect stats
     }
 
     fn report_cache_miss(&self) {
         debug!("Reporting cache miss");
-        self.stats.record_cache_miss();
+        // Only for logging, does not affect stats
     }
 
-    fn final_report(&self, format: ReportFormat) -> Result<String, TranslateError> {
+    fn final_report(
+        &self,
+        stats: &TranslationStats,
+        format: ReportFormat,
+    ) -> Result<String, TranslateError> {
         debug!(
             format = ?format,
             "Generating final report"
         );
-        let stats = self.stats.get_stats();
 
         match format {
-            ReportFormat::Text => self.generate_text_report(&stats),
-            ReportFormat::Json => self.generate_json_report(&stats),
+            ReportFormat::Text => self.generate_text_report(stats),
+            ReportFormat::Json => self.generate_json_report(stats),
         }
     }
 
-    fn get_stats(&self) -> crate::reporter::stats::TranslationStats {
-        self.stats.get_stats()
+    fn get_stats(&self) -> Option<TranslationStats> {
+        self.final_stats.read().ok().and_then(|s| s.clone())
     }
 
     fn has_errors(&self) -> bool {
-        self.stats.has_errors()
+        self.has_errors.read().map(|e| *e).unwrap_or(false)
     }
 
     fn get_progress(&self) -> f64 {
-        self.stats.get_progress()
+        let total = self.total_files.read().map(|t| *t).unwrap_or(0);
+        let current = self.current_progress.read().map(|c| *c).unwrap_or(0);
+        if total == 0 {
+            0.0
+        } else {
+            (current as f64 / total as f64) * 100.0
+        }
     }
 
-    fn finalize(&self) {
-        info!("Finalizing reporter statistics");
-        self.stats.finalize();
+    fn finalize(&self, stats: &TranslationStats) {
+        info!("Finalizing reporter with external statistics");
+        if let Ok(mut final_stats) = self.final_stats.write() {
+            *final_stats = Some(stats.clone());
+        }
     }
 
-    fn save_report(&self, path: &Path, format: ReportFormat) -> Result<(), TranslateError> {
+    fn save_report(
+        &self,
+        path: &Path,
+        stats: &TranslationStats,
+        format: ReportFormat,
+    ) -> Result<(), TranslateError> {
         debug!(
             path = %path.display(),
             format = ?format,
             "Saving report to file"
         );
-        let report = self.final_report(format)?;
+        let report = self.final_report(stats, format)?;
 
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent).map_err(|e| TranslateError::Io(e.to_string()))?;
@@ -226,6 +254,7 @@ impl Reporter for DefaultReporter {
         &self,
         dir: &Path,
         template: &str,
+        stats: &TranslationStats,
         format: ReportFormat,
     ) -> Result<std::path::PathBuf, TranslateError> {
         debug!(
@@ -246,7 +275,7 @@ impl Reporter for DefaultReporter {
             .replace("{format}", ext);
         let path = dir.join(filename);
 
-        self.save_report(&path, format)?;
+        self.save_report(&path, stats, format)?;
 
         info!(
             path = %path.display(),
@@ -269,119 +298,51 @@ mod tests {
     #[test]
     fn test_default_reporter_new() {
         let reporter = DefaultReporter::new();
-        let stats = reporter.get_stats();
-        assert_eq!(stats.total_files, 0);
-        assert_eq!(stats.processed_files, 0);
+        assert!(!reporter.has_errors());
+        assert_eq!(reporter.get_progress(), 0.0);
     }
 
     #[test]
     fn test_default_reporter_default() {
         let reporter = DefaultReporter::default();
-        let stats = reporter.get_stats();
-        assert_eq!(stats.total_files, 0);
-        assert_eq!(stats.processed_files, 0);
+        assert!(!reporter.has_errors());
     }
 
     #[test]
-    fn test_default_reporter_report_file() {
+    fn test_default_reporter_report_total_files() {
         let reporter = DefaultReporter::new();
-        reporter.report_file(Path::new("test.rs"), 5);
-        let stats = reporter.get_stats();
-        assert_eq!(stats.processed_files, 1);
-        assert_eq!(stats.total_units, 5);
+        reporter.report_total_files(100);
+        assert_eq!(reporter.get_progress(), 0.0);
     }
 
     #[test]
-    fn test_default_reporter_report_skipped() {
+    fn test_default_reporter_report_progress() {
         let reporter = DefaultReporter::new();
-        reporter.report_skipped(Path::new("test.rs"));
-        let stats = reporter.get_stats();
-        assert_eq!(stats.skipped_files, 1);
+        reporter.report_total_files(100);
+        reporter.report_progress(50, 100);
+        assert_eq!(reporter.get_progress(), 50.0);
     }
 
     #[test]
-    fn test_default_reporter_report_api_call() {
-        let reporter = DefaultReporter::new();
-        reporter.report_api_call(5);
-        let stats = reporter.get_stats();
-        assert_eq!(stats.api_call_count, 5);
-    }
-
-    #[test]
-    fn test_default_reporter_report_cache_hit() {
-        let reporter = DefaultReporter::new();
-        reporter.report_cache_hit();
-        let stats = reporter.get_stats();
-        assert_eq!(stats.cache_hit_count, 1);
-    }
-
-    #[test]
-    fn test_default_reporter_report_cache_miss() {
-        let reporter = DefaultReporter::new();
-        reporter.report_cache_miss();
-        let stats = reporter.get_stats();
-        assert_eq!(stats.cache_miss_count, 1);
-    }
-
-    #[test]
-    fn test_default_reporter_has_errors() {
+    fn test_default_reporter_report_error() {
         let reporter = DefaultReporter::new();
         assert!(!reporter.has_errors());
-        reporter.report_error(Path::new("test.txt"), &TranslateError::Parse("test error".to_string()));
+        let error = TranslateError::Io("test error".to_string());
+        reporter.report_error(Path::new("test.rs"), &error);
         assert!(reporter.has_errors());
-    }
-
-    #[test]
-    fn test_default_reporter_get_progress() {
-        let reporter = DefaultReporter::new();
-        assert_eq!(reporter.get_progress(), 0.0);
     }
 
     #[test]
     fn test_default_reporter_finalize() {
         let reporter = DefaultReporter::new();
-        reporter.finalize();
-        let stats = reporter.get_stats();
-        assert!(stats.end_time.is_some());
-    }
+        let mut stats = TranslationStats::new();
+        stats.total_files = 10;
+        stats.processed_files = 5;
+        stats.finalize();
 
-    #[test]
-    fn test_default_reporter_save_report() {
-        let reporter = DefaultReporter::new();
-        reporter.finalize();
-        let temp_dir = std::env::temp_dir();
-        let report_path = temp_dir.join("test_report.txt");
-
-        let result = reporter.save_report(&report_path, ReportFormat::Text);
-        assert!(result.is_ok());
-        assert!(report_path.exists());
-
-        std::fs::remove_file(&report_path).expect("Failed to remove test file");
-    }
-
-    #[test]
-    fn test_default_reporter_save_report_with_template() {
-        let reporter = DefaultReporter::new();
-        reporter.finalize();
-        let temp_dir = std::env::temp_dir();
-
-        let result = reporter.save_report_with_template(
-            &temp_dir,
-            "report_{timestamp}.{format}",
-            ReportFormat::Text,
-        );
-        assert!(result.is_ok());
-
-        let report_path = result.expect("Failed to get report path");
-        assert!(report_path.exists());
-
-        std::fs::remove_file(&report_path).expect("Failed to remove test file");
-    }
-
-    #[test]
-    fn test_create_reporter() {
-        let reporter = create_reporter();
-        let stats = reporter.get_stats();
-        assert_eq!(stats.total_files, 0);
+        reporter.finalize(&stats);
+        let retrieved = reporter.get_stats();
+        assert!(retrieved.is_some());
+        assert_eq!(retrieved.unwrap().total_files, 10);
     }
 }

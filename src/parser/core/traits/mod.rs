@@ -7,6 +7,4 @@ pub mod parser;
 pub mod strategy;
 
 pub use parser::Parser;
-pub use strategy::{
-    ExtractionConfig, StrategyNodeType,
-};
+pub use strategy::{ExtractionConfig, StrategyNodeType};

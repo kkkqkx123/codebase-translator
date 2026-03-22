@@ -35,9 +35,9 @@
 //! assert!(!filter.should_translate("TODO: fix this"));
 //! ```
 
+pub mod checks;
 pub mod composite;
 pub mod config;
-pub mod checks;
 pub mod traits;
 
 // Re-export main types
@@ -49,4 +49,6 @@ pub use config::FilterConfig;
 pub use traits::Filter;
 
 // Re-export checks for advanced usage
-pub use checks::{LengthFilter, ContentFilter as ContentCheckFilter, LanguageFilter, PatternFilter};
+pub use checks::{
+    ContentFilter as ContentCheckFilter, LanguageFilter, LengthFilter, PatternFilter,
+};

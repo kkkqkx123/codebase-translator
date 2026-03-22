@@ -11,11 +11,12 @@ use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, PatternType, TranslationUnit};
 use crate::parser::core::traits::{ExtractionConfig, Parser as ParserTrait};
 use crate::parser::filtering::traits::Filter;
-use crate::parser::{ContentFilter};
-use crate::parser::{ParserConfig, TreeSitterParser, TreeSitterParserFactory};
 use crate::parser::regex::custom_pattern_matcher::CustomPatternMatcher;
 use crate::parser::regex::state_machine::StateMachineMatcher;
 use crate::parser::regex_parsers::FallbackParser;
+use crate::parser::{
+    ContentFilter, ParserConfig, RustParser, TreeSitterParser, TreeSitterParserFactory,
+};
 
 /// Indicates which type of parser will handle a file.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -29,13 +30,14 @@ pub enum ParserType {
 /// Parser coordinator that manages multiple parsers and routes files appropriately.
 ///
 /// The coordinator maintains a collection of parsers and selects the appropriate
-/// one based on file extension. It tries tree-sitter parsers first (for accuracy),
-/// then falls back to regex-based parsers for unsupported file types.
+/// one based on file extension. It tries language-specific parsers first (for accuracy),
+/// then tree-sitter parsers, then falls back to regex-based parsers for unsupported file types.
 ///
 /// After parsing, it applies additional extraction patterns:
 /// - Custom regex patterns (simple single-step matching)
 /// - State machine patterns (complex multi-step matching)
 pub struct ParserCoordinator {
+    rust_parser: Option<RustParser>,
     tree_sitter_parsers: Vec<TreeSitterParser>,
     fallback_parser: FallbackParser,
     /// Custom pattern matchers for simple regex-based extraction
@@ -141,9 +143,15 @@ impl ParserCoordinator {
     ) -> Result<Self> {
         let mut tree_sitter_parsers: Vec<TreeSitterParser> = Vec::new();
 
-        for parser_result in
-            TreeSitterParserFactory::create_all_parsers(config.clone(), extraction_config.clone(), filter.clone())
-        {
+        // Create Rust parser for special extraction types (error_messages, format_strings, log_messages)
+        let rust_parser =
+            RustParser::new(config.clone(), extraction_config.clone(), filter.clone()).ok();
+
+        for parser_result in TreeSitterParserFactory::create_all_parsers(
+            config.clone(),
+            extraction_config.clone(),
+            filter.clone(),
+        ) {
             match parser_result {
                 Ok(parser) => tree_sitter_parsers.push(parser),
                 Err(e) => {
@@ -233,6 +241,7 @@ impl ParserCoordinator {
         }
 
         Ok(Self {
+            rust_parser,
             tree_sitter_parsers,
             fallback_parser,
             custom_pattern_matchers,
@@ -245,12 +254,14 @@ impl ParserCoordinator {
 
     /// Creates a coordinator with pre-built parsers.
     pub fn with_parsers(
+        rust_parser: Option<RustParser>,
         tree_sitter_parsers: Vec<TreeSitterParser>,
         fallback_parser: FallbackParser,
-    ) -> Self {
+    ) -> Result<Self> {
         use crate::parser::{ContentFilter, FilterConfig};
 
-        Self {
+        Ok(Self {
+            rust_parser,
             tree_sitter_parsers,
             fallback_parser,
             custom_pattern_matchers: Vec::new(),
@@ -261,7 +272,7 @@ impl ParserCoordinator {
                 ContentFilter::new(FilterConfig::default())
                     .expect("Failed to create default filter"),
             ),
-        }
+        })
     }
 
     /// Parses a file using the appropriate parser and applies additional patterns.
@@ -469,6 +480,15 @@ impl ParserCoordinator {
             .content_string()
             .map_err(|e| TranslateError::Parse(format!("Failed to decode file content: {}", e)))?;
 
+        // Try Rust parser first for special extraction types
+        if let Some(ref rust_parser) = self.rust_parser {
+            if rust_parser.supports(filename) {
+                let units = rust_parser.parse(file)?;
+                return Ok((units, content));
+            }
+        }
+
+        // Try tree-sitter parsers
         for parser in &self.tree_sitter_parsers {
             if parser.supports(filename) {
                 let units = parser.parse(file)?;
@@ -476,6 +496,7 @@ impl ParserCoordinator {
             }
         }
 
+        // Fallback to regex parser
         if self.fallback_parser.supports(filename) {
             let units = self.fallback_parser.parse(file)?;
             return Ok((units, content));

@@ -529,16 +529,25 @@ fn test_cache_invalidation_on_content_change() {
     cache.set(&original_entry).unwrap();
 
     // Verify original content is cached
-    assert!(cache.get(&original_hash, TEST_CONFIG_HASH).unwrap().is_some());
+    assert!(cache
+        .get(&original_hash, TEST_CONFIG_HASH)
+        .unwrap()
+        .is_some());
 
     // Content changes, new hash
     let modified_hash = hash_utils::generate_test_hash("modified_content");
 
     // Old hash should still exist (not automatically invalidated)
-    assert!(cache.get(&original_hash, TEST_CONFIG_HASH).unwrap().is_some());
+    assert!(cache
+        .get(&original_hash, TEST_CONFIG_HASH)
+        .unwrap()
+        .is_some());
 
     // New hash should not exist yet (cache miss)
-    assert!(cache.get(&modified_hash, TEST_CONFIG_HASH).unwrap().is_none());
+    assert!(cache
+        .get(&modified_hash, TEST_CONFIG_HASH)
+        .unwrap()
+        .is_none());
 
     // Add new entry for modified content
     let mut modified_entry = CacheEntry::new(
@@ -553,7 +562,10 @@ fn test_cache_invalidation_on_content_change() {
     cache.set(&modified_entry).unwrap();
 
     // Now new hash should exist
-    assert!(cache.get(&modified_hash, TEST_CONFIG_HASH).unwrap().is_some());
+    assert!(cache
+        .get(&modified_hash, TEST_CONFIG_HASH)
+        .unwrap()
+        .is_some());
 }
 
 /// Test cache cleanup orphaned entries
@@ -704,5 +716,8 @@ fn test_cache_hit_requires_valid_and_translated() {
     // Now it should be a cache hit
     let cached_entry = cache.get(&file_hash, TEST_CONFIG_HASH).unwrap().unwrap();
     let is_cache_hit = cached_entry.is_valid(1000) && cached_entry.is_translated;
-    assert!(is_cache_hit, "Should be cache hit when translated and valid");
+    assert!(
+        is_cache_hit,
+        "Should be cache hit when translated and valid"
+    );
 }

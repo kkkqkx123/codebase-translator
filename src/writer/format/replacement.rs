@@ -134,7 +134,10 @@ mod tests {
 
         let result = replace_in_raw_match(raw, extracted, translated);
         // Should replace the content, not append
-        assert_eq!(result, "// This is a simple JavaScript file to test the translation function");
+        assert_eq!(
+            result,
+            "// This is a simple JavaScript file to test the translation function"
+        );
     }
 
     #[test]

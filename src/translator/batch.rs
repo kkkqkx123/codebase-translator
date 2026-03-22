@@ -81,7 +81,10 @@ pub struct BatchTranslator {
 impl BatchTranslator {
     /// Create a new batch translator with multiple translators
     pub fn new(translators: Vec<Arc<TranslatorImpl>>, options: BatchOptions) -> Self {
-        debug!(translator_count = translators.len(), "Creating batch translator");
+        debug!(
+            translator_count = translators.len(),
+            "Creating batch translator"
+        );
         let limit_policy = options.limit_policy.unwrap_or_default();
 
         debug!(
@@ -102,10 +105,8 @@ impl BatchTranslator {
 
         let semaphore = Arc::new(Semaphore::new(options.workers.max(1)));
 
-        let translator_entries: Vec<TranslatorEntry> = translators
-            .into_iter()
-            .map(TranslatorEntry::new)
-            .collect();
+        let translator_entries: Vec<TranslatorEntry> =
+            translators.into_iter().map(TranslatorEntry::new).collect();
 
         info!(
             translator_count = translator_entries.len(),
@@ -152,11 +153,8 @@ impl BatchTranslator {
 
     /// Select next healthy translator using simple round-robin
     fn select_translator(&self) -> Option<&TranslatorEntry> {
-        let healthy_translators: Vec<&TranslatorEntry> = self
-            .translators
-            .iter()
-            .filter(|t| t.is_healthy())
-            .collect();
+        let healthy_translators: Vec<&TranslatorEntry> =
+            self.translators.iter().filter(|t| t.is_healthy()).collect();
 
         if healthy_translators.is_empty() {
             // If no healthy translators, try all translators
@@ -166,7 +164,8 @@ impl BatchTranslator {
         }
 
         // Simple round-robin selection
-        let index = self.current_index.fetch_add(1, Ordering::Relaxed) as usize % healthy_translators.len();
+        let index =
+            self.current_index.fetch_add(1, Ordering::Relaxed) as usize % healthy_translators.len();
         healthy_translators.get(index).copied()
     }
 
@@ -202,7 +201,9 @@ impl BatchTranslator {
                 }
             }
 
-            let result = self.translate_with_retry(text, source_lang, target_lang).await;
+            let result = self
+                .translate_with_retry(text, source_lang, target_lang)
+                .await;
 
             let latency = text_start.elapsed().as_millis() as u64;
             total_latency_ms += latency;
@@ -361,7 +362,9 @@ impl BatchTranslator {
         let mut translated_chunks = Vec::with_capacity(chunks.len());
 
         for chunk in chunks {
-            let result = self.translate_with_retry(&chunk, source_lang, target_lang).await?;
+            let result = self
+                .translate_with_retry(&chunk, source_lang, target_lang)
+                .await?;
             translated_chunks.push(result.translated_text);
         }
 
@@ -482,5 +485,3 @@ pub fn create_batch_translator(
 ) -> BatchTranslator {
     BatchTranslator::new(translators, options)
 }
-
-

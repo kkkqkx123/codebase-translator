@@ -135,4 +135,3 @@ mod tests {
         assert!(!CppQueries::throw_statements().is_empty());
     }
 }
-

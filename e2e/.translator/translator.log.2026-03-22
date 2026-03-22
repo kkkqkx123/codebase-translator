@@ -1,131 +1,196 @@
-2026-03-22T08:42:28.661371Z  INFO codebase_translate::commands::translate: Starting application name="codebase-translate" version="0.1.0"
-2026-03-22T08:42:28.661419Z  INFO codebase_translate::commands::translate: Translating directory path=e2e
-2026-03-22T08:42:28.661422Z  INFO codebase_translate::commands::translate: Translation configuration target_lang=en provider=deeplx
-2026-03-22T08:42:28.661445Z  INFO codebase_translate::workflow::executor: Starting translation workflow root_path=e2e include_patterns=22 exclude_patterns=20 respect_gitignore=true follow_symlinks=false
-2026-03-22T08:42:28.661457Z  INFO codebase_translate::workflow::executor: Step 1: Scanning directory path=e2e
-2026-03-22T08:42:28.661610Z  INFO codebase_translate::scanner::walker: Starting directory scan: \\?\E:\project\codebase-translator\e2e
-2026-03-22T08:42:28.662091Z  INFO codebase_translate::workflow::executor: File scan completed files_count=15
-2026-03-22T08:42:28.662106Z  INFO codebase_translate::cache: Creating cache instance cache_type=local cache_dir=e2e
-2026-03-22T08:42:28.662170Z  INFO codebase_translate::cache::binary: Creating binary cache cache_file=e2e\.translator\cache.bin mode=Local enabled=true
-2026-03-22T08:42:28.662193Z  INFO codebase_translate::translator: Creating translation service with all enabled providers enabled_providers=["deeplx", "llm", "tencent"]
-2026-03-22T08:42:28.662201Z  INFO codebase_translate::translator::r#trait: Creating translator from configuration provider=DeepLX
-2026-03-22T08:42:28.662279Z  INFO codebase_translate::translator::deeplx: DeepLX translator created api_url=https://api.deeplx.org
-2026-03-22T08:42:28.662282Z  INFO codebase_translate::translator::r#trait: Translator created successfully provider=DeepLX
-2026-03-22T08:42:28.662284Z  INFO codebase_translate::translator: Translator created successfully provider=deeplx
-2026-03-22T08:42:28.662287Z  INFO codebase_translate::translator: Creating MultiProviderTranslator with valid LLM providers valid_provider_count=1 total_provider_count=1
-2026-03-22T08:42:28.662304Z  INFO codebase_translate::translator::llm::provider: Created LLM provider provider_id=silicon base_url=https://api.siliconflow.cn/v1 model=tencent/Hunyuan-MT-7B max_tokens=8192 max_input_chars=6054 failure_threshold=3
-2026-03-22T08:42:28.662310Z  INFO codebase_translate::translator::llm::routing: Created ProviderRouter with 1 providers, capacity_threshold: 6054, total_rate_limit: 40, strategy: SmoothRateBasedRoundRobin
-2026-03-22T08:42:28.662311Z  INFO codebase_translate::translator::llm::multi_translator: Created MultiProviderTranslator with 1 providers, max_retries: 3
-2026-03-22T08:42:28.662315Z  INFO codebase_translate::translator: LLM MultiProviderTranslator created successfully provider=llm
-2026-03-22T08:42:28.662316Z  INFO codebase_translate::translator::r#trait: Creating translator from configuration provider=Tencent
-2026-03-22T08:42:28.662327Z  INFO codebase_translate::translator::tencent: Tencent translator created with region: ap-guangzhou
-2026-03-22T08:42:28.662328Z  INFO codebase_translate::translator::r#trait: Translator created successfully provider=Tencent
-2026-03-22T08:42:28.662329Z  INFO codebase_translate::translator: Translator created successfully provider=tencent
-2026-03-22T08:42:28.862353Z  INFO codebase_translate::translator::batch: Batch translator created with multiple providers translator_count=3 rate_limiter_enabled=true semaphore_permits=5
-2026-03-22T08:42:28.862717Z  INFO codebase_translate::translator::service: Translation service created with batch translator
-2026-03-22T08:42:28.862720Z  INFO codebase_translate::translator: Translation service created successfully with multiple providers translator_count=3
-2026-03-22T08:42:28.862722Z  INFO codebase_translate::parser: Creating parser coordinator extract_comments=true extract_docstrings=true extract_strings=true
-2026-03-22T08:42:28.866349Z  INFO codebase_translate::writer: Creating file writer dry_run=false backup=false
-2026-03-22T08:42:28.867489Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\go\comments.go total_units=0 translatable_units=0
-2026-03-22T08:42:28.868455Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\go\string_format_preservation.go total_units=0 translatable_units=0
-2026-03-22T08:42:28.869306Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\go\string_literals.go total_units=0 translatable_units=0
-2026-03-22T08:42:28.871475Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\javascript\comments.js total_units=0 translatable_units=0
-2026-03-22T08:42:28.873438Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js total_units=0 translatable_units=0
-2026-03-22T08:42:28.875176Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\javascript\string_literals.js total_units=0 translatable_units=0
-2026-03-22T08:42:28.882348Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\language_filter\mixed_content.rs total_units=5 translatable_units=5
-2026-03-22T08:42:28.882358Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\e2e\language_filter\mixed_content.rs units_to_translate=5
-2026-03-22T08:42:31.337923Z  INFO codebase_translate::translator::llm::multi_translator: Translation succeeded with provider silicon in 610.5497ms (text: 83 chars)
-2026-03-22T08:42:33.245820Z  INFO codebase_translate::translator::llm::multi_translator: Translation succeeded with provider silicon in 518.8921ms (text: 39 chars)
-2026-03-22T08:42:33.245846Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=5 success_count=5 failed_count=0 processing_time_ms=4363 average_latency_ms=872.0 total_chars=188
-2026-03-22T08:42:33.245894Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\e2e\language_filter\mixed_content.rs translated_units=5
-2026-03-22T08:42:33.245902Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\e2e\language_filter\mixed_content.rs
-2026-03-22T08:42:33.246334Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\e2e\language_filter\mixed_content.rs translation_units=5
-2026-03-22T08:42:33.247060Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\e2e\language_filter\mixed_content.rs
-2026-03-22T08:42:33.247071Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\e2e\language_filter\mixed_content.rs
-2026-03-22T08:42:33.248164Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\e2e\language_filter\mixed_content.rs total_units=5 translated_units=5
-2026-03-22T08:42:33.255759Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\python\comments.py total_units=0 translatable_units=0
-2026-03-22T08:42:33.263678Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\python\string_format_preservation.py total_units=0 translatable_units=0
-2026-03-22T08:42:33.271974Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\python\string_literals.py total_units=0 translatable_units=0
-2026-03-22T08:42:33.279965Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs total_units=4 translatable_units=4
-2026-03-22T08:42:33.279973Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs units_to_translate=4
-2026-03-22T08:42:34.387749Z  INFO codebase_translate::translator::llm::multi_translator: Translation succeeded with provider silicon in 118.9704ms (text: 12 chars)
-2026-03-22T08:42:34.825989Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=4 success_count=4 failed_count=0 processing_time_ms=1546 average_latency_ms=386.0 total_chars=217
-2026-03-22T08:42:34.826018Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs translated_units=4
-2026-03-22T08:42:34.826026Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs
-2026-03-22T08:42:34.826625Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs translation_units=4
-2026-03-22T08:42:34.827272Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs
-2026-03-22T08:42:34.827279Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs
-2026-03-22T08:42:34.828582Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs total_units=4 translated_units=4
-2026-03-22T08:42:34.837048Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\rust\macros.rs total_units=0 translatable_units=0
-2026-03-22T08:42:34.845145Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\rust\simple_comments.rs total_units=0 translatable_units=0
-2026-03-22T08:42:34.854365Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\rust\string_format_preservation.rs total_units=0 translatable_units=0
-2026-03-22T08:42:34.862631Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\rust\string_literals.rs total_units=0 translatable_units=0
-2026-03-22T08:42:34.862647Z  INFO codebase_translate::workflow::executor: Workflow execution completed duration_ms=6201 files_processed=15
-2026-03-22T08:42:34.862650Z  INFO codebase_translate::reporter::default: Finalizing reporter statistics
-2026-03-22T08:42:34.862651Z  INFO codebase_translate::reporter::stats::translation: Finalizing translation statistics total_files=0 processed_files=15 total_units=9 translated_units=0 api_calls=2 cache_hits=0 cache_misses=15
-2026-03-22T08:42:34.862654Z  INFO codebase_translate::workflow::executor: ========================================
-2026-03-22T08:42:34.862655Z  INFO codebase_translate::workflow::executor: Translation completed duration_secs=6.2012072
-2026-03-22T08:42:34.862658Z  INFO codebase_translate::workflow::executor: Files total_files=15 cached_files=0 processed_files=15
-2026-03-22T08:42:34.862678Z  INFO codebase_translate::workflow::executor: Units total_units=9 translated_units=9 skipped_units=0
-2026-03-22T08:42:34.862679Z  INFO codebase_translate::workflow::executor: Errors errors=0
-2026-03-22T08:42:34.862680Z  INFO codebase_translate::workflow::executor: ========================================
-2026-03-22T08:42:34.864585Z  INFO codebase_translate::reporter::default: Generating translation report files=15 units=0 errors=0
-2026-03-22T08:42:34.864904Z  INFO codebase_translate::reporter::default: Report saved successfully path=.translator/reports\report_20260322_084234.txt
-2026-03-22T08:42:34.864911Z  INFO codebase_translate::reporter::default: Report saved with template path=.translator/reports\report_20260322_084234.txt
-2026-03-22T08:42:34.864912Z  INFO codebase_translate::commands::translate: Translation report saved path=.translator/reports\report_20260322_084234.txt
-2026-03-22T09:51:13.902428Z  INFO codebase_translate::commands::translate: Starting application name="codebase-translate" version="0.1.0"
-2026-03-22T09:51:13.902486Z  INFO codebase_translate::commands::translate: Translating directory path=e2e
-2026-03-22T09:51:13.902491Z  INFO codebase_translate::commands::translate: Translation configuration target_lang=en provider=deeplx
-2026-03-22T09:51:13.902520Z  INFO codebase_translate::workflow::executor: Starting translation workflow root_path=e2e include_patterns=22 exclude_patterns=20 respect_gitignore=true follow_symlinks=false
-2026-03-22T09:51:13.902536Z  INFO codebase_translate::workflow::executor: Step 1: Scanning directory path=e2e
-2026-03-22T09:51:13.902689Z  INFO codebase_translate::scanner::walker: Starting directory scan: \\?\E:\project\codebase-translator\e2e
-2026-03-22T09:51:13.903140Z  INFO codebase_translate::workflow::executor: File scan completed files_count=15
-2026-03-22T09:51:13.903158Z  INFO codebase_translate::cache: Creating cache instance cache_type=local cache_dir=e2e
-2026-03-22T09:51:13.903221Z  INFO codebase_translate::cache::binary: Creating binary cache cache_file=e2e\.translator\cache.bin mode=Local enabled=true
-2026-03-22T09:51:13.903335Z  INFO codebase_translate::translator: Creating translation service with all enabled providers enabled_providers=["deeplx", "llm", "tencent"]
-2026-03-22T09:51:13.903342Z  INFO codebase_translate::translator::r#trait: Creating translator from configuration provider=DeepLX
-2026-03-22T09:51:13.903440Z  INFO codebase_translate::translator::deeplx: DeepLX translator created api_url=https://api.deeplx.org
-2026-03-22T09:51:13.903441Z  INFO codebase_translate::translator::r#trait: Translator created successfully provider=DeepLX
-2026-03-22T09:51:13.903443Z  INFO codebase_translate::translator: Translator created successfully provider=deeplx
-2026-03-22T09:51:13.903447Z  INFO codebase_translate::translator: Creating MultiProviderTranslator with valid LLM providers valid_provider_count=1 total_provider_count=1
-2026-03-22T09:51:13.903463Z  INFO codebase_translate::translator::llm::provider: Created LLM provider provider_id=silicon base_url=https://api.siliconflow.cn/v1 model=tencent/Hunyuan-MT-7B max_tokens=8192 max_input_chars=6054 failure_threshold=3
-2026-03-22T09:51:13.903466Z  INFO codebase_translate::translator::llm::routing: Created ProviderRouter with 1 providers, capacity_threshold: 6054, total_rate_limit: 40, strategy: SmoothRateBasedRoundRobin
-2026-03-22T09:51:13.903468Z  INFO codebase_translate::translator::llm::multi_translator: Created MultiProviderTranslator with 1 providers, max_retries: 3
-2026-03-22T09:51:13.903471Z  INFO codebase_translate::translator: LLM MultiProviderTranslator created successfully provider=llm
-2026-03-22T09:51:13.903472Z  INFO codebase_translate::translator::r#trait: Creating translator from configuration provider=Tencent
-2026-03-22T09:51:13.903481Z  INFO codebase_translate::translator::tencent: Tencent translator created with region: ap-guangzhou
-2026-03-22T09:51:13.903482Z  INFO codebase_translate::translator::r#trait: Translator created successfully provider=Tencent
-2026-03-22T09:51:13.903483Z  INFO codebase_translate::translator: Translator created successfully provider=tencent
-2026-03-22T09:51:14.103504Z  INFO codebase_translate::translator::batch: Batch translator created with multiple providers translator_count=3 rate_limiter_enabled=true semaphore_permits=5
-2026-03-22T09:51:14.103812Z  INFO codebase_translate::translator::service: Translation service created with batch translator
-2026-03-22T09:51:14.103816Z  INFO codebase_translate::translator: Translation service created successfully with multiple providers translator_count=3
-2026-03-22T09:51:14.103823Z  INFO codebase_translate::parser: Creating parser coordinator extract_comments=true extract_docstrings=true extract_strings=true
-2026-03-22T09:51:14.107011Z  INFO codebase_translate::writer: Creating file writer dry_run=false backup=false
-2026-03-22T09:51:14.107942Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\go\comments.go total_units=0 translatable_units=0
-2026-03-22T09:51:14.108827Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\go\string_format_preservation.go total_units=0 translatable_units=0
-2026-03-22T09:51:14.109701Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\go\string_literals.go total_units=0 translatable_units=0
-2026-03-22T09:51:14.111458Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\javascript\comments.js total_units=0 translatable_units=0
-2026-03-22T09:51:14.113132Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js total_units=0 translatable_units=0
-2026-03-22T09:51:14.114623Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\javascript\string_literals.js total_units=0 translatable_units=0
-2026-03-22T09:51:14.114728Z  INFO codebase_translate::workflow::file_processor: Cache hit - file already translated file=\\?\E:\project\codebase-translator\e2e\language_filter\mixed_content.rs
-2026-03-22T09:51:14.121234Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\python\comments.py total_units=0 translatable_units=0
-2026-03-22T09:51:14.127835Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\python\string_format_preservation.py total_units=0 translatable_units=0
-2026-03-22T09:51:14.134303Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\python\string_literals.py total_units=0 translatable_units=0
-2026-03-22T09:51:14.134397Z  INFO codebase_translate::workflow::file_processor: Cache hit - file already translated file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs
-2026-03-22T09:51:14.140663Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\rust\macros.rs total_units=0 translatable_units=0
-2026-03-22T09:51:14.146327Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\rust\simple_comments.rs total_units=0 translatable_units=0
-2026-03-22T09:51:14.152427Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\rust\string_format_preservation.rs total_units=0 translatable_units=0
-2026-03-22T09:51:14.158313Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\rust\string_literals.rs total_units=0 translatable_units=0
-2026-03-22T09:51:14.158324Z  INFO codebase_translate::workflow::executor: Workflow execution completed duration_ms=255 files_processed=15
-2026-03-22T09:51:14.158326Z  INFO codebase_translate::reporter::default: Finalizing reporter statistics
-2026-03-22T09:51:14.158328Z  INFO codebase_translate::reporter::stats::translation: Finalizing translation statistics total_files=15 processed_files=13 total_units=0 translated_units=0 api_calls=0 cache_hits=2 cache_misses=13
-2026-03-22T09:51:14.158336Z  INFO codebase_translate::workflow::executor: ========================================
-2026-03-22T09:51:14.158337Z  INFO codebase_translate::workflow::executor: Translation completed duration_secs=0.2558119
-2026-03-22T09:51:14.158349Z  INFO codebase_translate::workflow::executor: Files total_files=15 processed_files=13 skipped_files=0
-2026-03-22T09:51:14.158350Z  INFO codebase_translate::workflow::executor: Units total_units=0 translated_units=0
-2026-03-22T09:51:14.158350Z  INFO codebase_translate::workflow::executor: Errors error_count=0
-2026-03-22T09:51:14.158351Z  INFO codebase_translate::workflow::executor: ========================================
-2026-03-22T09:51:14.159595Z  INFO codebase_translate::reporter::default: Generating translation report files=13 units=0 errors=0
-2026-03-22T09:51:14.159842Z  INFO codebase_translate::reporter::default: Report saved successfully path=e2e\.translator\report_20260322_095114.txt
-2026-03-22T09:51:14.159847Z  INFO codebase_translate::reporter::default: Report saved with template path=e2e\.translator\report_20260322_095114.txt
-2026-03-22T09:51:14.159849Z  INFO codebase_translate::commands::translate: Translation report saved path=e2e\.translator\report_20260322_095114.txt
+2026-03-22T11:10:07.832162Z  INFO codebase_translate::commands::translate: Starting application name="codebase-translate" version="0.1.0"
+2026-03-22T11:10:07.832226Z  INFO codebase_translate::commands::translate: Translating directory path=e2e
+2026-03-22T11:10:07.832230Z  INFO codebase_translate::commands::translate: Translation configuration target_lang=en provider=deeplx
+2026-03-22T11:10:07.832257Z  INFO codebase_translate::workflow::executor: Starting translation workflow root_path=e2e include_patterns=22 exclude_patterns=20 respect_gitignore=true follow_symlinks=false
+2026-03-22T11:10:07.832272Z  INFO codebase_translate::workflow::executor: Step 1: Scanning directory path=e2e
+2026-03-22T11:10:07.832422Z  INFO codebase_translate::scanner::walker: Starting directory scan: \\?\E:\project\codebase-translator\e2e
+2026-03-22T11:10:07.832844Z  INFO codebase_translate::workflow::executor: File scan completed files_count=15
+2026-03-22T11:10:07.832866Z  INFO codebase_translate::cache: Creating cache instance cache_type=local cache_dir=e2e
+2026-03-22T11:10:07.832933Z  INFO codebase_translate::cache::binary: Creating binary cache cache_file=e2e\.translator\cache.bin mode=Local enabled=true
+2026-03-22T11:10:07.832952Z  INFO codebase_translate::translator: Creating translation service with all enabled providers enabled_providers=["deeplx", "llm", "tencent"]
+2026-03-22T11:10:07.832958Z  INFO codebase_translate::translator::r#trait: Creating translator from configuration provider=DeepLX
+2026-03-22T11:10:07.833046Z  INFO codebase_translate::translator::deeplx: DeepLX translator created api_url=https://api.deeplx.org
+2026-03-22T11:10:07.833049Z  INFO codebase_translate::translator::r#trait: Translator created successfully provider=DeepLX
+2026-03-22T11:10:07.833052Z  INFO codebase_translate::translator: Translator created successfully provider=deeplx
+2026-03-22T11:10:07.833054Z  INFO codebase_translate::translator: Creating MultiProviderTranslator with valid LLM providers valid_provider_count=1 total_provider_count=1
+2026-03-22T11:10:07.833072Z  INFO codebase_translate::translator::llm::provider: Created LLM provider provider_id=silicon base_url=https://api.siliconflow.cn/v1 model=tencent/Hunyuan-MT-7B max_tokens=8192 max_input_chars=6054 failure_threshold=3
+2026-03-22T11:10:07.833081Z  INFO codebase_translate::translator::llm::routing: Created ProviderRouter with 1 providers, capacity_threshold: 6054, total_rate_limit: 40, strategy: SmoothRateBasedRoundRobin
+2026-03-22T11:10:07.833082Z  INFO codebase_translate::translator::llm::multi_translator: Created MultiProviderTranslator with 1 providers, max_retries: 3
+2026-03-22T11:10:07.833085Z  INFO codebase_translate::translator: LLM MultiProviderTranslator created successfully provider=llm
+2026-03-22T11:10:07.833086Z  INFO codebase_translate::translator::r#trait: Creating translator from configuration provider=Tencent
+2026-03-22T11:10:07.833096Z  INFO codebase_translate::translator::tencent: Tencent translator created with region: ap-guangzhou
+2026-03-22T11:10:07.833098Z  INFO codebase_translate::translator::r#trait: Translator created successfully provider=Tencent
+2026-03-22T11:10:07.833099Z  INFO codebase_translate::translator: Translator created successfully provider=tencent
+2026-03-22T11:10:08.033154Z  INFO codebase_translate::translator::batch: Batch translator created with multiple providers translator_count=3 rate_limiter_enabled=true semaphore_permits=5
+2026-03-22T11:10:08.033641Z  INFO codebase_translate::translator::service: Translation service created with batch translator
+2026-03-22T11:10:08.033645Z  INFO codebase_translate::translator: Translation service created successfully with multiple providers translator_count=3
+2026-03-22T11:10:08.033655Z  INFO codebase_translate::parser: Creating parser coordinator extract_comments=true extract_docstrings=true extract_strings=true
+2026-03-22T11:10:08.037758Z  INFO codebase_translate::writer: Creating file writer dry_run=false backup=false
+2026-03-22T11:10:08.039285Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\go\comments.go total_units=0 translatable_units=0
+2026-03-22T11:10:08.040421Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\go\string_format_preservation.go total_units=0 translatable_units=0
+2026-03-22T11:10:08.041467Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\go\string_literals.go total_units=0 translatable_units=0
+2026-03-22T11:10:08.043621Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\javascript\comments.js total_units=0 translatable_units=0
+2026-03-22T11:10:08.045577Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js total_units=0 translatable_units=0
+2026-03-22T11:10:08.047340Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\javascript\string_literals.js total_units=0 translatable_units=0
+2026-03-22T11:10:08.054824Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\language_filter\mixed_content.rs total_units=5 translatable_units=5
+2026-03-22T11:10:08.054835Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\e2e\language_filter\mixed_content.rs units_to_translate=5
+2026-03-22T11:10:12.292342Z  INFO codebase_translate::translator::llm::multi_translator: Translation succeeded with provider silicon in 1.0189616s (text: 83 chars)
+2026-03-22T11:10:15.366934Z  INFO codebase_translate::translator::llm::multi_translator: Translation succeeded with provider silicon in 594.031ms (text: 39 chars)
+2026-03-22T11:10:15.366951Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=5 success_count=5 failed_count=0 processing_time_ms=7312 average_latency_ms=1462.0 total_chars=188
+2026-03-22T11:10:15.366980Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\e2e\language_filter\mixed_content.rs translated_units=5
+2026-03-22T11:10:15.367876Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\e2e\language_filter\mixed_content.rs
+2026-03-22T11:10:15.368286Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\e2e\language_filter\mixed_content.rs translation_units=5
+2026-03-22T11:10:15.368818Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\e2e\language_filter\mixed_content.rs
+2026-03-22T11:10:15.368827Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\e2e\language_filter\mixed_content.rs
+2026-03-22T11:10:15.369291Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\e2e\language_filter\mixed_content.rs total_units=5 translated_units=5
+2026-03-22T11:10:15.376811Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\python\comments.py total_units=0 translatable_units=0
+2026-03-22T11:10:15.384304Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\python\string_format_preservation.py total_units=0 translatable_units=0
+2026-03-22T11:10:15.391780Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\python\string_literals.py total_units=0 translatable_units=0
+2026-03-22T11:10:15.398707Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs total_units=4 translatable_units=4
+2026-03-22T11:10:15.398717Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs units_to_translate=4
+2026-03-22T11:10:16.817799Z  INFO codebase_translate::translator::llm::multi_translator: Translation succeeded with provider silicon in 170.4761ms (text: 12 chars)
+2026-03-22T11:10:17.307161Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=4 success_count=4 failed_count=0 processing_time_ms=1908 average_latency_ms=476.75 total_chars=217
+2026-03-22T11:10:17.307180Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs translated_units=4
+2026-03-22T11:10:17.308050Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs
+2026-03-22T11:10:17.308364Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs translation_units=4
+2026-03-22T11:10:17.308801Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs
+2026-03-22T11:10:17.308807Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs
+2026-03-22T11:10:17.309235Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs total_units=4 translated_units=4
+2026-03-22T11:10:17.316490Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\rust\macros.rs total_units=0 translatable_units=0
+2026-03-22T11:10:17.323379Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\rust\simple_comments.rs total_units=0 translatable_units=0
+2026-03-22T11:10:17.331889Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\rust\string_format_preservation.rs total_units=0 translatable_units=0
+2026-03-22T11:10:17.340054Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\rust\string_literals.rs total_units=0 translatable_units=0
+2026-03-22T11:10:17.340083Z  INFO codebase_translate::workflow::executor: Workflow execution completed duration_ms=9507 files_processed=15
+2026-03-22T11:10:17.340086Z  INFO codebase_translate::reporter::default: Finalizing reporter statistics
+2026-03-22T11:10:17.340088Z  INFO codebase_translate::reporter::stats::translation: Finalizing translation statistics total_files=15 processed_files=15 total_units=9 translated_units=0 api_calls=2 cache_hits=0 cache_misses=15
+2026-03-22T11:10:17.340090Z  INFO codebase_translate::workflow::executor: ========================================
+2026-03-22T11:10:17.340091Z  INFO codebase_translate::workflow::executor: Translation completed duration_secs=9.5078257
+2026-03-22T11:10:17.340094Z  INFO codebase_translate::workflow::executor: Files total_files=15 processed_files=15 skipped_files=0
+2026-03-22T11:10:17.340095Z  INFO codebase_translate::workflow::executor: Units total_units=9 translated_units=9
+2026-03-22T11:10:17.340096Z  INFO codebase_translate::workflow::executor: Errors error_count=0
+2026-03-22T11:10:17.340097Z  INFO codebase_translate::workflow::executor: ========================================
+2026-03-22T11:10:17.341851Z  INFO codebase_translate::reporter::default: Generating translation report files=15 units=0 errors=0
+2026-03-22T11:10:17.342267Z  INFO codebase_translate::reporter::default: Report saved successfully path=e2e\.translator\report_20260322_111017.txt
+2026-03-22T11:10:17.342273Z  INFO codebase_translate::reporter::default: Report saved with template path=e2e\.translator\report_20260322_111017.txt
+2026-03-22T11:10:17.342275Z  INFO codebase_translate::commands::translate: Translation report saved path=e2e\.translator\report_20260322_111017.txt
+2026-03-22T11:12:35.118699Z  INFO codebase_translate::commands::translate: Starting application name="codebase-translate" version="0.1.0"
+2026-03-22T11:12:35.118743Z  INFO codebase_translate::commands::translate: Translating directory path=e2e
+2026-03-22T11:12:35.118746Z  INFO codebase_translate::commands::translate: Translation configuration target_lang=en provider=deeplx
+2026-03-22T11:12:35.118769Z  INFO codebase_translate::workflow::executor: Starting translation workflow root_path=e2e include_patterns=22 exclude_patterns=20 respect_gitignore=true follow_symlinks=false
+2026-03-22T11:12:35.118777Z  INFO codebase_translate::workflow::executor: Step 1: Scanning directory path=e2e
+2026-03-22T11:12:35.118982Z  INFO codebase_translate::scanner::walker: Starting directory scan: \\?\E:\project\codebase-translator\e2e
+2026-03-22T11:12:35.119491Z  INFO codebase_translate::workflow::executor: File scan completed files_count=15
+2026-03-22T11:12:35.119507Z  INFO codebase_translate::cache: Creating cache instance cache_type=local cache_dir=e2e
+2026-03-22T11:12:35.119587Z  INFO codebase_translate::cache::binary: Creating binary cache cache_file=e2e\.translator\cache.bin mode=Local enabled=true
+2026-03-22T11:12:35.119657Z  INFO codebase_translate::translator: Creating translation service with all enabled providers enabled_providers=["deeplx", "llm", "tencent"]
+2026-03-22T11:12:35.119664Z  INFO codebase_translate::translator::r#trait: Creating translator from configuration provider=DeepLX
+2026-03-22T11:12:35.119785Z  INFO codebase_translate::translator::deeplx: DeepLX translator created api_url=https://api.deeplx.org
+2026-03-22T11:12:35.119788Z  INFO codebase_translate::translator::r#trait: Translator created successfully provider=DeepLX
+2026-03-22T11:12:35.119791Z  INFO codebase_translate::translator: Translator created successfully provider=deeplx
+2026-03-22T11:12:35.119795Z  INFO codebase_translate::translator: Creating MultiProviderTranslator with valid LLM providers valid_provider_count=1 total_provider_count=1
+2026-03-22T11:12:35.119818Z  INFO codebase_translate::translator::llm::provider: Created LLM provider provider_id=silicon base_url=https://api.siliconflow.cn/v1 model=tencent/Hunyuan-MT-7B max_tokens=8192 max_input_chars=6054 failure_threshold=3
+2026-03-22T11:12:35.119828Z  INFO codebase_translate::translator::llm::routing: Created ProviderRouter with 1 providers, capacity_threshold: 6054, total_rate_limit: 40, strategy: SmoothRateBasedRoundRobin
+2026-03-22T11:12:35.119832Z  INFO codebase_translate::translator::llm::multi_translator: Created MultiProviderTranslator with 1 providers, max_retries: 3
+2026-03-22T11:12:35.119838Z  INFO codebase_translate::translator: LLM MultiProviderTranslator created successfully provider=llm
+2026-03-22T11:12:35.119839Z  INFO codebase_translate::translator::r#trait: Creating translator from configuration provider=Tencent
+2026-03-22T11:12:35.119852Z  INFO codebase_translate::translator::tencent: Tencent translator created with region: ap-guangzhou
+2026-03-22T11:12:35.119855Z  INFO codebase_translate::translator::r#trait: Translator created successfully provider=Tencent
+2026-03-22T11:12:35.119856Z  INFO codebase_translate::translator: Translator created successfully provider=tencent
+2026-03-22T11:12:35.319891Z  INFO codebase_translate::translator::batch: Batch translator created with multiple providers translator_count=3 rate_limiter_enabled=true semaphore_permits=5
+2026-03-22T11:12:35.320244Z  INFO codebase_translate::translator::service: Translation service created with batch translator
+2026-03-22T11:12:35.320248Z  INFO codebase_translate::translator: Translation service created successfully with multiple providers translator_count=3
+2026-03-22T11:12:35.320251Z  INFO codebase_translate::parser: Creating parser coordinator extract_comments=true extract_docstrings=true extract_strings=true
+2026-03-22T11:12:35.323460Z  INFO codebase_translate::writer: Creating file writer dry_run=false backup=false
+2026-03-22T11:12:35.324558Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\go\comments.go total_units=0 translatable_units=0
+2026-03-22T11:12:35.325367Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\go\string_format_preservation.go total_units=0 translatable_units=0
+2026-03-22T11:12:35.326115Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\go\string_literals.go total_units=0 translatable_units=0
+2026-03-22T11:12:35.328038Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\javascript\comments.js total_units=0 translatable_units=0
+2026-03-22T11:12:35.329785Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js total_units=0 translatable_units=0
+2026-03-22T11:12:35.331323Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\javascript\string_literals.js total_units=0 translatable_units=0
+2026-03-22T11:12:35.331432Z  INFO codebase_translate::workflow::file_processor: Cache hit - file already translated file=\\?\E:\project\codebase-translator\e2e\language_filter\mixed_content.rs
+2026-03-22T11:12:35.338043Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\python\comments.py total_units=0 translatable_units=0
+2026-03-22T11:12:35.344752Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\python\string_format_preservation.py total_units=0 translatable_units=0
+2026-03-22T11:12:35.351189Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\python\string_literals.py total_units=0 translatable_units=0
+2026-03-22T11:12:35.351286Z  INFO codebase_translate::workflow::file_processor: Cache hit - file already translated file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs
+2026-03-22T11:12:35.357827Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\rust\macros.rs total_units=0 translatable_units=0
+2026-03-22T11:12:35.363505Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\rust\simple_comments.rs total_units=0 translatable_units=0
+2026-03-22T11:12:35.369568Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\rust\string_format_preservation.rs total_units=0 translatable_units=0
+2026-03-22T11:12:35.375721Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\rust\string_literals.rs total_units=0 translatable_units=0
+2026-03-22T11:12:35.375731Z  INFO codebase_translate::workflow::executor: Workflow execution completed duration_ms=256 files_processed=15
+2026-03-22T11:12:35.375733Z  INFO codebase_translate::reporter::default: Finalizing reporter statistics
+2026-03-22T11:12:35.375733Z  INFO codebase_translate::reporter::stats::translation: Finalizing translation statistics total_files=15 processed_files=13 total_units=0 translated_units=0 api_calls=0 cache_hits=2 cache_misses=13
+2026-03-22T11:12:35.375735Z  INFO codebase_translate::workflow::executor: ========================================
+2026-03-22T11:12:35.375736Z  INFO codebase_translate::workflow::executor: Translation completed duration_secs=0.2569661
+2026-03-22T11:12:35.375742Z  INFO codebase_translate::workflow::executor: Files total_files=15 processed_files=13 skipped_files=2
+2026-03-22T11:12:35.375742Z  INFO codebase_translate::workflow::executor: Units total_units=0 translated_units=0
+2026-03-22T11:12:35.375743Z  INFO codebase_translate::workflow::executor: Errors error_count=0
+2026-03-22T11:12:35.375743Z  INFO codebase_translate::workflow::executor: ========================================
+2026-03-22T11:12:35.376954Z  INFO codebase_translate::reporter::default: Generating translation report files=13 units=0 errors=0
+2026-03-22T11:12:35.377215Z  INFO codebase_translate::reporter::default: Report saved successfully path=e2e\.translator\report_20260322_111235.txt
+2026-03-22T11:12:35.377221Z  INFO codebase_translate::reporter::default: Report saved with template path=e2e\.translator\report_20260322_111235.txt
+2026-03-22T11:12:35.377222Z  INFO codebase_translate::commands::translate: Translation report saved path=e2e\.translator\report_20260322_111235.txt
+2026-03-22T11:32:04.372822Z  INFO codebase_translate::commands::translate: Starting application name="codebase-translate" version="0.1.0"
+2026-03-22T11:32:04.372897Z  INFO codebase_translate::commands::translate: Translating directory path=e2e
+2026-03-22T11:32:04.372899Z  INFO codebase_translate::commands::translate: Translation configuration target_lang=en provider=deeplx
+2026-03-22T11:32:04.372927Z  INFO codebase_translate::workflow::executor: Starting translation workflow root_path=e2e include_patterns=22 exclude_patterns=20 respect_gitignore=true follow_symlinks=false
+2026-03-22T11:32:04.372939Z  INFO codebase_translate::workflow::executor: Step 1: Scanning directory path=e2e
+2026-03-22T11:32:04.373101Z  INFO codebase_translate::scanner::walker: Starting directory scan: \\?\E:\project\codebase-translator\e2e
+2026-03-22T11:32:04.373617Z  INFO codebase_translate::workflow::executor: File scan completed files_count=15
+2026-03-22T11:32:04.373643Z  INFO codebase_translate::cache: Creating cache instance cache_type=local cache_dir=e2e
+2026-03-22T11:32:04.373718Z  INFO codebase_translate::cache::binary: Creating binary cache cache_file=e2e\.translator\cache.bin mode=Local enabled=true
+2026-03-22T11:32:04.373796Z  INFO codebase_translate::translator: Creating translation service with all enabled providers enabled_providers=["deeplx", "llm", "tencent"]
+2026-03-22T11:32:04.373803Z  INFO codebase_translate::translator::r#trait: Creating translator from configuration provider=DeepLX
+2026-03-22T11:32:04.373891Z  INFO codebase_translate::translator::deeplx: DeepLX translator created api_url=https://api.deeplx.org
+2026-03-22T11:32:04.373895Z  INFO codebase_translate::translator::r#trait: Translator created successfully provider=DeepLX
+2026-03-22T11:32:04.373899Z  INFO codebase_translate::translator: Translator created successfully provider=deeplx
+2026-03-22T11:32:04.373901Z  INFO codebase_translate::translator: Creating MultiProviderTranslator with valid LLM providers valid_provider_count=1 total_provider_count=1
+2026-03-22T11:32:04.373922Z  INFO codebase_translate::translator::llm::provider: Created LLM provider provider_id=silicon base_url=https://api.siliconflow.cn/v1 model=tencent/Hunyuan-MT-7B max_tokens=8192 max_input_chars=6054 failure_threshold=3
+2026-03-22T11:32:04.373930Z  INFO codebase_translate::translator::llm::routing: Created ProviderRouter with 1 providers, capacity_threshold: 6054, total_rate_limit: 40, strategy: SmoothRateBasedRoundRobin
+2026-03-22T11:32:04.373932Z  INFO codebase_translate::translator::llm::multi_translator: Created MultiProviderTranslator with 1 providers, max_retries: 3
+2026-03-22T11:32:04.373935Z  INFO codebase_translate::translator: LLM MultiProviderTranslator created successfully provider=llm
+2026-03-22T11:32:04.373936Z  INFO codebase_translate::translator::r#trait: Creating translator from configuration provider=Tencent
+2026-03-22T11:32:04.373948Z  INFO codebase_translate::translator::tencent: Tencent translator created with region: ap-guangzhou
+2026-03-22T11:32:04.373949Z  INFO codebase_translate::translator::r#trait: Translator created successfully provider=Tencent
+2026-03-22T11:32:04.373950Z  INFO codebase_translate::translator: Translator created successfully provider=tencent
+2026-03-22T11:32:04.573991Z  INFO codebase_translate::translator::batch: Batch translator created with multiple providers translator_count=3 rate_limiter_enabled=true semaphore_permits=5
+2026-03-22T11:32:04.574368Z  INFO codebase_translate::translator::service: Translation service created with batch translator
+2026-03-22T11:32:04.574372Z  INFO codebase_translate::translator: Translation service created successfully with multiple providers translator_count=3
+2026-03-22T11:32:04.574377Z  INFO codebase_translate::parser: Creating parser coordinator extract_comments=true extract_docstrings=true extract_strings=true
+2026-03-22T11:32:04.577859Z  INFO codebase_translate::writer: Creating file writer dry_run=false backup=false
+2026-03-22T11:32:04.579003Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\go\comments.go total_units=0 translatable_units=0
+2026-03-22T11:32:04.579867Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\go\string_format_preservation.go total_units=0 translatable_units=0
+2026-03-22T11:32:04.580536Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\go\string_literals.go total_units=0 translatable_units=0
+2026-03-22T11:32:04.582707Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\javascript\comments.js total_units=0 translatable_units=0
+2026-03-22T11:32:04.587033Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\javascript\string_format_preservation.js total_units=0 translatable_units=0
+2026-03-22T11:32:04.588671Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\javascript\string_literals.js total_units=0 translatable_units=0
+2026-03-22T11:32:04.588841Z  INFO codebase_translate::workflow::file_processor: Cache hit - file already translated file=\\?\E:\project\codebase-translator\e2e\language_filter\mixed_content.rs
+2026-03-22T11:32:04.598724Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\python\comments.py total_units=0 translatable_units=0
+2026-03-22T11:32:04.607176Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\python\string_format_preservation.py total_units=0 translatable_units=0
+2026-03-22T11:32:04.614869Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\python\string_literals.py total_units=0 translatable_units=0
+2026-03-22T11:32:04.622919Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs total_units=4 translatable_units=4
+2026-03-22T11:32:04.622928Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs units_to_translate=4
+2026-03-22T11:32:08.480339Z  INFO codebase_translate::translator::llm::multi_translator: Translation succeeded with provider silicon in 555.9121ms (text: 30 chars)
+2026-03-22T11:32:09.875479Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=4 success_count=4 failed_count=0 processing_time_ms=5252 average_latency_ms=1312.5 total_chars=240
+2026-03-22T11:32:09.875521Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs translated_units=4
+2026-03-22T11:32:09.876343Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs
+2026-03-22T11:32:09.876704Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs translation_units=4
+2026-03-22T11:32:09.877674Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs
+2026-03-22T11:32:09.877689Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs
+2026-03-22T11:32:09.878109Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\e2e\rust\doc_comments.rs total_units=4 translated_units=4
+2026-03-22T11:32:09.885253Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\rust\macros.rs total_units=0 translatable_units=0
+2026-03-22T11:32:09.892361Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\rust\simple_comments.rs total_units=0 translatable_units=0
+2026-03-22T11:32:09.899992Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\rust\string_format_preservation.rs total_units=0 translatable_units=0
+2026-03-22T11:32:09.907498Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\e2e\rust\string_literals.rs total_units=0 translatable_units=0
+2026-03-22T11:32:09.907530Z  INFO codebase_translate::workflow::executor: Workflow execution completed duration_ms=5534 files_processed=15
+2026-03-22T11:32:09.907532Z  INFO codebase_translate::reporter::default: Finalizing reporter statistics
+2026-03-22T11:32:09.907533Z  INFO codebase_translate::reporter::stats::translation: Finalizing translation statistics total_files=15 processed_files=14 total_units=4 translated_units=0 api_calls=1 cache_hits=1 cache_misses=14
+2026-03-22T11:32:09.907535Z  INFO codebase_translate::workflow::executor: ========================================
+2026-03-22T11:32:09.907536Z  INFO codebase_translate::workflow::executor: Translation completed duration_secs=5.5346046
+2026-03-22T11:32:09.907538Z  INFO codebase_translate::workflow::executor: Files total_files=15 processed_files=14 skipped_files=1
+2026-03-22T11:32:09.907539Z  INFO codebase_translate::workflow::executor: Units total_units=4 translated_units=4
+2026-03-22T11:32:09.907539Z  INFO codebase_translate::workflow::executor: Errors error_count=0
+2026-03-22T11:32:09.907540Z  INFO codebase_translate::workflow::executor: ========================================
+2026-03-22T11:32:09.908676Z  INFO codebase_translate::reporter::default: Generating translation report files=14 units=0 errors=0
+2026-03-22T11:32:09.909044Z  INFO codebase_translate::reporter::default: Report saved successfully path=e2e\.translator\report_20260322_113209.txt
+2026-03-22T11:32:09.909052Z  INFO codebase_translate::reporter::default: Report saved with template path=e2e\.translator\report_20260322_113209.txt
+2026-03-22T11:32:09.909054Z  INFO codebase_translate::commands::translate: Translation report saved path=e2e\.translator\report_20260322_113209.txt

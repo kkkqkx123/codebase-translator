@@ -18,7 +18,8 @@ impl ContentFilter {
 
     /// Check if text contains only symbols/whitespace
     fn is_only_symbols(text: &str) -> bool {
-        text.chars().all(|c| c.is_whitespace() || Self::is_punctuation(c))
+        text.chars()
+            .all(|c| c.is_whitespace() || Self::is_punctuation(c))
     }
 
     /// Check if character is punctuation
@@ -234,7 +235,13 @@ mod tests {
         let filter2 = ContentFilter;
 
         // 两者行为应该一致
-        assert_eq!(filter1.should_translate("test"), filter2.should_translate("test"));
-        assert_eq!(filter1.should_translate("!@#"), filter2.should_translate("!@#"));
+        assert_eq!(
+            filter1.should_translate("test"),
+            filter2.should_translate("test")
+        );
+        assert_eq!(
+            filter1.should_translate("!@#"),
+            filter2.should_translate("!@#")
+        );
     }
 }

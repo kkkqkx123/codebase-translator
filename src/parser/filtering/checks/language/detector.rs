@@ -209,12 +209,7 @@ impl LanguageDetector {
 
         // Check Greek
         if self.should_check_script(Script::Greek) && contains_greek(text) {
-            return LanguageInfo::with_confidence(
-                Script::Greek,
-                vec!["EL".to_string()],
-                true,
-                1.0,
-            );
+            return LanguageInfo::with_confidence(Script::Greek, vec!["EL".to_string()], true, 1.0);
         }
 
         // Check Cyrillic
@@ -391,8 +386,7 @@ fn detect_cyrillic_langs(text: &str, allowed_langs: Option<&HashSet<String>>) ->
 
 fn detect_latin_langs(allowed_langs: Option<&HashSet<String>>) -> Vec<String> {
     let all_latin = vec![
-        "EN", "DE", "FR", "ES", "IT", "PT", "NL", "SV", "PL", "TR", "CS", "RO", "HU", "DA",
-        "NO",
+        "EN", "DE", "FR", "ES", "IT", "PT", "NL", "SV", "PL", "TR", "CS", "RO", "HU", "DA", "NO",
     ];
 
     match allowed_langs {
@@ -455,21 +449,18 @@ fn contains_hebrew(text: &str) -> bool {
 }
 
 fn contains_greek(text: &str) -> bool {
-    text.chars().any(|c| {
-        ('\u{0370}'..='\u{03FF}').contains(&c) || ('\u{1F00}'..='\u{1FFF}').contains(&c)
-    })
+    text.chars()
+        .any(|c| ('\u{0370}'..='\u{03FF}').contains(&c) || ('\u{1F00}'..='\u{1FFF}').contains(&c))
 }
 
 fn contains_cyrillic(text: &str) -> bool {
-    text.chars().any(|c| {
-        ('\u{0400}'..='\u{04FF}').contains(&c) || ('\u{0500}'..='\u{052F}').contains(&c)
-    })
+    text.chars()
+        .any(|c| ('\u{0400}'..='\u{04FF}').contains(&c) || ('\u{0500}'..='\u{052F}').contains(&c))
 }
 
 fn contains_latin(text: &str) -> bool {
-    text.chars().any(|c| {
-        c.is_ascii_alphabetic() || ('\u{00C0}'..='\u{024F}').contains(&c)
-    })
+    text.chars()
+        .any(|c| c.is_ascii_alphabetic() || ('\u{00C0}'..='\u{024F}').contains(&c))
 }
 
 fn is_ukrainian_specific(c: char) -> bool {
@@ -575,7 +566,8 @@ mod tests {
 
     #[test]
     fn test_with_allowed_langs() {
-        let detector = LanguageDetector::with_allowed_langs(vec!["EN".to_string(), "ZH".to_string()]);
+        let detector =
+            LanguageDetector::with_allowed_langs(vec!["EN".to_string(), "ZH".to_string()]);
 
         let en_info = detector.detect("Hello");
         assert_eq!(en_info.script, Script::Latin);

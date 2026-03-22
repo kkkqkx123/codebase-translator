@@ -60,7 +60,8 @@ fn copy_all_fixtures_to_temp() -> TempDir {
 fn write_test_output(filename: &str, content: &str) {
     ensure_output_dir();
     let output_path = PathBuf::from(OUTPUT_DIR).join(filename);
-    fs::write(&output_path, content).unwrap_or_else(|_| panic!("Failed to write output: {}", filename));
+    fs::write(&output_path, content)
+        .unwrap_or_else(|_| panic!("Failed to write output: {}", filename));
     println!("Output written to: {}", output_path.display());
 }
 
@@ -692,9 +693,9 @@ fn test_e2e_translation_multiple_files() {
         let path = entry.path();
 
         if path.is_file()
-            && path.extension().is_some_and(|ext| {
-                matches!(ext.to_str(), Some("rs" | "py" | "js" | "md"))
-            })
+            && path
+                .extension()
+                .is_some_and(|ext| matches!(ext.to_str(), Some("rs" | "py" | "js" | "md")))
         {
             output.push_str(&format!("\n--- {} ---\n", path.display()));
             output.push_str(&read_file_content(&path));

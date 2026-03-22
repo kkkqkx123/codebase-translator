@@ -48,9 +48,8 @@ impl Command for TranslateArgs {
                 langs.split(',').map(|s| s.trim().to_string()).collect();
         }
         if let Some(prov) = &self.provider {
-            project_config.translate.provider = prov
-                .parse()
-                .map_err(TranslateError::InvalidArgument)?;
+            project_config.translate.provider =
+                prov.parse().map_err(TranslateError::InvalidArgument)?;
         }
         if let Some(inc) = &self.include {
             project_config.include.patterns =
@@ -79,13 +78,14 @@ impl Command for TranslateArgs {
             &self.path,
         )
         .with_reporter(reporter.clone());
-        let _result = workflow.execute()?;
+        let result = workflow.execute()?;
 
         // Save translation report to target project's .translator directory
         let report_dir = PathBuf::from(&self.path).join(".translator");
         match reporter.save_report_with_template(
             &report_dir,
             "report_{timestamp}.txt",
+            &result.stats,
             ReportFormat::Text,
         ) {
             Ok(path) => {

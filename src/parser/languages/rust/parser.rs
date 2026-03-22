@@ -7,17 +7,15 @@ use tree_sitter::{Node, Parser, Tree};
 
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, TranslationUnit};
-use crate::parser::core::traits::{
-    ExtractionConfig, Parser as ParserTrait, StrategyNodeType,
-};
-use crate::parser::filtering::traits::Filter;
-use crate::parser::{ContentFilter, FunctionCategory};
 use crate::parser::core::query_executor::QueryExecutor;
 use crate::parser::core::string_processor::{CleanedComment, CommentType};
+use crate::parser::core::traits::{ExtractionConfig, Parser as ParserTrait, StrategyNodeType};
 use crate::parser::core::StringProcessor;
-use crate::parser::ParserConfig;
+use crate::parser::filtering::traits::Filter;
 use crate::parser::languages::rust::patterns::RustPatterns;
 use crate::parser::languages::rust::queries::RustQueries;
+use crate::parser::ParserConfig;
+use crate::parser::{ContentFilter, FunctionCategory};
 use tracing::{debug, error, info, instrument};
 
 /// Rust language parser
@@ -173,7 +171,9 @@ impl RustParser {
             }
 
             let id = format!("{}_comment_{}", file_path, match_idx);
-            let node_type = self.extraction_config.get_node_type(StrategyNodeType::Comment);
+            let node_type = self
+                .extraction_config
+                .get_node_type(StrategyNodeType::Comment);
             let mut unit = TranslationUnit::new_with_pattern(
                 id,
                 node_type,
@@ -245,7 +245,9 @@ impl RustParser {
             }
 
             let id = format!("{}_docstring_{}", file_path, match_idx);
-            let node_type = self.extraction_config.get_node_type(StrategyNodeType::DocString);
+            let node_type = self
+                .extraction_config
+                .get_node_type(StrategyNodeType::DocString);
             let mut unit = TranslationUnit::new_with_pattern(
                 id,
                 node_type,
@@ -270,12 +272,14 @@ impl RustParser {
         content: &str,
         file_path: &str,
     ) -> Result<Vec<TranslationUnit>> {
+        println!("extract_macro_strings called");
         let executor = QueryExecutor::from_string(
             &tree_sitter_rust::LANGUAGE.into(),
             RustQueries::macro_strings(),
         )?;
 
         let matches = executor.execute(root_node, content)?;
+        println!("extract_macro_strings found {} matches", matches.len());
         let mut units = Vec::new();
         let mut match_idx = 0usize;
 
@@ -283,6 +287,10 @@ impl RustParser {
         let mut current_macro = String::new();
 
         for m in matches {
+            println!(
+                "  Match: capture_name='{}', text='{}'",
+                m.capture_name, m.text
+            );
             match m.capture_name.as_str() {
                 "macro_name" => {
                     current_macro = m.text.to_string();
@@ -301,13 +309,17 @@ impl RustParser {
                     }
 
                     // Classify macro
-                    let strategy_node_type = match self.patterns.classify_macro(&current_macro) {
-                        Some(FunctionCategory::Error) => StrategyNodeType::ErrorMessage,
-                        Some(FunctionCategory::Format) => StrategyNodeType::FormatString,
-                        Some(FunctionCategory::Log) => StrategyNodeType::LogMessage,
-                        Some(FunctionCategory::Debug) => StrategyNodeType::LogMessage,
-                        None => continue, // Skip unknown macros
-                    };
+                    // Note: tree-sitter captures macro name without '!' suffix
+                    // So we need to add it back for classification
+                    let macro_name_with_bang = format!("{}!", current_macro);
+                    let strategy_node_type =
+                        match self.patterns.classify_macro(&macro_name_with_bang) {
+                            Some(FunctionCategory::Error) => StrategyNodeType::ErrorMessage,
+                            Some(FunctionCategory::Format) => StrategyNodeType::FormatString,
+                            Some(FunctionCategory::Log) => StrategyNodeType::LogMessage,
+                            Some(FunctionCategory::Debug) => StrategyNodeType::LogMessage,
+                            None => continue, // Skip unknown macros
+                        };
 
                     // Apply extraction config
                     if !self.extraction_config.should_extract(strategy_node_type) {
@@ -358,8 +370,27 @@ impl RustParser {
             units.extend(doc_units);
         }
 
-        // Extract macro strings
-        if self.config.extract_strings {
+        // Extract macro strings (error messages, format strings, log messages)
+        // Check if any of the relevant extraction types are enabled
+        let should_extract_macros = self.extraction_config.error_messages
+            || self.extraction_config.format_strings
+            || self.extraction_config.log_messages;
+
+        println!(
+            "Extract macro strings: should_extract_macros = {}",
+            should_extract_macros
+        );
+        println!(
+            "  error_messages = {}",
+            self.extraction_config.error_messages
+        );
+        println!(
+            "  format_strings = {}",
+            self.extraction_config.format_strings
+        );
+        println!("  log_messages = {}", self.extraction_config.log_messages);
+
+        if should_extract_macros {
             let macro_units = self.extract_macro_strings(&root_node, content, file_path)?;
             units.extend(macro_units);
         }
@@ -421,7 +452,7 @@ impl ParserTrait for RustParser {
 mod tests {
     use super::*;
     use crate::core::models::NodeType;
-    
+
     use crate::parser::core::traits::ExtractionConfig;
     use std::path::PathBuf;
 
@@ -544,4 +575,3 @@ pub mod module_a {
         assert_eq!(cleaned, r#"hello "world""#);
     }
 }
-

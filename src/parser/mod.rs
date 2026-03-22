@@ -69,8 +69,7 @@ pub mod regex_parsers;
 
 // Re-export from core (traits and types)
 pub use core::{
-    ExtractionConfig, Parser, StrategyNodeType,
-    FunctionCategory, LanguageFunctionPatterns,
+    ExtractionConfig, FunctionCategory, LanguageFunctionPatterns, Parser, StrategyNodeType,
 };
 
 // Re-export from filtering
@@ -79,7 +78,9 @@ pub use filtering::{
 };
 
 // Re-export language detection types from filtering
-pub use filtering::checks::{LanguageDetector, LanguageInfo, QuickDetector, SampledDetector, Script};
+pub use filtering::checks::{
+    LanguageDetector, LanguageInfo, QuickDetector, SampledDetector, Script,
+};
 
 // Re-export from tree_sitter
 pub use tree_sitter::{LanguageConfig, QueryBuilder, TreeSitterParser, TreeSitterParserFactory};

@@ -136,4 +136,3 @@ mod tests {
         assert!(specific.contains("warn"));
     }
 }
-

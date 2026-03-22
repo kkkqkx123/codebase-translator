@@ -164,4 +164,3 @@ mod tests {
         assert!(TypeScriptPatterns::error_functions().contains(&"throw"));
     }
 }
-

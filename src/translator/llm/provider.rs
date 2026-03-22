@@ -18,13 +18,11 @@ use crate::translator::Translator;
 // Static Regex Patterns (compiled once)
 // ============================================================================
 
-static API_KEY_PATTERN: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"sk-[a-zA-Z0-9]{20,}").expect("Invalid regex pattern for API key")
-});
+static API_KEY_PATTERN: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r"sk-[a-zA-Z0-9]{20,}").expect("Invalid regex pattern for API key"));
 
 static BEARER_PATTERN: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"Bearer\s+[a-zA-Z0-9\-._~+/]+=*")
-        .expect("Invalid regex pattern for Bearer token")
+    Regex::new(r"Bearer\s+[a-zA-Z0-9\-._~+/]+=*").expect("Invalid regex pattern for Bearer token")
 });
 
 // ============================================================================
@@ -228,14 +226,10 @@ pub struct LLMProvider {
     model: String,
     max_tokens: i32,
     temperature: f64,
-    #[allow(dead_code)]
     proxy_url: Option<String>,
-    #[allow(dead_code)]
     timeout: u64,
-    #[allow(dead_code)]
-    extra_headers: Option<std::collections::HashMap<String, String>>,
-    #[allow(dead_code)]
-    extra_params: Option<serde_json::Map<String, serde_json::Value>>,
+    extra_headers: Option<Vec<(String, String)>>,
+    extra_params: Option<Vec<(String, String)>>,
 
     // Capacity
     max_input_chars: usize,
@@ -343,7 +337,13 @@ impl LLMProvider {
         let extra_headers = if config.extra_headers.is_empty() {
             None
         } else {
-            Some(config.extra_headers.clone())
+            Some(
+                config
+                    .extra_headers
+                    .iter()
+                    .map(|(k, v)| (k.clone(), v.clone()))
+                    .collect(),
+            )
         };
 
         let extra_params = if config.extra_params.is_empty() {
@@ -353,7 +353,7 @@ impl LLMProvider {
                 config
                     .extra_params
                     .iter()
-                    .map(|(k, v)| (k.clone(), v.clone()))
+                    .map(|(k, v)| (k.clone(), v.to_string()))
                     .collect(),
             )
         };
@@ -578,8 +578,12 @@ Text to translate:
         }
 
         // Redact common API key patterns using pre-compiled regex
-        result = API_KEY_PATTERN.replace_all(&result, "***REDACTED***").to_string();
-        result = BEARER_PATTERN.replace_all(&result, "***REDACTED***").to_string();
+        result = API_KEY_PATTERN
+            .replace_all(&result, "***REDACTED***")
+            .to_string();
+        result = BEARER_PATTERN
+            .replace_all(&result, "***REDACTED***")
+            .to_string();
 
         result
     }
@@ -723,9 +727,7 @@ Text to translate:
         }
 
         // Perform translation
-        let result = self
-            .translate_via_api(text, source_lang, target_lang)
-            .await;
+        let result = self.translate_via_api(text, source_lang, target_lang).await;
 
         let latency = start_time.elapsed();
 
@@ -736,11 +738,7 @@ Text to translate:
     }
 
     /// Update statistics and health based on result
-    async fn update_stats_and_health(
-        &self,
-        result: &Result<TranslateResponse>,
-        latency: Duration,
-    ) {
+    async fn update_stats_and_health(&self, result: &Result<TranslateResponse>, latency: Duration) {
         let mut stats = self.stats.write().await;
         stats.total_requests += 1;
         stats.last_request_time = Some(Instant::now());
@@ -795,7 +793,12 @@ Text to translate:
 
 #[async_trait]
 impl Translator for LLMProvider {
-    async fn translate(&self, texts: &[String], source_lang: &str, target_lang: &str) -> Result<Vec<String>> {
+    async fn translate(
+        &self,
+        texts: &[String],
+        source_lang: &str,
+        target_lang: &str,
+    ) -> Result<Vec<String>> {
         let mut results = Vec::with_capacity(texts.len());
 
         for text in texts {
@@ -889,14 +892,18 @@ mod tests {
         let cjk_count = chinese.chars().filter(|c| is_cjk(*c)).count();
         let total_chars = chinese.chars().count();
         let non_cjk_count = total_chars - cjk_count;
-        
+
         // All 4 chars are CJK
         assert_eq!(cjk_count, 4);
         assert_eq!(non_cjk_count, 0);
-        
+
         let tokens = config.estimate_tokens(chinese);
         // CJK tokens: 4 / 1.5 = 2.67 -> 3 + 50 system = 53
-        assert!((52..=54).contains(&tokens), "Expected ~53 tokens, got {}", tokens);
+        assert!(
+            (52..=54).contains(&tokens),
+            "Expected ~53 tokens, got {}",
+            tokens
+        );
     }
 
     #[test]
@@ -916,7 +923,11 @@ mod tests {
         let mixed = "Hello 世界";
         let tokens = config.estimate_tokens(mixed);
         // 2 CJK / 1.5 = 1.33, 6 non-CJK / 4 = 1.5, total ~2.83 -> 3 + 50 = 53
-        assert!((52..=54).contains(&tokens), "Expected ~53 tokens, got {}", tokens);
+        assert!(
+            (52..=54).contains(&tokens),
+            "Expected ~53 tokens, got {}",
+            tokens
+        );
     }
 
     #[test]

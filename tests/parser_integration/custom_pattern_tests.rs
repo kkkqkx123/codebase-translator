@@ -6,14 +6,14 @@
 use std::path::PathBuf;
 
 use codebase_translate::config::project::{
-    CustomRegexPattern, ExtractionConfig as ProjectExtractionConfig, ExtractionRule, PatternState, StateMachinePattern,
-    StateTransition, StringLiteralCategory,
+    CustomRegexPattern, ExtractionConfig as ProjectExtractionConfig, ExtractionRule, PatternState,
+    StateMachinePattern, StateTransition, StringLiteralCategory,
 };
 use codebase_translate::core::models::File;
-use codebase_translate::parser::filtering::{ContentFilter, FilterConfig};
 use codebase_translate::parser::coordinator::ParserCoordinator;
-use codebase_translate::parser::ParserConfig;
 use codebase_translate::parser::core::traits::ExtractionConfig;
+use codebase_translate::parser::filtering::{ContentFilter, FilterConfig};
+use codebase_translate::parser::ParserConfig;
 use std::sync::Arc;
 
 fn create_test_file(content: &str, path: &str) -> File {
@@ -311,4 +311,3 @@ fn test_pattern_with_wildcard_extension() {
         "Should apply to Markdown file"
     );
 }
-

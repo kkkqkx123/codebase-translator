@@ -12,7 +12,9 @@ use crate::core::error::{Result, TranslateError};
 
 mod config;
 
-pub use config::{get_format_string, get_log_file_path, get_output_string, parse_level, validate_config};
+pub use config::{
+    get_format_string, get_log_file_path, get_output_string, parse_level, validate_config,
+};
 
 /// Global guard to keep the log appender alive
 pub static LOG_GUARD: OnceLock<Box<dyn std::any::Any + Send + Sync>> = OnceLock::new();

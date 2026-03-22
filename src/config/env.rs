@@ -267,9 +267,7 @@ pub fn replace_env_vars_in_nested_map(
                                 .map(|(k, v)| (k.clone(), v.clone()))
                                 .collect();
                             replace_env_vars_in_nested_map(&mut inner_map);
-                            *inner_obj = serde_json::Map::from_iter(
-                                inner_map.into_iter(),
-                            );
+                            *inner_obj = serde_json::Map::from_iter(inner_map.into_iter());
                         }
                         _ => {}
                     }

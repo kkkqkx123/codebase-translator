@@ -172,4 +172,3 @@ mod tests {
         assert!(underlying.is_debug_function("toString"));
     }
 }
-

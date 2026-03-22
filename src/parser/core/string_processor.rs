@@ -493,7 +493,10 @@ mod tests {
         // Basic block comment
         let text = "/*\nThis is a multi-line comment\nwith multiple lines of text\n*/";
         let result = processor.clean_comment(text, CommentType::Block);
-        assert_eq!(result, "This is a multi-line comment\nwith multiple lines of text");
+        assert_eq!(
+            result,
+            "This is a multi-line comment\nwith multiple lines of text"
+        );
 
         // Single line block comment
         let text3 = "/* single line */";

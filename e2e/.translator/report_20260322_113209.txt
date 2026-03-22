@@ -1,0 +1,31 @@
+
+============================================================
+Translation Report
+============================================================
+
+Time:
+  Start:      2026-03-22 11:32:04
+  End:        2026-03-22 11:32:09
+  Duration:   5.534s
+  Speed:      2.5 files/s
+
+Files:
+  Total:      15
+  Processed:  14
+  Skipped:    14
+  Failed:     0
+
+Translation Units:
+  Total:      4
+  Translated: 0
+  Progress:   0.0%
+
+API Calls:
+  Total:      1
+
+Cache:
+  Hits:       1
+  Misses:     14
+  Hit Rate:   6.7%
+
+============================================================

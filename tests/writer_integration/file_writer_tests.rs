@@ -55,7 +55,10 @@ async fn test_file_writer_with_backup() {
 
     // Backup should be in .translator/backups subdirectory
     let translator_dir = temp_path.join(".translator").join("backups");
-    assert!(translator_dir.exists(), "Translator backup directory should exist");
+    assert!(
+        translator_dir.exists(),
+        "Translator backup directory should exist"
+    );
 
     let mut backup_files = tokio::fs::read_dir(&translator_dir)
         .await

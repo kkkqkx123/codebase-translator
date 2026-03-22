@@ -127,8 +127,8 @@ Returns:
         "1",
         extracted_content,
         raw_match,
-        2,   // start line
-        11,  // end line
+        2,  // start line
+        11, // end line
         start_offset,
         end_offset,
     );
@@ -221,8 +221,8 @@ async fn test_python_single_line_docstring() {
         id: "1".to_string(),
         node_type: NodeType::DocString,
         content: extracted_content.to_string(),
-        start_pos: Position::new(2, 5, 20),  // column 5 (0-indexed: 4) is where """ starts
-        end_pos: Position::new(2, 21, 36),   // column 21 is after """
+        start_pos: Position::new(2, 5, 20), // column 5 (0-indexed: 4) is where """ starts
+        end_pos: Position::new(2, 21, 36),  // column 21 is after """
         language: None,
         should_translate: true,
         translated: None,

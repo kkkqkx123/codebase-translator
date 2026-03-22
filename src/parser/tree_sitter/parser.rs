@@ -9,21 +9,19 @@ use tree_sitter::{Language as TSLanguage, Node, Parser, Query, QueryCursor, Tree
 
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, Position, TranslationUnit};
-use crate::parser::core::traits::{
-    ExtractionConfig, Parser as ParserTrait, StrategyNodeType,
-};
-use crate::parser::filtering::traits::Filter;
-use crate::parser::ContentFilter;
+use crate::parser::core::traits::{ExtractionConfig, Parser as ParserTrait, StrategyNodeType};
 use crate::parser::core::{CommentType, StringProcessor};
-use crate::parser::languages::rust::queries::RustQueries;
-use crate::parser::languages::python::queries::PythonQueries;
-use crate::parser::languages::go::queries::GoQueries;
-use crate::parser::languages::javascript::queries::JavaScriptQueries;
-use crate::parser::languages::typescript::queries::TypeScriptQueries;
-use crate::parser::languages::java::queries::JavaQueries;
+use crate::parser::filtering::traits::Filter;
 use crate::parser::languages::c::queries::CQueries;
 use crate::parser::languages::cpp::queries::CppQueries;
 use crate::parser::languages::csharp::queries::CSharpQueries;
+use crate::parser::languages::go::queries::GoQueries;
+use crate::parser::languages::java::queries::JavaQueries;
+use crate::parser::languages::javascript::queries::JavaScriptQueries;
+use crate::parser::languages::python::queries::PythonQueries;
+use crate::parser::languages::rust::queries::RustQueries;
+use crate::parser::languages::typescript::queries::TypeScriptQueries;
+use crate::parser::ContentFilter;
 
 /// Language configuration for tree-sitter
 #[derive(Debug, Clone)]
@@ -73,7 +71,10 @@ impl TreeSitterParser {
     }
 
     /// Create a new tree-sitter parser with default extraction config and filter
-    pub fn with_defaults(language_config: LanguageConfig, config: crate::parser::ParserConfig) -> Result<Self> {
+    pub fn with_defaults(
+        language_config: LanguageConfig,
+        config: crate::parser::ParserConfig,
+    ) -> Result<Self> {
         use crate::parser::filtering::default_filter;
 
         Self::new(
@@ -118,8 +119,17 @@ impl TreeSitterParser {
         }
 
         // Extract docstrings
+        println!(
+            "Extract docstrings: config.extract_docstrings = {}",
+            self.config.extract_docstrings
+        );
+        println!(
+            "Extract docstrings: language_config.docstring_query = {:?}",
+            self.language_config.docstring_query
+        );
         if self.config.extract_docstrings {
             if let Some(ref query) = self.language_config.docstring_query {
+                println!("Extract docstrings: calling extract_with_query");
                 let doc_units = self.extract_with_query(
                     &root_node,
                     content,
@@ -127,8 +137,13 @@ impl TreeSitterParser {
                     StrategyNodeType::DocString,
                     file_path,
                 )?;
+                println!("Extract docstrings: found {} units", doc_units.len());
                 units.extend(doc_units);
+            } else {
+                println!("Extract docstrings: docstring_query is None");
             }
+        } else {
+            println!("Extract docstrings: extract_docstrings is false");
         }
 
         // Extract string literals
@@ -152,7 +167,8 @@ impl TreeSitterParser {
         let mut unique_units: Vec<TranslationUnit> = Vec::new();
         for unit in units {
             let is_duplicate = unique_units.iter().any(|u| {
-                u.start_pos.offset == unit.start_pos.offset && u.end_pos.offset == unit.end_pos.offset
+                u.start_pos.offset == unit.start_pos.offset
+                    && u.end_pos.offset == unit.end_pos.offset
             });
             if !is_duplicate {
                 unique_units.push(unit);
@@ -364,7 +380,10 @@ impl TreeSitterParser {
                     StrategyNodeType::DocString => {
                         // Clean doc comment markers
                         let trimmed = node_text.trim();
-                        if trimmed.starts_with("///") || trimmed.starts_with("//!") || trimmed.starts_with("/**") {
+                        if trimmed.starts_with("///")
+                            || trimmed.starts_with("//!")
+                            || trimmed.starts_with("/**")
+                        {
                             processor.clean_comment(trimmed, CommentType::Doc)
                         } else if trimmed.starts_with("/*") {
                             // Handle block comments that were mistakenly extracted as docstrings
@@ -393,10 +412,13 @@ impl TreeSitterParser {
                 // Check if original text is a doc comment marker with empty content
                 let is_doc_empty_line = {
                     let trimmed = node_text.trim();
+                    // Only consider it an empty line if it's just the marker (/// or //!) or marker with only whitespace
                     (trimmed == "///"
                         || trimmed == "//!"
-                        || trimmed.starts_with("/// ")
-                        || trimmed.starts_with("//! "))
+                        || trimmed == "/// "
+                        || trimmed == "//! "
+                        || trimmed.starts_with("///  ")
+                        || trimmed.starts_with("//!  "))
                         && strategy_node_type == StrategyNodeType::DocString
                 };
 
@@ -405,11 +427,10 @@ impl TreeSitterParser {
                     continue;
                 }
 
-                if !is_doc_empty_line {
-                    // Apply content filter (includes length, symbol, and language checks)
-                    if !self.filter.should_translate(&text) {
-                        continue;
-                    }
+                // Apply content filter (includes length, symbol, and language checks)
+                // Language filter should be applied to ALL content, not just non-empty lines
+                if !self.filter.should_translate(&text) {
+                    continue;
                 }
 
                 // Apply extraction config
@@ -666,8 +687,16 @@ impl TreeSitterParserFactory {
             Self::create_rust_parser(config.clone(), extraction_config.clone(), filter.clone()),
             Self::create_go_parser(config.clone(), extraction_config.clone(), filter.clone()),
             Self::create_python_parser(config.clone(), extraction_config.clone(), filter.clone()),
-            Self::create_javascript_parser(config.clone(), extraction_config.clone(), filter.clone()),
-            Self::create_typescript_parser(config.clone(), extraction_config.clone(), filter.clone()),
+            Self::create_javascript_parser(
+                config.clone(),
+                extraction_config.clone(),
+                filter.clone(),
+            ),
+            Self::create_typescript_parser(
+                config.clone(),
+                extraction_config.clone(),
+                filter.clone(),
+            ),
             Self::create_tsx_parser(config.clone(), extraction_config.clone(), filter.clone()),
             Self::create_java_parser(config.clone(), extraction_config.clone(), filter.clone()),
             Self::create_c_parser(config.clone(), extraction_config.clone(), filter.clone()),
@@ -677,7 +706,9 @@ impl TreeSitterParserFactory {
     }
 
     /// Create all available parsers with default extraction config and filter
-    pub fn create_all_parsers_with_defaults(config: crate::parser::ParserConfig) -> Vec<Result<TreeSitterParser>> {
+    pub fn create_all_parsers_with_defaults(
+        config: crate::parser::ParserConfig,
+    ) -> Vec<Result<TreeSitterParser>> {
         use crate::parser::filtering::default_filter;
 
         let extraction_config = ExtractionConfig::default();
@@ -692,7 +723,7 @@ impl TreeSitterParserFactory {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     use crate::parser::core::traits::ExtractionConfig;
     use crate::parser::ParserConfig;
     use std::path::PathBuf;

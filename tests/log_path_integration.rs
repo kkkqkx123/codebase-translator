@@ -1,8 +1,8 @@
 use std::fs;
 use tempfile::TempDir;
 
-use codebase_translate::config::loader::ConfigLoader;
 use codebase_translate::config::global::GlobalConfig;
+use codebase_translate::config::loader::ConfigLoader;
 use codebase_translate::logger;
 
 #[test]
@@ -54,10 +54,13 @@ fn test_log_path_resolution_with_absolute_path() {
 
     let mut config: GlobalConfig = GlobalConfig::default();
     config.logging.file = Some(absolute_log_path.to_string_lossy().to_string());
-    
+
     // Test that absolute path is not modified
     let resolved_path = logger::get_log_file_path(&config.logging, None);
-    assert_eq!(resolved_path, absolute_log_path.to_string_lossy().to_string());
+    assert_eq!(
+        resolved_path,
+        absolute_log_path.to_string_lossy().to_string()
+    );
 }
 
 #[test]

@@ -81,7 +81,11 @@ impl MultilineApplier {
     }
 
     /// Format block comments (/* */ or /** */)
-    fn format_block_comment(raw_lines: &[&str], translated_lines: &[&str], translated: &str) -> String {
+    fn format_block_comment(
+        raw_lines: &[&str],
+        translated_lines: &[&str],
+        translated: &str,
+    ) -> String {
         // Check if translated already contains block comment markers
         // If so, use it directly without reformatting
         let trimmed_translated = translated.trim();
@@ -153,10 +157,13 @@ impl MultilineApplier {
         }
 
         // Check if this is a Python docstring (starts with """ or ''')
-        let is_python_docstring = raw_lines.first().map(|line| {
-            let trimmed = line.trim_start();
-            trimmed.starts_with("\"\"\"") || trimmed.starts_with("'''")
-        }).unwrap_or(false);
+        let is_python_docstring = raw_lines
+            .first()
+            .map(|line| {
+                let trimmed = line.trim_start();
+                trimmed.starts_with("\"\"\"") || trimmed.starts_with("'''")
+            })
+            .unwrap_or(false);
 
         if is_python_docstring {
             return Self::format_python_docstring(raw_lines, translated_lines, translated);
@@ -185,10 +192,7 @@ impl MultilineApplier {
                 result.push_str(&prefix);
 
                 // If this raw line has actual content (not just prefix), add translated content
-                if !trimmed.is_empty()
-                    && !trimmed.starts_with("//")
-                    && !trimmed.starts_with("/*")
-                {
+                if !trimmed.is_empty() && !trimmed.starts_with("//") && !trimmed.starts_with("/*") {
                     // This line has content beyond the prefix
                     if translated_idx < translated_lines.len() {
                         result.push_str(translated_lines[translated_idx]);
@@ -250,30 +254,40 @@ impl MultilineApplier {
         let mut result = String::new();
 
         // Determine the base indentation from the opening triple quote line
-        let base_indent = raw_lines.first().map(|line| {
-            let trimmed = line.trim_start();
-            let leading_whitespace = &line[..(line.len() - trimmed.len())];
-            leading_whitespace.to_string()
-        }).unwrap_or_default();
+        let base_indent = raw_lines
+            .first()
+            .map(|line| {
+                let trimmed = line.trim_start();
+                let leading_whitespace = &line[..(line.len() - trimmed.len())];
+                leading_whitespace.to_string()
+            })
+            .unwrap_or_default();
 
         // Determine the content indentation (from the first non-empty content line)
-        let content_indent = raw_lines.iter().skip(1).find(|line| {
-            let trimmed = line.trim();
-            !trimmed.is_empty() && !trimmed.starts_with("\"\"\"") && !trimmed.starts_with("'''")
-        }).map(|line| {
-            let trimmed = line.trim_start();
-            let leading_whitespace = &line[..(line.len() - trimmed.len())];
-            leading_whitespace.to_string()
-        }).unwrap_or_else(|| base_indent.clone() + "    ");
+        let content_indent = raw_lines
+            .iter()
+            .skip(1)
+            .find(|line| {
+                let trimmed = line.trim();
+                !trimmed.is_empty() && !trimmed.starts_with("\"\"\"") && !trimmed.starts_with("'''")
+            })
+            .map(|line| {
+                let trimmed = line.trim_start();
+                let leading_whitespace = &line[..(line.len() - trimmed.len())];
+                leading_whitespace.to_string()
+            })
+            .unwrap_or_else(|| base_indent.clone() + "    ");
 
         // Filter out empty lines from translated_lines to get only content lines
-        let translated_content_lines: Vec<&str> = translated_lines.iter()
+        let translated_content_lines: Vec<&str> = translated_lines
+            .iter()
             .filter(|line| !line.trim().is_empty())
             .copied()
             .collect();
 
         // Count content lines in raw (excluding triple quotes and empty lines)
-        let raw_content_line_count = raw_lines.iter()
+        let raw_content_line_count = raw_lines
+            .iter()
             .filter(|line| {
                 let trimmed = line.trim();
                 let trimmed_start = line.trim_start();
@@ -293,7 +307,8 @@ impl MultilineApplier {
             let trimmed = raw_line.trim();
             let trimmed_start = raw_line.trim_start();
 
-            let is_triple_quote = trimmed_start.starts_with("\"\"\"") || trimmed_start.starts_with("'''");
+            let is_triple_quote =
+                trimmed_start.starts_with("\"\"\"") || trimmed_start.starts_with("'''");
             let is_empty = trimmed.is_empty();
 
             if is_triple_quote {

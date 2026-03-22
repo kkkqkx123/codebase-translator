@@ -108,9 +108,15 @@ impl GlobalConfig {
                 }
                 "tencent" => {
                     // Only validate if Tencent has valid credentials
-                    let has_secret_id = self.tencent.secret_id.as_ref()
+                    let has_secret_id = self
+                        .tencent
+                        .secret_id
+                        .as_ref()
                         .is_some_and(|s| !s.is_empty() && !s.starts_with("${"));
-                    let has_secret_key = self.tencent.secret_key.as_ref()
+                    let has_secret_key = self
+                        .tencent
+                        .secret_key
+                        .as_ref()
                         .is_some_and(|s| !s.is_empty() && !s.starts_with("${"));
                     if has_secret_id && has_secret_key && self.tencent.rate_limit > 0 {
                         // Tencent is valid, no further validation needed
@@ -150,13 +156,18 @@ impl GlobalConfig {
                 }
                 "llm" => {
                     // LLM is valid if there are providers with valid API keys and models
-                    let valid_llm_count = self.llm.providers.iter().filter(|p| {
-                        !p.base_url.is_empty()
-                            && !p.api_keys.is_empty()
-                            && !p.model.is_empty()
-                            && p.max_tokens > 0
-                            && p.rate_limit > 0
-                    }).count();
+                    let valid_llm_count = self
+                        .llm
+                        .providers
+                        .iter()
+                        .filter(|p| {
+                            !p.base_url.is_empty()
+                                && !p.api_keys.is_empty()
+                                && !p.model.is_empty()
+                                && p.max_tokens > 0
+                                && p.rate_limit > 0
+                        })
+                        .count();
                     if valid_llm_count > 0 {
                         valid_count += 1;
                     } else {
@@ -168,9 +179,15 @@ impl GlobalConfig {
                 }
                 "tencent" => {
                     // Tencent requires secret_id and secret_key
-                    let has_secret_id = self.tencent.secret_id.as_ref()
+                    let has_secret_id = self
+                        .tencent
+                        .secret_id
+                        .as_ref()
                         .is_some_and(|s| !s.is_empty() && !s.starts_with("${"));
-                    let has_secret_key = self.tencent.secret_key.as_ref()
+                    let has_secret_key = self
+                        .tencent
+                        .secret_key
+                        .as_ref()
                         .is_some_and(|s| !s.is_empty() && !s.starts_with("${"));
                     if has_secret_id && has_secret_key && self.tencent.rate_limit > 0 {
                         valid_count += 1;
@@ -364,7 +381,7 @@ impl GlobalConfig {
         // Example: TRANSLATOR_LLM_SILICON_API_KEY
         for provider in &mut self.llm.providers {
             let provider_id_upper = provider.id.to_uppercase();
-            
+
             // API keys: TRANSLATOR_LLM_<PROVIDER_ID>_API_KEY
             let api_key_env = format!("TRANSLATOR_LLM_{}_API_KEY", provider_id_upper);
             if let Ok(api_key) = std::env::var(&api_key_env) {
@@ -375,7 +392,7 @@ impl GlobalConfig {
                 );
                 provider.api_keys = vec![api_key];
             }
-            
+
             // Base URL: TRANSLATOR_LLM_<PROVIDER_ID>_BASE_URL
             let base_url_env = format!("TRANSLATOR_LLM_{}_BASE_URL", provider_id_upper);
             if let Ok(base_url) = std::env::var(&base_url_env) {
@@ -386,7 +403,7 @@ impl GlobalConfig {
                 );
                 provider.base_url = base_url;
             }
-            
+
             // Model: TRANSLATOR_LLM_<PROVIDER_ID>_MODEL
             let model_env = format!("TRANSLATOR_LLM_{}_MODEL", provider_id_upper);
             if let Ok(model) = std::env::var(&model_env) {
@@ -561,8 +578,7 @@ fn default_deeplx_url() -> String {
 }
 
 /// LLM global configuration
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[derive(Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct LLMGlobalConfig {
     /// Health check configuration
     #[serde(default)]
@@ -571,7 +587,6 @@ pub struct LLMGlobalConfig {
     #[serde(default)]
     pub providers: Vec<LLMProviderConfig>,
 }
-
 
 /// Health check configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1182,7 +1197,11 @@ mod tests {
         };
 
         let result = config.validate();
-        assert!(result.is_ok(), "DeepLX with default config should be valid: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "DeepLX with default config should be valid: {:?}",
+            result.err()
+        );
     }
 
     #[test]
@@ -1200,7 +1219,11 @@ mod tests {
         // LLM: invalid (no providers)
 
         let result = config.validate();
-        assert!(result.is_ok(), "Should pass because Tencent is valid: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Should pass because Tencent is valid: {:?}",
+            result.err()
+        );
     }
 
     #[test]
@@ -1231,7 +1254,11 @@ mod tests {
         }];
 
         let result = config.validate();
-        assert!(result.is_ok(), "Should pass because LLM is valid: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Should pass because LLM is valid: {:?}",
+            result.err()
+        );
     }
 
     #[test]
@@ -1298,7 +1325,7 @@ mod tests {
             base_url: "https://api.example.com".to_string(),
             api_keys: vec!["valid-api-key".to_string()],
             model: "".to_string(), // Empty model
-            model_list: vec![], // Empty model_list too
+            model_list: vec![],    // Empty model_list too
             max_tokens: 4096,
             temperature: 0.7,
             proxy_url: None,

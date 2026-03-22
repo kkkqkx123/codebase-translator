@@ -7,16 +7,14 @@ use tree_sitter::{Node, Parser, Tree};
 
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, TranslationUnit};
-use crate::parser::core::traits::{
-    ExtractionConfig, Parser as ParserTrait, StrategyNodeType,
-};
-use crate::parser::filtering::traits::Filter;
-use crate::parser::{ContentFilter, FunctionCategory};
 use crate::parser::core::query_executor::QueryExecutor;
+use crate::parser::core::traits::{ExtractionConfig, Parser as ParserTrait, StrategyNodeType};
 use crate::parser::core::{CommentType, StringProcessor};
-use crate::parser::ParserConfig;
+use crate::parser::filtering::traits::Filter;
 use crate::parser::languages::go::patterns::GoPatterns;
 use crate::parser::languages::go::queries::GoQueries;
+use crate::parser::ParserConfig;
+use crate::parser::{ContentFilter, FunctionCategory};
 use tracing::{debug, error, info, instrument};
 
 /// Go language parser
@@ -143,7 +141,9 @@ impl GoParser {
             }
 
             let id = format!("{}_comment_{}", file_path, match_idx);
-            let node_type = self.extraction_config.get_node_type(StrategyNodeType::Comment);
+            let node_type = self
+                .extraction_config
+                .get_node_type(StrategyNodeType::Comment);
             let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
             units.push(unit);
             match_idx += 1;
@@ -207,7 +207,9 @@ impl GoParser {
             }
 
             let id = format!("{}_docstring_{}", file_path, match_idx);
-            let node_type = self.extraction_config.get_node_type(StrategyNodeType::DocString);
+            let node_type = self
+                .extraction_config
+                .get_node_type(StrategyNodeType::DocString);
             let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
             units.push(unit);
             match_idx += 1;
@@ -376,7 +378,7 @@ impl ParserTrait for GoParser {
 mod tests {
     use super::*;
     use crate::core::models::NodeType;
-    
+
     use crate::parser::core::traits::ExtractionConfig;
     use std::path::PathBuf;
 
@@ -494,12 +496,19 @@ func (p *Person) Greet() string {
             .filter(|u| u.node_type == NodeType::Comment)
             .collect();
 
-        assert!(!comments.is_empty(), "Should extract comments including doc comments");
+        assert!(
+            !comments.is_empty(),
+            "Should extract comments including doc comments"
+        );
 
         // Verify that doc comment content is present
         let comment_texts: Vec<_> = comments.iter().map(|u| u.content.as_str()).collect();
-        assert!(comment_texts.iter().any(|t| t.contains("Package main provides")));
-        assert!(comment_texts.iter().any(|t| t.contains("Person represents")));
+        assert!(comment_texts
+            .iter()
+            .any(|t| t.contains("Package main provides")));
+        assert!(comment_texts
+            .iter()
+            .any(|t| t.contains("Person represents")));
         assert!(comment_texts.iter().any(|t| t.contains("Greet returns")));
     }
 
@@ -558,4 +567,3 @@ func main() {
         assert!(!units.is_empty(), "Should extract translation units");
     }
 }
-

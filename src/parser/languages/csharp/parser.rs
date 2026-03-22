@@ -7,16 +7,14 @@ use tree_sitter::{Node, Parser, Tree};
 
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, TranslationUnit};
-use crate::parser::core::traits::{
-    ExtractionConfig, Parser as ParserTrait, StrategyNodeType,
-};
-use crate::parser::filtering::traits::Filter;
-use crate::parser::{ContentFilter, FunctionCategory};
 use crate::parser::core::query_executor::QueryExecutor;
+use crate::parser::core::traits::{ExtractionConfig, Parser as ParserTrait, StrategyNodeType};
 use crate::parser::core::{CommentType, StringProcessor};
-use crate::parser::ParserConfig;
+use crate::parser::filtering::traits::Filter;
 use crate::parser::languages::csharp::patterns::CSharpPatterns;
 use crate::parser::languages::csharp::queries::CSharpQueries;
+use crate::parser::ParserConfig;
+use crate::parser::{ContentFilter, FunctionCategory};
 use tracing::{debug, error, info, instrument};
 
 /// C# language parser
@@ -150,7 +148,9 @@ impl CSharpParser {
             }
 
             let id = format!("{}_comment_{}", file_path, match_idx);
-            let node_type = self.extraction_config.get_node_type(StrategyNodeType::Comment);
+            let node_type = self
+                .extraction_config
+                .get_node_type(StrategyNodeType::Comment);
             let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
             units.push(unit);
             match_idx += 1;
@@ -193,7 +193,9 @@ impl CSharpParser {
             }
 
             let id = format!("{}_string_{}", file_path, match_idx);
-            let node_type = self.extraction_config.get_node_type(StrategyNodeType::FormatString);
+            let node_type = self
+                .extraction_config
+                .get_node_type(StrategyNodeType::FormatString);
             let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
             units.push(unit);
             match_idx += 1;
@@ -300,7 +302,9 @@ impl CSharpParser {
             }
 
             let id = format!("{}_throw_{}", file_path, match_idx);
-            let node_type = self.extraction_config.get_node_type(StrategyNodeType::ErrorMessage);
+            let node_type = self
+                .extraction_config
+                .get_node_type(StrategyNodeType::ErrorMessage);
             let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
             units.push(unit);
             match_idx += 1;
@@ -343,7 +347,9 @@ impl CSharpParser {
             }
 
             let id = format!("{}_attr_{}", file_path, match_idx);
-            let node_type = self.extraction_config.get_node_type(StrategyNodeType::DocString);
+            let node_type = self
+                .extraction_config
+                .get_node_type(StrategyNodeType::DocString);
             let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
             units.push(unit);
             match_idx += 1;
@@ -444,7 +450,7 @@ impl ParserTrait for CSharpParser {
 mod tests {
     use super::*;
     use crate::core::models::NodeType;
-    
+
     use crate::parser::core::traits::ExtractionConfig;
     use std::path::PathBuf;
 
@@ -589,4 +595,3 @@ class Test {
         assert!(!error_msgs.is_empty(), "Should extract throw messages");
     }
 }
-

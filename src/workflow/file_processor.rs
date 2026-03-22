@@ -55,7 +55,13 @@ impl From<FileProcessResult> for TranslationStats {
         stats.translated_units = result.translated_units;
         stats.processed_files = if result.cached_files > 0 { 0 } else { 1 };
         stats.cache_hit_count = result.cached_files;
-        stats.skipped_files = if result.cached_files > 0 || (result.skipped_units > 0 && result.translated_units == 0) { 1 } else { 0 };
+        stats.skipped_files = if result.cached_files > 0
+            || (result.skipped_units > 0 && result.translated_units == 0)
+        {
+            1
+        } else {
+            0
+        };
         stats.error_count = result.errors;
         stats
     }
@@ -124,6 +130,7 @@ impl<'a> FileProcessor<'a> {
                 result.cached_files = 1;
                 if let Some(ref reporter) = self.reporter {
                     reporter.report_cache_hit();
+                    reporter.report_skipped(file_path);
                 }
                 return Ok(result);
             } else {
@@ -207,14 +214,19 @@ impl<'a> FileProcessor<'a> {
         }
 
         // Get source language for translation - use first source lang or default to "auto"
-        let source_lang = self.project_config.translate.source_langs
+        let source_lang = self
+            .project_config
+            .translate
+            .source_langs
             .first()
             .map(|s| s.as_str())
             .unwrap_or("auto");
 
-        let translated_texts = self
-            .translator
-            .translate_batch(&texts, source_lang, &self.project_config.translate.target_lang)?;
+        let translated_texts = self.translator.translate_batch(
+            &texts,
+            source_lang,
+            &self.project_config.translate.target_lang,
+        )?;
 
         if let Some(ref reporter) = self.reporter {
             reporter.report_api_call(1);

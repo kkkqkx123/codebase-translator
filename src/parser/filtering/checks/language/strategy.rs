@@ -135,7 +135,10 @@ impl QuickDetector {
         }
 
         // Check in order of specificity
-        if sample.iter().any(|c| is_hiragana(*c) || is_katakana(*c) || is_hangul(*c)) {
+        if sample
+            .iter()
+            .any(|c| is_hiragana(*c) || is_katakana(*c) || is_hangul(*c))
+        {
             return Script::Cjk;
         }
 
@@ -326,8 +329,7 @@ fn is_cyrillic(c: char) -> bool {
 }
 
 fn is_latin(c: char) -> bool {
-    c.is_ascii_alphabetic()
-        || ('\u{00C0}'..='\u{024F}').contains(&c)
+    c.is_ascii_alphabetic() || ('\u{00C0}'..='\u{024F}').contains(&c)
 }
 
 fn should_skip(c: char) -> bool {

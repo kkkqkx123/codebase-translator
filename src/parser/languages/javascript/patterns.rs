@@ -173,4 +173,3 @@ mod tests {
         assert!(underlying.is_error_function("Error"));
     }
 }
-

@@ -204,4 +204,3 @@ mod tests {
         assert!(underlying.is_log_function("log.Println"));
     }
 }
-

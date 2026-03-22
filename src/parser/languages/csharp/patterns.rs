@@ -156,4 +156,3 @@ mod tests {
         assert!(!patterns.is_format_method("Console.WriteLine"));
     }
 }
-

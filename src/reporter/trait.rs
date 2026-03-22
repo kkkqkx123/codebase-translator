@@ -14,40 +14,44 @@ pub enum ReportFormat {
     Json,
 }
 
-/// Reporter trait for progress and statistics
+/// Reporter trait for progress and statistics reporting
 ///
-/// Note: This trait is intentionally synchronous to avoid async complexity
-/// in the reporting layer. All methods should return immediately.
+/// This trait provides methods for reporting progress and generating reports.
+/// Statistics are collected externally and passed to the reporter for report generation.
 pub trait Reporter: Send + Sync {
-    /// Report total files to process
+    /// Report total files to process (for progress tracking only)
     fn report_total_files(&self, count: usize);
 
-    /// Report file processed
+    /// Report file processed (for progress tracking only, does not affect stats)
     fn report_file(&self, path: &Path, units: usize);
 
-    /// Report translation progress
+    /// Report translation progress (for progress tracking only)
     fn report_progress(&self, current: usize, total: usize);
 
-    /// Report error
+    /// Report error (for logging only)
     fn report_error(&self, path: &Path, error: &TranslateError);
 
-    /// Report skipped file
+    /// Report skipped file (for logging only)
     fn report_skipped(&self, path: &Path);
 
-    /// Report API call
+    /// Report API call (for logging only)
     fn report_api_call(&self, count: usize);
 
-    /// Report cache hit
+    /// Report cache hit (for logging only)
     fn report_cache_hit(&self);
 
-    /// Report cache miss
+    /// Report cache miss (for logging only)
     fn report_cache_miss(&self);
 
-    /// Get final report in specified format
-    fn final_report(&self, format: ReportFormat) -> Result<String, TranslateError>;
+    /// Generate final report in specified format using the provided stats
+    fn final_report(
+        &self,
+        stats: &TranslationStats,
+        format: ReportFormat,
+    ) -> Result<String, TranslateError>;
 
-    /// Get statistics
-    fn get_stats(&self) -> TranslationStats;
+    /// Get statistics (returns the stats passed to finalize)
+    fn get_stats(&self) -> Option<TranslationStats>;
 
     /// Check if there are any errors
     fn has_errors(&self) -> bool;
@@ -55,17 +59,23 @@ pub trait Reporter: Send + Sync {
     /// Get progress percentage
     fn get_progress(&self) -> f64;
 
-    /// Finalize the reporter
-    fn finalize(&self);
+    /// Finalize the reporter with the complete statistics
+    fn finalize(&self, stats: &TranslationStats);
 
-    /// Save report to file
-    fn save_report(&self, path: &Path, format: ReportFormat) -> Result<(), TranslateError>;
+    /// Save report to file using the provided stats
+    fn save_report(
+        &self,
+        path: &Path,
+        stats: &TranslationStats,
+        format: ReportFormat,
+    ) -> Result<(), TranslateError>;
 
-    /// Save report with filename template
+    /// Save report with filename template using the provided stats
     fn save_report_with_template(
         &self,
         dir: &Path,
         template: &str,
+        stats: &TranslationStats,
         format: ReportFormat,
     ) -> Result<std::path::PathBuf, TranslateError>;
 }

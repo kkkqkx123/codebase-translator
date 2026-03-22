@@ -7,17 +7,15 @@ use tree_sitter::{Node, Parser, Tree};
 
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, TranslationUnit};
-use crate::parser::core::traits::{
-    ExtractionConfig, Parser as ParserTrait, StrategyNodeType,
-};
-use crate::parser::filtering::traits::Filter;
-use crate::parser::{ContentFilter, FunctionCategory};
 use crate::parser::core::query_executor::QueryExecutor;
 use crate::parser::core::string_processor::{CleanedString, CommentType};
+use crate::parser::core::traits::{ExtractionConfig, Parser as ParserTrait, StrategyNodeType};
 use crate::parser::core::StringProcessor;
-use crate::parser::ParserConfig;
+use crate::parser::filtering::traits::Filter;
 use crate::parser::languages::python::patterns::PythonPatterns;
 use crate::parser::languages::python::queries::PythonQueries;
+use crate::parser::ParserConfig;
+use crate::parser::{ContentFilter, FunctionCategory};
 use tracing::{debug, error, info, instrument, warn};
 
 /// Python language parser
@@ -59,12 +57,14 @@ impl PythonParser {
             .trim_start()
             .trim_end_matches(|c: char| c.is_whitespace() && c != '\n');
 
-        let content = if (trimmed.starts_with("\"\"\"") && trimmed.ends_with("\"\"\"")) 
-            || (trimmed.starts_with("'''") && trimmed.ends_with("'''")) {
+        let content = if (trimmed.starts_with("\"\"\"") && trimmed.ends_with("\"\"\""))
+            || (trimmed.starts_with("'''") && trimmed.ends_with("'''"))
+        {
             &trimmed[3..trimmed.len() - 3]
-        } else if (trimmed.starts_with('"') || trimmed.starts_with('\'')) 
-            && (trimmed.ends_with('"') || trimmed.ends_with('\'')) 
-            && trimmed.len() > 1 {
+        } else if (trimmed.starts_with('"') || trimmed.starts_with('\''))
+            && (trimmed.ends_with('"') || trimmed.ends_with('\''))
+            && trimmed.len() > 1
+        {
             &trimmed[1..trimmed.len() - 1]
         } else {
             return CleanedString {
@@ -219,7 +219,9 @@ impl PythonParser {
             }
 
             let id = format!("{}_comment_{}", file_path, match_idx);
-            let node_type = self.extraction_config.get_node_type(StrategyNodeType::Comment);
+            let node_type = self
+                .extraction_config
+                .get_node_type(StrategyNodeType::Comment);
             let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
             units.push(unit);
             match_idx += 1;
@@ -325,7 +327,9 @@ impl PythonParser {
             }
 
             let id = format!("{}_docstring_{}", file_path, match_idx);
-            let node_type = self.extraction_config.get_node_type(StrategyNodeType::DocString);
+            let node_type = self
+                .extraction_config
+                .get_node_type(StrategyNodeType::DocString);
             let mut unit = TranslationUnit::new_with_pattern(
                 id,
                 node_type,
@@ -577,7 +581,7 @@ impl ParserTrait for PythonParser {
 mod tests {
     use super::*;
     use crate::core::models::NodeType;
-    
+
     use crate::parser::core::traits::ExtractionConfig;
     use std::path::PathBuf;
 
@@ -759,4 +763,3 @@ def test():
         assert!(!units.is_empty());
     }
 }
-

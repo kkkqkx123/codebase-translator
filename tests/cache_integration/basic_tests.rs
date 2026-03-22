@@ -489,9 +489,15 @@ fn test_binary_cache_config_hash_mismatch() {
 
     // Should find entry with matching config hash
     let retrieved = cache.get(&hash1, "config_hash_v1").unwrap();
-    assert!(retrieved.is_some(), "Should find entry with matching config hash");
+    assert!(
+        retrieved.is_some(),
+        "Should find entry with matching config hash"
+    );
 
     // Should NOT find entry with different config hash
     let retrieved = cache.get(&hash1, "config_hash_v2").unwrap();
-    assert!(retrieved.is_none(), "Should not find entry with mismatched config hash");
+    assert!(
+        retrieved.is_none(),
+        "Should not find entry with mismatched config hash"
+    );
 }

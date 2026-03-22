@@ -8,14 +8,12 @@ use tree_sitter::{Language, Node, Tree};
 
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::TranslationUnit;
-use crate::parser::core::traits::{
-    ExtractionConfig, StrategyNodeType,
-};
-use crate::parser::filtering::traits::Filter;
-use crate::parser::{ContentFilter, FunctionCategory};
 use crate::parser::core::query_executor::QueryExecutor;
+use crate::parser::core::traits::{ExtractionConfig, StrategyNodeType};
 use crate::parser::core::StringProcessor;
+use crate::parser::filtering::traits::Filter;
 use crate::parser::ParserConfig;
+use crate::parser::{ContentFilter, FunctionCategory};
 use tracing::{debug, error, instrument};
 
 /// Generic language parser trait

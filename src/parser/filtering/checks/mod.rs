@@ -16,4 +16,6 @@ pub use length::LengthFilter;
 pub use pattern::PatternFilter;
 
 // Re-export language detection types for advanced usage
-pub use language::{DetectionStrategy, LanguageDetector, LanguageInfo, QuickDetector, SampledDetector, Script};
+pub use language::{
+    DetectionStrategy, LanguageDetector, LanguageInfo, QuickDetector, SampledDetector, Script,
+};

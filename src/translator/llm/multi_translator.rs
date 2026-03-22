@@ -169,7 +169,7 @@ impl MultiProviderTranslator {
         for (idx, provider) in other_providers.iter().take(max_attempts).enumerate() {
             let provider_id = provider.id().to_string();
             let attempt_start = std::time::Instant::now();
-            
+
             // Check if provider is healthy before trying
             if !provider.is_healthy().await {
                 warn!(
@@ -180,7 +180,7 @@ impl MultiProviderTranslator {
                 );
                 continue;
             }
-            
+
             debug!(
                 "Trying alternative provider {} (attempt {}/{}, capacity: {} chars)",
                 provider_id,
@@ -249,11 +249,18 @@ impl MultiProviderTranslator {
 
 #[async_trait]
 impl Translator for MultiProviderTranslator {
-    async fn translate(&self, texts: &[String], source_lang: &str, target_lang: &str) -> Result<Vec<String>> {
+    async fn translate(
+        &self,
+        texts: &[String],
+        source_lang: &str,
+        target_lang: &str,
+    ) -> Result<Vec<String>> {
         let mut results = Vec::with_capacity(texts.len());
 
         for text in texts {
-            let response = self.translate_with_failover(text, source_lang, target_lang).await?;
+            let response = self
+                .translate_with_failover(text, source_lang, target_lang)
+                .await?;
             results.push(response.translated_text);
         }
 

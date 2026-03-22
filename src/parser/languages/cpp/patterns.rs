@@ -119,4 +119,3 @@ mod tests {
         assert!(!patterns.is_format_function("perror"));
     }
 }
-

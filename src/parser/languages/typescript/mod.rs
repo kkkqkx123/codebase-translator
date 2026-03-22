@@ -9,4 +9,3 @@ pub mod queries;
 
 pub use parser::TypeScriptParser;
 pub use patterns::TypeScriptPatterns;
-

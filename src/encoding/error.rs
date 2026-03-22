@@ -40,9 +40,7 @@ pub enum Error {
 
 impl Error {
     pub fn io(message: impl Into<String>) -> Self {
-        Self::Io(std::io::Error::other(
-            message.into(),
-        ))
+        Self::Io(std::io::Error::other(message.into()))
     }
 
     pub fn detection_failed(message: impl Into<String>) -> Self {

@@ -47,7 +47,7 @@ pub fn validate_config(config: &LoggingConfig) -> Result<()> {
 }
 
 /// Get log file path with default fallback
-/// 
+///
 /// If project_dir is provided and the file path is relative, it will be resolved
 /// relative to the project directory. Otherwise, it will be resolved relative to
 /// the current working directory.
@@ -157,11 +157,11 @@ mod tests {
         };
 
         let project_dir = Path::new("/home/user/project");
-        let expected = project_dir.join(".translator/translator.log").to_string_lossy().to_string();
-        assert_eq!(
-            get_log_file_path(&config, Some(project_dir)),
-            expected
-        );
+        let expected = project_dir
+            .join(".translator/translator.log")
+            .to_string_lossy()
+            .to_string();
+        assert_eq!(get_log_file_path(&config, Some(project_dir)), expected);
     }
 
     #[test]
@@ -187,10 +187,7 @@ mod tests {
 
         let project_dir = Path::new("/home/user/project");
         let expected = project_dir.join("custom.log").to_string_lossy().to_string();
-        assert_eq!(
-            get_log_file_path(&config, Some(project_dir)),
-            expected
-        );
+        assert_eq!(get_log_file_path(&config, Some(project_dir)), expected);
     }
 
     #[test]

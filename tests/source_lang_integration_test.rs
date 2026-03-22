@@ -36,9 +36,9 @@ fn test_auto_source_lang_flow() {
 /// Test that verifies the Translator trait signature requires source_lang
 #[test]
 fn test_translator_trait_requires_source_lang() {
-    use codebase_translate::translator::Translator;
     use async_trait::async_trait;
     use codebase_translate::core::error::Result;
+    use codebase_translate::translator::Translator;
 
     // This struct verifies the trait signature at compile time
     struct SourceLangVerifier;
@@ -127,7 +127,9 @@ fn test_source_lang_data_flow() {
         ..Default::default()
     };
 
-    let source_lang = config.translate.source_langs
+    let source_lang = config
+        .translate
+        .source_langs
         .first()
         .map(|s| s.as_str())
         .unwrap_or("auto");
@@ -143,7 +145,9 @@ fn test_source_lang_data_flow() {
         ..Default::default()
     };
 
-    let source_lang = config.translate.source_langs
+    let source_lang = config
+        .translate
+        .source_langs
         .first()
         .map(|s| s.as_str())
         .unwrap_or("auto");
@@ -159,7 +163,9 @@ fn test_source_lang_data_flow() {
         ..Default::default()
     };
 
-    let source_lang = config.translate.source_langs
+    let source_lang = config
+        .translate
+        .source_langs
         .first()
         .map(|s| s.as_str())
         .unwrap_or("auto");
@@ -175,7 +181,9 @@ fn test_source_lang_data_flow() {
         ..Default::default()
     };
 
-    let source_lang = config.translate.source_langs
+    let source_lang = config
+        .translate
+        .source_langs
         .first()
         .map(|s| s.as_str())
         .unwrap_or("auto");

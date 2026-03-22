@@ -3,8 +3,10 @@
 //! This module provides a composite filter that orchestrates all filter checks.
 //! Checks are applied in order of complexity for optimal performance.
 
+use crate::parser::filtering::checks::{
+    ContentFilter, LanguageFilter, LengthFilter, PatternFilter,
+};
 use crate::parser::filtering::config::FilterConfig;
-use crate::parser::filtering::checks::{LengthFilter, ContentFilter, LanguageFilter, PatternFilter};
 use crate::parser::filtering::traits::Filter;
 use tracing::debug;
 

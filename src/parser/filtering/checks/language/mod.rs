@@ -48,8 +48,22 @@ impl LanguageFilter {
         let target = self.target_lang.to_uppercase();
 
         match target.as_str() {
-            "EN" | "EN-US" | "EN-GB" => self.quick_detector.is_latin(text),
-            "ZH" | "ZH-CN" | "ZH-TW" => self.quick_detector.has_cjk(text),
+            "EN" | "EN-US" | "EN-GB" => {
+                // Check if text is primarily Latin AND doesn't contain significant non-Latin content
+                if !self.quick_detector.is_latin(text) {
+                    return false;
+                }
+                // Also check that it doesn't contain significant CJK content
+                if self.quick_detector.has_cjk(text) {
+                    return false;
+                }
+                true
+            }
+            "ZH" | "ZH-CN" | "ZH-TW" => {
+                // Check if text has CJK characters
+                // Don't check for Latin content, as Chinese text often contains English words
+                self.quick_detector.has_cjk(text)
+            }
             "JA" => self.quick_detector.has_japanese(text),
             "KO" => self.quick_detector.has_korean(text),
             // For other languages, be conservative and allow translation
@@ -121,10 +135,13 @@ impl LanguageFilter {
 
 impl Filter for LanguageFilter {
     fn should_translate(&self, text: &str) -> bool {
+        let is_target = self.is_target_language(text);
+        let has_source = self.contains_source_language(text);
+
         // When source_langs is empty, use AUTO mode behavior:
         // skip translation if text is already in target language
         if self.source_langs.is_empty() {
-            if self.is_target_language(text) {
+            if is_target {
                 debug!(
                     target_lang = %self.target_lang,
                     reason = "already_in_target_language",
@@ -135,7 +152,7 @@ impl Filter for LanguageFilter {
             return true;
         }
 
-        if !self.contains_source_language(text) {
+        if !has_source {
             debug!(
                 source_langs = ?self.source_langs,
                 reason = "no_source_language",

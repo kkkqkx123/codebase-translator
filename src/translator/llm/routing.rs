@@ -24,8 +24,7 @@ use crate::core::error::{Result, TranslateError};
 use crate::translator::llm::provider::LLMProvider;
 
 /// Selection strategy for provider routing
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[derive(Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum SelectionStrategy {
     /// Pure random selection weighted by rate_limit
     RateBasedRandom,
@@ -33,7 +32,6 @@ pub enum SelectionStrategy {
     #[default]
     SmoothRateBasedRoundRobin,
 }
-
 
 /// Provider entry with selection state for smooth rate-based round-robin
 #[derive(Debug)]
@@ -257,7 +255,7 @@ impl ProviderRouter {
 
         // Calculate total effective weight (based on rate_limit)
         let total_weight: u32 = candidates.iter().map(|p| p.effective_weight()).sum();
-        
+
         if total_weight == 0 {
             // All rate limits are 0, use equal distribution
             let index = rand::random::<usize>() % candidates.len();
@@ -308,7 +306,7 @@ impl ProviderRouter {
         }
 
         let total_weight: u32 = candidates.iter().map(|p| p.effective_weight()).sum();
-        
+
         if total_weight == 0 {
             // All rate limits are 0, use round-robin
             static INDEX: AtomicU32 = AtomicU32::new(0);
@@ -335,10 +333,9 @@ impl ProviderRouter {
             // Update current_weight: add effective_weight, then subtract total_weight
             let current = entry.current_weight.load(Ordering::Relaxed);
             let effective = entry.effective_weight();
-            entry.current_weight.store(
-                current + effective - total_weight,
-                Ordering::Relaxed,
-            );
+            entry
+                .current_weight
+                .store(current + effective - total_weight, Ordering::Relaxed);
 
             // Reset other providers' current_weight (they just had effective_weight added)
             for other in candidates {
@@ -388,7 +385,9 @@ impl ProviderRouter {
 
     /// Check if any provider can handle the given text length
     pub fn can_handle(&self, text_len: usize) -> bool {
-        self.providers.iter().any(|p| p.provider.can_handle(text_len))
+        self.providers
+            .iter()
+            .any(|p| p.provider.can_handle(text_len))
     }
 
     /// Route and translate a single text
@@ -408,9 +407,7 @@ impl ProviderRouter {
             ))
         })?;
 
-        let response = provider
-            .translate(text, source_lang, target_lang)
-            .await?;
+        let response = provider.translate(text, source_lang, target_lang).await?;
 
         Ok(response.translated_text)
     }

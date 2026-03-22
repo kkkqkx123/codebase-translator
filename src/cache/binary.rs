@@ -481,7 +481,9 @@ impl BinaryCache {
 
         let entry_state = {
             let entries_lock = self.entries.read().map_err(|_| {
-                TranslateError::Lock("Failed to acquire read lock on entries in get_raw".to_string())
+                TranslateError::Lock(
+                    "Failed to acquire read lock on entries in get_raw".to_string(),
+                )
             })?;
             entries_lock.get(file_hash).cloned()
         };
@@ -836,7 +838,14 @@ mod tests {
 
         // Test set and get
         let hash1 = generate_test_hash("test_file");
-        let mut entry = CacheEntry::new(&hash1, "/path/to/file.txt", 123456, "local", fingerprint, config_hash);
+        let mut entry = CacheEntry::new(
+            &hash1,
+            "/path/to/file.txt",
+            123456,
+            "local",
+            fingerprint,
+            config_hash,
+        );
         entry.mark_as_translated();
 
         cache.set(&entry).unwrap();
@@ -879,8 +888,22 @@ mod tests {
 
         let hash1 = generate_test_hash("file1");
         let hash2 = generate_test_hash("file2");
-        let entry1 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456, "local", fingerprint, config_hash);
-        let entry2 = CacheEntry::new(&hash2, "/path/to/file2.txt", 123456, "local", fingerprint, config_hash);
+        let entry1 = CacheEntry::new(
+            &hash1,
+            "/path/to/file1.txt",
+            123456,
+            "local",
+            fingerprint,
+            config_hash,
+        );
+        let entry2 = CacheEntry::new(
+            &hash2,
+            "/path/to/file2.txt",
+            123456,
+            "local",
+            fingerprint,
+            config_hash,
+        );
 
         cache.set(&entry1).unwrap();
         cache.set(&entry2).unwrap();
@@ -905,8 +928,22 @@ mod tests {
 
         let hash1 = generate_test_hash("file1");
         let hash2 = generate_test_hash("file2");
-        let entry1 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456, "local", fingerprint, config_hash);
-        let entry2 = CacheEntry::new(&hash2, "/path/to/file2.txt", 123456, "local", fingerprint, config_hash);
+        let entry1 = CacheEntry::new(
+            &hash1,
+            "/path/to/file1.txt",
+            123456,
+            "local",
+            fingerprint,
+            config_hash,
+        );
+        let entry2 = CacheEntry::new(
+            &hash2,
+            "/path/to/file2.txt",
+            123456,
+            "local",
+            fingerprint,
+            config_hash,
+        );
 
         cache.set(&entry1).unwrap();
         cache.set(&entry2).unwrap();
@@ -939,16 +976,29 @@ mod tests {
 
         // Store entry with config_hash1
         let hash1 = generate_test_hash("test_file");
-        let mut entry = CacheEntry::new(&hash1, "/path/to/file.txt", 123456, "local", fingerprint, config_hash1);
+        let mut entry = CacheEntry::new(
+            &hash1,
+            "/path/to/file.txt",
+            123456,
+            "local",
+            fingerprint,
+            config_hash1,
+        );
         entry.mark_as_translated();
         cache.set(&entry).unwrap();
 
         // Should find entry with matching config_hash
         let retrieved = cache.get(&hash1, config_hash1).unwrap();
-        assert!(retrieved.is_some(), "Should find entry with matching config hash");
+        assert!(
+            retrieved.is_some(),
+            "Should find entry with matching config hash"
+        );
 
         // Should NOT find entry with different config_hash
         let retrieved = cache.get(&hash1, config_hash2).unwrap();
-        assert!(retrieved.is_none(), "Should not find entry with mismatched config hash");
+        assert!(
+            retrieved.is_none(),
+            "Should not find entry with mismatched config hash"
+        );
     }
 }

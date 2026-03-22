@@ -8,9 +8,9 @@ use std::sync::Arc;
 
 use crate::core::models::{File, NodeType};
 use crate::parser::core::traits::{ExtractionConfig, Parser, StrategyNodeType};
+use crate::parser::languages::*;
 use crate::parser::ContentFilter;
 use crate::parser::ParserConfig;
-use crate::parser::languages::*;
 
 fn create_test_file(content: &str, path: &str) -> File {
     File::new(PathBuf::from(path), content.as_bytes().to_vec(), "utf-8")
@@ -38,12 +38,7 @@ fn test_strategy_comment_filtering() {
         ..Default::default()
     };
 
-    let parser = RustParser::new(
-        create_test_parser_config(),
-        config,
-        create_filter(),
-    )
-    .unwrap();
+    let parser = RustParser::new(create_test_parser_config(), config, create_filter()).unwrap();
 
     let content = r#"
 /// This is a doc comment
@@ -79,12 +74,7 @@ fn test_strategy_docstring_filtering() {
         ..Default::default()
     };
 
-    let parser = PythonParser::new(
-        create_test_parser_config(),
-        config,
-        create_filter(),
-    )
-    .unwrap();
+    let parser = PythonParser::new(create_test_parser_config(), config, create_filter()).unwrap();
 
     let content = r#"
 """Module docstring."""
@@ -119,12 +109,7 @@ fn test_strategy_error_message_filtering() {
         ..Default::default()
     };
 
-    let parser = RustParser::new(
-        create_test_parser_config(),
-        config,
-        create_filter(),
-    )
-    .unwrap();
+    let parser = RustParser::new(create_test_parser_config(), config, create_filter()).unwrap();
 
     let content = r#"
 /// This is a doc comment
@@ -159,12 +144,8 @@ fn test_strategy_format_string_filtering() {
         ..Default::default()
     };
 
-    let parser = JavaScriptParser::new(
-        create_test_parser_config(),
-        config,
-        create_filter(),
-    )
-    .unwrap();
+    let parser =
+        JavaScriptParser::new(create_test_parser_config(), config, create_filter()).unwrap();
 
     let content = r#"
 function main() {
@@ -198,12 +179,7 @@ fn test_strategy_log_message_filtering() {
         ..Default::default()
     };
 
-    let parser = GoParser::new(
-        create_test_parser_config(),
-        config,
-        create_filter(),
-    )
-    .unwrap();
+    let parser = GoParser::new(create_test_parser_config(), config, create_filter()).unwrap();
 
     let content = r#"
 package main
@@ -241,12 +217,7 @@ fn test_c_parser_docstring_strategy() {
         ..Default::default()
     };
 
-    let parser = CParser::new(
-        create_test_parser_config(),
-        config,
-        create_filter(),
-    )
-    .unwrap();
+    let parser = CParser::new(create_test_parser_config(), config, create_filter()).unwrap();
 
     let content = r#"
 /// This is a Doxygen doc comment
@@ -286,12 +257,7 @@ fn test_cpp_parser_docstring_strategy() {
         ..Default::default()
     };
 
-    let parser = CppParser::new(
-        create_test_parser_config(),
-        config,
-        create_filter(),
-    )
-    .unwrap();
+    let parser = CppParser::new(create_test_parser_config(), config, create_filter()).unwrap();
 
     let content = r#"
 /// Class documentation
@@ -331,12 +297,7 @@ fn test_java_parser_strategy_integration() {
         ..Default::default()
     };
 
-    let parser = JavaParser::new(
-        create_test_parser_config(),
-        config,
-        create_filter(),
-    )
-    .unwrap();
+    let parser = JavaParser::new(create_test_parser_config(), config, create_filter()).unwrap();
 
     let content = r#"
 /**
@@ -375,12 +336,7 @@ fn test_csharp_parser_strategy_integration() {
         ..Default::default()
     };
 
-    let parser = CSharpParser::new(
-        create_test_parser_config(),
-        config,
-        create_filter(),
-    )
-    .unwrap();
+    let parser = CSharpParser::new(create_test_parser_config(), config, create_filter()).unwrap();
 
     let content = r#"
 /// <summary>
@@ -412,12 +368,7 @@ fn test_typescript_template_string_strategy() {
     let mut parser_config = create_test_parser_config();
     parser_config.extract_strings = true;
 
-    let parser = TypeScriptParser::new(
-        parser_config,
-        config,
-        create_filter(),
-    )
-    .unwrap();
+    let parser = TypeScriptParser::new(parser_config, config, create_filter()).unwrap();
 
     // Template strings are extracted separately from call expressions
     let content = r#"
@@ -495,4 +446,3 @@ fn test_extraction_config() {
     };
     assert!(!config_disabled.should_extract(StrategyNodeType::ErrorMessage));
 }
-

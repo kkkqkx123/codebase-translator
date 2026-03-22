@@ -72,31 +72,77 @@ pub fn calculate_config_hash(config: &ProjectConfig) -> String {
     hasher.update(b"|filter_max_length:");
     hasher.update(config.filter.max_length.to_string().as_bytes());
     hasher.update(b"|filter_allow_placeholders:");
-    hasher.update(if config.filter.allow_placeholders { b"1" } else { b"0" });
+    hasher.update(if config.filter.allow_placeholders {
+        b"1"
+    } else {
+        b"0"
+    });
     hasher.update(b"|filter_detect_code_patterns:");
-    hasher.update(if config.filter.detect_code_patterns { b"1" } else { b"0" });
+    hasher.update(if config.filter.detect_code_patterns {
+        b"1"
+    } else {
+        b"0"
+    });
 
     // Extraction settings
     hasher.update(b"|extraction_comments:");
-    hasher.update(if config.extraction.comments { b"1" } else { b"0" });
+    hasher.update(if config.extraction.comments {
+        b"1"
+    } else {
+        b"0"
+    });
     hasher.update(b"|extraction_doc_strings:");
-    hasher.update(if config.extraction.doc_strings { b"1" } else { b"0" });
+    hasher.update(if config.extraction.doc_strings {
+        b"1"
+    } else {
+        b"0"
+    });
     hasher.update(b"|extraction_error_messages:");
-    hasher.update(if config.extraction.error_messages { b"1" } else { b"0" });
+    hasher.update(if config.extraction.error_messages {
+        b"1"
+    } else {
+        b"0"
+    });
     hasher.update(b"|extraction_format_strings:");
-    hasher.update(if config.extraction.format_strings { b"1" } else { b"0" });
+    hasher.update(if config.extraction.format_strings {
+        b"1"
+    } else {
+        b"0"
+    });
 
     // String literal extraction settings
     hasher.update(b"|string_literals_enabled:");
-    hasher.update(if config.extraction.string_literals.enabled { b"1" } else { b"0" });
+    hasher.update(if config.extraction.string_literals.enabled {
+        b"1"
+    } else {
+        b"0"
+    });
     hasher.update(b"|string_literals_error_handling:");
-    hasher.update(if config.extraction.string_literals.categories.error_handling { b"1" } else { b"0" });
+    hasher.update(
+        if config.extraction.string_literals.categories.error_handling {
+            b"1"
+        } else {
+            b"0"
+        },
+    );
     hasher.update(b"|string_literals_output:");
-    hasher.update(if config.extraction.string_literals.categories.output { b"1" } else { b"0" });
+    hasher.update(if config.extraction.string_literals.categories.output {
+        b"1"
+    } else {
+        b"0"
+    });
     hasher.update(b"|string_literals_variables:");
-    hasher.update(if config.extraction.string_literals.categories.variables { b"1" } else { b"0" });
+    hasher.update(if config.extraction.string_literals.categories.variables {
+        b"1"
+    } else {
+        b"0"
+    });
     hasher.update(b"|string_literals_properties:");
-    hasher.update(if config.extraction.string_literals.categories.properties { b"1" } else { b"0" });
+    hasher.update(if config.extraction.string_literals.categories.properties {
+        b"1"
+    } else {
+        b"0"
+    });
 
     // Custom patterns
     hasher.update(b"|custom_patterns:");
@@ -142,7 +188,10 @@ mod tests {
         let hash1 = calculate_config_hash(&config1);
         let hash2 = calculate_config_hash(&config2);
 
-        assert_ne!(hash1, hash2, "Different target_lang should produce different hash");
+        assert_ne!(
+            hash1, hash2,
+            "Different target_lang should produce different hash"
+        );
     }
 
     #[test]
@@ -180,7 +229,10 @@ mod tests {
         let hash1 = calculate_config_hash(&config1);
         let hash2 = calculate_config_hash(&config2);
 
-        assert_ne!(hash1, hash2, "Different extraction settings should produce different hash");
+        assert_ne!(
+            hash1, hash2,
+            "Different extraction settings should produce different hash"
+        );
     }
 
     #[test]
@@ -192,6 +244,9 @@ mod tests {
         let hash1 = calculate_config_hash(&config1);
         let hash2 = calculate_config_hash(&config2);
 
-        assert_ne!(hash1, hash2, "Different filter settings should produce different hash");
+        assert_ne!(
+            hash1, hash2,
+            "Different filter settings should produce different hash"
+        );
     }
 }
