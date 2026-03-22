@@ -79,24 +79,27 @@ impl TranslationService {
     ///
     /// # Arguments
     /// * `texts` - Texts to translate
+    /// * `source_lang` - Source language code (or "AUTO")
     /// * `target_lang` - Target language code
     ///
     /// # Returns
     /// Translated texts in the same order as input
-    pub fn translate_batch(&self, texts: &[String], target_lang: &str) -> Result<Vec<String>> {
+    pub fn translate_batch(&self, texts: &[String], source_lang: &str, target_lang: &str) -> Result<Vec<String>> {
         debug!(
             texts_count = texts.len(),
+            source_lang = %source_lang,
             target_lang = %target_lang,
             "Translating batch of texts"
         );
 
         if let Some(ref batch_translator) = self.batch_translator {
             let texts = texts.to_vec();
+            let source_lang = source_lang.to_string();
             let target_lang = target_lang.to_string();
             let batch_translator = batch_translator.clone();
 
             let result = self.runtime.block_on(async move {
-                batch_translator.translate_batch(&texts, &target_lang).await
+                batch_translator.translate_batch(&texts, &source_lang, &target_lang).await
             })?;
 
             debug!(
@@ -110,12 +113,13 @@ impl TranslationService {
                 .collect())
         } else if let Some(ref translator) = self.translator {
             let texts = texts.to_vec();
+            let source_lang = source_lang.to_string();
             let target_lang = target_lang.to_string();
             let translator = translator.clone();
 
             let result = self
                 .runtime
-                .block_on(async move { translator.translate(&texts, &target_lang).await })?;
+                .block_on(async move { translator.translate(&texts, &source_lang, &target_lang).await })?;
 
             debug!(
                 translated_count = result.len(),
@@ -152,7 +156,7 @@ impl TranslationService {
             let batch_translator = batch_translator.clone();
             self.runtime.block_on(async move {
                 let result = batch_translator
-                    .translate_batch(std::slice::from_ref(&text), &target_lang)
+                    .translate_batch(std::slice::from_ref(&text), &source_lang, &target_lang)
                     .await?;
                 if let Some(first) = result.results.first() {
                     Ok(first.translated_text.clone())
@@ -239,13 +243,14 @@ impl BatchTranslationService {
     }
 
     /// Translate a batch of texts with rate limiting
-    pub fn translate_batch(&self, texts: &[String], target_lang: &str) -> Result<BatchResult> {
+    pub fn translate_batch(&self, texts: &[String], source_lang: &str, target_lang: &str) -> Result<BatchResult> {
         let texts = texts.to_vec();
+        let source_lang = source_lang.to_string();
         let target_lang = target_lang.to_string();
 
         self.runtime.block_on(async move {
             self.batch_translator
-                .translate_batch(&texts, &target_lang)
+                .translate_batch(&texts, &source_lang, &target_lang)
                 .await
         })
     }
@@ -257,20 +262,5 @@ impl BatchTranslationService {
                 .set_rate_limit(requests_per_second)
                 .await
         })
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn test_translation_service_creation() {
-        // This test would require a valid DeepLX endpoint
-        // Skipping for unit tests
-    }
-
-    #[test]
-    fn test_batch_translation_service() {
-        // This test would require a valid translator
-        // Skipping for unit tests
     }
 }

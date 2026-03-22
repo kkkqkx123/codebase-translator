@@ -795,11 +795,11 @@ Text to translate:
 
 #[async_trait]
 impl Translator for LLMProvider {
-    async fn translate(&self, texts: &[String], target_lang: &str) -> Result<Vec<String>> {
+    async fn translate(&self, texts: &[String], source_lang: &str, target_lang: &str) -> Result<Vec<String>> {
         let mut results = Vec::with_capacity(texts.len());
 
         for text in texts {
-            let resp = self.translate(text, "", target_lang).await?;
+            let resp = self.translate(text, source_lang, target_lang).await?;
             results.push(resp.translated_text);
         }
 

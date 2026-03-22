@@ -247,4 +247,20 @@ impl TranslationStats {
     pub fn get_all_llm_provider_stats(&self) -> Vec<&LLMProviderStats> {
         self.llm_provider_stats.values().collect()
     }
+
+    /// Merge another stats into this one
+    pub fn merge(&mut self, other: &TranslationStats) {
+        self.total_files += other.total_files;
+        self.processed_files += other.processed_files;
+        self.skipped_files += other.skipped_files;
+        self.failed_files += other.failed_files;
+        self.total_units += other.total_units;
+        self.translated_units += other.translated_units;
+        self.api_call_count += other.api_call_count;
+        self.error_count += other.error_count;
+        self.cache_hit_count += other.cache_hit_count;
+        self.cache_miss_count += other.cache_miss_count;
+        // Note: translator_stats and llm_provider_stats are not merged
+        // as they require more complex merging logic
+    }
 }

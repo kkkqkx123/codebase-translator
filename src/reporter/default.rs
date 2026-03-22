@@ -119,6 +119,11 @@ impl Default for DefaultReporter {
 }
 
 impl Reporter for DefaultReporter {
+    fn report_total_files(&self, count: usize) {
+        debug!(count = count, "Reporting total files");
+        self.stats.record_total_files(count);
+    }
+
     fn report_file(&self, path: &Path, units: usize) {
         debug!(
             file = %path.display(),

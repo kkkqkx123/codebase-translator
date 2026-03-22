@@ -5,8 +5,8 @@
 use crate::{
     config::{global::GlobalConfig, project::ProjectConfig},
     core::error::Result,
-    core::models::{FileEntry, TranslationStats},
-    reporter::Reporter,
+    core::models::FileEntry,
+    reporter::{Reporter, TranslationStats},
     scanner::r#trait::{ScanOptions, Scanner},
     scanner::FSScanner,
     workflow::file_processor::FileProcessor,
@@ -137,6 +137,10 @@ impl TranslationWorkflow {
         let files = self.scan_files()?;
         info!(files_count = files.len(), "File scan completed");
 
+        if let Some(ref reporter) = self.reporter {
+            reporter.report_total_files(files.len());
+        }
+
         if files.is_empty() {
             info!("No files found to translate");
             return Ok(result);
@@ -190,7 +194,8 @@ impl TranslationWorkflow {
                         file = %file_entry.path.display(),
                         "Failed to process file, continuing"
                     );
-                    result.stats.errors += 1;
+                    result.stats.error_count += 1;
+                    result.stats.failed_files += 1;
                     if let Some(ref reporter) = self.reporter {
                         reporter.report_error(&file_entry.path, &e);
                     }
@@ -219,17 +224,16 @@ impl TranslationWorkflow {
         );
         info!(
             total_files = result.stats.total_files,
-            cached_files = result.stats.cached_files,
-            processed_files = result.stats.total_files - result.stats.cached_files,
+            processed_files = result.stats.processed_files,
+            skipped_files = result.stats.skipped_files,
             "Files"
         );
         info!(
             total_units = result.stats.total_units,
             translated_units = result.stats.translated_units,
-            skipped_units = result.stats.skipped_units,
             "Units"
         );
-        info!(errors = result.stats.errors, "Errors");
+        info!(error_count = result.stats.error_count, "Errors");
         info!("========================================");
 
         Ok(result)

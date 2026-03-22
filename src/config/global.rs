@@ -132,7 +132,82 @@ impl GlobalConfig {
         crate::logger::validate_config(&self.logging)
             .map_err(|e| format!("Logging configuration error: {}", e))?;
 
+        // Check if at least one provider has valid configuration
+        self.check_at_least_one_valid_provider()?;
+
         debug!("Global configuration validated successfully");
+        Ok(())
+    }
+
+    /// Check if at least one enabled provider has valid configuration
+    ///
+    /// This method checks all enabled providers and ensures at least one
+    /// has the necessary configuration to perform translations.
+    fn check_at_least_one_valid_provider(&self) -> Result<(), String> {
+        let providers = self.get_enabled_providers();
+        let mut valid_count = 0;
+        let mut error_messages = Vec::new();
+
+        for provider in &providers {
+            match provider.as_str() {
+                "deeplx" => {
+                    // DeepLX only requires a valid API URL (has default localhost:1188)
+                    // It's considered valid if rate_limit > 0
+                    if self.deeplx.rate_limit > 0 {
+                        valid_count += 1;
+                    } else {
+                        error_messages.push("DeepLX: rate_limit must be positive".to_string());
+                    }
+                }
+                "llm" => {
+                    // LLM is valid if there are providers with valid API keys and models
+                    let valid_llm_count = self.llm.providers.iter().filter(|p| {
+                        !p.base_url.is_empty()
+                            && !p.api_keys.is_empty()
+                            && !p.model.is_empty()
+                            && p.max_tokens > 0
+                            && p.rate_limit > 0
+                    }).count();
+                    if valid_llm_count > 0 {
+                        valid_count += 1;
+                    } else {
+                        error_messages.push(
+                            "LLM: no valid providers configured (need base_url, api_keys, model)"
+                                .to_string(),
+                        );
+                    }
+                }
+                "tencent" => {
+                    // Tencent requires secret_id and secret_key
+                    let has_secret_id = self.tencent.secret_id.as_ref()
+                        .is_some_and(|s| !s.is_empty() && !s.starts_with("${"));
+                    let has_secret_key = self.tencent.secret_key.as_ref()
+                        .is_some_and(|s| !s.is_empty() && !s.starts_with("${"));
+                    if has_secret_id && has_secret_key && self.tencent.rate_limit > 0 {
+                        valid_count += 1;
+                    } else {
+                        if !has_secret_id {
+                            error_messages.push("Tencent: secret_id is required".to_string());
+                        }
+                        if !has_secret_key {
+                            error_messages.push("Tencent: secret_key is required".to_string());
+                        }
+                        if self.tencent.rate_limit == 0 {
+                            error_messages.push("Tencent: rate_limit must be positive".to_string());
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+
+        if valid_count == 0 {
+            return Err(format!(
+                "No valid provider configuration found. At least one provider must be properly configured.\nErrors:\n{}",
+                error_messages.join("\n")
+            ));
+        }
+
         Ok(())
     }
 

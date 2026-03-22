@@ -7,10 +7,10 @@ use crate::{
     cache::{binary::BinaryCache, CacheEntry},
     config::project::ProjectConfig,
     core::error::Result,
-    core::models::{File, TranslationStats},
+    core::models::File,
     encoding::{Detector, Encoder},
     parser::coordinator::ParserCoordinator,
-    reporter::Reporter,
+    reporter::{Reporter, TranslationStats},
     translator::service::TranslationService,
     utils::hash::calculate_hash,
     writer::file::FileWriter,
@@ -49,14 +49,15 @@ impl FileProcessResult {
 
 impl From<FileProcessResult> for TranslationStats {
     fn from(result: FileProcessResult) -> Self {
-        TranslationStats {
-            total_files: 1,
-            total_units: result.total_units,
-            translated_units: result.translated_units,
-            cached_files: result.cached_files,
-            skipped_units: result.skipped_units,
-            errors: result.errors,
-        }
+        let mut stats = TranslationStats::new();
+        stats.total_files = 1;
+        stats.total_units = result.total_units;
+        stats.translated_units = result.translated_units;
+        stats.processed_files = if result.cached_files > 0 { 0 } else { 1 };
+        stats.cache_hit_count = result.cached_files;
+        stats.skipped_files = if result.skipped_units > 0 && result.translated_units == 0 { 1 } else { 0 };
+        stats.error_count = result.errors;
+        stats
     }
 }
 
@@ -202,9 +203,15 @@ impl<'a> FileProcessor<'a> {
             );
         }
 
+        // Get source language for translation - use first source lang or default to "auto"
+        let source_lang = self.project_config.translate.source_langs
+            .first()
+            .map(|s| s.as_str())
+            .unwrap_or("auto");
+
         let translated_texts = self
             .translator
-            .translate_batch(&texts, &self.project_config.translate.target_lang)?;
+            .translate_batch(&texts, source_lang, &self.project_config.translate.target_lang)?;
 
         if let Some(ref reporter) = self.reporter {
             reporter.report_api_call(1);
@@ -275,7 +282,7 @@ impl<'a> FileProcessor<'a> {
             file_path.to_string_lossy(),
             modified_time,
             self.project_config.cache.mode.to_string(),
-            "",
+            self.cache.project_fingerprint(),
         );
         cache_entry.mark_as_translated();
 

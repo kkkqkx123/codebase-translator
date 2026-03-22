@@ -19,6 +19,9 @@ pub enum ReportFormat {
 /// Note: This trait is intentionally synchronous to avoid async complexity
 /// in the reporting layer. All methods should return immediately.
 pub trait Reporter: Send + Sync {
+    /// Report total files to process
+    fn report_total_files(&self, count: usize);
+
     /// Report file processed
     fn report_file(&self, path: &Path, units: usize);
 

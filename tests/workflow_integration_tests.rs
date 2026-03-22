@@ -94,9 +94,9 @@ mod workflow_integration {
         assert_eq!(result.stats.total_files, 0);
         assert_eq!(result.stats.total_units, 0);
         assert_eq!(result.stats.translated_units, 0);
-        assert_eq!(result.stats.cached_files, 0);
-        assert_eq!(result.stats.skipped_units, 0);
-        assert_eq!(result.stats.errors, 0);
+        assert_eq!(result.stats.processed_files, 0);
+        assert_eq!(result.stats.skipped_files, 0);
+        assert_eq!(result.stats.error_count, 0);
     }
 }
 

@@ -43,13 +43,6 @@ pub fn validate_config(config: &LoggingConfig) -> Result<()> {
         )));
     }
 
-    // File output requires a file path
-    if config.output == "file" && config.file.is_none() {
-        return Err(crate::core::error::TranslateError::Config(
-            "File output requires a file path".to_string()
-        ));
-    }
-
     Ok(())
 }
 

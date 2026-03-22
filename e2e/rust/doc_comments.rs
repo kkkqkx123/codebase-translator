@@ -12,7 +12,7 @@
             Example { value }
         }
         
-        /// return value
+        /// Return value
         pub fn get_value(&self) -> i32 {
             self.value
         }

@@ -322,11 +322,11 @@ impl TencentTranslator {
 
 #[async_trait]
 impl Translator for TencentTranslator {
-    async fn translate(&self, texts: &[String], target_lang: &str) -> Result<Vec<String>> {
+    async fn translate(&self, texts: &[String], source_lang: &str, target_lang: &str) -> Result<Vec<String>> {
         let mut results = Vec::with_capacity(texts.len());
 
         for text in texts {
-            let translated = self.translate_single(text, "auto", target_lang).await?;
+            let translated = self.translate_single(text, source_lang, target_lang).await?;
             results.push(translated);
         }
 

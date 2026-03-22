@@ -17,11 +17,12 @@ pub trait Translator: Send + Sync {
     ///
     /// # Arguments
     /// * `texts` - Texts to translate
+    /// * `source_lang` - Source language code (e.g., "en", "zh", "AUTO")
     /// * `target_lang` - Target language code (e.g., "en", "zh")
     ///
     /// # Returns
     /// Translated texts in the same order as input
-    async fn translate(&self, texts: &[String], target_lang: &str) -> Result<Vec<String>>;
+    async fn translate(&self, texts: &[String], source_lang: &str, target_lang: &str) -> Result<Vec<String>>;
 
     /// Translate a single text with source language specification
     ///
@@ -116,11 +117,11 @@ pub enum TranslatorImpl {
 
 #[async_trait]
 impl Translator for TranslatorImpl {
-    async fn translate(&self, texts: &[String], target_lang: &str) -> Result<Vec<String>> {
+    async fn translate(&self, texts: &[String], source_lang: &str, target_lang: &str) -> Result<Vec<String>> {
         match self {
-            Self::DeepLX(t) => t.translate(texts, target_lang).await,
-            Self::LLM(t) => t.translate(texts, target_lang).await,
-            Self::Tencent(t) => t.translate(texts, target_lang).await,
+            Self::DeepLX(t) => t.translate(texts, source_lang, target_lang).await,
+            Self::LLM(t) => t.translate(texts, source_lang, target_lang).await,
+            Self::Tencent(t) => t.translate(texts, source_lang, target_lang).await,
         }
     }
 

@@ -356,35 +356,6 @@ pub struct FileEntry {
     pub modified: std::time::SystemTime,
 }
 
-/// Translation result statistics
-#[derive(Debug, Clone, Default)]
-pub struct TranslationStats {
-    /// Total files processed
-    pub total_files: usize,
-    /// Total translation units found
-    pub total_units: usize,
-    /// Units translated (not from cache)
-    pub translated_units: usize,
-    /// Files from cache (cache hit)
-    pub cached_files: usize,
-    /// Units skipped (should_translate = false)
-    pub skipped_units: usize,
-    /// Errors encountered
-    pub errors: usize,
-}
-
-impl TranslationStats {
-    /// Merge another stats into this one
-    pub fn merge(&mut self, other: &TranslationStats) {
-        self.total_files += other.total_files;
-        self.total_units += other.total_units;
-        self.translated_units += other.translated_units;
-        self.cached_files += other.cached_files;
-        self.skipped_units += other.skipped_units;
-        self.errors += other.errors;
-    }
-}
-
 /// Translated unit
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TranslatedUnit {

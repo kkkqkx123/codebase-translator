@@ -174,6 +174,7 @@ impl BatchTranslator {
     pub async fn translate_batch(
         &self,
         texts: &[String],
+        source_lang: &str,
         target_lang: &str,
     ) -> Result<BatchResult> {
         let start_time = Instant::now();
@@ -201,7 +202,7 @@ impl BatchTranslator {
                 }
             }
 
-            let result = self.translate_with_retry(text, target_lang).await;
+            let result = self.translate_with_retry(text, source_lang, target_lang).await;
 
             let latency = text_start.elapsed().as_millis() as u64;
             total_latency_ms += latency;
@@ -221,7 +222,7 @@ impl BatchTranslator {
                     results.push(TranslateResponse {
                         original_text: text.clone(),
                         translated_text: text.clone(),
-                        source_lang: String::new(),
+                        source_lang: source_lang.to_string(),
                         target_lang: target_lang.to_string(),
                         alternatives: Vec::new(),
                     });
@@ -266,6 +267,7 @@ impl BatchTranslator {
     async fn translate_with_retry(
         &self,
         text: &str,
+        source_lang: &str,
         target_lang: &str,
     ) -> Result<TranslateResponse> {
         let mut last_error = None;
@@ -275,7 +277,7 @@ impl BatchTranslator {
             // Check character limit and split if needed
             if self.limit_policy.max_char_count > 0 && text.len() > self.limit_policy.max_char_count
             {
-                return Box::pin(self.translate_with_split(text, target_lang)).await;
+                return Box::pin(self.translate_with_split(text, source_lang, target_lang)).await;
             }
 
             // Select a translator that hasn't been attempted yet
@@ -309,7 +311,7 @@ impl BatchTranslator {
 
             match entry
                 .translator
-                .translate(&[text.to_string()], target_lang)
+                .translate(&[text.to_string()], source_lang, target_lang)
                 .await
             {
                 Ok(translated) => {
@@ -318,7 +320,7 @@ impl BatchTranslator {
                         return Ok(TranslateResponse {
                             original_text: text.to_string(),
                             translated_text: translated_text.clone(),
-                            source_lang: String::new(),
+                            source_lang: source_lang.to_string(),
                             target_lang: target_lang.to_string(),
                             alternatives: Vec::new(),
                         });
@@ -352,20 +354,21 @@ impl BatchTranslator {
     async fn translate_with_split(
         &self,
         text: &str,
+        source_lang: &str,
         target_lang: &str,
     ) -> Result<TranslateResponse> {
         let chunks = self.split_text_hierarchical(text);
         let mut translated_chunks = Vec::with_capacity(chunks.len());
 
         for chunk in chunks {
-            let result = self.translate_with_retry(&chunk, target_lang).await?;
+            let result = self.translate_with_retry(&chunk, source_lang, target_lang).await?;
             translated_chunks.push(result.translated_text);
         }
 
         Ok(TranslateResponse {
             original_text: text.to_string(),
             translated_text: translated_chunks.join(""),
-            source_lang: String::new(),
+            source_lang: source_lang.to_string(),
             target_lang: target_lang.to_string(),
             alternatives: Vec::new(),
         })

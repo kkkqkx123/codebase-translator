@@ -121,10 +121,6 @@ impl ProjectConfig {
             return Err("target language cannot be auto".to_string());
         }
 
-        if self.cache.directory.is_empty() {
-            return Err("cache directory is required".to_string());
-        }
-
         debug!("Project configuration validated successfully");
         Ok(())
     }

@@ -249,11 +249,11 @@ impl MultiProviderTranslator {
 
 #[async_trait]
 impl Translator for MultiProviderTranslator {
-    async fn translate(&self, texts: &[String], target_lang: &str) -> Result<Vec<String>> {
+    async fn translate(&self, texts: &[String], source_lang: &str, target_lang: &str) -> Result<Vec<String>> {
         let mut results = Vec::with_capacity(texts.len());
 
         for text in texts {
-            let response = self.translate_with_failover(text, "", target_lang).await?;
+            let response = self.translate_with_failover(text, source_lang, target_lang).await?;
             results.push(response.translated_text);
         }
 

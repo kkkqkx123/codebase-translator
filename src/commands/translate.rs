@@ -1,10 +1,11 @@
 use clap::Parser;
+use std::path::PathBuf;
 use tracing::info;
 
 use crate::{
     config::{global::GlobalConfig, project::ProjectConfig},
     core::error::{Result, TranslateError},
-    reporter::create_reporter,
+    reporter::{create_reporter, ReportFormat},
     workflow::TranslationWorkflow,
 };
 
@@ -77,8 +78,24 @@ impl Command for TranslateArgs {
             project_config,
             &self.path,
         )
-        .with_reporter(reporter);
+        .with_reporter(reporter.clone());
         let _result = workflow.execute()?;
+
+        // Save translation report to target project's .translator directory
+        let report_dir = PathBuf::from(&self.path).join(".translator");
+        match reporter.save_report_with_template(
+            &report_dir,
+            "report_{timestamp}.txt",
+            ReportFormat::Text,
+        ) {
+            Ok(path) => {
+                info!(path = %path.display(), "Translation report saved");
+            }
+            Err(e) => {
+                info!(error = %e, "Failed to save translation report");
+            }
+        }
+
         Ok(())
     }
 
