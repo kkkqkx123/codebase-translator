@@ -70,6 +70,7 @@ pub enum EncodingType {
 }
 
 impl EncodingType {
+    #[allow(clippy::should_implement_trait)]
     pub fn from_str(name: &str) -> Option<Self> {
         match name.to_uppercase().as_str() {
             "UTF-8" | "UTF8" => Some(Self::UTF8),

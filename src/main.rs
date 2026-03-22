@@ -52,7 +52,7 @@ enum Commands {
     Validate(validate::ValidateArgs),
 
     /// Verify extraction rules
-    Verify(verify::VerifyArgs),
+    Verify(verify::args::VerifyArgs),
 
     /// Clean cache and backup files
     Clean(clean::CleanArgs),

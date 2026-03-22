@@ -39,9 +39,8 @@ pub enum SelectionStrategy {
 #[derive(Debug)]
 struct ProviderEntry {
     provider: Arc<LLMProvider>,
-    /// Current weight (for smooth round-robin algorithm)
+    #[allow(dead_code)]
     current_weight: AtomicU32,
-    /// Effective weight (rate_limit adjusted based on health)
     effective_weight: AtomicU32,
 }
 
@@ -55,7 +54,7 @@ impl ProviderEntry {
         }
     }
 
-    /// Get rate limit as routing weight
+    #[allow(dead_code)]
     fn rate_limit(&self) -> u32 {
         self.provider.rate_limit()
     }
@@ -64,11 +63,12 @@ impl ProviderEntry {
         self.effective_weight.load(Ordering::Relaxed)
     }
 
+    #[allow(dead_code)]
     fn current_weight(&self) -> u32 {
         self.current_weight.load(Ordering::Relaxed)
     }
 
-    /// Update effective weight based on provider health
+    #[allow(dead_code)]
     fn update_effective_weight(&self, is_healthy: bool) {
         let base_weight = self.rate_limit().max(1);
         let new_weight = if is_healthy { base_weight } else { 0 };
@@ -85,11 +85,11 @@ impl ProviderEntry {
 #[derive(Debug)]
 pub struct ProviderRouter {
     providers: Vec<ProviderEntry>,
-    /// Threshold for long text routing (minimum capacity among all providers)
+    #[allow(dead_code)]
     capacity_threshold: usize,
-    /// Selection strategy
+    #[allow(dead_code)]
     strategy: SelectionStrategy,
-    /// Total effective weight (cached for performance)
+    #[allow(dead_code)]
     total_effective_weight: AtomicU32,
 }
 

@@ -73,7 +73,7 @@ pub struct FileProcessor<'a> {
 }
 
 impl<'a> FileProcessor<'a> {
-    /// Create a new file processor
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         cache: &'a BinaryCache,
         translator: &'a TranslationService,

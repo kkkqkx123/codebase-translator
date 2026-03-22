@@ -83,9 +83,6 @@ mod workflow_integration {
         );
 
         let _workflow = workflow;
-
-        // Workflow should be created with custom path
-        assert!(true); // If we get here, workflow was created successfully
     }
 
     #[test]

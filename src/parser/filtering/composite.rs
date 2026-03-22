@@ -34,6 +34,7 @@ impl CompositeFilter {
     }
 
     /// Create a default composite filter
+    #[allow(clippy::should_implement_trait)]
     pub fn default() -> crate::core::error::Result<Self> {
         Self::new(FilterConfig::default())
     }

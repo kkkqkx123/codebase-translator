@@ -203,12 +203,9 @@ impl ConfigLoader {
     /// Find global config path by searching in priority order
     /// Find global config path by searching in priority order
     pub fn find_global_config_path() -> Option<PathBuf> {
-        for path in Self::get_global_config_search_paths() {
-            if path.exists() {
-                return Some(path);
-            }
-        }
-        None
+        Self::get_global_config_search_paths()
+            .into_iter()
+            .find(|path| path.exists())
     }
 
     /// Get .env file search paths (by priority)

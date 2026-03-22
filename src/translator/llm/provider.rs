@@ -228,9 +228,13 @@ pub struct LLMProvider {
     model: String,
     max_tokens: i32,
     temperature: f64,
+    #[allow(dead_code)]
     proxy_url: Option<String>,
+    #[allow(dead_code)]
     timeout: u64,
+    #[allow(dead_code)]
     extra_headers: Option<std::collections::HashMap<String, String>>,
+    #[allow(dead_code)]
     extra_params: Option<serde_json::Map<String, serde_json::Value>>,
 
     // Capacity

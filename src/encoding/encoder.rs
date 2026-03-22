@@ -13,6 +13,7 @@ impl Encoder {
         Self { config }
     }
 
+    #[allow(clippy::should_implement_trait)]
     pub fn default() -> Self {
         Self::new(EncoderConfig::default())
     }

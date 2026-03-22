@@ -260,14 +260,14 @@ mod tests {
         temp_dir
     }
 
-    fn create_test_backup_file(dir: &PathBuf, name: &str, _days_old: i64) -> PathBuf {
+    fn create_test_backup_file(dir: &Path, name: &str, _days_old: i64) -> PathBuf {
         let file_path = dir.join(format!("{}.bak", name));
         fs::write(&file_path, "test content").expect("Failed to write test file");
 
         file_path
     }
 
-    fn cleanup_temp_dir(dir: &PathBuf) {
+    fn cleanup_temp_dir(dir: &Path) {
         if dir.exists() {
             let _ = fs::remove_dir_all(dir);
         }

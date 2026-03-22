@@ -117,6 +117,7 @@ pub trait LanguageParser: Send + Sync {
     }
 
     /// Extract strings from function/method calls
+    #[allow(clippy::too_many_arguments)]
     fn extract_function_strings<F>(
         &self,
         root_node: &Node,
@@ -184,6 +185,7 @@ pub trait LanguageParser: Send + Sync {
     }
 
     /// Extract strings with operand (e.g., obj.method calls)
+    #[allow(clippy::too_many_arguments)]
     fn extract_function_strings_with_operand<F>(
         &self,
         root_node: &Node,

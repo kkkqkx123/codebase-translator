@@ -32,6 +32,7 @@ fn create_test_unit(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn create_test_unit_with_pattern(
     id: &str,
     node_type: NodeType,
