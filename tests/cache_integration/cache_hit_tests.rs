@@ -4,7 +4,7 @@
 //! These tests verify that cached translations are correctly reused
 //! to skip redundant translation API calls.
 
-use crate::cache_integration::test_utils::hash_utils;
+use crate::cache_integration::test_utils::{hash_utils, TEST_CONFIG_HASH};
 use codebase_translate::cache::binary::BinaryCache;
 use codebase_translate::core::models::{CacheConfig, CacheEntry, CacheMode};
 
@@ -30,6 +30,7 @@ fn test_cache_hit_basic() {
         123456i64,
         "local",
         fingerprint.clone(),
+        TEST_CONFIG_HASH,
     );
 
     // Mark entry as translated
@@ -39,7 +40,7 @@ fn test_cache_hit_basic() {
     cache.set(&entry).unwrap();
 
     // Simulate cache hit check
-    let cached_entry = cache.get(&file_hash).unwrap();
+    let cached_entry = cache.get(&file_hash, TEST_CONFIG_HASH).unwrap();
     assert!(cached_entry.is_some(), "Cache should contain the entry");
 
     let cached_entry = cached_entry.unwrap();
@@ -77,6 +78,7 @@ fn test_cache_hit_translation_status() {
         123456i64,
         "local",
         fingerprint.clone(),
+        TEST_CONFIG_HASH,
     );
 
     // Should NOT be translated initially
@@ -86,7 +88,7 @@ fn test_cache_hit_translation_status() {
     cache.set(&entry_not_translated).unwrap();
 
     // Retrieve and verify not translated
-    let retrieved = cache.get(&file_hash).unwrap().unwrap();
+    let retrieved = cache.get(&file_hash, TEST_CONFIG_HASH).unwrap().unwrap();
     assert!(!retrieved.is_translated);
 
     // Now mark as translated and update
@@ -96,12 +98,13 @@ fn test_cache_hit_translation_status() {
         123456i64,
         "local",
         fingerprint.clone(),
+        TEST_CONFIG_HASH,
     );
     entry_translated.mark_as_translated();
     cache.set(&entry_translated).unwrap();
 
     // Retrieve and verify translated
-    let retrieved = cache.get(&file_hash).unwrap().unwrap();
+    let retrieved = cache.get(&file_hash, TEST_CONFIG_HASH).unwrap().unwrap();
     assert!(
         retrieved.is_translated,
         "Entry should be marked as translated"
@@ -132,6 +135,7 @@ fn test_cache_miss_scenarios() {
         123456i64,
         "local",
         fingerprint1.clone(),
+        TEST_CONFIG_HASH,
     );
     entry.mark_as_translated();
     cache.set(&entry).unwrap();
@@ -146,7 +150,7 @@ fn test_cache_miss_scenarios() {
     );
 
     // Should not retrieve entry from different project
-    let result = cache2.get(&file_hash).unwrap();
+    let result = cache2.get(&file_hash, TEST_CONFIG_HASH).unwrap();
     assert!(
         result.is_none(),
         "Should not retrieve entry from different project"
@@ -174,12 +178,13 @@ fn test_cache_hit_with_modified_time() {
         123456i64,
         "local",
         fingerprint.clone(),
+        TEST_CONFIG_HASH,
     );
     entry.mark_as_translated();
     cache.set(&entry).unwrap();
 
     // Cache hit with same modification time
-    let cached_entry = cache.get(&file_hash).unwrap().unwrap();
+    let cached_entry = cache.get(&file_hash, TEST_CONFIG_HASH).unwrap().unwrap();
     assert!(
         cached_entry.is_valid(123456),
         "Should be valid with same mtime"
@@ -214,6 +219,7 @@ fn test_cache_hit_persistence() {
         123456i64,
         "local",
         fingerprint.clone(),
+        TEST_CONFIG_HASH,
     );
     entry.mark_as_translated();
     cache1.set(&entry).unwrap();
@@ -225,7 +231,7 @@ fn test_cache_hit_persistence() {
     let cache2 = BinaryCache::new(config, temp_dir.path()).unwrap();
 
     // Should retrieve cached entry
-    let cached_entry = cache2.get(&file_hash).unwrap();
+    let cached_entry = cache2.get(&file_hash, TEST_CONFIG_HASH).unwrap();
     assert!(
         cached_entry.is_some(),
         "Cache should persist across instances"
@@ -263,6 +269,7 @@ fn test_multiple_cache_hits() {
             123456i64 + i as i64,
             "local",
             fingerprint.clone(),
+            TEST_CONFIG_HASH,
         );
         entry.mark_as_translated();
         cache.set(&entry).unwrap();
@@ -271,7 +278,7 @@ fn test_multiple_cache_hits() {
 
     // Verify all entries can be retrieved (cache hits)
     for (file_hash, original_entry) in &entries {
-        let cached_entry = cache.get(file_hash).unwrap();
+        let cached_entry = cache.get(file_hash, TEST_CONFIG_HASH).unwrap();
         assert!(
             cached_entry.is_some(),
             "Should retrieve entry for {}",
@@ -305,6 +312,7 @@ fn test_cache_hit_with_disabled_cache() {
         123456i64,
         "local",
         fingerprint.clone(),
+        TEST_CONFIG_HASH,
     );
     entry.mark_as_translated();
 
@@ -312,7 +320,7 @@ fn test_cache_hit_with_disabled_cache() {
     cache.set(&entry).unwrap();
 
     // Get should return None when cache is disabled
-    let result = cache.get(&file_hash).unwrap();
+    let result = cache.get(&file_hash, TEST_CONFIG_HASH).unwrap();
     assert!(result.is_none(), "Disabled cache should always return None");
 }
 
@@ -337,6 +345,7 @@ fn test_cache_entry_translation_timestamp() {
         123456i64,
         "local",
         fingerprint.clone(),
+        TEST_CONFIG_HASH,
     );
 
     let before_timestamp = std::time::SystemTime::now()
@@ -353,7 +362,7 @@ fn test_cache_entry_translation_timestamp() {
 
     cache.set(&entry).unwrap();
 
-    let retrieved = cache.get(&file_hash).unwrap().unwrap();
+    let retrieved = cache.get(&file_hash, TEST_CONFIG_HASH).unwrap().unwrap();
     assert!(
         retrieved.translation_timestamp >= before_timestamp
             && retrieved.translation_timestamp <= after_timestamp,
@@ -449,12 +458,13 @@ fn test_cache_invalidation_on_file_modification() {
         1000i64,
         "local",
         fingerprint.clone(),
+        TEST_CONFIG_HASH,
     );
     entry.mark_as_translated();
     cache.set(&entry).unwrap();
 
     // Cache hit with same modification time
-    let cached_entry = cache.get(&file_hash).unwrap().unwrap();
+    let cached_entry = cache.get(&file_hash, TEST_CONFIG_HASH).unwrap().unwrap();
     assert!(
         cached_entry.is_valid(1000),
         "Should be valid with same mtime"
@@ -474,12 +484,13 @@ fn test_cache_invalidation_on_file_modification() {
         2000i64,
         "local",
         fingerprint.clone(),
+        TEST_CONFIG_HASH,
     );
     updated_entry.mark_as_translated();
     cache.set(&updated_entry).unwrap();
 
     // New cache entry should be valid with new mtime
-    let new_cached_entry = cache.get(&file_hash).unwrap().unwrap();
+    let new_cached_entry = cache.get(&file_hash, TEST_CONFIG_HASH).unwrap().unwrap();
     assert!(
         new_cached_entry.is_valid(2000),
         "Should be valid with updated mtime"
@@ -512,21 +523,22 @@ fn test_cache_invalidation_on_content_change() {
         1000i64,
         "local",
         fingerprint.clone(),
+        TEST_CONFIG_HASH,
     );
     original_entry.mark_as_translated();
     cache.set(&original_entry).unwrap();
 
     // Verify original content is cached
-    assert!(cache.get(&original_hash).unwrap().is_some());
+    assert!(cache.get(&original_hash, TEST_CONFIG_HASH).unwrap().is_some());
 
     // Content changes, new hash
     let modified_hash = hash_utils::generate_test_hash("modified_content");
 
     // Old hash should still exist (not automatically invalidated)
-    assert!(cache.get(&original_hash).unwrap().is_some());
+    assert!(cache.get(&original_hash, TEST_CONFIG_HASH).unwrap().is_some());
 
     // New hash should not exist yet (cache miss)
-    assert!(cache.get(&modified_hash).unwrap().is_none());
+    assert!(cache.get(&modified_hash, TEST_CONFIG_HASH).unwrap().is_none());
 
     // Add new entry for modified content
     let mut modified_entry = CacheEntry::new(
@@ -535,12 +547,13 @@ fn test_cache_invalidation_on_content_change() {
         2000i64,
         "local",
         fingerprint.clone(),
+        TEST_CONFIG_HASH,
     );
     modified_entry.mark_as_translated();
     cache.set(&modified_entry).unwrap();
 
     // Now new hash should exist
-    assert!(cache.get(&modified_hash).unwrap().is_some());
+    assert!(cache.get(&modified_hash, TEST_CONFIG_HASH).unwrap().is_some());
 }
 
 /// Test cache cleanup orphaned entries
@@ -571,6 +584,7 @@ fn test_cache_cleanup_orphaned_entries() {
             1000i64,
             "local",
             fingerprint.clone(),
+            TEST_CONFIG_HASH,
         );
         entry.mark_as_translated();
         cache.set(&entry).unwrap();
@@ -593,9 +607,9 @@ fn test_cache_cleanup_orphaned_entries() {
     let stats = cache.stats().unwrap();
     assert_eq!(stats.entry_count, 1);
 
-    assert!(cache.get(&hash1).unwrap().is_some());
-    assert!(cache.get(&hash2).unwrap().is_none());
-    assert!(cache.get(&hash3).unwrap().is_none());
+    assert!(cache.get(&hash1, TEST_CONFIG_HASH).unwrap().is_some());
+    assert!(cache.get(&hash2, TEST_CONFIG_HASH).unwrap().is_none());
+    assert!(cache.get(&hash3, TEST_CONFIG_HASH).unwrap().is_none());
 }
 
 /// Test cache entry validity check
@@ -619,11 +633,12 @@ fn test_cache_entry_validity_check() {
         1000i64,
         "local",
         fingerprint.clone(),
+        TEST_CONFIG_HASH,
     );
     entry.mark_as_translated();
     cache.set(&entry).unwrap();
 
-    let cached_entry = cache.get(&file_hash).unwrap().unwrap();
+    let cached_entry = cache.get(&file_hash, TEST_CONFIG_HASH).unwrap().unwrap();
 
     // Valid: same modification time
     assert!(cached_entry.is_valid(1000));
@@ -657,11 +672,12 @@ fn test_cache_hit_requires_valid_and_translated() {
         1000i64,
         "local",
         fingerprint.clone(),
+        TEST_CONFIG_HASH,
     );
     // Don't mark as translated
     cache.set(&entry_not_translated).unwrap();
 
-    let cached_entry = cache.get(&file_hash).unwrap().unwrap();
+    let cached_entry = cache.get(&file_hash, TEST_CONFIG_HASH).unwrap().unwrap();
 
     // Entry exists but is not translated
     assert!(!cached_entry.is_translated);
@@ -680,16 +696,13 @@ fn test_cache_hit_requires_valid_and_translated() {
         1000i64,
         "local",
         fingerprint.clone(),
+        TEST_CONFIG_HASH,
     );
     entry_translated.mark_as_translated();
     cache.set(&entry_translated).unwrap();
 
-    let cached_entry = cache.get(&file_hash).unwrap().unwrap();
-
-    // Now it should be a valid cache hit
+    // Now it should be a cache hit
+    let cached_entry = cache.get(&file_hash, TEST_CONFIG_HASH).unwrap().unwrap();
     let is_cache_hit = cached_entry.is_valid(1000) && cached_entry.is_translated;
-    assert!(
-        is_cache_hit,
-        "Should be cache hit when valid and translated"
-    );
+    assert!(is_cache_hit, "Should be cache hit when translated and valid");
 }

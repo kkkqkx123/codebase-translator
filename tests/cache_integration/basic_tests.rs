@@ -2,7 +2,7 @@
 //!
 //! Tests core functionality of BinaryCache with new cache structure.
 
-use crate::cache_integration::test_utils::hash_utils;
+use crate::cache_integration::test_utils::{hash_utils, TEST_CONFIG_HASH};
 use codebase_translate::cache::binary::BinaryCache;
 use codebase_translate::core::models::{CacheConfig, CacheEntry, CacheMode};
 use std::collections::HashMap;
@@ -27,12 +27,13 @@ fn test_binary_cache_set_and_get() {
         123456i64,
         "local",
         fingerprint,
+        TEST_CONFIG_HASH,
     );
     entry1.mark_as_translated();
 
     cache.set(&entry1).unwrap();
 
-    let retrieved = cache.get(&hash1).unwrap();
+    let retrieved = cache.get(&hash1, TEST_CONFIG_HASH).unwrap();
     assert!(retrieved.is_some());
     let retrieved = retrieved.unwrap();
     assert_eq!(retrieved.file_hash, hash1);
@@ -54,7 +55,7 @@ fn test_binary_cache_get_nonexistent() {
 
     let cache = BinaryCache::new(config, temp_dir.path()).unwrap();
 
-    let retrieved = cache.get("nonexistent_hash").unwrap();
+    let retrieved = cache.get("nonexistent_hash", TEST_CONFIG_HASH).unwrap();
     assert!(retrieved.is_none());
 }
 
@@ -78,20 +79,21 @@ fn test_binary_cache_invalidate() {
         123456i64,
         "local",
         fingerprint,
+        TEST_CONFIG_HASH,
     );
     entry1.mark_as_translated();
 
     cache.set(&entry1).unwrap();
 
     // Verify entry exists
-    let retrieved = cache.get(&hash1).unwrap();
+    let retrieved = cache.get(&hash1, TEST_CONFIG_HASH).unwrap();
     assert!(retrieved.is_some());
 
     // Invalidate
     cache.invalidate(&hash1).unwrap();
 
     // Verify entry is gone
-    let retrieved = cache.get(&hash1).unwrap();
+    let retrieved = cache.get(&hash1, TEST_CONFIG_HASH).unwrap();
     assert!(retrieved.is_none());
 }
 
@@ -116,6 +118,7 @@ fn test_binary_cache_clear() {
         123456i64,
         "local",
         fingerprint.clone(),
+        TEST_CONFIG_HASH,
     );
     let mut entry2 = CacheEntry::new(
         &hash2,
@@ -123,6 +126,7 @@ fn test_binary_cache_clear() {
         123457i64,
         "local",
         fingerprint,
+        TEST_CONFIG_HASH,
     );
     entry1.mark_as_translated();
     entry2.mark_as_translated();
@@ -141,8 +145,8 @@ fn test_binary_cache_clear() {
     let stats = cache.stats().unwrap();
     assert_eq!(stats.entry_count, 0);
 
-    let retrieved1 = cache.get(&hash1).unwrap();
-    let retrieved2 = cache.get(&hash2).unwrap();
+    let retrieved1 = cache.get(&hash1, TEST_CONFIG_HASH).unwrap();
+    let retrieved2 = cache.get(&hash2, TEST_CONFIG_HASH).unwrap();
     assert!(retrieved1.is_none());
     assert!(retrieved2.is_none());
 }
@@ -169,6 +173,7 @@ fn test_binary_cache_list_entries() {
         123456i64,
         "local",
         fingerprint.clone(),
+        TEST_CONFIG_HASH,
     );
     let mut entry2 = CacheEntry::new(
         &hash2,
@@ -176,6 +181,7 @@ fn test_binary_cache_list_entries() {
         123457i64,
         "local",
         fingerprint.clone(),
+        TEST_CONFIG_HASH,
     );
     let mut entry3 = CacheEntry::new(
         &hash3,
@@ -183,6 +189,7 @@ fn test_binary_cache_list_entries() {
         123458i64,
         "local",
         fingerprint,
+        TEST_CONFIG_HASH,
     );
     entry1.mark_as_translated();
     entry2.mark_as_translated();
@@ -227,6 +234,7 @@ fn test_binary_cache_stats() {
         123456i64,
         "local",
         fingerprint.clone(),
+        TEST_CONFIG_HASH,
     );
     let mut entry2 = CacheEntry::new(
         &hash2,
@@ -234,6 +242,7 @@ fn test_binary_cache_stats() {
         123457i64,
         "local",
         fingerprint,
+        TEST_CONFIG_HASH,
     );
     entry1.mark_as_translated();
     entry2.mark_as_translated();
@@ -268,6 +277,7 @@ fn test_binary_cache_cleanup_orphaned() {
         123456i64,
         "local",
         fingerprint.clone(),
+        TEST_CONFIG_HASH,
     );
     let mut entry2 = CacheEntry::new(
         &hash2,
@@ -275,6 +285,7 @@ fn test_binary_cache_cleanup_orphaned() {
         123457i64,
         "local",
         fingerprint,
+        TEST_CONFIG_HASH,
     );
     entry1.mark_as_translated();
     entry2.mark_as_translated();
@@ -313,6 +324,7 @@ fn test_binary_cache_disabled() {
         123456i64,
         "local",
         fingerprint,
+        TEST_CONFIG_HASH,
     );
     entry1.mark_as_translated();
 
@@ -320,7 +332,7 @@ fn test_binary_cache_disabled() {
     cache.set(&entry1).unwrap();
 
     // Should return None when disabled
-    let retrieved = cache.get(&hash1).unwrap();
+    let retrieved = cache.get(&hash1, TEST_CONFIG_HASH).unwrap();
     assert!(retrieved.is_none());
 }
 
@@ -344,6 +356,7 @@ fn test_binary_cache_update_existing_entry() {
         123456i64,
         "local",
         fingerprint.clone(),
+        TEST_CONFIG_HASH,
     );
     entry1.mark_as_translated();
 
@@ -356,12 +369,13 @@ fn test_binary_cache_update_existing_entry() {
         123457i64,
         "local",
         fingerprint,
+        TEST_CONFIG_HASH,
     );
     entry2.mark_as_translated();
 
     cache.set(&entry2).unwrap();
 
-    let retrieved = cache.get(&hash1).unwrap();
+    let retrieved = cache.get(&hash1, TEST_CONFIG_HASH).unwrap();
     assert!(retrieved.is_some());
     let retrieved = retrieved.unwrap();
     assert_eq!(retrieved.last_modified, 123457);
@@ -387,12 +401,13 @@ fn test_binary_cache_is_valid() {
         123456i64,
         "local",
         fingerprint,
+        TEST_CONFIG_HASH,
     );
     entry1.mark_as_translated();
 
     cache.set(&entry1).unwrap();
 
-    let retrieved = cache.get(&hash1).unwrap();
+    let retrieved = cache.get(&hash1, TEST_CONFIG_HASH).unwrap();
     assert!(retrieved.is_some());
     let entry = retrieved.unwrap();
 
@@ -423,6 +438,7 @@ fn test_binary_cache_mark_as_translated() {
         123456i64,
         "local",
         fingerprint,
+        TEST_CONFIG_HASH,
     );
 
     // Initially not translated
@@ -438,9 +454,44 @@ fn test_binary_cache_mark_as_translated() {
 
     cache.set(&entry1).unwrap();
 
-    let retrieved = cache.get(&hash1).unwrap();
+    let retrieved = cache.get(&hash1, TEST_CONFIG_HASH).unwrap();
     assert!(retrieved.is_some());
     let entry = retrieved.unwrap();
     assert!(entry.is_translated);
     assert!(entry.translation_timestamp > 0);
+}
+
+#[test]
+fn test_binary_cache_config_hash_mismatch() {
+    let temp_dir = tempfile::tempdir().unwrap();
+    let config = CacheConfig {
+        enabled: true,
+        mode: CacheMode::Local,
+        directory: ".cache".to_string(),
+        format: "binary".to_string(),
+    };
+
+    let cache = BinaryCache::new(config, temp_dir.path()).unwrap();
+    let fingerprint = cache.project_fingerprint().to_string();
+
+    let hash1 = hash_utils::generate_test_hash("file1");
+    let mut entry1 = CacheEntry::new(
+        &hash1,
+        "/path/to/file1.txt",
+        123456i64,
+        "local",
+        fingerprint,
+        "config_hash_v1",
+    );
+    entry1.mark_as_translated();
+
+    cache.set(&entry1).unwrap();
+
+    // Should find entry with matching config hash
+    let retrieved = cache.get(&hash1, "config_hash_v1").unwrap();
+    assert!(retrieved.is_some(), "Should find entry with matching config hash");
+
+    // Should NOT find entry with different config hash
+    let retrieved = cache.get(&hash1, "config_hash_v2").unwrap();
+    assert!(retrieved.is_none(), "Should not find entry with mismatched config hash");
 }

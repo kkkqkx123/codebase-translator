@@ -2,7 +2,7 @@
 //!
 //! Tests BinaryCache behavior with different cache modes (Local vs Global).
 
-use crate::cache_integration::test_utils::hash_utils;
+use crate::cache_integration::test_utils::{hash_utils, TEST_CONFIG_HASH};
 use codebase_translate::cache::binary::BinaryCache;
 use codebase_translate::cache::util;
 use codebase_translate::core::models::{CacheConfig, CacheEntry, CacheMode};
@@ -27,6 +27,7 @@ fn test_binary_cache_local_mode() {
         123456i64,
         "local",
         fingerprint.clone(),
+        TEST_CONFIG_HASH,
     );
     entry1.mark_as_translated();
 
@@ -36,7 +37,7 @@ fn test_binary_cache_local_mode() {
     let cache_file = temp_dir.path().join(".translator").join("cache.bin");
     assert!(cache_file.exists());
 
-    let retrieved = cache.get(&hash1).unwrap();
+    let retrieved = cache.get(&hash1, TEST_CONFIG_HASH).unwrap();
     assert!(retrieved.is_some());
 }
 
@@ -60,6 +61,7 @@ fn test_binary_cache_global_mode() {
         123456i64,
         "global",
         fingerprint.clone(),
+        TEST_CONFIG_HASH,
     );
     entry1.mark_as_translated();
 
@@ -112,17 +114,18 @@ fn test_binary_cache_local_mode_isolation() {
         123456i64,
         "local",
         fingerprint1.clone(),
+        TEST_CONFIG_HASH,
     );
     entry1.mark_as_translated();
 
     cache1.set(&entry1).unwrap();
 
     // Cache1 should have the entry
-    let retrieved1 = cache1.get(&hash1).unwrap();
+    let retrieved1 = cache1.get(&hash1, TEST_CONFIG_HASH).unwrap();
     assert!(retrieved1.is_some());
 
     // Cache2 should NOT have the entry (different project)
-    let retrieved2 = cache2.get(&hash1).unwrap();
+    let retrieved2 = cache2.get(&hash1, TEST_CONFIG_HASH).unwrap();
     assert!(retrieved2.is_none());
 }
 
@@ -161,17 +164,18 @@ fn test_binary_cache_global_mode_isolation() {
         123456i64,
         "global",
         fingerprint1.clone(),
+        TEST_CONFIG_HASH,
     );
     entry1.mark_as_translated();
 
     cache1.set(&entry1).unwrap();
 
     // Cache1 should have the entry
-    let retrieved1 = cache1.get(&hash1).unwrap();
+    let retrieved1 = cache1.get(&hash1, TEST_CONFIG_HASH).unwrap();
     assert!(retrieved1.is_some());
 
     // Cache2 should NOT have the entry (different project)
-    let retrieved2 = cache2.get(&hash1).unwrap();
+    let retrieved2 = cache2.get(&hash1, TEST_CONFIG_HASH).unwrap();
     assert!(retrieved2.is_none());
 }
 
@@ -195,6 +199,7 @@ fn test_binary_cache_mode_persistence() {
         123456i64,
         "local",
         fingerprint.clone(),
+        TEST_CONFIG_HASH,
     );
     entry1.mark_as_translated();
 
@@ -205,7 +210,7 @@ fn test_binary_cache_mode_persistence() {
     let cache2 = BinaryCache::new(config, temp_dir.path()).unwrap();
 
     // Should retrieve the same entry
-    let retrieved = cache2.get(&hash1).unwrap();
+    let retrieved = cache2.get(&hash1, TEST_CONFIG_HASH).unwrap();
     assert!(retrieved.is_some());
     let entry = retrieved.unwrap();
     assert_eq!(entry.file_hash, hash1);
@@ -233,6 +238,7 @@ fn test_binary_cache_custom_directory() {
         123456i64,
         "local",
         fingerprint.clone(),
+        TEST_CONFIG_HASH,
     );
     entry1.mark_as_translated();
 
@@ -242,7 +248,7 @@ fn test_binary_cache_custom_directory() {
     let cache_file = temp_dir.path().join(".translator").join("cache.bin");
     assert!(cache_file.exists());
 
-    let retrieved = cache.get(&hash1).unwrap();
+    let retrieved = cache.get(&hash1, TEST_CONFIG_HASH).unwrap();
     assert!(retrieved.is_some());
 }
 
@@ -265,6 +271,7 @@ fn test_binary_cache_mode_disabled() {
         123456i64,
         "local",
         cache.project_fingerprint().to_string(),
+        TEST_CONFIG_HASH,
     );
     entry1.mark_as_translated();
 
@@ -272,6 +279,6 @@ fn test_binary_cache_mode_disabled() {
     cache.set(&entry1).unwrap();
 
     // Should return None when disabled
-    let retrieved = cache.get(&hash1).unwrap();
+    let retrieved = cache.get(&hash1, TEST_CONFIG_HASH).unwrap();
     assert!(retrieved.is_none());
 }

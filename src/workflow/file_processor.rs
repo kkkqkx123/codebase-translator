@@ -5,7 +5,7 @@
 
 use crate::{
     cache::{binary::BinaryCache, CacheEntry},
-    config::project::ProjectConfig,
+    config::{calculate_config_hash, project::ProjectConfig},
     core::error::Result,
     core::models::File,
     encoding::{Detector, Encoder},
@@ -55,7 +55,7 @@ impl From<FileProcessResult> for TranslationStats {
         stats.translated_units = result.translated_units;
         stats.processed_files = if result.cached_files > 0 { 0 } else { 1 };
         stats.cache_hit_count = result.cached_files;
-        stats.skipped_files = if result.skipped_units > 0 && result.translated_units == 0 { 1 } else { 0 };
+        stats.skipped_files = if result.cached_files > 0 || (result.skipped_units > 0 && result.translated_units == 0) { 1 } else { 0 };
         stats.error_count = result.errors;
         stats
     }
@@ -110,7 +110,10 @@ impl<'a> FileProcessor<'a> {
 
         let file_hash = calculate_hash(&content);
 
-        let cached_entry = self.cache.get(&file_hash)?;
+        // Calculate config hash for cache validation
+        let config_hash = calculate_config_hash(self.project_config);
+
+        let cached_entry = self.cache.get(&file_hash, &config_hash)?;
 
         if let Some(entry) = cached_entry {
             if entry.is_valid(modified_time) && entry.is_translated {
@@ -243,6 +246,24 @@ impl<'a> FileProcessor<'a> {
                 .unwrap_or(false)
         });
 
+        // Save cache entry even if no actual translations were produced
+        // This allows the file to be skipped on subsequent runs
+        let mut cache_entry = CacheEntry::new(
+            &file_hash,
+            file_path.to_string_lossy(),
+            modified_time,
+            self.project_config.cache.mode.to_string(),
+            self.cache.project_fingerprint(),
+            &config_hash,
+        );
+        cache_entry.mark_as_translated();
+
+        debug!(
+            file = %file_path.display(),
+            "Updating cache"
+        );
+        self.cache.set(&cache_entry)?;
+
         if !has_translations {
             debug!("No actual translations produced, skipping file write");
             return Ok(result);
@@ -276,21 +297,6 @@ impl<'a> FileProcessor<'a> {
                 }
             }
         }
-
-        let mut cache_entry = CacheEntry::new(
-            &file_hash,
-            file_path.to_string_lossy(),
-            modified_time,
-            self.project_config.cache.mode.to_string(),
-            self.cache.project_fingerprint(),
-        );
-        cache_entry.mark_as_translated();
-
-        debug!(
-            file = %file_path.display(),
-            "Updating cache"
-        );
-        self.cache.set(&cache_entry)?;
 
         info!(
             file = %file_path.display(),

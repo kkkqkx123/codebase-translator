@@ -315,6 +315,13 @@ fn default_false() -> bool {
     false
 }
 
+fn default_exclude_patterns() -> Vec<String> {
+    vec![
+        ".translator/**".to_string(),
+        ".translator.toml".to_string(),
+    ]
+}
+
 /// Include file patterns configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct IncludeConfig {
@@ -335,7 +342,7 @@ impl Default for IncludeConfig {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExcludeConfig {
     /// File patterns to exclude (glob)
-    #[serde(default)]
+    #[serde(default = "default_exclude_patterns")]
     pub patterns: Vec<String>,
     /// Whether to respect .gitignore files
     #[serde(default = "default_true")]
@@ -348,7 +355,7 @@ pub struct ExcludeConfig {
 impl Default for ExcludeConfig {
     fn default() -> Self {
         Self {
-            patterns: Vec::new(),
+            patterns: default_exclude_patterns(),
             respect_gitignore: true,
             gitignore_patterns: Vec::new(),
         }
@@ -911,7 +918,10 @@ mod tests {
     #[test]
     fn test_get_exclude_patterns() {
         let config = ProjectConfig::default();
-        assert_eq!(config.get_exclude_patterns(), Vec::<String>::new());
+        let patterns = config.get_exclude_patterns();
+        assert!(!patterns.is_empty());
+        assert!(patterns.contains(&".translator/**".to_string()));
+        assert!(patterns.contains(&".translator.toml".to_string()));
 
         let mut config = ProjectConfig::default();
         config.exclude.patterns = vec!["vendor/**".to_string()];

@@ -410,6 +410,8 @@ pub struct CacheEntry {
     pub cache_mode: String,
     /// Project directory fingerprint
     pub project_fingerprint: String,
+    /// Configuration hash (for cache invalidation when config changes)
+    pub config_hash: String,
 }
 
 mod serde_timestamp {
@@ -447,6 +449,7 @@ impl CacheEntry {
         last_modified: i64,
         cache_mode: impl Into<String>,
         project_fingerprint: impl Into<String>,
+        config_hash: impl Into<String>,
     ) -> Self {
         Self {
             file_hash: file_hash.into(),
@@ -457,6 +460,7 @@ impl CacheEntry {
             created_at: SystemTime::now(),
             cache_mode: cache_mode.into(),
             project_fingerprint: project_fingerprint.into(),
+            config_hash: config_hash.into(),
         }
     }
 
@@ -472,5 +476,10 @@ impl CacheEntry {
     /// Check if cache entry is valid (file not modified)
     pub fn is_valid(&self, current_modified_time: i64) -> bool {
         self.last_modified == current_modified_time
+    }
+
+    /// Check if cache entry config hash matches current config
+    pub fn is_config_valid(&self, current_config_hash: &str) -> bool {
+        self.config_hash == current_config_hash
     }
 }

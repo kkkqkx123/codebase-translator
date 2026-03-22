@@ -2,7 +2,7 @@
 //!
 //! Tests for cache entry validation, fingerprint matching, and consistency checks.
 
-use crate::cache_integration::test_utils::hash_utils;
+use crate::cache_integration::test_utils::{hash_utils, TEST_CONFIG_HASH};
 use codebase_translate::cache::binary::BinaryCache;
 use codebase_translate::core::models::{CacheConfig, CacheEntry, CacheMode};
 
@@ -26,13 +26,14 @@ fn test_cache_fingerprint_validation() {
         123456i64,
         "local",
         fingerprint.clone(),
+        TEST_CONFIG_HASH,
     );
     entry1.mark_as_translated();
 
     cache.set(&entry1).unwrap();
 
     // Should retrieve with matching fingerprint
-    let retrieved = cache.get(&hash1).unwrap();
+    let retrieved = cache.get(&hash1, TEST_CONFIG_HASH).unwrap();
     assert!(retrieved.is_some());
     let entry = retrieved.unwrap();
     assert_eq!(entry.project_fingerprint, fingerprint);
@@ -58,6 +59,7 @@ fn test_cache_fingerprint_mismatch() {
         123456i64,
         "local",
         fingerprint.clone(),
+        TEST_CONFIG_HASH,
     );
     entry1.mark_as_translated();
 
@@ -79,7 +81,7 @@ fn test_cache_fingerprint_mismatch() {
     assert_ne!(fingerprint, fingerprint2);
 
     // Should not retrieve with different fingerprint
-    let retrieved = cache2.get(&hash1).unwrap();
+    let retrieved = cache2.get(&hash1, TEST_CONFIG_HASH).unwrap();
     assert!(retrieved.is_none());
 }
 
@@ -110,6 +112,7 @@ fn test_cache_fingerprint_consistency() {
         123456i64,
         "local",
         fingerprint1.clone(),
+        TEST_CONFIG_HASH,
     );
     entry1.mark_as_translated();
 
@@ -130,7 +133,7 @@ fn test_cache_fingerprint_consistency() {
     let cache3 = BinaryCache::new(config, temp_dir.path()).unwrap();
 
     // Cache3 should retrieve the entry
-    let retrieved3 = cache3.get(&hash1).unwrap();
+    let retrieved3 = cache3.get(&hash1, TEST_CONFIG_HASH).unwrap();
     assert!(retrieved3.is_some());
 
     let entry3 = retrieved3.unwrap();
@@ -174,17 +177,18 @@ fn test_cache_fingerprint_different_projects() {
         123456i64,
         "local",
         fingerprint1.clone(),
+        TEST_CONFIG_HASH,
     );
     entry1.mark_as_translated();
 
     cache1.set(&entry1).unwrap();
 
     // Cache1 should retrieve the entry
-    let retrieved1 = cache1.get(&hash1).unwrap();
+    let retrieved1 = cache1.get(&hash1, TEST_CONFIG_HASH).unwrap();
     assert!(retrieved1.is_some());
 
     // Cache2 should NOT retrieve the entry (different fingerprint)
-    let retrieved2 = cache2.get(&hash1).unwrap();
+    let retrieved2 = cache2.get(&hash1, TEST_CONFIG_HASH).unwrap();
     assert!(retrieved2.is_none());
 }
 
@@ -212,12 +216,13 @@ fn test_cache_fingerprint_format() {
         123456i64,
         "local",
         fingerprint.clone(),
+        TEST_CONFIG_HASH,
     );
     entry1.mark_as_translated();
 
     cache.set(&entry1).unwrap();
 
-    let retrieved = cache.get(&hash1).unwrap();
+    let retrieved = cache.get(&hash1, TEST_CONFIG_HASH).unwrap();
     assert!(retrieved.is_some());
     let entry = retrieved.unwrap();
     assert_eq!(entry.project_fingerprint.len(), 16);
@@ -243,13 +248,14 @@ fn test_cache_fingerprint_with_file_modification() {
         123456i64,
         "local",
         fingerprint.clone(),
+        TEST_CONFIG_HASH,
     );
     entry1.mark_as_translated();
 
     cache.set(&entry1).unwrap();
 
     // Retrieve with same modification time
-    let retrieved = cache.get(&hash1).unwrap();
+    let retrieved = cache.get(&hash1, TEST_CONFIG_HASH).unwrap();
     assert!(retrieved.is_some());
     let entry = retrieved.unwrap();
     assert!(entry.is_valid(123456));
@@ -264,13 +270,14 @@ fn test_cache_fingerprint_with_file_modification() {
         123457i64,
         "local",
         fingerprint,
+        TEST_CONFIG_HASH,
     );
     entry2.mark_as_translated();
 
     cache.set(&entry2).unwrap();
 
     // Now should be valid with new modification time
-    let retrieved = cache.get(&hash1).unwrap();
+    let retrieved = cache.get(&hash1, TEST_CONFIG_HASH).unwrap();
     assert!(retrieved.is_some());
     let entry = retrieved.unwrap();
     assert!(entry.is_valid(123457));
@@ -296,6 +303,7 @@ fn test_cache_translation_status_persistence() {
         123456i64,
         "local",
         fingerprint.clone(),
+        TEST_CONFIG_HASH,
     );
 
     // Initially not translated
@@ -304,7 +312,7 @@ fn test_cache_translation_status_persistence() {
 
     cache.set(&entry1).unwrap();
 
-    let retrieved = cache.get(&hash1).unwrap();
+    let retrieved = cache.get(&hash1, TEST_CONFIG_HASH).unwrap();
     assert!(retrieved.is_some());
     let entry = retrieved.unwrap();
 
@@ -317,7 +325,7 @@ fn test_cache_translation_status_persistence() {
 
     cache.set(&entry1).unwrap();
 
-    let retrieved = cache.get(&hash1).unwrap();
+    let retrieved = cache.get(&hash1, TEST_CONFIG_HASH).unwrap();
     assert!(retrieved.is_some());
     let entry = retrieved.unwrap();
 

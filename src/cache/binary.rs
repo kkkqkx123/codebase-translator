@@ -473,8 +473,45 @@ impl BinaryCache {
         Ok(())
     }
 
+    /// Get raw cached entry without config validation (for internal use)
+    fn get_raw(&self, file_hash: &str) -> Result<Option<CacheEntry>> {
+        if !self.config.enabled {
+            return Ok(None);
+        }
+
+        let entry_state = {
+            let entries_lock = self.entries.read().map_err(|_| {
+                TranslateError::Lock("Failed to acquire read lock on entries in get_raw".to_string())
+            })?;
+            entries_lock.get(file_hash).cloned()
+        };
+
+        if let Some(entry_state) = entry_state {
+            let data = match entry_state {
+                EntryState::Pending(data) => data,
+                EntryState::Committed { offset, size } => self.read_data(offset, size)?,
+            };
+
+            let cache_entry: CacheEntry = rmp_serde::from_slice(&data).map_err(|e| {
+                TranslateError::Cache(format!("Failed to deserialize entry: {}", e))
+            })?;
+
+            if cache_entry.project_fingerprint != self.project_fingerprint {
+                return Ok(None);
+            }
+
+            Ok(Some(cache_entry))
+        } else {
+            Ok(None)
+        }
+    }
+
     /// Get cached entry for a file hash
-    pub fn get(&self, file_hash: &str) -> Result<Option<CacheEntry>> {
+    ///
+    /// # Arguments
+    /// * `file_hash` - The hash of the file content
+    /// * `config_hash` - The hash of the current configuration (for validation)
+    pub fn get(&self, file_hash: &str, config_hash: &str) -> Result<Option<CacheEntry>> {
         if !self.config.enabled {
             debug!("Cache disabled, returning None");
             return Ok(None);
@@ -506,6 +543,16 @@ impl BinaryCache {
                 debug!(
                     file_hash = %file_hash,
                     "Cache entry fingerprint mismatch, returning None"
+                );
+                return Ok(None);
+            }
+
+            if !cache_entry.is_config_valid(config_hash) {
+                debug!(
+                    file_hash = %file_hash,
+                    cached_config_hash = %cache_entry.config_hash,
+                    current_config_hash = %config_hash,
+                    "Cache entry config hash mismatch, returning None"
                 );
                 return Ok(None);
             }
@@ -643,7 +690,7 @@ impl BinaryCache {
 
         let mut result = Vec::new();
         for hash in hashes {
-            if let Some(entry) = self.get(&hash)? {
+            if let Some(entry) = self.get_raw(&hash)? {
                 result.push(CacheEntryInfo {
                     file_hash: hash,
                     file_path: entry.file_path,
@@ -785,15 +832,16 @@ mod tests {
 
         let cache = BinaryCache::new(config, temp_dir.path()).unwrap();
         let fingerprint = cache.project_fingerprint();
+        let config_hash = "test_config_hash_1234";
 
         // Test set and get
         let hash1 = generate_test_hash("test_file");
-        let mut entry = CacheEntry::new(&hash1, "/path/to/file.txt", 123456, "local", fingerprint);
+        let mut entry = CacheEntry::new(&hash1, "/path/to/file.txt", 123456, "local", fingerprint, config_hash);
         entry.mark_as_translated();
 
         cache.set(&entry).unwrap();
 
-        let retrieved = cache.get(&hash1).unwrap();
+        let retrieved = cache.get(&hash1, config_hash).unwrap();
         assert!(retrieved.is_some());
         let retrieved = retrieved.unwrap();
         assert_eq!(retrieved.file_hash, hash1);
@@ -808,7 +856,7 @@ mod tests {
         // Test invalidate
         cache.invalidate(&hash1).unwrap();
 
-        let retrieved = cache.get(&hash1).unwrap();
+        let retrieved = cache.get(&hash1, config_hash).unwrap();
         assert!(retrieved.is_none());
 
         // Test close
@@ -827,11 +875,12 @@ mod tests {
 
         let cache = BinaryCache::new(config, temp_dir.path()).unwrap();
         let fingerprint = cache.project_fingerprint();
+        let config_hash = "test_config_hash_5678";
 
         let hash1 = generate_test_hash("file1");
         let hash2 = generate_test_hash("file2");
-        let entry1 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456, "local", fingerprint);
-        let entry2 = CacheEntry::new(&hash2, "/path/to/file2.txt", 123456, "local", fingerprint);
+        let entry1 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456, "local", fingerprint, config_hash);
+        let entry2 = CacheEntry::new(&hash2, "/path/to/file2.txt", 123456, "local", fingerprint, config_hash);
 
         cache.set(&entry1).unwrap();
         cache.set(&entry2).unwrap();
@@ -852,11 +901,12 @@ mod tests {
 
         let cache = BinaryCache::new(config, temp_dir.path()).unwrap();
         let fingerprint = cache.project_fingerprint();
+        let config_hash = "test_config_hash_9012";
 
         let hash1 = generate_test_hash("file1");
         let hash2 = generate_test_hash("file2");
-        let entry1 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456, "local", fingerprint);
-        let entry2 = CacheEntry::new(&hash2, "/path/to/file2.txt", 123456, "local", fingerprint);
+        let entry1 = CacheEntry::new(&hash1, "/path/to/file1.txt", 123456, "local", fingerprint, config_hash);
+        let entry2 = CacheEntry::new(&hash2, "/path/to/file2.txt", 123456, "local", fingerprint, config_hash);
 
         cache.set(&entry1).unwrap();
         cache.set(&entry2).unwrap();
@@ -870,5 +920,35 @@ mod tests {
         let entries = cache.list_entries().unwrap();
         assert_eq!(entries.len(), 1);
         assert_eq!(entries[0].file_hash, hash1);
+    }
+
+    #[test]
+    fn test_binary_cache_config_hash_mismatch() {
+        let temp_dir = TempDir::new().unwrap();
+        let config = CacheConfig {
+            enabled: true,
+            mode: crate::core::models::CacheMode::Local,
+            directory: ".cache".to_string(),
+            format: "binary".to_string(),
+        };
+
+        let cache = BinaryCache::new(config, temp_dir.path()).unwrap();
+        let fingerprint = cache.project_fingerprint();
+        let config_hash1 = "config_hash_v1";
+        let config_hash2 = "config_hash_v2";
+
+        // Store entry with config_hash1
+        let hash1 = generate_test_hash("test_file");
+        let mut entry = CacheEntry::new(&hash1, "/path/to/file.txt", 123456, "local", fingerprint, config_hash1);
+        entry.mark_as_translated();
+        cache.set(&entry).unwrap();
+
+        // Should find entry with matching config_hash
+        let retrieved = cache.get(&hash1, config_hash1).unwrap();
+        assert!(retrieved.is_some(), "Should find entry with matching config hash");
+
+        // Should NOT find entry with different config_hash
+        let retrieved = cache.get(&hash1, config_hash2).unwrap();
+        assert!(retrieved.is_none(), "Should not find entry with mismatched config hash");
     }
 }

@@ -61,8 +61,11 @@ fn test_file_processor_saves_correct_fingerprint() {
     );
     let components = builder.build().expect("Failed to build workflow components");
 
+    // Calculate config hash for cache lookup
+    let config_hash = codebase_translate::config::calculate_config_hash(builder.project_config());
+
     // Verify cache is empty initially
-    let cached = components.cache.get(&file_hash).unwrap();
+    let cached = components.cache.get(&file_hash, &config_hash).unwrap();
     assert!(cached.is_none(), "Cache should be empty initially");
 
     // Create FileProcessor and process the file
@@ -91,7 +94,7 @@ fn test_file_processor_saves_correct_fingerprint() {
     }
 
     // Check that cache entry was saved with correct fingerprint
-    let cached = components.cache.get(&file_hash).unwrap();
+    let cached = components.cache.get(&file_hash, &config_hash).unwrap();
 
     // This assertion would have failed before the fix because FileProcessor
     // was passing an empty string as project_fingerprint
@@ -155,6 +158,7 @@ fn test_file_processor_cache_hit() {
             temp_dir.path().to_str().unwrap(),
         );
         let components = builder.build().expect("Failed to build workflow components");
+        let config_hash = codebase_translate::config::calculate_config_hash(builder.project_config());
 
         let processor = FileProcessor::new(
             &components.cache,
@@ -180,7 +184,7 @@ fn test_file_processor_cache_hit() {
         }
 
         // Verify cache entry exists with correct fingerprint
-        let cached_before = components.cache.get(&file_hash).unwrap();
+        let cached_before = components.cache.get(&file_hash, &config_hash).unwrap();
         if let Some(entry) = &cached_before {
             println!("Cache entry after first processing: fingerprint='{}', is_translated={}",
                 entry.project_fingerprint, entry.is_translated);
@@ -203,6 +207,7 @@ fn test_file_processor_cache_hit() {
             temp_dir.path().to_str().unwrap(),
         );
         let components = builder.build().expect("Failed to build workflow components");
+        let _config_hash = codebase_translate::config::calculate_config_hash(builder.project_config());
 
         let processor = FileProcessor::new(
             &components.cache,
@@ -272,6 +277,7 @@ fn test_file_processor_cache_entry_lifecycle() {
             temp_dir.path().to_str().unwrap(),
         );
         let components = builder.build().expect("Failed to build workflow components");
+        let _config_hash = codebase_translate::config::calculate_config_hash(builder.project_config());
 
         let processor = FileProcessor::new(
             &components.cache,
@@ -295,9 +301,10 @@ fn test_file_processor_cache_entry_lifecycle() {
             temp_dir.path().to_str().unwrap(),
         );
         let components = builder.build().expect("Failed to build workflow components");
+        let config_hash = codebase_translate::config::calculate_config_hash(builder.project_config());
 
         // Verify we can retrieve the entry
-        let entry = components.cache.get(&file_hash).unwrap();
+        let entry = components.cache.get(&file_hash, &config_hash).unwrap();
 
         if let Some(e) = &entry {
             println!("Entry found after restart: fingerprint='{}'", e.project_fingerprint);
@@ -352,7 +359,7 @@ fn test_empty_fingerprint_causes_cache_miss() {
 
     // Create a cache entry with EMPTY fingerprint (simulating the bug)
     use codebase_translate::core::models::CacheEntry;
-    use crate::cache_integration::test_utils::hash_utils;
+    use crate::cache_integration::test_utils::{hash_utils, TEST_CONFIG_HASH};
 
     let file_hash = hash_utils::generate_test_hash("test_file");
     let mut buggy_entry = CacheEntry::new(
@@ -361,6 +368,7 @@ fn test_empty_fingerprint_causes_cache_miss() {
         123456i64,
         "local",
         "", // Empty fingerprint - this was the bug!
+        TEST_CONFIG_HASH,
     );
     buggy_entry.mark_as_translated();
 
@@ -368,7 +376,7 @@ fn test_empty_fingerprint_causes_cache_miss() {
     cache.set(&buggy_entry).unwrap();
 
     // Try to retrieve it - should fail because fingerprint doesn't match
-    let retrieved = cache.get(&file_hash).unwrap();
+    let retrieved = cache.get(&file_hash, TEST_CONFIG_HASH).unwrap();
     assert!(
         retrieved.is_none(),
         "Entry with empty fingerprint should NOT be retrievable \
@@ -383,6 +391,7 @@ fn test_empty_fingerprint_causes_cache_miss() {
         123456i64,
         "local",
         &correct_fingerprint, // Correct fingerprint
+        TEST_CONFIG_HASH,
     );
     correct_entry.mark_as_translated();
 
@@ -390,7 +399,7 @@ fn test_empty_fingerprint_causes_cache_miss() {
     cache.set(&correct_entry).unwrap();
 
     // Now it should be retrievable
-    let retrieved = cache.get(&file_hash).unwrap();
+    let retrieved = cache.get(&file_hash, TEST_CONFIG_HASH).unwrap();
     assert!(
         retrieved.is_some(),
         "Entry with correct fingerprint should be retrievable"

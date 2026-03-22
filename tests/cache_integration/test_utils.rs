@@ -10,3 +10,6 @@ pub mod hash_utils {
         hex::encode(hash)
     }
 }
+
+/// Default config hash for testing
+pub const TEST_CONFIG_HASH: &str = "test_config_hash_default";

@@ -2,6 +2,7 @@
 
 pub mod env;
 pub mod global;
+pub mod hash;
 pub mod loader;
 pub mod project;
 
@@ -13,6 +14,7 @@ pub use env::{
 pub use global::{
     DeepLXConfig, GlobalConfig, LLMGlobalConfig, LLMProviderConfig, LoggingConfig, TencentConfig,
 };
+pub use hash::calculate_config_hash;
 pub use loader::ConfigLoader;
 pub use project::{
     EncodingConfig, ExcludeConfig, ExtractionConfig, FilterConfig, IncludeConfig, ProjectConfig,

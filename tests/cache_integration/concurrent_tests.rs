@@ -2,7 +2,7 @@
 //!
 //! Tests BinaryCache behavior under concurrent access scenarios.
 
-use crate::cache_integration::test_utils::hash_utils;
+use crate::cache_integration::test_utils::{hash_utils, TEST_CONFIG_HASH};
 use codebase_translate::cache::binary::BinaryCache;
 use codebase_translate::core::models::{CacheConfig, CacheEntry, CacheMode};
 use std::sync::Arc;
@@ -28,6 +28,7 @@ fn test_concurrent_reads() {
         123456i64,
         "local",
         fingerprint.clone(),
+        TEST_CONFIG_HASH,
     );
     entry1.mark_as_translated();
 
@@ -38,7 +39,7 @@ fn test_concurrent_reads() {
         let cache_clone = Arc::clone(&cache);
         let hash_clone = hash1.clone();
         let handle = thread::spawn(move || {
-            let retrieved = cache_clone.get(&hash_clone).unwrap();
+            let retrieved = cache_clone.get(&hash_clone, TEST_CONFIG_HASH).unwrap();
             assert!(retrieved.is_some());
             let entry = retrieved.unwrap();
             assert_eq!(entry.file_hash, hash_clone);
@@ -74,6 +75,7 @@ fn test_concurrent_writes() {
             123456i64 + i as i64,
             "local",
             fingerprint.clone(),
+            TEST_CONFIG_HASH,
         );
         entry.mark_as_translated();
         cache.set(&entry).unwrap();
@@ -110,6 +112,7 @@ fn test_concurrent_read_write() {
                 123456i64 + i as i64,
                 "local",
                 fingerprint_clone,
+                TEST_CONFIG_HASH,
             );
             entry.mark_as_translated();
             cache_clone.set(&entry).unwrap();
@@ -128,7 +131,7 @@ fn test_concurrent_read_write() {
         let cache_clone = Arc::clone(&cache);
         let handle = thread::spawn(move || {
             let hash = hash_utils::generate_test_hash(&format!("file{}", i));
-            let retrieved = cache_clone.get(&hash).unwrap();
+            let retrieved = cache_clone.get(&hash, TEST_CONFIG_HASH).unwrap();
             assert!(retrieved.is_some());
         });
         read_handles.push(handle);
@@ -159,6 +162,7 @@ fn test_concurrent_invalidate() {
         123456i64,
         "local",
         fingerprint.clone(),
+        TEST_CONFIG_HASH,
     );
     entry1.mark_as_translated();
 
@@ -178,7 +182,7 @@ fn test_concurrent_invalidate() {
         handle.join().unwrap();
     }
 
-    let retrieved = cache.get(&hash1).unwrap();
+    let retrieved = cache.get(&hash1, TEST_CONFIG_HASH).unwrap();
     assert!(retrieved.is_none());
 }
 
@@ -203,6 +207,7 @@ fn test_concurrent_clear() {
             123456i64 + i as i64,
             "local",
             fingerprint.clone(),
+            TEST_CONFIG_HASH,
         );
         entry.mark_as_translated();
         cache.set(&entry).unwrap();
@@ -239,6 +244,7 @@ fn test_concurrent_stats() {
             123456i64 + i as i64,
             "local",
             fingerprint.clone(),
+            TEST_CONFIG_HASH,
         );
         entry.mark_as_translated();
         cache.set(&entry).unwrap();
@@ -280,6 +286,7 @@ fn test_concurrent_list_entries() {
             123456i64 + i as i64,
             "local",
             fingerprint.clone(),
+            TEST_CONFIG_HASH,
         );
         entry.mark_as_translated();
         cache.set(&entry).unwrap();
@@ -322,6 +329,7 @@ fn test_concurrent_mixed_operations() {
             123456i64 + i as i64,
             "local",
             fingerprint.clone(),
+            TEST_CONFIG_HASH,
         );
         entry.mark_as_translated();
         cache.set(&entry).unwrap();
@@ -334,7 +342,7 @@ fn test_concurrent_mixed_operations() {
         let cache_clone = Arc::clone(&cache);
         let handle = thread::spawn(move || {
             let hash = hash_utils::generate_test_hash(&format!("file{}", i));
-            let _ = cache_clone.get(&hash).unwrap();
+            let _ = cache_clone.get(&hash, TEST_CONFIG_HASH).unwrap();
         });
         handles.push(handle);
     }
