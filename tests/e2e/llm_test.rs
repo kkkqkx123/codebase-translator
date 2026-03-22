@@ -44,7 +44,7 @@ async fn test_llm_single_translation() {
 
     // Test English to Chinese
     let texts = vec!["Hello, world!".to_string()];
-    let result = translator.translate(&texts, "zh").await;
+    let result = translator.translate(&texts, "en", "zh").await;
 
     assert!(result.is_ok(), "Translation failed: {:?}", result.err());
     let translated = result.expect("Translation should succeed");
@@ -57,7 +57,7 @@ async fn test_llm_single_translation() {
 
     // Test Chinese to English
     let texts = vec!["你好，世界！".to_string()];
-    let result = translator.translate(&texts, "en").await;
+    let result = translator.translate(&texts, "zh", "en").await;
 
     assert!(result.is_ok(), "Translation failed: {:?}", result.err());
     let translated = result.expect("Translation should succeed");
@@ -112,7 +112,7 @@ async fn test_llm_batch_translation() {
     // Small batch to minimize API calls
     let texts = vec!["Hello".to_string(), "World".to_string()];
 
-    let result = batch_translator.translate_batch(&texts, "zh").await;
+    let result = batch_translator.translate_batch(&texts, "en", "zh").await;
     assert!(
         result.is_ok(),
         "Batch translation failed: {:?}",
@@ -176,7 +176,7 @@ async fn test_llm_factory() {
     assert_eq!(translator.name(), "llm-multi-provider");
 
     let texts = vec!["Hello".to_string()];
-    let result: Result<Vec<String>, _> = translator.translate(&texts, "zh").await;
+    let result: Result<Vec<String>, _> = translator.translate(&texts, "en", "zh").await;
     assert!(result.is_ok());
 }
 
@@ -205,7 +205,7 @@ async fn test_llm_invalid_api_key() {
         MultiProviderTranslator::new(&[config], 1).expect("Failed to create translator");
 
     let texts = vec!["Hello".to_string()];
-    let result = translator.translate(&texts, "zh").await;
+    let result = translator.translate(&texts, "en", "zh").await;
 
     // Should fail with authentication error
     assert!(result.is_err());
@@ -259,7 +259,7 @@ async fn test_llm_rate_limiting() {
     let texts = vec!["Hello".to_string(), "World".to_string(), "Test".to_string()];
 
     let start = std::time::Instant::now();
-    let result = batch_translator.translate_batch(&texts, "zh").await;
+    let result = batch_translator.translate_batch(&texts, "en", "zh").await;
     let elapsed = start.elapsed();
 
     // With rate limit of 2/sec, 3 requests should take at least 1 second

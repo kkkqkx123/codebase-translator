@@ -135,7 +135,7 @@ mod tests {
 
     #[test]
     fn test_config_hash_changes_with_target_lang() {
-        let mut config1 = ProjectConfig::default();
+        let config1 = ProjectConfig::default();
         let mut config2 = ProjectConfig::default();
         config2.translate.target_lang = "zh".to_string();
 
@@ -147,7 +147,7 @@ mod tests {
 
     #[test]
     fn test_config_hash_unchanged_with_cache_settings() {
-        let mut config1 = ProjectConfig::default();
+        let config1 = ProjectConfig::default();
         let mut config2 = ProjectConfig::default();
         config2.cache.enabled = false;
         config2.cache.directory = "different".to_string();
@@ -160,7 +160,7 @@ mod tests {
 
     #[test]
     fn test_config_hash_unchanged_with_writer_settings() {
-        let mut config1 = ProjectConfig::default();
+        let config1 = ProjectConfig::default();
         let mut config2 = ProjectConfig::default();
         config2.writer.dry_run = true;
         config2.writer.backup = false;
@@ -173,7 +173,7 @@ mod tests {
 
     #[test]
     fn test_config_hash_changes_with_extraction_settings() {
-        let mut config1 = ProjectConfig::default();
+        let config1 = ProjectConfig::default();
         let mut config2 = ProjectConfig::default();
         config2.extraction.comments = false;
 
@@ -185,7 +185,7 @@ mod tests {
 
     #[test]
     fn test_config_hash_changes_with_filter_settings() {
-        let mut config1 = ProjectConfig::default();
+        let config1 = ProjectConfig::default();
         let mut config2 = ProjectConfig::default();
         config2.filter.exclude_keywords.push("TEST".to_string());
 

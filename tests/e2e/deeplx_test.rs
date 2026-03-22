@@ -31,7 +31,7 @@ async fn test_deeplx_single_translation() {
 
     // Test English to Chinese
     let texts = vec!["Hello, world!".to_string()];
-    let result = translator.translate(&texts, "ZH").await;
+    let result = translator.translate(&texts, "en", "ZH").await;
 
     assert!(result.is_ok(), "Translation failed: {:?}", result.err());
     let translated = result.expect("Translation should succeed");
@@ -44,7 +44,7 @@ async fn test_deeplx_single_translation() {
 
     // Test Chinese to English
     let texts = vec!["你好，世界！".to_string()];
-    let result = translator.translate(&texts, "EN").await;
+    let result = translator.translate(&texts, "zh", "EN").await;
 
     assert!(result.is_ok(), "Translation failed: {:?}", result.err());
     let translated = result.expect("Translation should succeed");
@@ -91,7 +91,7 @@ async fn test_deeplx_batch_translation() {
         "System".to_string(),
     ];
 
-    let result = batch_translator.translate_batch(&texts, "ZH").await;
+    let result = batch_translator.translate_batch(&texts, "en", "ZH").await;
     assert!(
         result.is_ok(),
         "Batch translation failed: {:?}",
@@ -149,7 +149,7 @@ async fn test_deeplx_factory() {
     assert_eq!(translator.name(), "deeplx");
 
     let texts = vec!["Hello".to_string()];
-    let result: Result<Vec<String>, _> = translator.translate(&texts, "ZH").await;
+    let result: Result<Vec<String>, _> = translator.translate(&texts, "en", "ZH").await;
     assert!(result.is_ok());
 }
 
@@ -173,7 +173,7 @@ async fn test_deeplx_empty_text() {
     let translator = DeepLXTranslator::new(config).expect("Failed to create translator");
 
     let texts = vec!["".to_string()];
-    let result = translator.translate(&texts, "ZH").await;
+    let result = translator.translate(&texts, "", "ZH").await;
 
     // Empty text should either return empty or error gracefully
     match result {

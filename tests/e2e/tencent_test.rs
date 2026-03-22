@@ -40,7 +40,7 @@ async fn test_tencent_single_translation() {
 
     // Test English to Chinese
     let texts = vec!["Hello, world!".to_string()];
-    let result = translator.translate(&texts, "zh").await;
+    let result = translator.translate(&texts, "en", "zh").await;
 
     assert!(result.is_ok(), "Translation failed: {:?}", result.err());
     let translated = result.expect("Translation should succeed");
@@ -53,7 +53,7 @@ async fn test_tencent_single_translation() {
 
     // Test Chinese to English
     let texts = vec!["你好，世界！".to_string()];
-    let result = translator.translate(&texts, "en").await;
+    let result = translator.translate(&texts, "zh", "en").await;
 
     assert!(result.is_ok(), "Translation failed: {:?}", result.err());
     let translated = result.expect("Translation should succeed");
@@ -109,7 +109,7 @@ async fn test_tencent_batch_translation() {
         "System".to_string(),
     ];
 
-    let result = batch_translator.translate_batch(&texts, "zh").await;
+    let result = batch_translator.translate_batch(&texts, "en", "zh").await;
     assert!(
         result.is_ok(),
         "Batch translation failed: {:?}",
@@ -176,7 +176,7 @@ async fn test_tencent_factory() {
     assert_eq!(translator.name(), "tencent");
 
     let texts = vec!["Hello".to_string()];
-    let result: Result<Vec<String>, _> = translator.translate(&texts, "zh").await;
+    let result: Result<Vec<String>, _> = translator.translate(&texts, "en", "zh").await;
     assert!(result.is_ok());
 }
 
@@ -209,7 +209,7 @@ async fn test_tencent_empty_text() {
     let translator = TencentTranslator::new(config).expect("Failed to create translator");
 
     let texts = vec!["".to_string()];
-    let result = translator.translate(&texts, "zh").await;
+    let result = translator.translate(&texts, "", "zh").await;
 
     // Empty text should either return empty or error gracefully
     match result {
@@ -241,7 +241,7 @@ async fn test_tencent_invalid_credentials() {
     let translator = TencentTranslator::new(config).expect("Failed to create translator");
 
     let texts = vec!["Hello".to_string()];
-    let result = translator.translate(&texts, "zh").await;
+    let result = translator.translate(&texts, "en", "zh").await;
 
     // Should fail with invalid credentials
     assert!(result.is_err(), "Expected error with invalid credentials");

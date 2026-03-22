@@ -229,14 +229,14 @@ fn test_e2e_translation_rust_file() {
                 workflow_result.stats.translated_units
             ));
             output.push_str(&format!(
-                "Cached files: {}\n",
-                workflow_result.stats.cached_files
+                "Cache hits: {}\n",
+                workflow_result.stats.cache_hit_count
             ));
             output.push_str(&format!(
-                "Skipped units: {}\n",
-                workflow_result.stats.skipped_units
+                "Skipped files: {}\n",
+                workflow_result.stats.skipped_files
             ));
-            output.push_str(&format!("Errors: {}\n", workflow_result.stats.errors));
+            output.push_str(&format!("Errors: {:?}\n", workflow_result.stats.errors));
             output.push_str(&format!(
                 "Duration: {:.2}s\n",
                 workflow_result.duration_secs
@@ -337,14 +337,14 @@ fn test_e2e_translation_python_file() {
                 workflow_result.stats.translated_units
             ));
             output.push_str(&format!(
-                "Cached files: {}\n",
-                workflow_result.stats.cached_files
+                "Cache hits: {}\n",
+                workflow_result.stats.cache_hit_count
             ));
             output.push_str(&format!(
-                "Skipped units: {}\n",
-                workflow_result.stats.skipped_units
+                "Skipped files: {}\n",
+                workflow_result.stats.skipped_files
             ));
-            output.push_str(&format!("Errors: {}\n", workflow_result.stats.errors));
+            output.push_str(&format!("Errors: {:?}\n", workflow_result.stats.errors));
             output.push_str(&format!(
                 "Duration: {:.2}s\n",
                 workflow_result.duration_secs
@@ -445,14 +445,14 @@ fn test_e2e_translation_javascript_file() {
                 workflow_result.stats.translated_units
             ));
             output.push_str(&format!(
-                "Cached files: {}\n",
-                workflow_result.stats.cached_files
+                "Cache hits: {}\n",
+                workflow_result.stats.cache_hit_count
             ));
             output.push_str(&format!(
-                "Skipped units: {}\n",
-                workflow_result.stats.skipped_units
+                "Skipped files: {}\n",
+                workflow_result.stats.skipped_files
             ));
-            output.push_str(&format!("Errors: {}\n", workflow_result.stats.errors));
+            output.push_str(&format!("Errors: {:?}\n", workflow_result.stats.errors));
             output.push_str(&format!(
                 "Duration: {:.2}s\n",
                 workflow_result.duration_secs
@@ -553,14 +553,14 @@ fn test_e2e_translation_markdown_file() {
                 workflow_result.stats.translated_units
             ));
             output.push_str(&format!(
-                "Cached files: {}\n",
-                workflow_result.stats.cached_files
+                "Cache hits: {}\n",
+                workflow_result.stats.cache_hit_count
             ));
             output.push_str(&format!(
-                "Skipped units: {}\n",
-                workflow_result.stats.skipped_units
+                "Skipped files: {}\n",
+                workflow_result.stats.skipped_files
             ));
-            output.push_str(&format!("Errors: {}\n", workflow_result.stats.errors));
+            output.push_str(&format!("Errors: {:?}\n", workflow_result.stats.errors));
             output.push_str(&format!(
                 "Duration: {:.2}s\n",
                 workflow_result.duration_secs
@@ -661,14 +661,14 @@ fn test_e2e_translation_multiple_files() {
                 workflow_result.stats.translated_units
             ));
             output.push_str(&format!(
-                "Cached files: {}\n",
-                workflow_result.stats.cached_files
+                "Cache hits: {}\n",
+                workflow_result.stats.cache_hit_count
             ));
             output.push_str(&format!(
-                "Skipped units: {}\n",
-                workflow_result.stats.skipped_units
+                "Skipped files: {}\n",
+                workflow_result.stats.skipped_files
             ));
-            output.push_str(&format!("Errors: {}\n", workflow_result.stats.errors));
+            output.push_str(&format!("Errors: {:?}\n", workflow_result.stats.errors));
             output.push_str(&format!(
                 "Duration: {:.2}s\n",
                 workflow_result.duration_secs
@@ -773,14 +773,14 @@ fn test_e2e_translation_with_cache() {
                 workflow_result.stats.translated_units
             ));
             output.push_str(&format!(
-                "Cached files: {}\n",
-                workflow_result.stats.cached_files
+                "Cache hits: {}\n",
+                workflow_result.stats.cache_hit_count
             ));
             output.push_str(&format!(
-                "Skipped units: {}\n",
-                workflow_result.stats.skipped_units
+                "Skipped files: {}\n",
+                workflow_result.stats.skipped_files
             ));
-            output.push_str(&format!("Errors: {}\n", workflow_result.stats.errors));
+            output.push_str(&format!("Errors: {:?}\n", workflow_result.stats.errors));
             output.push_str(&format!(
                 "Duration: {:.2}s\n",
                 workflow_result.duration_secs
@@ -832,14 +832,14 @@ fn test_e2e_translation_with_cache() {
                 workflow_result.stats.translated_units
             ));
             output.push_str(&format!(
-                "Cached files: {}\n",
-                workflow_result.stats.cached_files
+                "Cache hits: {}\n",
+                workflow_result.stats.cache_hit_count
             ));
             output.push_str(&format!(
-                "Skipped units: {}\n",
-                workflow_result.stats.skipped_units
+                "Skipped files: {}\n",
+                workflow_result.stats.skipped_files
             ));
-            output.push_str(&format!("Errors: {}\n", workflow_result.stats.errors));
+            output.push_str(&format!("Errors: {:?}\n", workflow_result.stats.errors));
             output.push_str(&format!(
                 "Duration: {:.2}s\n",
                 workflow_result.duration_secs

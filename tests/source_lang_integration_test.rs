@@ -7,8 +7,6 @@
 //! When source_langs = ["AUTO"] and target_lang = "EN", Chinese text was not being
 //! translated because the source_lang was not being passed to the translation API.
 
-use std::sync::Arc;
-
 /// Test that simulates the complete translation flow with AUTO source language
 #[test]
 fn test_auto_source_lang_flow() {
