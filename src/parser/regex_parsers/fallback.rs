@@ -5,7 +5,7 @@ use tracing::warn;
 use crate::core::error::Result;
 use crate::core::models::{File, TranslationUnit};
 use crate::parser::abstraction::parser::Parser as ParserTrait;
-use crate::parser::engine::ParserConfig;
+use crate::parser::ParserConfig;
 use crate::parser::regex::{RegexParser, RegexParserConfig};
 
 /// Generic fallback parser for simple file types

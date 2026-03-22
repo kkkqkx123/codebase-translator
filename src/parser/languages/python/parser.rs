@@ -16,7 +16,7 @@ use crate::parser::{ContentFilter, ExtractionStrategyImpl, FunctionCategory};
 use crate::parser::core::query_executor::QueryExecutor;
 use crate::parser::core::string_processor::{CleanedString, CommentType};
 use crate::parser::core::StringProcessor;
-use crate::parser::engine::ParserConfig;
+use crate::parser::ParserConfig;
 use crate::parser::languages::python::patterns::PythonPatterns;
 use crate::parser::languages::python::queries::PythonQueries;
 use tracing::{debug, error, info, instrument, warn};

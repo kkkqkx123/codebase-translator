@@ -7,7 +7,7 @@ use crate::core::error::Result;
 use crate::core::models::{File, NodeType, TranslationUnit};
 use crate::parser::abstraction::parser::Parser as ParserTrait;
 use crate::parser::core::StringProcessor;
-use crate::parser::engine::ParserConfig;
+use crate::parser::ParserConfig;
 
 use super::config::RegexParserConfig;
 use super::state_machine::StateMachineMatcher;

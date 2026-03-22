@@ -15,7 +15,7 @@ use crate::parser::filtering::traits::Filter;
 use crate::parser::{ContentFilter, ExtractionStrategyImpl, FunctionCategory};
 use crate::parser::core::query_executor::QueryExecutor;
 use crate::parser::core::StringProcessor;
-use crate::parser::engine::ParserConfig;
+use crate::parser::ParserConfig;
 use tracing::{debug, error, instrument};
 
 /// Generic language parser trait

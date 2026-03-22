@@ -13,7 +13,7 @@ use codebase_translate::parser::regex::RegexParser;
 use codebase_translate::parser::abstraction::strategy::{
     default_strategy, ConfigBasedStrategy, ExtractionConfig, ExtractionStrategyImpl,
 };
-use codebase_translate::parser::engine::ParserConfig;
+use codebase_translate::parser::ParserConfig;
 
 fn create_test_file(content: &str, path: &str) -> File {
     File::new(PathBuf::from(path), content.as_bytes().to_vec(), "utf-8")
@@ -284,7 +284,7 @@ fn test_coordinator_with_custom_strategy() {
 
 #[test]
 fn test_coordinator_with_parsers_constructor() {
-    let tree_sitter_parsers: Vec<codebase_translate::parser::engine::TreeSitterParser> =
+    let tree_sitter_parsers: Vec<codebase_translate::parser::tree_sitter::TreeSitterParser> =
         Vec::new();
     let regex_parser = RegexParser::create_fallback_parser(ParserConfig::default());
 

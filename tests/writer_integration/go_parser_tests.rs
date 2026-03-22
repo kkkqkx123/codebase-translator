@@ -5,7 +5,7 @@ use codebase_translate::parser::core::strategies::{
     ConfigBasedStrategy, ExtractionStrategyImpl,
 };
 use codebase_translate::parser::abstraction::strategy::ExtractionConfig;
-use codebase_translate::parser::engine::{ParserConfig, TreeSitterParserFactory};
+use codebase_translate::parser::{ParserConfig, TreeSitterParserFactory};
 use codebase_translate::parser::Parser;
 use codebase_translate::writer::{FileWriter, WriterConfig};
 

@@ -10,7 +10,7 @@ use crate::parser::abstraction::parser::Parser as ParserTrait;
 use crate::parser::abstraction::strategy::ExtractionConfig;
 use crate::parser::filtering::traits::Filter;
 use crate::parser::{ConfigBasedStrategy, ContentFilter, ExtractionStrategyImpl};
-use crate::parser::engine::{ParserConfig, TreeSitterParser, TreeSitterParserFactory};
+use crate::parser::{ParserConfig, TreeSitterParser, TreeSitterParserFactory};
 use crate::parser::regex::custom_pattern_matcher::CustomPatternMatcher;
 use crate::parser::regex::state_machine::StateMachineMatcher;
 use crate::parser::regex_parsers::FallbackParser;

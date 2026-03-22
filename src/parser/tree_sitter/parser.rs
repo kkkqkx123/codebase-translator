@@ -16,6 +16,15 @@ use crate::parser::abstraction::strategy::{
 use crate::parser::filtering::traits::Filter;
 use crate::parser::{ContentFilter, ExtractionStrategyImpl};
 use crate::parser::core::{CommentType, StringProcessor};
+use crate::parser::languages::rust::queries::RustQueries;
+use crate::parser::languages::python::queries::PythonQueries;
+use crate::parser::languages::go::queries::GoQueries;
+use crate::parser::languages::javascript::queries::JavaScriptQueries;
+use crate::parser::languages::typescript::queries::TypeScriptQueries;
+use crate::parser::languages::java::queries::JavaQueries;
+use crate::parser::languages::c::queries::CQueries;
+use crate::parser::languages::cpp::queries::CppQueries;
+use crate::parser::languages::csharp::queries::CSharpQueries;
 
 /// Language configuration for tree-sitter
 #[derive(Debug, Clone)]
@@ -36,47 +45,17 @@ pub struct LanguageConfig {
 
 /// Tree-sitter based parser
 pub struct TreeSitterParser {
-    config: ParserConfig,
+    config: crate::parser::ParserConfig,
     language_config: LanguageConfig,
     strategy: Arc<ExtractionStrategyImpl>,
     filter: Arc<ContentFilter>,
-}
-
-/// Parser configuration
-#[derive(Debug, Clone)]
-pub struct ParserConfig {
-    /// Whether to extract comments
-    pub extract_comments: bool,
-    /// Whether to extract docstrings
-    pub extract_docstrings: bool,
-    /// Whether to extract string literals
-    pub extract_strings: bool,
-    /// Minimum content length to extract
-    pub min_content_length: usize,
-    /// Maximum content length to extract
-    pub max_content_length: usize,
-    /// Whether to trim whitespace from content
-    pub trim_content: bool,
-}
-
-impl Default for ParserConfig {
-    fn default() -> Self {
-        Self {
-            extract_comments: true,
-            extract_docstrings: true,
-            extract_strings: false,
-            min_content_length: 0,
-            max_content_length: 100000,
-            trim_content: true,
-        }
-    }
 }
 
 impl TreeSitterParser {
     /// Create a new tree-sitter parser for a specific language
     pub fn new(
         language_config: LanguageConfig,
-        config: ParserConfig,
+        config: crate::parser::ParserConfig,
         strategy: Arc<ExtractionStrategyImpl>,
         filter: Arc<ContentFilter>,
     ) -> Result<Self> {
@@ -95,7 +74,7 @@ impl TreeSitterParser {
     }
 
     /// Create a new tree-sitter parser with default strategy and filter
-    pub fn with_defaults(language_config: LanguageConfig, config: ParserConfig) -> Result<Self> {
+    pub fn with_defaults(language_config: LanguageConfig, config: crate::parser::ParserConfig) -> Result<Self> {
         use crate::parser::core::strategies::strategy_impl::ExtractionStrategyImpl;
         use crate::parser::filtering::default_filter;
 
@@ -501,7 +480,7 @@ pub struct TreeSitterParserFactory;
 impl TreeSitterParserFactory {
     /// Create a parser for Rust files
     pub fn create_rust_parser(
-        config: ParserConfig,
+        config: crate::parser::ParserConfig,
         strategy: Arc<ExtractionStrategyImpl>,
         filter: Arc<ContentFilter>,
     ) -> Result<TreeSitterParser> {
@@ -509,16 +488,16 @@ impl TreeSitterParserFactory {
             name: "rust".to_string(),
             extensions: vec!["rs".to_string()],
             language: tree_sitter_rust::LANGUAGE.into(),
-            comment_query: RUST_COMMENT_QUERY.to_string(),
-            docstring_query: Some(RUST_DOCSTRING_QUERY.to_string()),
-            string_query: Some(RUST_STRING_QUERY.to_string()),
+            comment_query: RustQueries::all_comments().to_string(),
+            docstring_query: Some(RustQueries::doc_comments().to_string()),
+            string_query: Some(RustQueries::all_strings().to_string()),
         };
         TreeSitterParser::new(language_config, config, strategy, filter)
     }
 
     /// Create a parser for Go files
     pub fn create_go_parser(
-        config: ParserConfig,
+        config: crate::parser::ParserConfig,
         strategy: Arc<ExtractionStrategyImpl>,
         filter: Arc<ContentFilter>,
     ) -> Result<TreeSitterParser> {
@@ -526,16 +505,16 @@ impl TreeSitterParserFactory {
             name: "go".to_string(),
             extensions: vec!["go".to_string()],
             language: tree_sitter_go::LANGUAGE.into(),
-            comment_query: GO_COMMENT_QUERY.to_string(),
+            comment_query: GoQueries::all_comments().to_string(),
             docstring_query: None, // Go uses regular comments for docs
-            string_query: Some(GO_STRING_QUERY.to_string()),
+            string_query: Some(GoQueries::all_strings().to_string()),
         };
         TreeSitterParser::new(language_config, config, strategy, filter)
     }
 
     /// Create a parser for Python files
     pub fn create_python_parser(
-        config: ParserConfig,
+        config: crate::parser::ParserConfig,
         strategy: Arc<ExtractionStrategyImpl>,
         filter: Arc<ContentFilter>,
     ) -> Result<TreeSitterParser> {
@@ -543,16 +522,16 @@ impl TreeSitterParserFactory {
             name: "python".to_string(),
             extensions: vec!["py".to_string()],
             language: tree_sitter_python::LANGUAGE.into(),
-            comment_query: PYTHON_COMMENT_QUERY.to_string(),
-            docstring_query: Some(PYTHON_DOCSTRING_QUERY.to_string()),
-            string_query: Some(PYTHON_STRING_QUERY.to_string()),
+            comment_query: PythonQueries::all_comments().to_string(),
+            docstring_query: Some(PythonQueries::docstrings().to_string()),
+            string_query: Some(PythonQueries::all_strings().to_string()),
         };
         TreeSitterParser::new(language_config, config, strategy, filter)
     }
 
     /// Create a parser for JavaScript files
     pub fn create_javascript_parser(
-        config: ParserConfig,
+        config: crate::parser::ParserConfig,
         strategy: Arc<ExtractionStrategyImpl>,
         filter: Arc<ContentFilter>,
     ) -> Result<TreeSitterParser> {
@@ -560,16 +539,16 @@ impl TreeSitterParserFactory {
             name: "javascript".to_string(),
             extensions: vec!["js".to_string(), "mjs".to_string()],
             language: tree_sitter_javascript::LANGUAGE.into(),
-            comment_query: JS_COMMENT_QUERY.to_string(),
-            docstring_query: Some(JS_DOCSTRING_QUERY.to_string()),
-            string_query: Some(JS_STRING_QUERY.to_string()),
+            comment_query: JavaScriptQueries::all_comments().to_string(),
+            docstring_query: Some(JavaScriptQueries::jsdoc_comments().to_string()),
+            string_query: Some(JavaScriptQueries::all_strings().to_string()),
         };
         TreeSitterParser::new(language_config, config, strategy, filter)
     }
 
     /// Create a parser for TypeScript files
     pub fn create_typescript_parser(
-        config: ParserConfig,
+        config: crate::parser::ParserConfig,
         strategy: Arc<ExtractionStrategyImpl>,
         filter: Arc<ContentFilter>,
     ) -> Result<TreeSitterParser> {
@@ -577,16 +556,16 @@ impl TreeSitterParserFactory {
             name: "typescript".to_string(),
             extensions: vec!["ts".to_string()],
             language: tree_sitter_typescript::LANGUAGE_TYPESCRIPT.into(),
-            comment_query: JS_COMMENT_QUERY.to_string(),
-            docstring_query: Some(JS_DOCSTRING_QUERY.to_string()),
-            string_query: Some(JS_STRING_QUERY.to_string()),
+            comment_query: TypeScriptQueries::all_comments().to_string(),
+            docstring_query: Some(TypeScriptQueries::jsdoc_comments().to_string()),
+            string_query: Some(TypeScriptQueries::all_strings().to_string()),
         };
         TreeSitterParser::new(language_config, config, strategy, filter)
     }
 
     /// Create a parser for TSX files
     pub fn create_tsx_parser(
-        config: ParserConfig,
+        config: crate::parser::ParserConfig,
         strategy: Arc<ExtractionStrategyImpl>,
         filter: Arc<ContentFilter>,
     ) -> Result<TreeSitterParser> {
@@ -594,16 +573,16 @@ impl TreeSitterParserFactory {
             name: "tsx".to_string(),
             extensions: vec!["tsx".to_string()],
             language: tree_sitter_typescript::LANGUAGE_TSX.into(),
-            comment_query: JS_COMMENT_QUERY.to_string(),
-            docstring_query: Some(JS_DOCSTRING_QUERY.to_string()),
-            string_query: Some(JS_STRING_QUERY.to_string()),
+            comment_query: TypeScriptQueries::all_comments().to_string(),
+            docstring_query: Some(TypeScriptQueries::jsdoc_comments().to_string()),
+            string_query: Some(TypeScriptQueries::all_strings().to_string()),
         };
         TreeSitterParser::new(language_config, config, strategy, filter)
     }
 
     /// Create a parser for Java files
     pub fn create_java_parser(
-        config: ParserConfig,
+        config: crate::parser::ParserConfig,
         strategy: Arc<ExtractionStrategyImpl>,
         filter: Arc<ContentFilter>,
     ) -> Result<TreeSitterParser> {
@@ -611,16 +590,16 @@ impl TreeSitterParserFactory {
             name: "java".to_string(),
             extensions: vec!["java".to_string()],
             language: tree_sitter_java::LANGUAGE.into(),
-            comment_query: JAVA_COMMENT_QUERY.to_string(),
-            docstring_query: Some(JAVA_DOCSTRING_QUERY.to_string()),
-            string_query: Some(JAVA_STRING_QUERY.to_string()),
+            comment_query: JavaQueries::all_comments().to_string(),
+            docstring_query: Some(JavaQueries::javadoc_comments().to_string()),
+            string_query: Some(JavaQueries::all_strings().to_string()),
         };
         TreeSitterParser::new(language_config, config, strategy, filter)
     }
 
     /// Create a parser for C files
     pub fn create_c_parser(
-        config: ParserConfig,
+        config: crate::parser::ParserConfig,
         strategy: Arc<ExtractionStrategyImpl>,
         filter: Arc<ContentFilter>,
     ) -> Result<TreeSitterParser> {
@@ -628,16 +607,16 @@ impl TreeSitterParserFactory {
             name: "c".to_string(),
             extensions: vec!["c".to_string(), "h".to_string()],
             language: tree_sitter_c::LANGUAGE.into(),
-            comment_query: C_COMMENT_QUERY.to_string(),
-            docstring_query: None,
-            string_query: Some(C_STRING_QUERY.to_string()),
+            comment_query: CQueries::all_comments().to_string(),
+            docstring_query: Some(CQueries::doc_comments().to_string()),
+            string_query: Some(CQueries::all_strings().to_string()),
         };
         TreeSitterParser::new(language_config, config, strategy, filter)
     }
 
     /// Create a parser for C++ files
     pub fn create_cpp_parser(
-        config: ParserConfig,
+        config: crate::parser::ParserConfig,
         strategy: Arc<ExtractionStrategyImpl>,
         filter: Arc<ContentFilter>,
     ) -> Result<TreeSitterParser> {
@@ -651,16 +630,16 @@ impl TreeSitterParserFactory {
                 "hxx".to_string(),
             ],
             language: tree_sitter_cpp::LANGUAGE.into(),
-            comment_query: C_COMMENT_QUERY.to_string(),
-            docstring_query: None,
-            string_query: Some(C_STRING_QUERY.to_string()),
+            comment_query: CppQueries::all_comments().to_string(),
+            docstring_query: Some(CppQueries::doc_comments().to_string()),
+            string_query: Some(CppQueries::all_strings().to_string()),
         };
         TreeSitterParser::new(language_config, config, strategy, filter)
     }
 
     /// Create a parser for C# files
     pub fn create_csharp_parser(
-        config: ParserConfig,
+        config: crate::parser::ParserConfig,
         strategy: Arc<ExtractionStrategyImpl>,
         filter: Arc<ContentFilter>,
     ) -> Result<TreeSitterParser> {
@@ -668,16 +647,16 @@ impl TreeSitterParserFactory {
             name: "csharp".to_string(),
             extensions: vec!["cs".to_string()],
             language: tree_sitter_c_sharp::LANGUAGE.into(),
-            comment_query: CSHARP_COMMENT_QUERY.to_string(),
-            docstring_query: Some(CSHARP_DOCSTRING_QUERY.to_string()),
-            string_query: Some(CSHARP_STRING_QUERY.to_string()),
+            comment_query: CSharpQueries::all_comments().to_string(),
+            docstring_query: None, // C# uses /// comments which are handled by all_comments
+            string_query: Some(CSharpQueries::all_strings().to_string()),
         };
         TreeSitterParser::new(language_config, config, strategy, filter)
     }
 
     /// Create all available parsers with given strategy and filter
     pub fn create_all_parsers(
-        config: ParserConfig,
+        config: crate::parser::ParserConfig,
         strategy: Arc<ExtractionStrategyImpl>,
         filter: Arc<ContentFilter>,
     ) -> Vec<Result<TreeSitterParser>> {
@@ -696,7 +675,7 @@ impl TreeSitterParserFactory {
     }
 
     /// Create all available parsers with default strategy and filter
-    pub fn create_all_parsers_with_defaults(config: ParserConfig) -> Vec<Result<TreeSitterParser>> {
+    pub fn create_all_parsers_with_defaults(config: crate::parser::ParserConfig) -> Vec<Result<TreeSitterParser>> {
         use crate::parser::filtering::default_filter;
         use crate::parser::core::strategies::strategy_impl::ExtractionStrategyImpl;
 
@@ -709,115 +688,13 @@ impl TreeSitterParserFactory {
     }
 }
 
-// Tree-sitter queries for different languages
-
-const RUST_COMMENT_QUERY: &str = r#"
-((line_comment) @comment
-  (#not-match? @comment "^///"))
-
-((block_comment) @comment
-  (#not-match? @comment "^/\*\*"))
-"#;
-
-const RUST_DOCSTRING_QUERY: &str = r#"
-((line_comment) @docstring
-  (#match? @docstring "^///"))
-
-((block_comment) @docstring
-  (#match? @docstring "^/\*\*"))
-"#;
-
-const RUST_STRING_QUERY: &str = r#"
-(string_literal) @string
-(raw_string_literal) @string
-"#;
-
-const GO_COMMENT_QUERY: &str = r#"
-(comment) @comment
-"#;
-
-const GO_STRING_QUERY: &str = r#"
-(raw_string_literal) @string
-(interpreted_string_literal) @string
-"#;
-
-const PYTHON_COMMENT_QUERY: &str = r#"
-(comment) @comment
-"#;
-
-const PYTHON_DOCSTRING_QUERY: &str = r#"
-(expression_statement
-  (string) @docstring)
-
-(module
-  (expression_statement
-    (string) @docstring))
-"#;
-
-const PYTHON_STRING_QUERY: &str = r#"
-(string) @string
-"#;
-
-const JS_COMMENT_QUERY: &str = r#"
-(comment) @comment
-"#;
-
-const JS_DOCSTRING_QUERY: &str = r#"
-((comment) @docstring
-  (#match? @docstring "^/\*\*"))
-"#;
-
-const JS_STRING_QUERY: &str = r#"
-(string) @string
-(template_string) @string
-"#;
-
-const JAVA_COMMENT_QUERY: &str = r#"
-(line_comment) @comment
-(block_comment) @comment
-"#;
-
-const JAVA_DOCSTRING_QUERY: &str = r#"
-((block_comment) @docstring
-  (#match? @docstring "^/\*\*"))
-"#;
-
-const JAVA_STRING_QUERY: &str = r#"
-(string_literal) @string
-"#;
-
-const C_COMMENT_QUERY: &str = r#"
-(comment) @comment
-"#;
-
-const C_STRING_QUERY: &str = r#"
-(string_literal) @string
-"#;
-
-const CSHARP_COMMENT_QUERY: &str = r#"
-(comment) @comment
-"#;
-
-const CSHARP_DOCSTRING_QUERY: &str = r#"
-((comment) @docstring
-  (#match? @docstring "^///"))
-
-((comment) @docstring
-  (#match? @docstring "^/\*\*"))
-"#;
-
-const CSHARP_STRING_QUERY: &str = r#"
-(string_literal) @string
-(verbatim_string_literal) @string
-(interpolated_string_expression) @string
-"#;
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::parser::filtering::FilterConfig;
     use crate::parser::abstraction::strategy::ExtractionConfig;
     use crate::parser::core::strategies::ConfigBasedStrategy;
+    use crate::parser::ParserConfig;
     use std::path::PathBuf;
 
     fn create_test_file(content: &str, path: &str) -> File {

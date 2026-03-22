@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use codebase_translate::core::models::File;
 use codebase_translate::parser::coordinator::ParserCoordinator;
 use codebase_translate::parser::core::StringProcessor;
-use codebase_translate::parser::engine::ParserConfig;
+use codebase_translate::parser::ParserConfig;
 
 fn create_test_file(content: &str, path: &str) -> File {
     File::new(PathBuf::from(path), content.as_bytes().to_vec(), "utf-8")

@@ -110,35 +110,14 @@ impl PatternFilter {
 
 impl Filter for PatternFilter {
     fn should_translate(&self, text: &str) -> bool {
-        // Exclude keywords check
-        for pattern in &self.exclude_keywords_regex {
-            if pattern.is_match(text) {
-                debug!(reason = "excluded_keyword", "Text filtered by pattern check");
-                return false;
-            }
+        // 1. URL pattern check - 代价低（单个正则）且常见，优先检测
+        // 避免 URL 中的点号被误判为代码模式
+        if self.url_pattern_regex.is_match(text) {
+            debug!(reason = "contains_url", "Text filtered by pattern check");
+            return false;
         }
 
-        // Exclude patterns check
-        for pattern in &self.exclude_patterns_regex {
-            if pattern.is_match(text) {
-                debug!(reason = "excluded_pattern", "Text filtered by pattern check");
-                return false;
-            }
-        }
-
-        // Include patterns check
-        if !self.include_patterns_regex.is_empty() {
-            let included = self.include_patterns_regex.iter().any(|p| p.is_match(text));
-            if !included {
-                debug!(
-                    reason = "not_in_include_patterns",
-                    "Text filtered by pattern check"
-                );
-                return false;
-            }
-        }
-
-        // Placeholder check
+        // 2. Placeholder check - 代价低（固定4个简单正则）且非常常见
         if !self.allow_placeholders {
             for pattern in &self.placeholder_regex {
                 if pattern.is_match(text) {
@@ -151,14 +130,35 @@ impl Filter for PatternFilter {
             }
         }
 
-        // URL pattern check - 优先于代码模式检测
-        // 如果文本包含 URL，直接返回 false（被过滤），避免 URL 中的点号被误判为代码模式
-        if self.url_pattern_regex.is_match(text) {
-            debug!(reason = "contains_url", "Text filtered by pattern check");
-            return false;
+        // 3. Exclude keywords check - 数量少，简单匹配
+        for pattern in &self.exclude_keywords_regex {
+            if pattern.is_match(text) {
+                debug!(reason = "excluded_keyword", "Text filtered by pattern check");
+                return false;
+            }
         }
 
-        // Code pattern check
+        // 4. Exclude patterns check - 用户自定义，数量不确定
+        for pattern in &self.exclude_patterns_regex {
+            if pattern.is_match(text) {
+                debug!(reason = "excluded_pattern", "Text filtered by pattern check");
+                return false;
+            }
+        }
+
+        // 5. Include patterns check - 白名单逻辑，必须检查所有
+        if !self.include_patterns_regex.is_empty() {
+            let included = self.include_patterns_regex.iter().any(|p| p.is_match(text));
+            if !included {
+                debug!(
+                    reason = "not_in_include_patterns",
+                    "Text filtered by pattern check"
+                );
+                return false;
+            }
+        }
+
+        // 6. Code pattern check - 代价较高（4个正则），且可能被占位符设置跳过
         if self.detect_code_patterns {
             for pattern in &self.code_pattern_regex {
                 // Skip brace pattern check when placeholders are allowed

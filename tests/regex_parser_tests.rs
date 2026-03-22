@@ -7,7 +7,7 @@
 use std::path::PathBuf;
 
 use codebase_translate::core::models::File;
-use codebase_translate::parser::engine::ParserConfig;
+use codebase_translate::parser::ParserConfig;
 use codebase_translate::parser::regex_parsers::{
     FallbackParser, HtmlParser, ShellParser, SqlParser,
 };

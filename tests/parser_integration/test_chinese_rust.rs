@@ -5,7 +5,7 @@ use std::path::PathBuf;
 
 use codebase_translate::core::models::File;
 use codebase_translate::parser::coordinator::ParserCoordinator;
-use codebase_translate::parser::engine::ParserConfig;
+use codebase_translate::parser::ParserConfig;
 
 #[test]
 fn test_parse_chinese_rust_file() {

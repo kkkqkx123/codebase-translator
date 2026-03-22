@@ -11,14 +11,43 @@
 //! - `abstraction/`: Core abstractions including Parser trait and extraction strategies
 //! - `core/`: Generic extraction framework reusable across languages
 //! - `detection/`: Language detection capabilities
-//! - `engine/`: Parsing engines (tree-sitter based)
+//! - `tree_sitter/`: Tree-sitter based parser implementation and query builder
 //! - `filtering/`: Content filtering system with layered architecture
 //! - `patterns/`: Function and macro pattern definitions
-//! - `queries/`: Tree-sitter query builders and predefined queries
-//! - `languages/`: Language-specific parser implementations
+//! - `languages/`: Language-specific parser implementations and queries
 //! - `coordinator/`: High-level coordination for parsing operations
 //! - `regex/`: Regex-based fallback parsers
 //! - `regex_parsers/`: Type-specific regex parsers for simple file types
+
+/// Parser configuration
+#[derive(Debug, Clone)]
+pub struct ParserConfig {
+    /// Whether to extract comments
+    pub extract_comments: bool,
+    /// Whether to extract docstrings
+    pub extract_docstrings: bool,
+    /// Whether to extract string literals
+    pub extract_strings: bool,
+    /// Minimum content length to extract
+    pub min_content_length: usize,
+    /// Maximum content length to extract
+    pub max_content_length: usize,
+    /// Whether to trim whitespace from content
+    pub trim_content: bool,
+}
+
+impl Default for ParserConfig {
+    fn default() -> Self {
+        Self {
+            extract_comments: true,
+            extract_docstrings: true,
+            extract_strings: false,
+            min_content_length: 0,
+            max_content_length: 100000,
+            trim_content: true,
+        }
+    }
+}
 
 // Core abstractions (Parser trait, strategies)
 pub mod abstraction;
@@ -29,8 +58,8 @@ pub mod core;
 // Language detection
 pub mod detection;
 
-// Parsing engines
-pub mod engine;
+// Tree-sitter based parser
+pub mod tree_sitter;
 
 // Content filtering
 pub mod filtering;
@@ -41,8 +70,7 @@ pub mod patterns;
 // Parser coordinator
 pub mod coordinator;
 
-// Query builders and predefined queries
-pub mod queries;
+// Note: QueryBuilder is now in tree_sitter module
 
 // Language-specific parsers
 pub mod languages;
@@ -72,14 +100,11 @@ pub use patterns::{FunctionCategory, LanguageFunctionPatterns};
 // Re-export from detection
 pub use detection::{LanguageDetector, LanguageInfo, Script};
 
-// Re-export from engine
-pub use engine::{LanguageConfig, ParserConfig, TreeSitterParser, TreeSitterParserFactory};
+// Re-export from tree_sitter
+pub use tree_sitter::{LanguageConfig, QueryBuilder, TreeSitterParser, TreeSitterParserFactory};
 
 // Re-export from core
 pub use core::{ExtractionCandidate, ExtractionType, Extractor, QueryExecutor, StringProcessor};
-
-// Re-export from queries
-pub use queries::{CommentQueries, FunctionQueries, QueryBuilder, StringQueries};
 
 // Re-export from regex
 pub use regex::{

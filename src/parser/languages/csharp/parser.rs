@@ -15,7 +15,7 @@ use crate::parser::filtering::traits::Filter;
 use crate::parser::{ContentFilter, ExtractionStrategyImpl, FunctionCategory};
 use crate::parser::core::query_executor::QueryExecutor;
 use crate::parser::core::{CommentType, StringProcessor};
-use crate::parser::engine::ParserConfig;
+use crate::parser::ParserConfig;
 use crate::parser::languages::csharp::patterns::CSharpPatterns;
 use crate::parser::languages::csharp::queries::CSharpQueries;
 use tracing::{debug, error, info, instrument};

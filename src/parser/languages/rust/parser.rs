@@ -16,7 +16,7 @@ use crate::parser::{ContentFilter, ExtractionStrategyImpl, FunctionCategory};
 use crate::parser::core::query_executor::QueryExecutor;
 use crate::parser::core::string_processor::{CleanedComment, CommentType};
 use crate::parser::core::StringProcessor;
-use crate::parser::engine::ParserConfig;
+use crate::parser::ParserConfig;
 use crate::parser::languages::rust::patterns::RustPatterns;
 use crate::parser::languages::rust::queries::RustQueries;
 use tracing::{debug, error, info, instrument};

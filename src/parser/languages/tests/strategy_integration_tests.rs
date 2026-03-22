@@ -10,7 +10,7 @@ use crate::core::models::{File, NodeType};
 use crate::parser::abstraction::parser::Parser;
 use crate::parser::abstraction::strategy::{ExtractionConfig, ExtractionStrategy, StrategyNodeType};
 use crate::parser::{ConfigBasedStrategy, ContentFilter, ExtractionStrategyImpl, FilterConfig};
-use crate::parser::engine::ParserConfig;
+use crate::parser::ParserConfig;
 use crate::parser::languages::*;
 
 fn create_test_file(content: &str, path: &str) -> File {

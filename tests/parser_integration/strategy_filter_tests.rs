@@ -12,7 +12,7 @@ use codebase_translate::parser::abstraction::strategy::{
     ConfigBasedStrategy, ExtractionConfig, ExtractionContext, ExtractionStrategy,
     ExtractionStrategyImpl, StrategyNodeType,
 };
-use codebase_translate::parser::engine::ParserConfig;
+use codebase_translate::parser::ParserConfig;
 
 fn create_test_file(content: &str, path: &str) -> File {
     File::new(PathBuf::from(path), content.as_bytes().to_vec(), "utf-8")
