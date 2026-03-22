@@ -9,9 +9,8 @@
 //! The parser module is organized into several submodules:
 //!
 //! - `core/`: Core extraction framework including traits, types, and implementations
-//! - `detection/`: Language detection capabilities
 //! - `tree_sitter/`: Tree-sitter based parser implementation and query builder
-//! - `filtering/`: Content filtering system with layered architecture
+//! - `filtering/`: Content filtering system with layered architecture, including language detection
 //! - `languages/`: Language-specific parser implementations and queries
 //! - `coordinator/`: High-level coordination for parsing operations
 //! - `regex/`: Regex-based fallback parsers
@@ -50,13 +49,10 @@ impl Default for ParserConfig {
 // Core extraction framework (traits, types, and implementations)
 pub mod core;
 
-// Language detection
-pub mod detection;
-
 // Tree-sitter based parser
 pub mod tree_sitter;
 
-// Content filtering
+// Content filtering (includes language detection)
 pub mod filtering;
 
 // Parser coordinator
@@ -82,8 +78,8 @@ pub use filtering::{
     from_project_config, from_project_config_with_translator, ContentFilter, FilterConfig,
 };
 
-// Re-export from detection
-pub use detection::{LanguageDetector, LanguageInfo, Script};
+// Re-export language detection types from filtering
+pub use filtering::checks::{LanguageDetector, LanguageInfo, QuickDetector, SampledDetector, Script};
 
 // Re-export from tree_sitter
 pub use tree_sitter::{LanguageConfig, QueryBuilder, TreeSitterParser, TreeSitterParserFactory};

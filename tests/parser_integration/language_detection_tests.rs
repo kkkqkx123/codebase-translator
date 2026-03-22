@@ -2,7 +2,7 @@
 //!
 //! Tests for language and script detection capabilities.
 
-use codebase_translate::parser::language::{LanguageDetector, LanguageInfo, Script};
+use codebase_translate::parser::{LanguageDetector, LanguageInfo, Script};
 
 mod script_detection_tests {
     use super::*;
