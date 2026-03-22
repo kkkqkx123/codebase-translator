@@ -613,10 +613,12 @@ mod tests {
         let coordinator =
             ParserCoordinator::with_defaults(config).expect("Failed to create coordinator");
 
+        // Use Chinese content to avoid being filtered by language filter
+        // (default target language is English, so English content would be filtered)
         let content = r#"
-/// This is a doc comment
+/// 这是一个文档注释
 fn main() {
-    // This is a regular comment
+    // 这是一个普通注释
     let x = 5;
 }
 "#;
