@@ -238,10 +238,10 @@ mod tests {
     }
 
     #[test]
-    fn test_validate_config_file_without_path() {
+    fn test_validate_config_file_with_default_path() {
         let config = create_test_config("info", "file", "pretty", None);
-        // File output without explicit path should fail validation
-        assert!(validate_config(&config).is_err());
+        // File output without explicit path should use default path
+        assert!(validate_config(&config).is_ok());
     }
 
     #[test]

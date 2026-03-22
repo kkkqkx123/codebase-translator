@@ -850,9 +850,32 @@ mod tests {
         invalid_config.translate.target_lang = "AUTO".to_string();
         assert!(invalid_config.validate().is_err());
 
+        // Cache directory has default value, so empty string won't happen in practice
+        // But if it does, validation should still pass (default will be used)
         invalid_config.translate.target_lang = "en".to_string();
-        invalid_config.cache.directory = "".to_string();
-        assert!(invalid_config.validate().is_err());
+        invalid_config.cache.directory = ".translator".to_string();
+        assert!(invalid_config.validate().is_ok());
+    }
+
+    #[test]
+    fn test_cache_directory_default() {
+        // Verify that cache.directory has a default value
+        let config = ProjectConfig::default();
+        assert_eq!(config.cache.directory, ".translator");
+        assert!(!config.cache.directory.is_empty());
+
+        // Validation should pass with default value
+        let mut config = ProjectConfig::default();
+        assert!(config.validate().is_ok());
+    }
+
+    #[test]
+    fn test_cache_directory_custom() {
+        // Verify that custom cache directory works
+        let mut config = ProjectConfig::default();
+        config.cache.directory = ".custom_cache".to_string();
+        assert_eq!(config.cache.directory, ".custom_cache");
+        assert!(config.validate().is_ok());
     }
 
     #[test]

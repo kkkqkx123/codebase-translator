@@ -59,69 +59,61 @@ impl GlobalConfig {
             return Err(format!("Invalid default provider: {}", default_provider));
         }
 
+        // Filter invalid LLM providers first
+        if providers.contains(&"llm".to_string()) {
+            self.filter_invalid_llm_providers();
+        }
+
+        // Check if at least one provider has valid configuration
+        // This must be done before detailed validation to provide better error messages
+        self.check_at_least_one_valid_provider()?;
+
+        // Detailed validation for valid providers only
+        // (invalid providers are already reported in check_at_least_one_valid_provider)
         for provider in &providers {
             match provider.as_str() {
                 "llm" => {
-                    self.filter_invalid_llm_providers();
-
-                    if self.llm.providers.is_empty() {
-                        return Err("LLM providers configuration is required when provider 'llm' is enabled (all providers were filtered out due to invalid configuration)".to_string());
-                    }
-
-                    for p in &self.llm.providers {
-                        if p.base_url.is_empty() {
-                            return Err(format!("LLM provider {}: base_url is required", p.id));
-                        }
-                        if p.api_keys.is_empty() {
-                            return Err(format!("LLM provider {}: api_keys is required", p.id));
-                        }
-                        if p.model.is_empty() {
-                            return Err(format!("LLM provider {}: model is required", p.id));
-                        }
-                        if p.max_tokens == 0 {
-                            return Err(format!(
-                                "LLM provider {}: max_tokens must be positive",
-                                p.id
-                            ));
-                        }
-                        if p.rate_limit == 0 {
-                            return Err(format!(
-                                "LLM provider {}: rate_limit must be positive",
-                                p.id
-                            ));
+                    // Only validate if there are valid LLM providers
+                    if !self.llm.providers.is_empty() {
+                        for p in &self.llm.providers {
+                            if p.base_url.is_empty() {
+                                return Err(format!("LLM provider {}: base_url is required", p.id));
+                            }
+                            if p.api_keys.is_empty() {
+                                return Err(format!("LLM provider {}: api_keys is required", p.id));
+                            }
+                            if p.model.is_empty() {
+                                return Err(format!("LLM provider {}: model is required", p.id));
+                            }
+                            if p.max_tokens == 0 {
+                                return Err(format!(
+                                    "LLM provider {}: max_tokens must be positive",
+                                    p.id
+                                ));
+                            }
+                            if p.rate_limit == 0 {
+                                return Err(format!(
+                                    "LLM provider {}: rate_limit must be positive",
+                                    p.id
+                                ));
+                            }
                         }
                     }
                 }
                 "deeplx" => {
-                    if self.deeplx.rate_limit == 0 {
-                        return Err("deeplx: rate_limit must be positive".to_string());
+                    // Only validate if DeepLX has valid configuration
+                    if self.deeplx.rate_limit > 0 {
+                        // DeepLX is valid, no further validation needed
                     }
                 }
                 "tencent" => {
-                    if self.tencent.secret_id.is_none()
-                        || self
-                            .tencent
-                            .secret_id
-                            .as_ref()
-                            .map_or(true, |s| {
-                                s.is_empty() || s.starts_with("${")
-                            })
-                    {
-                        return Err("tencent: secret_id is required".to_string());
-                    }
-                    if self.tencent.secret_key.is_none()
-                        || self
-                            .tencent
-                            .secret_key
-                            .as_ref()
-                            .map_or(true, |s| {
-                                s.is_empty() || s.starts_with("${")
-                            })
-                    {
-                        return Err("tencent: secret_key is required".to_string());
-                    }
-                    if self.tencent.rate_limit == 0 {
-                        return Err("tencent: rate_limit must be positive".to_string());
+                    // Only validate if Tencent has valid credentials
+                    let has_secret_id = self.tencent.secret_id.as_ref()
+                        .is_some_and(|s| !s.is_empty() && !s.starts_with("${"));
+                    let has_secret_key = self.tencent.secret_key.as_ref()
+                        .is_some_and(|s| !s.is_empty() && !s.starts_with("${"));
+                    if has_secret_id && has_secret_key && self.tencent.rate_limit > 0 {
+                        // Tencent is valid, no further validation needed
                     }
                 }
                 _ => {}
@@ -131,9 +123,6 @@ impl GlobalConfig {
         // Validate logging configuration
         crate::logger::validate_config(&self.logging)
             .map_err(|e| format!("Logging configuration error: {}", e))?;
-
-        // Check if at least one provider has valid configuration
-        self.check_at_least_one_valid_provider()?;
 
         debug!("Global configuration validated successfully");
         Ok(())
@@ -858,9 +847,9 @@ mod tests {
 
         let result = config.validate();
         assert!(result.is_err());
-        assert!(result
-            .unwrap_err()
-            .contains("LLM providers configuration is required"));
+        let error_msg = result.unwrap_err();
+        assert!(error_msg.contains("No valid provider configuration found"));
+        assert!(error_msg.contains("LLM: no valid providers configured"));
     }
 
     #[test]
@@ -1080,7 +1069,8 @@ mod tests {
         let result = config.validate();
         assert!(result.is_err());
         let error_msg = result.unwrap_err();
-        assert!(error_msg.contains("LLM providers configuration is required"));
+        assert!(error_msg.contains("No valid provider configuration found"));
+        assert!(error_msg.contains("LLM: no valid providers configured"));
     }
 
     #[test]
@@ -1136,7 +1126,9 @@ mod tests {
 
         let result = config.validate();
         assert!(result.is_err());
-        assert!(result.unwrap_err().contains("tencent: secret_id is required"));
+        let error_msg = result.unwrap_err();
+        assert!(error_msg.contains("No valid provider configuration found"));
+        assert!(error_msg.contains("Tencent: secret_id is required"));
 
         // Test with empty secret_key
         config.tencent.secret_id = Some("valid-id".to_string());
@@ -1144,7 +1136,9 @@ mod tests {
 
         let result = config.validate();
         assert!(result.is_err());
-        assert!(result.unwrap_err().contains("tencent: secret_key is required"));
+        let error_msg = result.unwrap_err();
+        assert!(error_msg.contains("No valid provider configuration found"));
+        assert!(error_msg.contains("Tencent: secret_key is required"));
 
         // Test with unresolved placeholder
         config.tencent.secret_id = Some("${TENCENT_SECRET_ID}".to_string());
@@ -1152,6 +1146,172 @@ mod tests {
 
         let result = config.validate();
         assert!(result.is_err());
-        assert!(result.unwrap_err().contains("tencent: secret_id is required"));
+        let error_msg = result.unwrap_err();
+        assert!(error_msg.contains("No valid provider configuration found"));
+        assert!(error_msg.contains("Tencent: secret_id is required"));
+    }
+
+    #[test]
+    fn test_no_valid_provider_configured() {
+        // Test when all enabled providers have invalid configuration
+        let mut config = GlobalConfig {
+            enabled_providers: vec!["tencent".to_string(), "llm".to_string()],
+            provider: ProviderType::Tencent,
+            ..Default::default()
+        };
+
+        // Tencent: no credentials
+        // LLM: no valid providers (empty list)
+
+        let result = config.validate();
+        assert!(result.is_err());
+        let error_msg = result.unwrap_err();
+        assert!(error_msg.contains("No valid provider configuration found"));
+        assert!(error_msg.contains("Tencent: secret_id is required"));
+        assert!(error_msg.contains("Tencent: secret_key is required"));
+        assert!(error_msg.contains("LLM: no valid providers configured"));
+    }
+
+    #[test]
+    fn test_at_least_one_valid_provider_deeplx() {
+        // Test that DeepLX with default config is valid
+        let mut config = GlobalConfig {
+            enabled_providers: vec!["deeplx".to_string()],
+            provider: ProviderType::DeepLX,
+            ..Default::default()
+        };
+
+        let result = config.validate();
+        assert!(result.is_ok(), "DeepLX with default config should be valid: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_at_least_one_valid_provider_tencent() {
+        // Test that at least one valid provider is sufficient (Tencent)
+        let mut config = GlobalConfig {
+            enabled_providers: vec!["tencent".to_string(), "llm".to_string()],
+            provider: ProviderType::Tencent,
+            ..Default::default()
+        };
+
+        // Tencent: valid credentials
+        config.tencent.secret_id = Some("valid-secret-id".to_string());
+        config.tencent.secret_key = Some("valid-secret-key".to_string());
+        // LLM: invalid (no providers)
+
+        let result = config.validate();
+        assert!(result.is_ok(), "Should pass because Tencent is valid: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_at_least_one_valid_provider_llm() {
+        // Test that at least one valid provider is sufficient (LLM)
+        let mut config = GlobalConfig {
+            enabled_providers: vec!["tencent".to_string(), "llm".to_string()],
+            provider: ProviderType::LLM,
+            ..Default::default()
+        };
+
+        // Tencent: invalid (no credentials)
+        // LLM: valid provider
+        config.llm.providers = vec![LLMProviderConfig {
+            id: "test".to_string(),
+            name: "Test Provider".to_string(),
+            base_url: "https://api.example.com".to_string(),
+            api_keys: vec!["valid-api-key".to_string()],
+            model: "gpt-4".to_string(),
+            model_list: vec![],
+            max_tokens: 4096,
+            temperature: 0.7,
+            proxy_url: None,
+            timeout: 30,
+            rate_limit: 10,
+            extra_headers: std::collections::HashMap::new(),
+            extra_params: std::collections::HashMap::new(),
+        }];
+
+        let result = config.validate();
+        assert!(result.is_ok(), "Should pass because LLM is valid: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_deeplx_invalid_rate_limit() {
+        // Test DeepLX with invalid rate_limit
+        let mut config = GlobalConfig {
+            enabled_providers: vec!["deeplx".to_string()],
+            provider: ProviderType::DeepLX,
+            ..Default::default()
+        };
+        config.deeplx.rate_limit = 0;
+
+        let result = config.validate();
+        assert!(result.is_err());
+        let error_msg = result.unwrap_err();
+        assert!(error_msg.contains("No valid provider configuration found"));
+        assert!(error_msg.contains("DeepLX: rate_limit must be positive"));
+    }
+
+    #[test]
+    fn test_llm_missing_base_url() {
+        // Test LLM provider without base_url
+        let mut config = GlobalConfig {
+            enabled_providers: vec!["llm".to_string()],
+            provider: ProviderType::LLM,
+            ..Default::default()
+        };
+
+        config.llm.providers = vec![LLMProviderConfig {
+            id: "test".to_string(),
+            name: "Test Provider".to_string(),
+            base_url: "".to_string(), // Empty base_url
+            api_keys: vec!["valid-api-key".to_string()],
+            model: "gpt-4".to_string(),
+            model_list: vec![],
+            max_tokens: 4096,
+            temperature: 0.7,
+            proxy_url: None,
+            timeout: 30,
+            rate_limit: 10,
+            extra_headers: std::collections::HashMap::new(),
+            extra_params: std::collections::HashMap::new(),
+        }];
+
+        let result = config.validate();
+        assert!(result.is_err());
+        let error_msg = result.unwrap_err();
+        assert!(error_msg.contains("No valid provider configuration found"));
+        assert!(error_msg.contains("LLM: no valid providers configured"));
+    }
+
+    #[test]
+    fn test_llm_missing_model() {
+        // Test LLM provider without model
+        let mut config = GlobalConfig {
+            enabled_providers: vec!["llm".to_string()],
+            provider: ProviderType::LLM,
+            ..Default::default()
+        };
+
+        config.llm.providers = vec![LLMProviderConfig {
+            id: "test".to_string(),
+            name: "Test Provider".to_string(),
+            base_url: "https://api.example.com".to_string(),
+            api_keys: vec!["valid-api-key".to_string()],
+            model: "".to_string(), // Empty model
+            model_list: vec![], // Empty model_list too
+            max_tokens: 4096,
+            temperature: 0.7,
+            proxy_url: None,
+            timeout: 30,
+            rate_limit: 10,
+            extra_headers: std::collections::HashMap::new(),
+            extra_params: std::collections::HashMap::new(),
+        }];
+
+        let result = config.validate();
+        assert!(result.is_err());
+        let error_msg = result.unwrap_err();
+        assert!(error_msg.contains("No valid provider configuration found"));
+        assert!(error_msg.contains("LLM: no valid providers configured"));
     }
 }

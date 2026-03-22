@@ -121,7 +121,7 @@ mod tests {
     }
 
     #[test]
-    fn test_validate_config_file_without_path() {
+    fn test_validate_config_file_with_default_path() {
         let config = LoggingConfig {
             level: "info".to_string(),
             output: "file".to_string(),
@@ -129,8 +129,10 @@ mod tests {
             file: None,
         };
 
-        // File output without explicit path should fail validation
-        assert!(validate_config(&config).is_err());
+        // File output without explicit path should use default path
+        // Validation should pass, and get_log_file_path should return default
+        assert!(validate_config(&config).is_ok());
+        assert_eq!(get_log_file_path(&config, None), DEFAULT_LOG_FILE);
     }
 
     #[test]
