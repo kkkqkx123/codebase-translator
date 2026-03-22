@@ -29,7 +29,7 @@ pub use common::{
 
 // Re-export translators
 pub use deeplx::DeepLXTranslator;
-pub use llm::{MultiProviderTranslator, ProviderPool, ProviderPoolConfig};
+pub use llm::{MultiProviderTranslator, ProviderHealth, ProviderStats, SelectionStrategy, TokenEstimationConfig};
 pub use tencent::TencentTranslator;
 
 // Re-export factory

@@ -1,12 +1,12 @@
 use async_trait::async_trait;
 use std::sync::Arc;
-use tracing::{debug, error, info};
+use tracing::{debug, error, info, warn};
 
 use crate::config::LLMProviderConfig;
 use crate::core::error::{Result, TranslateError};
 use crate::translator::common::TranslateResponse;
 use crate::translator::llm::provider::LLMProvider;
-use crate::translator::llm::routing::ProviderRouter;
+use crate::translator::llm::routing::{ProviderRouter, SelectionStrategy};
 use crate::translator::Translator;
 
 /// Multi-provider LLM translator with weighted capacity routing
@@ -16,6 +16,11 @@ use crate::translator::Translator;
 /// - Long texts (>= threshold): Weighted distribution among capable providers
 ///
 /// Each provider represents a single model with a fixed max_tokens limit.
+///
+/// Health management:
+/// - Uses threshold-based health tracking (not immediate)
+/// - Provider marked unhealthy after N consecutive failures
+/// - Provider recovers after M consecutive successes
 #[derive(Debug)]
 pub struct MultiProviderTranslator {
     router: ProviderRouter,
@@ -32,6 +37,28 @@ impl MultiProviderTranslator {
             "Created MultiProviderTranslator with {} providers, max_retries: {}",
             router.providers().len(),
             max_retries
+        );
+
+        Ok(Self {
+            router,
+            max_retries,
+        })
+    }
+
+    /// Create a new multi-provider translator with specific selection strategy
+    pub fn new_with_strategy(
+        configs: &[LLMProviderConfig],
+        max_retries: usize,
+        strategy: SelectionStrategy,
+    ) -> Result<Self> {
+        let router = ProviderRouter::new_with_strategy(configs, strategy)?;
+        let max_retries = if max_retries == 0 { 3 } else { max_retries };
+
+        info!(
+            "Created MultiProviderTranslator with {} providers, max_retries: {}, strategy: {:?}",
+            router.providers().len(),
+            max_retries,
+            strategy
         );
 
         Ok(Self {
@@ -81,8 +108,8 @@ impl MultiProviderTranslator {
                     "Translation succeeded with provider {} in {:?} (text: {} chars)",
                     provider_id, latency, text_len
                 );
-                // Mark provider as healthy on success
-                provider.mark_healthy().await;
+                // Note: Health is now managed internally by provider with threshold
+                // No need to manually mark as healthy
                 Ok(response)
             }
             Err(e) => {
@@ -91,8 +118,8 @@ impl MultiProviderTranslator {
                     "Translation failed with provider {} in {:?}: {}",
                     provider_id, latency, e
                 );
-                // Immediately mark provider as unhealthy on failure
-                provider.mark_unhealthy().await;
+                // Note: Health is now managed internally by provider with threshold
+                // No need to manually mark as unhealthy
 
                 // If retryable, try other providers that can handle this text
                 if Self::is_retryable_error(&e) {
@@ -120,9 +147,8 @@ impl MultiProviderTranslator {
         let other_providers: Vec<Arc<LLMProvider>> = self
             .router
             .providers()
-            .iter()
+            .into_iter()
             .filter(|p| p.can_handle(text_len) && p.id() != exclude_provider)
-            .cloned()
             .collect();
 
         info!(
@@ -143,6 +169,18 @@ impl MultiProviderTranslator {
         for (idx, provider) in other_providers.iter().take(max_attempts).enumerate() {
             let provider_id = provider.id().to_string();
             let attempt_start = std::time::Instant::now();
+            
+            // Check if provider is healthy before trying
+            if !provider.is_healthy().await {
+                warn!(
+                    "Skipping unhealthy provider {} (attempt {}/{})",
+                    provider_id,
+                    idx + 1,
+                    max_attempts
+                );
+                continue;
+            }
+            
             debug!(
                 "Trying alternative provider {} (attempt {}/{}, capacity: {} chars)",
                 provider_id,
@@ -158,8 +196,7 @@ impl MultiProviderTranslator {
                         "Translation succeeded with alternative provider {} in {:?}",
                         provider_id, latency
                     );
-                    // Mark provider as healthy on success
-                    provider.mark_healthy().await;
+                    // Note: Health is now managed internally
                     return Ok(response);
                 }
                 Err(e) => {
@@ -168,8 +205,7 @@ impl MultiProviderTranslator {
                         "Alternative provider {} failed in {:?}: {}",
                         provider_id, latency, e
                     );
-                    // Immediately mark provider as unhealthy on failure
-                    provider.mark_unhealthy().await;
+                    // Note: Health is now managed internally by provider
                 }
             }
         }
@@ -194,6 +230,7 @@ impl MultiProviderTranslator {
         serde_json::json!({
             "total_providers": self.router.providers().len(),
             "max_capacity": self.router.max_capacity(),
+            "strategy": format!("{:?}", self.router.strategy()),
             "providers": self.router.providers().iter().map(|p| {
                 serde_json::json!({
                     "id": p.id(),
@@ -202,6 +239,11 @@ impl MultiProviderTranslator {
                 })
             }).collect::<Vec<_>>(),
         })
+    }
+
+    /// Get selection strategy
+    pub fn selection_strategy(&self) -> SelectionStrategy {
+        self.router.strategy()
     }
 }
 

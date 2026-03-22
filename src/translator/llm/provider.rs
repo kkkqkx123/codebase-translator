@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use once_cell::sync::Lazy;
 use regex::Regex;
 use reqwest::{Client, Proxy};
 use serde::{Deserialize, Serialize};
@@ -12,6 +13,98 @@ use crate::config::LLMProviderConfig;
 use crate::core::error::{Result, TranslateError};
 use crate::translator::common::TranslateResponse;
 use crate::translator::Translator;
+
+// ============================================================================
+// Static Regex Patterns (compiled once)
+// ============================================================================
+
+static API_KEY_PATTERN: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r"sk-[a-zA-Z0-9]{20,}").expect("Invalid regex pattern for API key")
+});
+
+static BEARER_PATTERN: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r"Bearer\s+[a-zA-Z0-9\-._~+/]+=*")
+        .expect("Invalid regex pattern for Bearer token")
+});
+
+// ============================================================================
+// Token Estimation
+// ============================================================================
+
+/// Token estimation configuration for different languages
+#[derive(Debug, Clone, Copy)]
+pub struct TokenEstimationConfig {
+    /// Characters per token for CJK languages (Chinese, Japanese, Korean)
+    pub cjk_chars_per_token: f64,
+    /// Characters per token for non-CJK languages
+    pub non_cjk_chars_per_token: f64,
+    /// Ratio of tokens reserved for output (translation may be longer than source)
+    pub output_reserve_ratio: f64,
+    /// System prompt overhead in tokens
+    pub system_prompt_tokens: usize,
+}
+
+impl Default for TokenEstimationConfig {
+    fn default() -> Self {
+        Self {
+            // CJK: ~1.5 chars/token (conservative for Chinese)
+            cjk_chars_per_token: 1.5,
+            // Non-CJK: ~4 chars/token (English, etc.)
+            non_cjk_chars_per_token: 4.0,
+            // Reserve 40% for output (translation can be 20-30% longer)
+            output_reserve_ratio: 0.4,
+            // System prompt + formatting overhead
+            system_prompt_tokens: 50,
+        }
+    }
+}
+
+impl TokenEstimationConfig {
+    /// Create a conservative config for mixed-language content
+    pub fn conservative() -> Self {
+        Self {
+            cjk_chars_per_token: 1.5,
+            non_cjk_chars_per_token: 3.5,
+            output_reserve_ratio: 0.5,
+            system_prompt_tokens: 60,
+        }
+    }
+
+    /// Estimate tokens for given text
+    pub fn estimate_tokens(&self, text: &str) -> usize {
+        let cjk_count = text.chars().filter(|c| is_cjk(*c)).count();
+        let total_chars = text.chars().count();
+        let non_cjk_count = total_chars - cjk_count;
+
+        let cjk_tokens = cjk_count as f64 / self.cjk_chars_per_token;
+        let non_cjk_tokens = non_cjk_count as f64 / self.non_cjk_chars_per_token;
+
+        (cjk_tokens + non_cjk_tokens).ceil() as usize + self.system_prompt_tokens
+    }
+
+    /// Calculate max input characters for a given token limit
+    pub fn calculate_max_chars(&self, max_tokens: usize) -> usize {
+        // Available tokens after reserving for output and system prompt
+        let available_tokens = (max_tokens as f64 * (1.0 - self.output_reserve_ratio)) as usize;
+        let input_tokens = available_tokens.saturating_sub(self.system_prompt_tokens);
+
+        // Use conservative estimate (CJK ratio) for safety
+        // This ensures we don't exceed limit even with Chinese text
+        (input_tokens as f64 * self.cjk_chars_per_token) as usize
+    }
+}
+
+/// Check if a character is CJK (Chinese, Japanese, Korean)
+fn is_cjk(c: char) -> bool {
+    matches!(
+        c,
+        '\u{4E00}'..='\u{9FFF}' | // CJK Unified Ideographs
+        '\u{3040}'..='\u{309F}' | // Hiragana
+        '\u{30A0}'..='\u{30FF}' | // Katakana
+        '\u{AC00}'..='\u{D7AF}' | // Korean Hangul Syllables
+        '\u{FF00}'..='\u{FFEF}'   // Full-width characters
+    )
+}
 
 // ============================================================================
 // Chat API Types
@@ -94,6 +187,24 @@ impl Default for ProviderStats {
     }
 }
 
+/// Health check configuration
+#[derive(Debug, Clone, Copy)]
+pub struct HealthConfig {
+    /// Number of consecutive failures before marking unhealthy
+    pub failure_threshold: u32,
+    /// Number of consecutive successes required to recover
+    pub recovery_threshold: u32,
+}
+
+impl Default for HealthConfig {
+    fn default() -> Self {
+        Self {
+            failure_threshold: 3,
+            recovery_threshold: 2,
+        }
+    }
+}
+
 // ============================================================================
 // LLM Provider
 // ============================================================================
@@ -124,13 +235,16 @@ pub struct LLMProvider {
 
     // Capacity
     max_input_chars: usize,
+    token_config: TokenEstimationConfig,
 
     // State
     health: Arc<RwLock<ProviderHealth>>,
     failure_count: Arc<AtomicU32>,
+    success_count: Arc<AtomicU32>,
     stats: Arc<RwLock<ProviderStats>>,
     weight: u32,
     current_key_index: Arc<AtomicU32>,
+    health_config: HealthConfig,
 }
 
 impl std::fmt::Debug for LLMProvider {
@@ -142,6 +256,8 @@ impl std::fmt::Debug for LLMProvider {
             .field("model", &self.model)
             .field("max_input_chars", &self.max_input_chars)
             .field("weight", &self.weight)
+            .field("health_config", &self.health_config)
+            .field("token_config", &self.token_config)
             .finish_non_exhaustive()
     }
 }
@@ -149,6 +265,14 @@ impl std::fmt::Debug for LLMProvider {
 impl LLMProvider {
     /// Create a new LLM provider from configuration
     pub fn new(config: &LLMProviderConfig) -> Result<Self> {
+        Self::new_with_health_config(config, HealthConfig::default())
+    }
+
+    /// Create a new LLM provider with custom health configuration
+    pub fn new_with_health_config(
+        config: &LLMProviderConfig,
+        health_config: HealthConfig,
+    ) -> Result<Self> {
         // Validate required fields
         if config.id.is_empty() {
             return Err(TranslateError::Config(
@@ -206,9 +330,10 @@ impl LLMProvider {
             .build()
             .map_err(|e| TranslateError::Http(e.to_string()))?;
 
-        // Calculate max input characters based on max_tokens
-        // Reserve 20% of tokens for the response, use 4 chars per token as estimate
-        let max_input_chars = ((config.max_tokens as f64 * 0.8) * 4.0) as usize;
+        // Use conservative token estimation for translation tasks
+        // This ensures we don't exceed token limits even with CJK text
+        let token_config = TokenEstimationConfig::conservative();
+        let max_input_chars = token_config.calculate_max_chars(config.max_tokens as usize);
 
         // Convert extra_headers and extra_params
         let extra_headers = if config.extra_headers.is_empty() {
@@ -233,7 +358,9 @@ impl LLMProvider {
             provider_id = %config.id,
             base_url = %config.base_url,
             model = %model,
+            max_tokens = config.max_tokens,
             max_input_chars = max_input_chars,
+            failure_threshold = health_config.failure_threshold,
             "Created LLM provider"
         );
 
@@ -251,11 +378,14 @@ impl LLMProvider {
             extra_headers,
             extra_params,
             max_input_chars,
+            token_config,
             health: Arc::new(RwLock::new(ProviderHealth::Healthy)),
             failure_count: Arc::new(AtomicU32::new(0)),
+            success_count: Arc::new(AtomicU32::new(0)),
             stats: Arc::new(RwLock::new(ProviderStats::default())),
             weight: config.weight,
             current_key_index: Arc::new(AtomicU32::new(0)),
+            health_config,
         })
     }
 
@@ -288,8 +418,35 @@ impl LLMProvider {
         self.max_input_chars == 0 || text_len <= self.max_input_chars
     }
 
+    /// Check if provider can handle specific text with accurate token estimation
+    pub fn can_handle_text(&self, text: &str) -> bool {
+        if self.max_input_chars == 0 {
+            return true;
+        }
+
+        // Use precise token estimation
+        let estimated_tokens = self.token_config.estimate_tokens(text);
+        let max_tokens = self.max_tokens as usize;
+
+        // Must leave room for output (which may be longer than input)
+        let available_for_input =
+            (max_tokens as f64 * (1.0 - self.token_config.output_reserve_ratio)) as usize;
+
+        estimated_tokens <= available_for_input
+    }
+
+    /// Estimate tokens for given text
+    pub fn estimate_tokens(&self, text: &str) -> usize {
+        self.token_config.estimate_tokens(text)
+    }
+
+    /// Get token estimation configuration
+    pub fn token_config(&self) -> &TokenEstimationConfig {
+        &self.token_config
+    }
+
     // -------------------------------------------------------------------------
-    // Health Management
+    // Health Management (with threshold)
     // -------------------------------------------------------------------------
 
     /// Check if provider is healthy
@@ -297,21 +454,56 @@ impl LLMProvider {
         *self.health.read().await == ProviderHealth::Healthy
     }
 
-    /// Mark provider as healthy
+    /// Record a successful request
+    pub async fn record_success(&self) {
+        let new_count = self.success_count.fetch_add(1, Ordering::Relaxed) + 1;
+
+        // Check if we should recover
+        if new_count >= self.health_config.recovery_threshold {
+            let mut health = self.health.write().await;
+            if *health == ProviderHealth::Unhealthy {
+                *health = ProviderHealth::Healthy;
+                self.failure_count.store(0, Ordering::Relaxed);
+                info!(
+                    "Provider {} recovered after {} consecutive successes",
+                    self.id, new_count
+                );
+            }
+        }
+    }
+
+    /// Record a failed request
+    pub async fn record_failure(&self) -> bool {
+        let new_count = self.failure_count.fetch_add(1, Ordering::Relaxed) + 1;
+
+        // Check if we should mark as unhealthy
+        if new_count >= self.health_config.failure_threshold {
+            let mut health = self.health.write().await;
+            if *health == ProviderHealth::Healthy {
+                *health = ProviderHealth::Unhealthy;
+                self.success_count.store(0, Ordering::Relaxed);
+                warn!(
+                    "Provider {} marked as unhealthy after {} consecutive failures",
+                    self.id, new_count
+                );
+                return true; // Provider became unhealthy
+            }
+        }
+        false
+    }
+
+    /// Mark provider as healthy (manual override)
     pub async fn mark_healthy(&self) {
         *self.health.write().await = ProviderHealth::Healthy;
         self.failure_count.store(0, Ordering::Relaxed);
-        debug!("Provider {} marked as healthy", self.id);
+        self.success_count.store(0, Ordering::Relaxed);
+        debug!("Provider {} manually marked as healthy", self.id);
     }
 
-    /// Mark provider as unhealthy
+    /// Mark provider as unhealthy (manual override)
     pub async fn mark_unhealthy(&self) {
         *self.health.write().await = ProviderHealth::Unhealthy;
-        let count = self.failure_count.fetch_add(1, Ordering::Relaxed) + 1;
-        warn!(
-            "Provider {} marked as unhealthy (failure count: {})",
-            self.id, count
-        );
+        warn!("Provider {} manually marked as unhealthy", self.id);
     }
 
     /// Get failure count
@@ -319,9 +511,19 @@ impl LLMProvider {
         self.failure_count.load(Ordering::Relaxed)
     }
 
+    /// Get success count (since last failure)
+    pub fn success_count(&self) -> u32 {
+        self.success_count.load(Ordering::Relaxed)
+    }
+
     /// Get provider statistics
     pub async fn stats(&self) -> ProviderStats {
         self.stats.read().await.clone()
+    }
+
+    /// Get health configuration
+    pub fn health_config(&self) -> &HealthConfig {
+        &self.health_config
     }
 
     // -------------------------------------------------------------------------
@@ -371,16 +573,9 @@ Text to translate:
             }
         }
 
-        // Redact common API key patterns
-        let patterns = [
-            Regex::new(r"sk-[a-zA-Z0-9]{20,}").expect("Invalid regex pattern for API key"),
-            Regex::new(r"Bearer\s+[a-zA-Z0-9\-._~+/]+=*")
-                .expect("Invalid regex pattern for Bearer token"),
-        ];
-
-        for pattern in &patterns {
-            result = pattern.replace_all(&result, "***REDACTED***").to_string();
-        }
+        // Redact common API key patterns using pre-compiled regex
+        result = API_KEY_PATTERN.replace_all(&result, "***REDACTED***").to_string();
+        result = BEARER_PATTERN.replace_all(&result, "***REDACTED***").to_string();
 
         result
     }
@@ -493,7 +688,7 @@ Text to translate:
         })
     }
 
-    /// Translate text with statistics tracking
+    /// Translate text with statistics tracking and health management
     pub async fn translate(
         &self,
         text: &str,
@@ -530,24 +725,40 @@ Text to translate:
 
         let latency = start_time.elapsed();
 
-        // Update statistics
+        // Update statistics and health status
+        self.update_stats_and_health(&result, latency).await;
+
+        result
+    }
+
+    /// Update statistics and health based on result
+    async fn update_stats_and_health(
+        &self,
+        result: &Result<TranslateResponse>,
+        latency: Duration,
+    ) {
         let mut stats = self.stats.write().await;
         stats.total_requests += 1;
         stats.last_request_time = Some(Instant::now());
 
-        match &result {
+        match result {
             Ok(_) => {
                 stats.successful_requests += 1;
-                let total_latency = stats.average_latency_ms * (stats.total_requests - 1) as f64;
-                stats.average_latency_ms =
-                    (total_latency + latency.as_millis() as f64) / stats.total_requests as f64;
+                // Update rolling average latency
+                let prev_avg = stats.average_latency_ms;
+                let n = stats.successful_requests as f64;
+                stats.average_latency_ms = prev_avg + (latency.as_millis() as f64 - prev_avg) / n;
+
+                // Record success for health tracking
+                drop(stats); // Release lock before async call
+                self.record_success().await;
             }
             Err(_) => {
                 stats.failed_requests += 1;
+                drop(stats); // Release lock before async call
+                self.record_failure().await;
             }
         }
-
-        result
     }
 
     /// Perform health check
@@ -626,5 +837,102 @@ impl Translator for LLMProvider {
 
     fn max_input_chars(&self) -> usize {
         self.max_input_chars
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_health_config_default() {
+        let config = HealthConfig::default();
+        assert_eq!(config.failure_threshold, 3);
+        assert_eq!(config.recovery_threshold, 2);
+    }
+
+    #[test]
+    fn test_sanitize_error_static_regex() {
+        // This test verifies that static regex patterns are compiled correctly
+        let message = "Error with sk-abc12345678901234567890 and Bearer token123";
+        let sanitized = API_KEY_PATTERN.replace_all(message, "***REDACTED***");
+        assert!(sanitized.contains("***REDACTED***"));
+    }
+
+    #[test]
+    fn test_token_estimation_config_default() {
+        let config = TokenEstimationConfig::default();
+        assert_eq!(config.cjk_chars_per_token, 1.5);
+        assert_eq!(config.non_cjk_chars_per_token, 4.0);
+        assert_eq!(config.output_reserve_ratio, 0.4);
+        assert_eq!(config.system_prompt_tokens, 50);
+    }
+
+    #[test]
+    fn test_token_estimation_config_conservative() {
+        let config = TokenEstimationConfig::conservative();
+        assert_eq!(config.cjk_chars_per_token, 1.5);
+        assert_eq!(config.non_cjk_chars_per_token, 3.5);
+        assert_eq!(config.output_reserve_ratio, 0.5);
+        assert_eq!(config.system_prompt_tokens, 60);
+    }
+
+    #[test]
+    fn test_estimate_tokens_cjk() {
+        let config = TokenEstimationConfig::default();
+        // Chinese text: "你好世界" (4 CJK chars)
+        let chinese = "你好世界";
+        let cjk_count = chinese.chars().filter(|c| is_cjk(*c)).count();
+        let total_chars = chinese.chars().count();
+        let non_cjk_count = total_chars - cjk_count;
+        
+        // All 4 chars are CJK
+        assert_eq!(cjk_count, 4);
+        assert_eq!(non_cjk_count, 0);
+        
+        let tokens = config.estimate_tokens(chinese);
+        // CJK tokens: 4 / 1.5 = 2.67 -> 3 + 50 system = 53
+        assert!(tokens >= 52 && tokens <= 54, "Expected ~53 tokens, got {}", tokens);
+    }
+
+    #[test]
+    fn test_estimate_tokens_english() {
+        let config = TokenEstimationConfig::default();
+        // English text: "Hello world" (11 chars, non-CJK)
+        let english = "Hello world";
+        let tokens = config.estimate_tokens(english);
+        // 11 chars / 4 chars/token = 2.75 -> 3 + 50 system = 53
+        assert!(tokens >= 50 && tokens <= 55);
+    }
+
+    #[test]
+    fn test_estimate_tokens_mixed() {
+        let config = TokenEstimationConfig::default();
+        // Mixed text: "Hello 世界" (5 non-CJK letters + 1 space + 2 CJK = 8 chars)
+        let mixed = "Hello 世界";
+        let tokens = config.estimate_tokens(mixed);
+        // 2 CJK / 1.5 = 1.33, 6 non-CJK / 4 = 1.5, total ~2.83 -> 3 + 50 = 53
+        assert!(tokens >= 52 && tokens <= 54, "Expected ~53 tokens, got {}", tokens);
+    }
+
+    #[test]
+    fn test_calculate_max_chars() {
+        let config = TokenEstimationConfig::conservative();
+        // With 1000 tokens, 50% reserved for output, 60 for system
+        // Available: 1000 * 0.5 - 60 = 440 tokens for input
+        // At 1.5 chars/token: 440 * 1.5 = 660 chars
+        let max_chars = config.calculate_max_chars(1000);
+        assert_eq!(max_chars, 660);
+    }
+
+    #[test]
+    fn test_is_cjk() {
+        assert!(is_cjk('中'));
+        assert!(is_cjk('あ')); // Hiragana
+        assert!(is_cjk('ア')); // Katakana
+        assert!(is_cjk('한')); // Korean
+        assert!(!is_cjk('A'));
+        assert!(!is_cjk('1'));
+        assert!(!is_cjk(' '));
     }
 }

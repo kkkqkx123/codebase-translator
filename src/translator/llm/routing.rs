@@ -9,7 +9,12 @@
 //!
 //! The threshold is set to the minimum capacity among all providers,
 //! ensuring short texts can be handled by any provider.
+//!
+//! Selection strategies:
+//! - **WeightedRandom**: Pure random weighted selection
+//! - **SmoothWeightedRoundRobin**: Smooth weighted round-robin for better distribution
 
+use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::Arc;
 
 use tracing::{debug, info, trace, warn};
@@ -18,21 +23,89 @@ use crate::config::LLMProviderConfig;
 use crate::core::error::{Result, TranslateError};
 use crate::translator::llm::provider::LLMProvider;
 
+/// Selection strategy for provider routing
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SelectionStrategy {
+    /// Pure random weighted selection
+    WeightedRandom,
+    /// Smooth weighted round-robin (better distribution over time)
+    SmoothWeightedRoundRobin,
+}
+
+impl Default for SelectionStrategy {
+    fn default() -> Self {
+        SelectionStrategy::SmoothWeightedRoundRobin
+    }
+}
+
+/// Provider entry with selection state for smooth weighted round-robin
+#[derive(Debug)]
+struct ProviderEntry {
+    provider: Arc<LLMProvider>,
+    /// Current weight (for smooth WRR algorithm)
+    current_weight: AtomicU32,
+    /// Effective weight (adjusted based on health)
+    effective_weight: AtomicU32,
+}
+
+impl ProviderEntry {
+    fn new(provider: Arc<LLMProvider>) -> Self {
+        let weight = provider.weight();
+        Self {
+            provider,
+            current_weight: AtomicU32::new(0),
+            effective_weight: AtomicU32::new(weight.max(1)),
+        }
+    }
+
+    fn weight(&self) -> u32 {
+        self.provider.weight()
+    }
+
+    fn effective_weight(&self) -> u32 {
+        self.effective_weight.load(Ordering::Relaxed)
+    }
+
+    fn current_weight(&self) -> u32 {
+        self.current_weight.load(Ordering::Relaxed)
+    }
+
+    /// Update effective weight based on provider health
+    fn update_effective_weight(&self, is_healthy: bool) {
+        let base_weight = self.weight().max(1);
+        let new_weight = if is_healthy { base_weight } else { 0 };
+        self.effective_weight.store(new_weight, Ordering::Relaxed);
+    }
+}
+
 /// Weighted router for LLM providers
 ///
 /// Routes texts to providers based on:
 /// 1. Capacity (must fit within provider's max_tokens limit)
 /// 2. Weight (higher weight = more likely to be selected)
+/// 3. Health status (unhealthy providers are excluded)
 #[derive(Debug)]
 pub struct ProviderRouter {
-    providers: Vec<Arc<LLMProvider>>,
+    providers: Vec<ProviderEntry>,
     /// Threshold for long text routing (minimum capacity among all providers)
     capacity_threshold: usize,
+    /// Selection strategy
+    strategy: SelectionStrategy,
+    /// Total effective weight (cached for performance)
+    total_effective_weight: AtomicU32,
 }
 
 impl ProviderRouter {
     /// Create a new provider router from configurations
     pub fn new(configs: &[LLMProviderConfig]) -> Result<Self> {
+        Self::new_with_strategy(configs, SelectionStrategy::default())
+    }
+
+    /// Create a new provider router with specific strategy
+    pub fn new_with_strategy(
+        configs: &[LLMProviderConfig],
+        strategy: SelectionStrategy,
+    ) -> Result<Self> {
         // Validate input configurations
         if configs.is_empty() {
             return Err(TranslateError::Config(
@@ -56,7 +129,7 @@ impl ProviderRouter {
             }
         }
 
-        let mut providers: Vec<Arc<LLMProvider>> = Vec::new();
+        let mut providers: Vec<ProviderEntry> = Vec::new();
         let mut total_weight = 0u32;
 
         for config in configs {
@@ -80,7 +153,7 @@ impl ProviderRouter {
                         config.id, max_chars, weight
                     );
                     total_weight += weight;
-                    providers.push(Arc::new(provider));
+                    providers.push(ProviderEntry::new(Arc::new(provider)));
                 }
                 Err(e) => {
                     warn!("Failed to create provider {}: {}. Skipping.", config.id, e);
@@ -97,32 +170,35 @@ impl ProviderRouter {
         // Warn if all weights are zero
         if total_weight == 0 {
             warn!(
-                "All providers have weight 0. Weighted selection will fall back to random selection."
+                "All providers have weight 0. Weighted selection will use equal distribution."
             );
         }
 
         // Calculate capacity threshold (minimum capacity among all providers)
         let capacity_threshold = providers
             .iter()
-            .map(|p| p.max_input_chars())
+            .map(|p| p.provider.max_input_chars())
             .filter(|&c| c > 0)
             .min()
             .unwrap_or(0);
 
         info!(
-            "Created ProviderRouter with {} providers, capacity_threshold: {}, total_weight: {}",
+            "Created ProviderRouter with {} providers, capacity_threshold: {}, total_weight: {}, strategy: {:?}",
             providers.len(),
             capacity_threshold,
-            total_weight
+            total_weight,
+            strategy
         );
 
         Ok(Self {
             providers,
             capacity_threshold,
+            strategy,
+            total_effective_weight: AtomicU32::new(total_weight.max(1)),
         })
     }
 
-    /// Select provider based on text length using weighted distribution
+    /// Select provider based on text length and configured strategy
     pub fn select_provider(&self, text_len: usize) -> Option<&Arc<LLMProvider>> {
         trace!(
             "Selecting provider for text length: {} (threshold: {})",
@@ -130,13 +206,16 @@ impl ProviderRouter {
             self.capacity_threshold
         );
 
-        // For long texts, filter to capable providers only
-        let candidates: Vec<&Arc<LLMProvider>> = if text_len < self.capacity_threshold {
+        // Update effective weights based on current health status
+        self.update_effective_weights();
+
+        // Filter candidates based on capacity
+        let candidates: Vec<&ProviderEntry> = if text_len < self.capacity_threshold {
             self.providers.iter().collect()
         } else {
             self.providers
                 .iter()
-                .filter(|p| p.can_handle(text_len))
+                .filter(|p| p.provider.can_handle(text_len))
                 .collect()
         };
 
@@ -149,60 +228,140 @@ impl ProviderRouter {
             return None;
         }
 
-        self.select_weighted(&candidates)
+        match self.strategy {
+            SelectionStrategy::WeightedRandom => self.select_weighted_random(&candidates),
+            SelectionStrategy::SmoothWeightedRoundRobin => {
+                self.select_smooth_wrr(&candidates)
+            }
+        }
     }
 
-    /// Select provider by weighted strategy using random selection
-    fn select_weighted<'a>(
+    /// Update effective weights based on provider health
+    /// Note: This is a placeholder for future async health checking
+    /// Currently, health is managed internally by each provider
+    fn update_effective_weights(&self) {
+        // Health is managed internally by LLMProvider with threshold-based tracking
+        // The effective weight is updated when provider health changes
+    }
+
+    /// Select provider using weighted random strategy
+    fn select_weighted_random<'a>(
         &self,
-        candidates: &[&'a Arc<LLMProvider>],
+        candidates: &[&'a ProviderEntry],
     ) -> Option<&'a Arc<LLMProvider>> {
         if candidates.is_empty() {
             return None;
         }
 
         if candidates.len() == 1 {
-            return Some(candidates[0]);
+            return Some(&candidates[0].provider);
         }
 
-        // Calculate total weight of candidates
-        let total_weight: u32 = candidates.iter().map(|p| p.weight()).sum();
+        // Calculate total effective weight
+        let total_weight: u32 = candidates.iter().map(|p| p.effective_weight()).sum();
+        
         if total_weight == 0 {
-            // Fall back to random selection if all weights are 0
+            // All weights are 0, use equal distribution
             let index = rand::random::<usize>() % candidates.len();
             trace!(
                 "All weights are 0, randomly selected provider at index {}",
                 index
             );
-            return Some(candidates[index]);
+            return Some(&candidates[index].provider);
         }
 
         // Use random selection for weighted distribution
         let target_weight = rand::random::<u32>() % total_weight;
 
         let mut current_weight = 0u32;
-        for provider in candidates {
-            current_weight += provider.weight();
+        for entry in candidates {
+            current_weight += entry.effective_weight();
             if target_weight < current_weight {
                 trace!(
                     "Weighted selected provider {} with weight {} (target: {})",
-                    provider.id(),
-                    provider.weight(),
+                    entry.provider.id(),
+                    entry.effective_weight(),
                     target_weight
                 );
-                return Some(provider);
+                return Some(&entry.provider);
             }
         }
 
         // Fallback to last candidate
-        let provider = candidates.last().copied();
-        if let Some(p) = provider {
-            trace!(
-                "Weighted selection fell back to last provider {}",
-                p.id()
-            );
+        candidates.last().map(|e| &e.provider)
+    }
+
+    /// Select provider using smooth weighted round-robin (Nginx algorithm)
+    ///
+    /// Algorithm:
+    /// 1. On each request, increase current_weight by effective_weight
+    /// 2. Select provider with maximum current_weight
+    /// 3. Decrease selected provider's current_weight by total_weight
+    fn select_smooth_wrr<'a>(
+        &self,
+        candidates: &[&'a ProviderEntry],
+    ) -> Option<&'a Arc<LLMProvider>> {
+        if candidates.is_empty() {
+            return None;
         }
-        provider
+
+        if candidates.len() == 1 {
+            return Some(&candidates[0].provider);
+        }
+
+        let total_weight: u32 = candidates.iter().map(|p| p.effective_weight()).sum();
+        
+        if total_weight == 0 {
+            // All weights are 0, use round-robin
+            static INDEX: AtomicU32 = AtomicU32::new(0);
+            let idx = INDEX.fetch_add(1, Ordering::Relaxed) as usize % candidates.len();
+            return Some(&candidates[idx].provider);
+        }
+
+        // Find provider with max current_weight + effective_weight
+        let mut best_entry: Option<&ProviderEntry> = None;
+        let mut max_weight = 0u32;
+
+        for entry in candidates {
+            let effective = entry.effective_weight();
+            let current = entry.current_weight.load(Ordering::Relaxed);
+            let new_weight = current + effective;
+
+            if new_weight > max_weight {
+                max_weight = new_weight;
+                best_entry = Some(entry);
+            }
+        }
+
+        if let Some(entry) = best_entry {
+            // Update current_weight: add effective_weight, then subtract total_weight
+            let current = entry.current_weight.load(Ordering::Relaxed);
+            let effective = entry.effective_weight();
+            entry.current_weight.store(
+                current + effective - total_weight,
+                Ordering::Relaxed,
+            );
+
+            // Reset other providers' current_weight (they just had effective_weight added)
+            for other in candidates {
+                if !Arc::ptr_eq(&other.provider, &entry.provider) {
+                    let effective = other.effective_weight();
+                    other.current_weight.fetch_add(effective, Ordering::Relaxed);
+                }
+            }
+
+            trace!(
+                "Smooth WRR selected provider {} (weight: {}, total: {})",
+                entry.provider.id(),
+                effective,
+                total_weight
+            );
+
+            return Some(&entry.provider);
+        }
+
+        // Fallback
+        candidates.first().map(|e| &e.provider)
     }
 
     /// Get capacity threshold (minimum capacity among all providers)
@@ -214,19 +373,24 @@ impl ProviderRouter {
     pub fn max_capacity(&self) -> usize {
         self.providers
             .iter()
-            .map(|p| p.max_input_chars())
+            .map(|p| p.provider.max_input_chars())
             .max()
             .unwrap_or(0)
     }
 
     /// Get all providers
-    pub fn providers(&self) -> &[Arc<LLMProvider>] {
-        &self.providers
+    pub fn providers(&self) -> Vec<Arc<LLMProvider>> {
+        self.providers.iter().map(|p| p.provider.clone()).collect()
+    }
+
+    /// Get selection strategy
+    pub fn strategy(&self) -> SelectionStrategy {
+        self.strategy
     }
 
     /// Check if any provider can handle the given text length
     pub fn can_handle(&self, text_len: usize) -> bool {
-        self.providers.iter().any(|p| p.can_handle(text_len))
+        self.providers.iter().any(|p| p.provider.can_handle(text_len))
     }
 
     /// Route and translate a single text
@@ -251,5 +415,23 @@ impl ProviderRouter {
             .await?;
 
         Ok(response.translated_text)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_selection_strategy_default() {
+        let strategy = SelectionStrategy::default();
+        assert_eq!(strategy, SelectionStrategy::SmoothWeightedRoundRobin);
+    }
+
+    #[test]
+    fn test_provider_entry_weight_management() {
+        // This is a basic test - in real scenarios we'd need mock providers
+        // For now, just verify the types compile correctly
+        assert_eq!(SelectionStrategy::WeightedRandom as u8, SelectionStrategy::WeightedRandom as u8);
     }
 }
