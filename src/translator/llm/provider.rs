@@ -129,6 +129,8 @@ struct ChatCompletionRequest {
     top_p: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     stream: Option<bool>,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    extra_params: Option<serde_json::Map<String, serde_json::Value>>,
 }
 
 /// Chat completion response
@@ -227,10 +229,8 @@ pub struct LLMProvider {
     model: String,
     max_tokens: i32,
     temperature: f64,
-    proxy_url: Option<String>,
-    timeout: u64,
     extra_headers: Option<Vec<(String, String)>>,
-    extra_params: Option<Vec<(String, String)>>,
+    extra_params: Option<serde_json::Map<String, serde_json::Value>>,
 
     // Capacity
     max_input_chars: usize,
@@ -353,13 +353,7 @@ impl LLMProvider {
         let extra_params = if config.extra_params.is_empty() {
             None
         } else {
-            Some(
-                config
-                    .extra_params
-                    .iter()
-                    .map(|(k, v)| (k.clone(), v.to_string()))
-                    .collect(),
-            )
+            Some(config.extra_params.clone().into_iter().collect())
         };
 
         info!(
@@ -381,8 +375,6 @@ impl LLMProvider {
             model,
             max_tokens: config.max_tokens as i32,
             temperature: config.temperature as f64,
-            proxy_url: config.proxy_url.clone(),
-            timeout: config.timeout,
             extra_headers,
             extra_params,
             max_input_chars,
@@ -623,6 +615,7 @@ Text to translate:
             temperature: Some(self.temperature.clamp(0.0, 2.0)),
             top_p: None,
             stream: Some(false),
+            extra_params: self.extra_params.clone(),
         };
 
         // Construct URL, handling base_url that may or may not end with /v1

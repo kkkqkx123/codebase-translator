@@ -409,7 +409,8 @@ impl TreeSitterParser {
                 };
 
                 // Skip empty content (e.g., doc comment lines with only markers like "/// ")
-                if text.trim().is_empty() {
+                // But preserve doc comment empty lines for proper merging
+                if text.trim().is_empty() && !is_doc_empty_line {
                     continue;
                 }
 
