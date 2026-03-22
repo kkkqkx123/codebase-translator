@@ -77,9 +77,9 @@ Provider 可用性汇总
       1. tencent/Hunyuan-MT-7B (主模型)
       2. THUDM/GLM-4-9B-0414
       3. Qwen/Qwen2.5-7B-Instruct
-    - Max Tokens: 4096
+    - Max Tokens: 8192
     - Temperature: 0.3
-    - 权重: 50
+    - 速率限制: 40
     - Base URL: https://api.siliconflow.cn/v1
     - API Keys: 已配置 (共 1 个)
     - Proxy: 已配置

@@ -371,7 +371,7 @@ impl ParserTrait for JavaParser {
 mod tests {
     use super::*;
     use crate::core::models::NodeType;
-    use crate::parser::filtering::FilterConfig;
+    
     use crate::parser::core::traits::ExtractionConfig;
     use std::path::PathBuf;
 
@@ -382,7 +382,7 @@ mod tests {
     fn create_test_parser() -> JavaParser {
         let config = ParserConfig::default();
         let extraction_config = ExtractionConfig::default();
-        let filter = Arc::new(ContentFilter::new(FilterConfig::default()).unwrap());
+        let filter = Arc::new(crate::parser::filtering::test_filter().unwrap());
 
         JavaParser::new(config, extraction_config, filter).unwrap()
     }

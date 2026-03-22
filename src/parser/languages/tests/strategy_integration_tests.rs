@@ -8,7 +8,7 @@ use std::sync::Arc;
 
 use crate::core::models::{File, NodeType};
 use crate::parser::core::traits::{ExtractionConfig, Parser, StrategyNodeType};
-use crate::parser::{ContentFilter, FilterConfig};
+use crate::parser::ContentFilter;
 use crate::parser::ParserConfig;
 use crate::parser::languages::*;
 
@@ -26,7 +26,7 @@ fn create_test_parser_config() -> ParserConfig {
 }
 
 fn create_filter() -> Arc<ContentFilter> {
-    Arc::new(ContentFilter::new(FilterConfig::default()).unwrap())
+    Arc::new(crate::parser::filtering::test_filter().unwrap())
 }
 
 /// Test that strategy correctly filters comments

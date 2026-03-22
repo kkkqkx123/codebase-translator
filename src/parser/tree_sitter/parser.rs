@@ -400,6 +400,11 @@ impl TreeSitterParser {
                         && strategy_node_type == StrategyNodeType::DocString
                 };
 
+                // Skip empty content (e.g., doc comment lines with only markers like "/// ")
+                if text.trim().is_empty() {
+                    continue;
+                }
+
                 if !is_doc_empty_line {
                     // Apply content filter (includes length, symbol, and language checks)
                     if !self.filter.should_translate(&text) {
@@ -687,7 +692,7 @@ impl TreeSitterParserFactory {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::filtering::FilterConfig;
+    
     use crate::parser::core::traits::ExtractionConfig;
     use crate::parser::ParserConfig;
     use std::path::PathBuf;
@@ -701,7 +706,7 @@ mod tests {
     }
 
     fn create_test_filter() -> Arc<ContentFilter> {
-        Arc::new(ContentFilter::new(FilterConfig::default()).unwrap())
+        Arc::new(crate::parser::filtering::test_filter().unwrap())
     }
 
     #[tokio::test]

@@ -121,7 +121,17 @@ impl LanguageFilter {
 
 impl Filter for LanguageFilter {
     fn should_translate(&self, text: &str) -> bool {
+        // When source_langs is empty, use AUTO mode behavior:
+        // skip translation if text is already in target language
         if self.source_langs.is_empty() {
+            if self.is_target_language(text) {
+                debug!(
+                    target_lang = %self.target_lang,
+                    reason = "already_in_target_language",
+                    "Text filtered by language check (AUTO mode)"
+                );
+                return false;
+            }
             return true;
         }
 
@@ -157,9 +167,11 @@ mod tests {
 
     #[test]
     fn test_no_language_restriction() {
+        // When source_langs is empty, use AUTO mode behavior:
+        // skip translation if text is already in target language
         let filter = create_filter(vec![], "EN");
-        assert!(filter.should_translate("Hello"));
-        assert!(filter.should_translate("你好"));
+        assert!(!filter.should_translate("Hello")); // English text should be skipped (target language)
+        assert!(filter.should_translate("你好")); // Chinese text should be translated
     }
 
     #[test]

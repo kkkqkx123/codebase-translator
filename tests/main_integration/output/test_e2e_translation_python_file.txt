@@ -10,7 +10,7 @@ Translated units: 6
 Cached files: 0
 Skipped units: 0
 Errors: 0
-Duration: 6.82s
+Duration: 6.74s
 
 
 Directory Contents:
@@ -27,27 +27,27 @@ Translated File Content:
 
 def add(a, b):
     """
-    Compute the sum of two numbers
+    Calculate the sum of two numbers
     
-        Args.
-            a: first number
-            b: second number
+        Args:
+            a: The first number
+            b: The second number
     
-        Returns.
-            The sum of the two numbers
+        Returns:
+        The sum of the two numbers
     """
     return a + b
 
 def subtract(a, b):
     """
-    Compute the difference between two numbers
+    Calculate the difference between two numbers
     
-        Args.
-            a: subtracted number
-            b: subtracted number
+        Args:
+            a: The number from which subtraction is to be performed
+            b: The number by which subtraction is to be performed
     
-        Returns.
-            Difference between two numbers
+        Returns:
+        The difference between the two numbers
     """
     return a - b
 
@@ -56,10 +56,10 @@ class Calculator:
     
     def __init__(self, name):
         """
-        Initializing the Calculator
+        Initialize the calculator
         
-                Args.
-                    name: Calculator name
+                Args:
+                    name: The name of the calculator
         """
         self.name = name
     

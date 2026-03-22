@@ -577,7 +577,7 @@ impl ParserTrait for PythonParser {
 mod tests {
     use super::*;
     use crate::core::models::NodeType;
-    use crate::parser::filtering::FilterConfig;
+    
     use crate::parser::core::traits::ExtractionConfig;
     use std::path::PathBuf;
 
@@ -594,7 +594,7 @@ mod tests {
             format_strings: true,
             ..Default::default()
         };
-        let filter = Arc::new(ContentFilter::new(FilterConfig::default()).unwrap());
+        let filter = Arc::new(crate::parser::filtering::test_filter().unwrap());
 
         PythonParser::new(config, extraction_config, filter).unwrap()
     }

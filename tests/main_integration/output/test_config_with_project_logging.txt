@@ -4,4 +4,4 @@ Config with Project Logging Test
 Global config logging level: debug
 Global config logging output: file
 Global config logging format: pretty
-Project config logging: Some(LoggingConfig { level: "debug", output: "file", file: Some("logs/translator.log"), format: "pretty" })
+Project config logging: Some(LoggingConfig { level: "debug", output: "file", file: Some(".translator/translator.log"), format: "pretty" })

@@ -43,7 +43,7 @@ pub mod traits;
 // Re-export main types
 pub use composite::CompositeFilter as ContentFilter;
 pub use composite::{
-    default_filter, from_project_config, from_project_config_with_translator,
+    default_filter, from_project_config, from_project_config_with_translator, test_filter,
 };
 pub use config::FilterConfig;
 pub use traits::Filter;

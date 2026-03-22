@@ -10,13 +10,24 @@ use codebase_translate::config::project::{
     StateTransition, StringLiteralCategory,
 };
 use codebase_translate::core::models::File;
-use codebase_translate::parser::filtering::default_filter;
+use codebase_translate::parser::filtering::{ContentFilter, FilterConfig};
 use codebase_translate::parser::coordinator::ParserCoordinator;
 use codebase_translate::parser::ParserConfig;
 use codebase_translate::parser::core::traits::ExtractionConfig;
+use std::sync::Arc;
 
 fn create_test_file(content: &str, path: &str) -> File {
     File::new(PathBuf::from(path), content.as_bytes().to_vec(), "utf-8")
+}
+
+/// Create a filter that allows English content to be extracted
+/// This is needed for tests that expect to extract English text
+fn create_test_filter() -> Arc<ContentFilter> {
+    let config = FilterConfig {
+        source_langs: vec!["EN".to_string()],
+        ..FilterConfig::default()
+    };
+    Arc::new(ContentFilter::new(config).expect("Failed to create filter"))
 }
 
 #[test]
@@ -37,7 +48,7 @@ fn test_custom_pattern_applied_to_tree_sitter_files() {
     let coordinator = ParserCoordinator::with_extraction_config(
         ParserConfig::default(),
         ExtractionConfig::default(),
-        std::sync::Arc::new(default_filter().unwrap()),
+        create_test_filter(),
         Some(project_extraction_config),
     )
     .unwrap();
@@ -86,7 +97,7 @@ fn test_custom_pattern_applied_to_regex_parser_files() {
     let coordinator = ParserCoordinator::with_extraction_config(
         ParserConfig::default(),
         ExtractionConfig::default(),
-        std::sync::Arc::new(default_filter().unwrap()),
+        create_test_filter(),
         Some(project_extraction_config),
     )
     .unwrap();
@@ -147,7 +158,7 @@ fn test_state_machine_applied_to_tree_sitter_files() {
     let coordinator = ParserCoordinator::with_extraction_config(
         ParserConfig::default(),
         ExtractionConfig::default(),
-        std::sync::Arc::new(default_filter().unwrap()),
+        create_test_filter(),
         Some(project_extraction_config),
     )
     .unwrap();
@@ -219,7 +230,7 @@ fn test_both_patterns_applied_to_same_file() {
     let coordinator = ParserCoordinator::with_extraction_config(
         ParserConfig::default(),
         ExtractionConfig::default(),
-        std::sync::Arc::new(default_filter().unwrap()),
+        create_test_filter(),
         Some(project_extraction_config),
     )
     .unwrap();
@@ -270,7 +281,7 @@ fn test_pattern_with_wildcard_extension() {
     let coordinator = ParserCoordinator::with_extraction_config(
         ParserConfig::default(),
         ExtractionConfig::default(),
-        std::sync::Arc::new(default_filter().unwrap()),
+        create_test_filter(),
         Some(project_extraction_config),
     )
     .unwrap();

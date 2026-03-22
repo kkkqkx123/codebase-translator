@@ -10,7 +10,7 @@ Translated units: 3
 Cached files: 0
 Skipped units: 0
 Errors: 0
-Duration: 3.49s
+Duration: 3.24s
 
 
 Directory Contents:
@@ -45,7 +45,7 @@ function subtract(a, b) {
     return a - b;
 }
 
-// simple class
+// Simple classes
 class Calculator {
     /**
      * 创建计算器实例

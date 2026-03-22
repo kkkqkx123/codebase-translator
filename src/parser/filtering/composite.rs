@@ -148,13 +148,28 @@ pub fn from_project_config_with_translator(
     CompositeFilter::new(filter_config)
 }
 
+/// Create a test filter that allows English content to be extracted
+/// This is needed for tests that expect to extract English text
+pub fn test_filter() -> crate::core::error::Result<CompositeFilter> {
+    let config = FilterConfig {
+        source_langs: vec!["EN".to_string()],
+        ..FilterConfig::default()
+    };
+    CompositeFilter::new(config)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn test_composite_filter() {
-        let filter = CompositeFilter::default().unwrap();
+        // Create a filter with EN as source language to allow English content
+        let config = FilterConfig {
+            source_langs: vec!["EN".to_string()],
+            ..FilterConfig::default()
+        };
+        let filter = CompositeFilter::new(config).unwrap();
 
         assert!(filter.should_translate("Hello world"));
         assert!(!filter.should_translate(""));

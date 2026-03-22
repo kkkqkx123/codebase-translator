@@ -10,7 +10,7 @@ Translated units: 8
 Cached files: 0
 Skipped units: 0
 Errors: 0
-Duration: 8.19s
+Duration: 6.17s
 
 
 Directory Contents:
@@ -27,12 +27,12 @@ Translated File Content:
 这是一个简单的Markdown文件，用于测试翻译功能。
 
 #
-## Function
+## Feature Introduction
 
 本工具可以自动翻译代码注释和文档字符串。
 
 #
-### Languages supported
+### Supported Languages
 
 - Rust
 - Python
@@ -48,7 +48,7 @@ Translated File Content:
 3. 查看翻译结果
 
 #
-## typical example
+## Example:
 
 ```rust
 fn main() {
@@ -57,7 +57,7 @@ fn main() {
 ```
 
 #
-## caveat
+## Precautions
 
 - 请确保API密钥配置正确
 - 翻译结果可能需要人工审核

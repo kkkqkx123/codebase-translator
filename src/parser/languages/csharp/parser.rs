@@ -444,7 +444,7 @@ impl ParserTrait for CSharpParser {
 mod tests {
     use super::*;
     use crate::core::models::NodeType;
-    use crate::parser::filtering::FilterConfig;
+    
     use crate::parser::core::traits::ExtractionConfig;
     use std::path::PathBuf;
 
@@ -455,7 +455,7 @@ mod tests {
     fn create_test_parser() -> CSharpParser {
         let config = ParserConfig::default();
         let extraction_config = ExtractionConfig::default();
-        let filter = Arc::new(ContentFilter::new(FilterConfig::default()).unwrap());
+        let filter = Arc::new(crate::parser::filtering::test_filter().unwrap());
 
         CSharpParser::new(config, extraction_config, filter).unwrap()
     }
@@ -469,7 +469,7 @@ mod tests {
             format_strings: true,
             ..Default::default()
         };
-        let filter = Arc::new(ContentFilter::new(FilterConfig::default()).unwrap());
+        let filter = Arc::new(crate::parser::filtering::test_filter().unwrap());
 
         CSharpParser::new(config, extraction_config, filter).unwrap()
     }

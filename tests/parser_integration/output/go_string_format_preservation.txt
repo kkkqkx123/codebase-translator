@@ -1,0 +1,12 @@
+Go String Format Preservation Test Results
+==================================================
+
+Input: "Hello, world!"
+Expected: Hello, world!
+Got: Hello, world!
+Status: PASS
+
+Input: `Hello, world!`
+Expected: Hello, world!
+Got: Hello, world!
+Status: PASS
