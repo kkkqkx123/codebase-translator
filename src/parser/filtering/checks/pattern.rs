@@ -18,6 +18,7 @@ pub struct PatternFilter {
     include_patterns_regex: Vec<Regex>,
     placeholder_regex: Vec<Regex>,
     code_pattern_regex: Vec<Regex>,
+    url_pattern_regex: Regex, // URL 模式优先检测
     allow_placeholders: bool,
     detect_code_patterns: bool,
 }
@@ -80,12 +81,17 @@ impl PatternFilter {
             Regex::new(r"\[[^\]]*\]").expect("Invalid code pattern regex"), // Brackets
         ];
 
+        // URL pattern - 优先于代码模式检测
+        let url_pattern_regex = Regex::new(r"https?://[^\s]+|[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
+            .expect("Invalid URL pattern regex");
+
         Ok(Self {
             exclude_keywords_regex,
             exclude_patterns_regex,
             include_patterns_regex,
             placeholder_regex,
             code_pattern_regex,
+            url_pattern_regex,
             allow_placeholders: config.allow_placeholders,
             detect_code_patterns: config.detect_code_patterns,
         })
@@ -145,6 +151,13 @@ impl Filter for PatternFilter {
             }
         }
 
+        // URL pattern check - 优先于代码模式检测
+        // 如果文本包含 URL，直接返回 false（被过滤），避免 URL 中的点号被误判为代码模式
+        if self.url_pattern_regex.is_match(text) {
+            debug!(reason = "contains_url", "Text filtered by pattern check");
+            return false;
+        }
+
         // Code pattern check
         if self.detect_code_patterns {
             for pattern in &self.code_pattern_regex {
@@ -192,6 +205,32 @@ mod tests {
 
         assert!(!filter.should_translate("Visit https://example.com"));
         assert!(!filter.should_translate("Email test@example.com"));
+    }
+
+    #[test]
+    fn test_url_priority_over_code_patterns() {
+        // 验证 URL 检测优先于代码模式检测
+        // 即使 detect_code_patterns 启用，URL 也不会被误判为代码模式
+        let config = FilterConfig {
+            detect_code_patterns: true,
+            // 清空 exclude_patterns，确保 URL 不是被默认的 exclude_patterns 过滤
+            exclude_patterns: vec![],
+            ..Default::default()
+        };
+        let filter = PatternFilter::new(&config).unwrap();
+
+        // URL 应该被过滤（优先检测）
+        assert!(!filter.should_translate("Visit https://example.com for more info"));
+        assert!(!filter.should_translate("Check sub.domain.org now"));
+        assert!(!filter.should_translate("Contact admin@company.com"));
+
+        // 纯代码模式（不含 URL）应该被过滤
+        assert!(!filter.should_translate("object.method()"));
+        assert!(!filter.should_translate("func(arg1, arg2)"));
+
+        // 普通文本应该通过
+        assert!(filter.should_translate("Hello world"));
+        assert!(filter.should_translate("This is a normal sentence."));
     }
 
     #[test]
@@ -333,19 +372,22 @@ mod tests {
 
     #[test]
     fn test_empty_patterns() {
-        // 测试空配置
+        // 测试空配置（启用代码模式检测，URL 会被优先处理）
         let config = FilterConfig {
             exclude_keywords: vec![],
             exclude_patterns: vec![],
             include_patterns: vec![],
+            detect_code_patterns: true,
             ..Default::default()
         };
         let filter = PatternFilter::new(&config).unwrap();
 
-        // 应该允许所有内容（除了 placeholder 因为默认 allow_placeholders=false）
+        // 普通文本应该通过
         assert!(filter.should_translate("Hello world"));
         assert!(filter.should_translate("TODO something"));
-        assert!(filter.should_translate("Visit https://example.com"));
+
+        // URL 应该被过滤（优先于代码模式检测）
+        assert!(!filter.should_translate("Visit https://example.com"));
     }
 
     #[test]
@@ -373,13 +415,19 @@ mod tests {
 
     #[test]
     fn test_invalid_keyword_regex() {
-        // 测试无效的关键字正则
+        // 测试关键字正则处理 - regex::escape 会转义特殊字符
+        // 所以即使包含正则特殊字符的关键字也能正常编译
         let config = FilterConfig {
-            exclude_keywords: vec!["[invalid".to_string()], // 未闭合的字符类
+            exclude_keywords: vec!["[invalid".to_string(), "(test".to_string(), "+plus".to_string()],
             ..Default::default()
         };
         let result = PatternFilter::new(&config);
-        assert!(result.is_err());
+        // regex::escape 会转义这些字符，所以不会报错
+        assert!(result.is_ok());
+
+        // 验证 Filter 可以正常工作
+        let filter = result.unwrap();
+        assert_eq!(filter.name(), "PatternFilter");
     }
 
     #[test]

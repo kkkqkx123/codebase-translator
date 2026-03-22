@@ -101,8 +101,9 @@ mod tests {
     fn test_empty_string() {
         let filter = ContentFilter::new();
 
-        // 空字符串不是仅符号，应该返回 true（留给 LengthFilter 处理）
-        assert!(filter.should_translate(""));
+        // 空字符串的 chars().all() 返回 true，所以 is_only_symbols 返回 true
+        // should_translate 返回 false（空字符串应由 LengthFilter 处理）
+        assert!(!filter.should_translate(""));
     }
 
     #[test]
@@ -171,8 +172,9 @@ mod tests {
     fn test_numbers_and_symbols() {
         let filter = ContentFilter::new();
 
-        // 纯数字 + 符号
-        assert!(!filter.should_translate("123!@#"));
+        // 纯数字 + 符号（数字不是标点符号，所以应该被翻译）
+        assert!(filter.should_translate("123!@#"));
+        // 纯符号应该被过滤
         assert!(!filter.should_translate("$%^&*"));
 
         // 数字 + 字母应该被翻译

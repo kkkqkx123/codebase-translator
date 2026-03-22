@@ -24,9 +24,9 @@ impl LengthFilter {
 
 impl Filter for LengthFilter {
     fn should_translate(&self, text: &str) -> bool {
-        // Empty check
-        if text.is_empty() {
-            debug!(reason = "empty", "Text filtered by length check");
+        // Empty or whitespace-only check
+        if text.trim().is_empty() {
+            debug!(reason = "empty_or_whitespace", "Text filtered by length check");
             return false;
         }
 
@@ -58,7 +58,15 @@ mod tests {
     fn test_empty_text() {
         let config = FilterConfig::default();
         let filter = LengthFilter::new(&config);
+
+        // 空字符串应该被过滤
         assert!(!filter.should_translate(""));
+
+        // 纯空白也应该被过滤
+        assert!(!filter.should_translate("   "));
+        assert!(!filter.should_translate("\t\t\t"));
+        assert!(!filter.should_translate("\n\n"));
+        assert!(!filter.should_translate("  \t\n  "));
     }
 
     #[test]

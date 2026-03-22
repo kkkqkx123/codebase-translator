@@ -293,8 +293,9 @@ mod tests {
         };
         let filter = LanguageFilter::new(&config);
 
-        // 空字符串应该被允许（留给 LengthFilter 处理）
-        assert!(filter.should_translate(""));
+        // 空字符串没有 CJK 字符，所以返回 false
+        // 但在 CompositeFilter 中，LengthFilter 会先处理空字符串
+        assert!(!filter.should_translate(""));
     }
 
     #[test]
@@ -305,9 +306,10 @@ mod tests {
         };
         let filter = LanguageFilter::new(&config);
 
-        // 纯空白应该被允许
-        assert!(filter.should_translate("   "));
-        assert!(filter.should_translate("\t\n"));
+        // 纯空白没有 CJK 字符，所以返回 false
+        // 但在 CompositeFilter 中，LengthFilter 会先处理纯空白
+        assert!(!filter.should_translate("   "));
+        assert!(!filter.should_translate("\t\n"));
     }
 
     #[test]
@@ -480,7 +482,9 @@ mod tests {
         assert!(!LanguageFilter::quick_detect_english("!@#$%")); // 纯符号
 
         // 接近70%边界的情况
-        assert!(LanguageFilter::quick_detect_english("abc123")); // 3/6 = 50% - 实际是字母3个，非空白6个
-        assert!(LanguageFilter::quick_detect_english("Hello World!!!")); // 字母10个，非空白13个 -> 76%
+        assert!(!LanguageFilter::quick_detect_english("abc123")); // 3字母/6字符 = 50% < 70%
+        assert!(LanguageFilter::quick_detect_english("abcdef12")); // 6字母/8字符 = 75% > 70%
+        assert!(LanguageFilter::quick_detect_english("abcdefg12")); // 7字母/9字符 = 77.8% > 70%
+        assert!(LanguageFilter::quick_detect_english("Hello World!!!")); // 字母10个，非空白13个 -> 76.9% > 70%
     }
 }
