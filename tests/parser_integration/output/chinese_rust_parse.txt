@@ -21,28 +21,20 @@ Position: Line 4, Column 1 (Offset: 103)
 End Position: Line 17, Column 1 (Offset: 307)
 Content:
 计算两个数的和
-
 # Arguments
-
 * `a` - 第一个数字
 * `b` - 第二个数字
-
 # Examples
-
 ```
 let result = add(1, 2);
 assert_eq!(result, 3);
 ```
 Raw Match:
 /// 计算两个数的和
-/// 
 /// # Arguments
-/// 
 /// * `a` - 第一个数字
 /// * `b` - 第二个数字
-/// 
 /// # Examples
-/// 
 /// ```
 /// let result = add(1, 2);
 /// assert_eq!(result, 3);
@@ -56,22 +48,18 @@ Position: Line 21, Column 1 (Offset: 356)
 End Position: Line 27, Column 1 (Offset: 449)
 Content:
 计算两个数的差
-
 # Arguments
-
 * `a` - 被减数
 * `b` - 减数
 Raw Match:
 /// 计算两个数的差
-/// 
 /// # Arguments
-/// 
 /// * `a` - 被减数
 /// * `b` - 减数
 Should Translate: true
 
 --- Unit 4 ---
-ID: simple_rust.rs_doc_string_19
+ID: simple_rust.rs_doc_string_13
 Type: DocString
 Position: Line 31, Column 1 (Offset: 503)
 End Position: Line 32, Column 1 (Offset: 520)
@@ -111,20 +99,16 @@ Position: Line 43, Column 5 (Offset: 698)
 End Position: Line 48, Column 1 (Offset: 803)
 Content:
 创建新的计算器实例
-
 # Arguments
-
 * `name` - 计算器名称
 Raw Match:
 /// 创建新的计算器实例
-/// 
 /// # Arguments
-/// 
 /// * `name` - 计算器名称
 Should Translate: true
 
 --- Unit 8 ---
-ID: simple_rust.rs_doc_string_25
+ID: simple_rust.rs_doc_string_17
 Type: DocString
 Position: Line 54, Column 5 (Offset: 918)
 End Position: Line 55, Column 1 (Offset: 944)

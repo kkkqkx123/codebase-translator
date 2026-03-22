@@ -10,7 +10,7 @@ Translated units: 8
 Cached files: 0
 Skipped units: 0
 Errors: 0
-Duration: 8.26s
+Duration: 11.07s
 
 
 Directory Contents:
@@ -25,29 +25,29 @@ Translated File Content:
 // This is a simple Rust file for testing translation functionality
 // Contains Chinese comments and document strings
 
-/// Compute the sum of two numbers
+/// 计算两个数的和
 /// 
 /// # Arguments
 /// 
-/// * `a` - the first number
-/// * `b` - the second number
+/// * `a` - 第一个数字
+/// * `b` - 第二个数字
 /// 
 /// # Examples
 /// 
-/// ``
-/// let result = add(1, 2); assert_eq!(result, 3); assert_eq!
+/// ```
+/// let result = add(1, 2);
 /// assert_eq!(result, 3);
 /// ```
 pub fn add(a: i32, b: i32) -> i32 {
     a + b
 }
 
-/// Compute the difference between two numbers
+/// 计算两个数的差
 /// 
 /// # Arguments
 /// 
-/// * `a` - the subtracted number
-/// * `b` - the subtracted number
+/// * `a` - 被减数
+/// * `b` - 减数
 pub fn subtract(a: i32, b: i32) -> i32 {
     a - b
 }
@@ -57,7 +57,7 @@ pub fn multiply(a: i32, b: i32) -> i32 {
     a * b
 }
 
-// This is a simple structure
+// This is a simple struct.
 pub struct Calculator {
     // Calculator Name
     name: String,

@@ -487,12 +487,20 @@ func (p *Person) Greet() string {
         let file = create_test_file(content, "test.go");
         let units = parser.parse(&file).expect("Parsing should succeed");
 
-        let docstrings: Vec<_> = units
+        // In Go, doc comments are syntactically identical to regular comments.
+        // They are extracted as Comment type, not DocString.
+        let comments: Vec<_> = units
             .iter()
-            .filter(|u| u.node_type == NodeType::DocString)
+            .filter(|u| u.node_type == NodeType::Comment)
             .collect();
 
-        assert!(!docstrings.is_empty(), "Should extract docstrings");
+        assert!(!comments.is_empty(), "Should extract comments including doc comments");
+
+        // Verify that doc comment content is present
+        let comment_texts: Vec<_> = comments.iter().map(|u| u.content.as_str()).collect();
+        assert!(comment_texts.iter().any(|t| t.contains("Package main provides")));
+        assert!(comment_texts.iter().any(|t| t.contains("Person represents")));
+        assert!(comment_texts.iter().any(|t| t.contains("Greet returns")));
     }
 
     #[tokio::test]

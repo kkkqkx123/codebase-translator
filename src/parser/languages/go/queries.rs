@@ -9,12 +9,15 @@ impl GoQueries {
         "(comment) @comment"
     }
 
-    /// Doc comment query (comments starting with // or /* that appear before declarations)
-    /// In Go, doc comments are regular comments that precede a declaration
+    /// Doc comment query for Go
+    /// In Go, doc comments are regular comments that precede a declaration.
+    /// Since tree-sitter query cannot reliably determine if a comment precedes a declaration,
+    /// we return an empty query. All comments should be extracted via all_comments().
     pub fn doc_comments() -> &'static str {
-        r#"
-(comment) @docstring
-"#
+        // Go doc comments are syntactically identical to regular comments.
+        // They are identified by position (preceding a declaration) and convention.
+        // This requires AST-level analysis beyond simple queries.
+        ""
     }
 
     /// String literal query (interpreted string literals)
@@ -175,7 +178,10 @@ mod tests {
     #[test]
     fn test_comment_queries() {
         assert!(!GoQueries::all_comments().is_empty());
-        assert!(!GoQueries::doc_comments().is_empty());
+        // Go doc comments are syntactically identical to regular comments,
+        // so doc_comments() returns an empty query. All comments are extracted
+        // via all_comments() and treated as regular comments.
+        assert!(GoQueries::doc_comments().is_empty());
     }
 
     #[test]

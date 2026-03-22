@@ -14,11 +14,15 @@ impl RustQueries {
         "(block_comment) @comment"
     }
 
-    /// All comments query
+    /// All comments query (excluding doc comments)
     pub fn all_comments() -> &'static str {
         r#"
-(line_comment) @comment
-(block_comment) @comment
+((line_comment) @comment
+  (#not-match? @comment "^///")
+  (#not-match? @comment "^//!"))
+
+((block_comment) @comment
+  (#not-match? @comment "^/\\*\\*"))
 "#
     }
 

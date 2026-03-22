@@ -10,7 +10,7 @@ Translated units: 6
 Cached files: 0
 Skipped units: 0
 Errors: 0
-Duration: 6.74s
+Duration: 10.86s
 
 
 Directory Contents:
@@ -43,8 +43,8 @@ def subtract(a, b):
     Calculate the difference between two numbers
     
         Args:
-            a: The number from which subtraction is to be performed
-            b: The number by which subtraction is to be performed
+            a: The number being subtracted
+            b: The number subtracting from the first number
     
         Returns:
         The difference between the two numbers

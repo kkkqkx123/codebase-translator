@@ -14,11 +14,13 @@ impl JavaQueries {
         "(block_comment) @comment"
     }
 
-    /// All comments query
+    /// All comments query (excluding Javadoc comments)
     pub fn all_comments() -> &'static str {
         r#"
 (line_comment) @comment
-(block_comment) @comment
+
+((block_comment) @comment
+  (#not-match? @comment "^/\\*\\*"))
 "#
     }
 

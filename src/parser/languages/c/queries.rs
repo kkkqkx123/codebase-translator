@@ -9,9 +9,13 @@ impl CQueries {
         "(comment) @comment"
     }
 
-    /// All comments query
+    /// All comments query (excluding documentation comments)
     pub fn all_comments() -> &'static str {
-        "(comment) @comment"
+        r#"
+((comment) @comment
+  (#not-match? @comment "^//[/!]")
+  (#not-match? @comment "^/\\*[*!]"))
+"#
     }
 
     /// Documentation comments query (Doxygen style: /// or /**)

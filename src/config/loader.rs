@@ -376,7 +376,7 @@ target_lang = "AUTO"
         assert!(result
             .unwrap_err()
             .to_string()
-            .contains("target language cannot be AUTO"));
+            .contains("target language cannot be auto"));
     }
 
     #[test]

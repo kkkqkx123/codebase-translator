@@ -10,7 +10,7 @@ Translated units: 25
 Cached files: 0
 Skipped units: 0
 Errors: 0
-Duration: 24.79s
+Duration: 35.28s
 
 
 Directory Contents:
@@ -26,7 +26,7 @@ Directory Contents:
 Translated Files:
 ==================
 
---- C:\Users\33530\AppData\Local\Temp\.tmpuRifk9\simple_javascript.js ---
+--- C:\Users\33530\AppData\Local\Temp\.tmpzY8WWl\simple_javascript.js ---
 // This is a simple JavaScript file to test the translation function
 // Includes Chinese comments
 
@@ -50,7 +50,7 @@ function subtract(a, b) {
     return a - b;
 }
 
-// simple class
+// Simple classes
 class Calculator {
     /**
      * 创建计算器实例
@@ -78,13 +78,13 @@ function main() {
 
 main();
 
---- C:\Users\33530\AppData\Local\Temp\.tmpuRifk9\simple_markdown.md ---
+--- C:\Users\33530\AppData\Local\Temp\.tmpzY8WWl\simple_markdown.md ---
 # Testing the translation function
 
 这是一个简单的Markdown文件，用于测试翻译功能。
 
 #
-## Function
+## Feature Introduction
 
 本工具可以自动翻译代码注释和文档字符串。
 
@@ -98,7 +98,7 @@ main();
 - Java
 
 #
-### Usage
+### How to use it
 
 1. 配置翻译服务
 2. 运行翻译命令
@@ -121,25 +121,25 @@ fn main() {
 - 建议先在小规模代码上测试
 
 #
-## Related links
+## Relevant links
 
 - [项目主页](https://github.com/example/translator)
 - [文档](https://docs.example.com)
 
---- C:\Users\33530\AppData\Local\Temp\.tmpuRifk9\simple_python.py ---
+--- C:\Users\33530\AppData\Local\Temp\.tmpzY8WWl\simple_python.py ---
 # This is a simple Python file to test the translation function
 # Contains Chinese comments and document strings
 
 def add(a, b):
     """
-    Compute the sum of two numbers
+    Calculate the sum of two numbers
     
-        Args.
-            a: first number
-            b: second number
+        Args:
+            a: The first number
+            b: The second number
     
-        Returns.
-            The sum of the two numbers
+        Returns:
+        The sum of the two numbers
     """
     return a + b
 
@@ -157,7 +157,7 @@ def subtract(a, b):
     return a - b
 
 class Calculator:
-    """Simple Calculator Class"""
+    """A simple calculator class"""
     
     def __init__(self, name):
         """
@@ -169,7 +169,7 @@ class Calculator:
         self.name = name
     
     def get_name(self):
-        """Get Calculator Name"""
+        """Obtain the name of the calculator."""
         return self.name
 
 if __name__ == "__main__":
@@ -177,38 +177,38 @@ if __name__ == "__main__":
     result = add(10, 20)
     print(f"结果: {result}")
 
---- C:\Users\33530\AppData\Local\Temp\.tmpuRifk9\simple_rust.rs ---
+--- C:\Users\33530\AppData\Local\Temp\.tmpzY8WWl\simple_rust.rs ---
 // This is a simple Rust file for testing translation functionality
 // Contains Chinese comments and document strings
 
-/// Compute the sum of two numbers
+/// 计算两个数的和
 /// 
 /// # Arguments
 /// 
-/// * `a` - the first number
-/// * `b` - the second number
+/// * `a` - 第一个数字
+/// * `b` - 第二个数字
 /// 
 /// # Examples
 /// 
-/// ``
-/// let result = add(1, 2); assert_eq!(result, 3); assert_eq!
+/// ```
+/// let result = add(1, 2);
 /// assert_eq!(result, 3);
 /// ```
 pub fn add(a: i32, b: i32) -> i32 {
     a + b
 }
 
-/// Compute the difference between two numbers
+/// 计算两个数的差
 /// 
 /// # Arguments
 /// 
-/// * `a` - the subtracted number
-/// * `b` - the subtracted number
+/// * `a` - 被减数
+/// * `b` - 减数
 pub fn subtract(a: i32, b: i32) -> i32 {
     a - b
 }
 
-/// multiplication
+/// Multiplication operation
 pub fn multiply(a: i32, b: i32) -> i32 {
     a * b
 }
@@ -231,7 +231,7 @@ impl Calculator {
         }
     }
 
-    /// Get Calculator Name
+    /// Obtain the name of the calculator.
     pub fn get_name(&self) -> &str {
         &self.name
     }

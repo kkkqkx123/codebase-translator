@@ -102,7 +102,10 @@ impl ProjectConfig {
     }
 
     /// Validate the project configuration
-    pub fn validate(&self) -> Result<(), String> {
+    pub fn validate(&mut self) -> Result<(), String> {
+        // Normalize language codes before validation
+        self.translate.normalize();
+
         debug!(
             provider = %self.translate.provider,
             target_lang = %self.translate.target_lang,
@@ -114,8 +117,8 @@ impl ProjectConfig {
             return Err("target language is required".to_string());
         }
 
-        if self.translate.target_lang == "AUTO" {
-            return Err("target language cannot be AUTO".to_string());
+        if self.translate.target_lang == "auto" {
+            return Err("target language cannot be auto".to_string());
         }
 
         if self.cache.directory.is_empty() {
@@ -186,10 +189,29 @@ pub struct TranslateConfig {
     pub concurrency: usize,
 }
 
+impl TranslateConfig {
+    /// Normalize language codes to lowercase
+    ///
+    /// This ensures consistent language code format across all translators.
+    /// Different translation APIs have different requirements for language code casing:
+    /// - Tencent: requires lowercase ("en", "zh")
+    /// - DeepLX: accepts uppercase ("EN", "ZH")
+    /// - LLM: flexible, uses language names
+    pub fn normalize(&mut self) {
+        // Normalize target language to lowercase
+        self.target_lang = self.target_lang.to_lowercase();
+
+        // Normalize source languages to lowercase
+        for lang in &mut self.source_langs {
+            *lang = lang.to_lowercase();
+        }
+    }
+}
+
 impl Default for TranslateConfig {
     fn default() -> Self {
         Self {
-            source_langs: vec!["AUTO".to_string()],
+            source_langs: vec!["auto".to_string()],
             target_lang: "en".to_string(),
             provider: ProviderType::DeepLX,
             lang_settings: HashMap::new(),
@@ -773,7 +795,7 @@ mod tests {
     fn test_default_project_config() {
         let config = ProjectConfig::default();
         assert_eq!(config.translate.target_lang, "en");
-        assert_eq!(config.translate.source_langs, vec!["AUTO"]);
+        assert_eq!(config.translate.source_langs, vec!["auto"]);
         assert_eq!(config.cache.format, "binary");
         assert_eq!(config.cache.directory, ".translator");
         assert!(config.cache.enabled);
@@ -822,7 +844,7 @@ mod tests {
 
     #[test]
     fn test_validate_project_config() {
-        let config = ProjectConfig::default();
+        let mut config = ProjectConfig::default();
         assert!(config.validate().is_ok());
 
         let mut invalid_config = ProjectConfig::default();
@@ -852,11 +874,11 @@ mod tests {
     #[test]
     fn test_get_source_langs() {
         let config = ProjectConfig::default();
-        assert_eq!(config.get_source_langs(), vec!["AUTO"]);
+        assert_eq!(config.get_source_langs(), vec!["auto"]);
 
         let mut config = ProjectConfig::default();
-        config.translate.source_langs = vec!["ZH".to_string(), "EN".to_string()];
-        assert_eq!(config.get_source_langs(), vec!["ZH", "EN"]);
+        config.translate.source_langs = vec!["zh".to_string(), "en".to_string()];
+        assert_eq!(config.get_source_langs(), vec!["zh", "en"]);
     }
 
     #[test]
