@@ -221,4 +221,266 @@ mod tests {
         assert!(!LanguageFilter::quick_detect_english("你好世界"));
         assert!(!LanguageFilter::quick_detect_english("こんにちは"));
     }
+
+    #[test]
+    fn test_japanese_hiragana() {
+        // 日文平假名检测
+        let config = FilterConfig {
+            source_langs: vec!["ja".to_string()],
+            ..Default::default()
+        };
+        let filter = LanguageFilter::new(&config);
+
+        assert!(filter.should_translate("こんにちは")); // 平假名
+        assert!(filter.should_translate("ひらがな")); // 平假名
+        assert!(!filter.should_translate("Hello World"));
+    }
+
+    #[test]
+    fn test_japanese_katakana() {
+        // 日文片假名检测
+        let config = FilterConfig {
+            source_langs: vec!["ja".to_string()],
+            ..Default::default()
+        };
+        let filter = LanguageFilter::new(&config);
+
+        assert!(filter.should_translate("カタカナ")); // 片假名
+        assert!(filter.should_translate("コンピュータ")); // 片假名
+        assert!(!filter.should_translate("Hello World"));
+    }
+
+    #[test]
+    fn test_korean_detection() {
+        // 韩文检测
+        let config = FilterConfig {
+            source_langs: vec!["ko".to_string()],
+            ..Default::default()
+        };
+        let filter = LanguageFilter::new(&config);
+
+        assert!(filter.should_translate("안녕하세요")); // 韩文
+        assert!(filter.should_translate("한글")); // 韩文
+        assert!(filter.should_translate("컴퓨터")); // 韩文
+        assert!(!filter.should_translate("Hello World"));
+    }
+
+    #[test]
+    fn test_mixed_language_content() {
+        // 多语言混合内容
+        let config = FilterConfig {
+            source_langs: vec!["zh".to_string()],
+            ..Default::default()
+        };
+        let filter = LanguageFilter::new(&config);
+
+        // 中文 + 英文混合
+        assert!(filter.should_translate("Hello 你好"));
+        assert!(filter.should_translate("你好 world"));
+
+        // 中文 + 日文混合
+        assert!(filter.should_translate("你好こんにちは"));
+
+        // 中文 + 韩文混合
+        assert!(filter.should_translate("你好안녕하세요"));
+    }
+
+    #[test]
+    fn test_empty_string() {
+        let config = FilterConfig {
+            source_langs: vec!["zh".to_string()],
+            ..Default::default()
+        };
+        let filter = LanguageFilter::new(&config);
+
+        // 空字符串应该被允许（留给 LengthFilter 处理）
+        assert!(filter.should_translate(""));
+    }
+
+    #[test]
+    fn test_whitespace_only() {
+        let config = FilterConfig {
+            source_langs: vec!["zh".to_string()],
+            ..Default::default()
+        };
+        let filter = LanguageFilter::new(&config);
+
+        // 纯空白应该被允许
+        assert!(filter.should_translate("   "));
+        assert!(filter.should_translate("\t\n"));
+    }
+
+    #[test]
+    fn test_cjk_32_chars_limit() {
+        // 测试只检查前32个字符的优化
+        let config = FilterConfig {
+            source_langs: vec!["zh".to_string()],
+            ..Default::default()
+        };
+        let filter = LanguageFilter::new(&config);
+
+        // 前32个字符是英文，后面是中文
+        let text = "abcdefghijklmnopqrstuvwxyz123456你好世界";
+        assert!(!filter.should_translate(text)); // 前32字符没有中文
+
+        // 前32个字符包含中文
+        let text2 = "abcdefghijklmnop你好qrstuvwxyz123456";
+        assert!(filter.should_translate(text2));
+    }
+
+    #[test]
+    fn test_english_32_chars_limit() {
+        // 测试英文检测也只检查前32个字符
+        let config = FilterConfig {
+            source_langs: vec!["AUTO".to_string()],
+            target_lang: "EN".to_string(),
+            ..Default::default()
+        };
+        let filter = LanguageFilter::new(&config);
+
+        // 前32个字符是中文，后面是英文
+        let text = "你好世界这是一个很长的中文字符串Hello World";
+        assert!(filter.should_translate(text)); // 前32字符主要是中文
+
+        // 前32个字符是英文
+        let text2 = "This is an English text. 这是后面的中文";
+        assert!(!filter.should_translate(text2));
+    }
+
+    #[test]
+    fn test_chinese_variants() {
+        // 测试中文变体
+        let config_zh = FilterConfig {
+            source_langs: vec!["zh".to_string()],
+            ..Default::default()
+        };
+        let filter_zh = LanguageFilter::new(&config_zh);
+
+        let config_zhcn = FilterConfig {
+            source_langs: vec!["zh-CN".to_string()],
+            ..Default::default()
+        };
+        let filter_zhcn = LanguageFilter::new(&config_zhcn);
+
+        let config_zhtw = FilterConfig {
+            source_langs: vec!["zh-TW".to_string()],
+            ..Default::default()
+        };
+        let filter_zhtw = LanguageFilter::new(&config_zhtw);
+
+        // 所有中文变体都应该检测中文
+        assert!(filter_zh.should_translate("你好世界"));
+        assert!(filter_zhcn.should_translate("你好世界"));
+        assert!(filter_zhtw.should_translate("你好世界"));
+    }
+
+    #[test]
+    fn test_target_language_variants() {
+        // 测试目标语言的各种变体
+        let config_en_us = FilterConfig {
+            source_langs: vec!["AUTO".to_string()],
+            target_lang: "EN-US".to_string(),
+            ..Default::default()
+        };
+        let filter_en_us = LanguageFilter::new(&config_en_us);
+
+        assert!(!filter_en_us.should_translate("Hello World")); // 已经是目标语言
+        assert!(filter_en_us.should_translate("你好世界"));
+
+        let config_zh_cn = FilterConfig {
+            source_langs: vec!["AUTO".to_string()],
+            target_lang: "ZH-CN".to_string(),
+            ..Default::default()
+        };
+        let filter_zh_cn = LanguageFilter::new(&config_zh_cn);
+
+        assert!(!filter_zh_cn.should_translate("你好世界")); // 已经是目标语言
+        assert!(filter_zh_cn.should_translate("Hello World"));
+    }
+
+    #[test]
+    fn test_unknown_target_language() {
+        // 未知目标语言应该允许翻译（保守策略）
+        let config = FilterConfig {
+            source_langs: vec!["AUTO".to_string()],
+            target_lang: "FR".to_string(), // 法语检测未实现
+            ..Default::default()
+        };
+        let filter = LanguageFilter::new(&config);
+
+        // 所有内容都应该被允许翻译
+        assert!(filter.should_translate("Hello World"));
+        assert!(filter.should_translate("你好世界"));
+        assert!(filter.should_translate("こんにちは"));
+    }
+
+    #[test]
+    fn test_filter_name() {
+        let config = FilterConfig::default();
+        let filter = LanguageFilter::new(&config);
+        assert_eq!(filter.name(), "LanguageFilter");
+    }
+
+    #[test]
+    fn test_cjk_radicals_and_symbols() {
+        // CJK 部首和符号
+        let config = FilterConfig {
+            source_langs: vec!["zh".to_string()],
+            ..Default::default()
+        };
+        let filter = LanguageFilter::new(&config);
+
+        assert!(filter.should_translate("⽂字")); // CJK 部首
+        assert!(filter.should_translate("「引用」")); // CJK 符号
+        assert!(filter.should_translate("【括号】")); // CJK 符号
+    }
+
+    #[test]
+    fn test_special_characters_and_emojis() {
+        let config = FilterConfig {
+            source_langs: vec!["zh".to_string()],
+            ..Default::default()
+        };
+        let filter = LanguageFilter::new(&config);
+
+        // Emoji 不应该影响检测
+        assert!(!filter.should_translate("Hello World 🎉"));
+        assert!(filter.should_translate("你好 🎉"));
+
+        // 特殊字符
+        assert!(!filter.should_translate("© 2024"));
+        assert!(!filter.should_translate("Hello™"));
+    }
+
+    #[test]
+    fn test_multiple_source_languages() {
+        // 多个源语言
+        let config = FilterConfig {
+            source_langs: vec!["zh".to_string(), "ja".to_string()],
+            ..Default::default()
+        };
+        let filter = LanguageFilter::new(&config);
+
+        // 中文应该通过
+        assert!(filter.should_translate("你好世界"));
+
+        // 日文应该通过
+        assert!(filter.should_translate("こんにちは"));
+
+        // 纯英文不应该通过（因为需要 CJK）
+        assert!(!filter.should_translate("Hello World"));
+    }
+
+    #[test]
+    fn test_english_edge_cases() {
+        // 英文检测边界情况
+        assert!(!LanguageFilter::quick_detect_english("")); // 空字符串
+        assert!(!LanguageFilter::quick_detect_english("   ")); // 纯空白
+        assert!(!LanguageFilter::quick_detect_english("123 456")); // 纯数字
+        assert!(!LanguageFilter::quick_detect_english("!@#$%")); // 纯符号
+
+        // 接近70%边界的情况
+        assert!(LanguageFilter::quick_detect_english("abc123")); // 3/6 = 50% - 实际是字母3个，非空白6个
+        assert!(LanguageFilter::quick_detect_english("Hello World!!!")); // 字母10个，非空白13个 -> 76%
+    }
 }

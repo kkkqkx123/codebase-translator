@@ -242,7 +242,7 @@ pub struct LLMProvider {
     failure_count: Arc<AtomicU32>,
     success_count: Arc<AtomicU32>,
     stats: Arc<RwLock<ProviderStats>>,
-    weight: u32,
+    rate_limit: u32,
     current_key_index: Arc<AtomicU32>,
     health_config: HealthConfig,
 }
@@ -255,7 +255,7 @@ impl std::fmt::Debug for LLMProvider {
             .field("base_url", &self.base_url)
             .field("model", &self.model)
             .field("max_input_chars", &self.max_input_chars)
-            .field("weight", &self.weight)
+            .field("rate_limit", &self.rate_limit)
             .field("health_config", &self.health_config)
             .field("token_config", &self.token_config)
             .finish_non_exhaustive()
@@ -383,7 +383,7 @@ impl LLMProvider {
             failure_count: Arc::new(AtomicU32::new(0)),
             success_count: Arc::new(AtomicU32::new(0)),
             stats: Arc::new(RwLock::new(ProviderStats::default())),
-            weight: config.weight,
+            rate_limit: config.rate_limit,
             current_key_index: Arc::new(AtomicU32::new(0)),
             health_config,
         })
@@ -403,9 +403,9 @@ impl LLMProvider {
         &self.name
     }
 
-    /// Get provider weight
-    pub fn weight(&self) -> u32 {
-        self.weight
+    /// Get provider rate limit (used for routing weight)
+    pub fn rate_limit(&self) -> u32 {
+        self.rate_limit
     }
 
     /// Get maximum input characters

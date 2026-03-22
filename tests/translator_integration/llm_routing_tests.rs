@@ -1,7 +1,7 @@
 //! LLM Provider Routing Integration Tests
 //!
 //! Tests for the provider router with capacity-aware routing.
-//! Validates text length based routing and weighted distribution.
+//! Validates text length based routing and rate-based distribution.
 
 use codebase_translate::config::LLMProviderConfig;
 use codebase_translate::translator::llm::routing::{CapacityProvider, ProviderRouter};
@@ -15,7 +15,7 @@ fn create_test_configs_with_capacities() -> Vec<LLMProviderConfig> {
             api_keys: vec!["key1".to_string()],
             model: "llama2".to_string(),
             max_tokens: 1024, // Small capacity
-            weight: 1,
+            rate_limit: 1,
             ..Default::default()
         },
         LLMProviderConfig {
@@ -24,7 +24,7 @@ fn create_test_configs_with_capacities() -> Vec<LLMProviderConfig> {
             api_keys: vec!["key2".to_string()],
             model: "llama3".to_string(),
             max_tokens: 4096, // Large capacity
-            weight: 2,
+            rate_limit: 2,
             ..Default::default()
         },
     ]
@@ -168,7 +168,7 @@ fn test_router_can_handle() {
 
 /// Test weighted distribution over multiple selections
 #[test]
-fn test_router_weighted_distribution() {
+fn test_router_rate_based_distribution() {
     let configs = vec![
         LLMProviderConfig {
             id: "light".to_string(),
@@ -176,7 +176,7 @@ fn test_router_weighted_distribution() {
             api_keys: vec!["key1".to_string()],
             model: "model1".to_string(),
             max_tokens: 4096,
-            weight: 1,
+            rate_limit: 1,
             ..Default::default()
         },
         LLMProviderConfig {
@@ -185,7 +185,7 @@ fn test_router_weighted_distribution() {
             api_keys: vec!["key2".to_string()],
             model: "model2".to_string(),
             max_tokens: 4096,
-            weight: 3,
+            rate_limit: 3,
             ..Default::default()
         },
     ];
@@ -206,7 +206,7 @@ fn test_router_weighted_distribution() {
         }
     }
 
-    // Heavy provider should be selected more often
+    // Heavy provider (higher rate_limit) should be selected more often
     assert!(heavy_count > light_count, "Heavy provider should be selected more often");
 }
 
@@ -285,20 +285,20 @@ fn test_router_providers_accessor() {
     assert_eq!(providers.len(), 2);
 }
 
-/// Test CapacityProvider weight accessor
+/// Test CapacityProvider rate_limit accessor
 #[test]
-fn test_capacity_provider_weight() {
+fn test_capacity_provider_rate_limit() {
     let config = LLMProviderConfig {
         id: "test".to_string(),
         base_url: "http://localhost:11434".to_string(),
         api_keys: vec!["key".to_string()],
         model: "model".to_string(),
         max_tokens: 1000,
-        weight: 5,
+        rate_limit: 5,
         ..Default::default()
     };
 
     let provider = CapacityProvider::new(&config).expect("Should create provider");
-    assert_eq!(provider.weight(), 5);
+    assert_eq!(provider.rate_limit(), 5);
 }
 

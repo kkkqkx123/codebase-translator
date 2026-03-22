@@ -1,18 +1,18 @@
-//! LLM Provider weighted routing
+//! LLM Provider rate-based routing
 //!
 //! This module provides intelligent routing between LLM providers based on their capacity.
 //! Each provider represents a single model/endpoint with a fixed max_tokens capacity.
 //!
 //! Routing logic:
-//! 1. **Short texts** (below threshold): Weighted distribution among all providers
-//! 2. **Long texts** (above threshold): Weighted distribution among capable providers
+//! 1. **Short texts** (below threshold): Rate-based distribution among all providers
+//! 2. **Long texts** (above threshold): Rate-based distribution among capable providers
 //!
 //! The threshold is set to the minimum capacity among all providers,
 //! ensuring short texts can be handled by any provider.
 //!
 //! Selection strategies:
-//! - **WeightedRandom**: Pure random weighted selection
-//! - **SmoothWeightedRoundRobin**: Smooth weighted round-robin for better distribution
+//! - **RateBasedRandom**: Pure random selection weighted by rate_limit
+//! - **SmoothRateBasedRoundRobin**: Smooth round-robin weighted by rate_limit for better distribution
 
 use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::Arc;
@@ -26,40 +26,41 @@ use crate::translator::llm::provider::LLMProvider;
 /// Selection strategy for provider routing
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SelectionStrategy {
-    /// Pure random weighted selection
-    WeightedRandom,
-    /// Smooth weighted round-robin (better distribution over time)
-    SmoothWeightedRoundRobin,
+    /// Pure random selection weighted by rate_limit
+    RateBasedRandom,
+    /// Smooth round-robin weighted by rate_limit (better distribution over time)
+    SmoothRateBasedRoundRobin,
 }
 
 impl Default for SelectionStrategy {
     fn default() -> Self {
-        SelectionStrategy::SmoothWeightedRoundRobin
+        SelectionStrategy::SmoothRateBasedRoundRobin
     }
 }
 
-/// Provider entry with selection state for smooth weighted round-robin
+/// Provider entry with selection state for smooth rate-based round-robin
 #[derive(Debug)]
 struct ProviderEntry {
     provider: Arc<LLMProvider>,
-    /// Current weight (for smooth WRR algorithm)
+    /// Current weight (for smooth round-robin algorithm)
     current_weight: AtomicU32,
-    /// Effective weight (adjusted based on health)
+    /// Effective weight (rate_limit adjusted based on health)
     effective_weight: AtomicU32,
 }
 
 impl ProviderEntry {
     fn new(provider: Arc<LLMProvider>) -> Self {
-        let weight = provider.weight();
+        let rate_limit = provider.rate_limit();
         Self {
             provider,
             current_weight: AtomicU32::new(0),
-            effective_weight: AtomicU32::new(weight.max(1)),
+            effective_weight: AtomicU32::new(rate_limit.max(1)),
         }
     }
 
-    fn weight(&self) -> u32 {
-        self.provider.weight()
+    /// Get rate limit as routing weight
+    fn rate_limit(&self) -> u32 {
+        self.provider.rate_limit()
     }
 
     fn effective_weight(&self) -> u32 {
@@ -72,17 +73,17 @@ impl ProviderEntry {
 
     /// Update effective weight based on provider health
     fn update_effective_weight(&self, is_healthy: bool) {
-        let base_weight = self.weight().max(1);
+        let base_weight = self.rate_limit().max(1);
         let new_weight = if is_healthy { base_weight } else { 0 };
         self.effective_weight.store(new_weight, Ordering::Relaxed);
     }
 }
 
-/// Weighted router for LLM providers
+/// Rate-based router for LLM providers
 ///
 /// Routes texts to providers based on:
 /// 1. Capacity (must fit within provider's max_tokens limit)
-/// 2. Weight (higher weight = more likely to be selected)
+/// 2. Rate limit (higher rate_limit = more likely to be selected)
 /// 3. Health status (unhealthy providers are excluded)
 #[derive(Debug)]
 pub struct ProviderRouter {
@@ -130,7 +131,7 @@ impl ProviderRouter {
         }
 
         let mut providers: Vec<ProviderEntry> = Vec::new();
-        let mut total_weight = 0u32;
+        let mut total_rate_limit = 0u32;
 
         for config in configs {
             // Validate individual configuration
@@ -147,12 +148,12 @@ impl ProviderRouter {
             match LLMProvider::new(config) {
                 Ok(provider) => {
                     let max_chars = provider.max_input_chars();
-                    let weight = provider.weight();
+                    let rate_limit = provider.rate_limit();
                     debug!(
-                        "Added provider {} with capacity {} chars, weight {}",
-                        config.id, max_chars, weight
+                        "Added provider {} with capacity {} chars, rate_limit {}",
+                        config.id, max_chars, rate_limit
                     );
-                    total_weight += weight;
+                    total_rate_limit += rate_limit;
                     providers.push(ProviderEntry::new(Arc::new(provider)));
                 }
                 Err(e) => {
@@ -167,10 +168,10 @@ impl ProviderRouter {
             ));
         }
 
-        // Warn if all weights are zero
-        if total_weight == 0 {
+        // Warn if all rate limits are zero
+        if total_rate_limit == 0 {
             warn!(
-                "All providers have weight 0. Weighted selection will use equal distribution."
+                "All providers have rate_limit 0. Rate-based selection will use equal distribution."
             );
         }
 
@@ -183,10 +184,10 @@ impl ProviderRouter {
             .unwrap_or(0);
 
         info!(
-            "Created ProviderRouter with {} providers, capacity_threshold: {}, total_weight: {}, strategy: {:?}",
+            "Created ProviderRouter with {} providers, capacity_threshold: {}, total_rate_limit: {}, strategy: {:?}",
             providers.len(),
             capacity_threshold,
-            total_weight,
+            total_rate_limit,
             strategy
         );
 
@@ -194,7 +195,7 @@ impl ProviderRouter {
             providers,
             capacity_threshold,
             strategy,
-            total_effective_weight: AtomicU32::new(total_weight.max(1)),
+            total_effective_weight: AtomicU32::new(total_rate_limit.max(1)),
         })
     }
 
@@ -229,9 +230,9 @@ impl ProviderRouter {
         }
 
         match self.strategy {
-            SelectionStrategy::WeightedRandom => self.select_weighted_random(&candidates),
-            SelectionStrategy::SmoothWeightedRoundRobin => {
-                self.select_smooth_wrr(&candidates)
+            SelectionStrategy::RateBasedRandom => self.select_rate_based_random(&candidates),
+            SelectionStrategy::SmoothRateBasedRoundRobin => {
+                self.select_smooth_rate_based_rr(&candidates)
             }
         }
     }
@@ -244,8 +245,8 @@ impl ProviderRouter {
         // The effective weight is updated when provider health changes
     }
 
-    /// Select provider using weighted random strategy
-    fn select_weighted_random<'a>(
+    /// Select provider using rate-based random strategy
+    fn select_rate_based_random<'a>(
         &self,
         candidates: &[&'a ProviderEntry],
     ) -> Option<&'a Arc<LLMProvider>> {
@@ -257,20 +258,20 @@ impl ProviderRouter {
             return Some(&candidates[0].provider);
         }
 
-        // Calculate total effective weight
+        // Calculate total effective weight (based on rate_limit)
         let total_weight: u32 = candidates.iter().map(|p| p.effective_weight()).sum();
         
         if total_weight == 0 {
-            // All weights are 0, use equal distribution
+            // All rate limits are 0, use equal distribution
             let index = rand::random::<usize>() % candidates.len();
             trace!(
-                "All weights are 0, randomly selected provider at index {}",
+                "All rate limits are 0, randomly selected provider at index {}",
                 index
             );
             return Some(&candidates[index].provider);
         }
 
-        // Use random selection for weighted distribution
+        // Use random selection for rate-based distribution
         let target_weight = rand::random::<u32>() % total_weight;
 
         let mut current_weight = 0u32;
@@ -278,7 +279,7 @@ impl ProviderRouter {
             current_weight += entry.effective_weight();
             if target_weight < current_weight {
                 trace!(
-                    "Weighted selected provider {} with weight {} (target: {})",
+                    "Rate-based selected provider {} with weight {} (target: {})",
                     entry.provider.id(),
                     entry.effective_weight(),
                     target_weight
@@ -291,13 +292,13 @@ impl ProviderRouter {
         candidates.last().map(|e| &e.provider)
     }
 
-    /// Select provider using smooth weighted round-robin (Nginx algorithm)
+    /// Select provider using smooth rate-based round-robin (Nginx algorithm)
     ///
     /// Algorithm:
-    /// 1. On each request, increase current_weight by effective_weight
+    /// 1. On each request, increase current_weight by effective_weight (based on rate_limit)
     /// 2. Select provider with maximum current_weight
     /// 3. Decrease selected provider's current_weight by total_weight
-    fn select_smooth_wrr<'a>(
+    fn select_smooth_rate_based_rr<'a>(
         &self,
         candidates: &[&'a ProviderEntry],
     ) -> Option<&'a Arc<LLMProvider>> {
@@ -312,7 +313,7 @@ impl ProviderRouter {
         let total_weight: u32 = candidates.iter().map(|p| p.effective_weight()).sum();
         
         if total_weight == 0 {
-            // All weights are 0, use round-robin
+            // All rate limits are 0, use round-robin
             static INDEX: AtomicU32 = AtomicU32::new(0);
             let idx = INDEX.fetch_add(1, Ordering::Relaxed) as usize % candidates.len();
             return Some(&candidates[idx].provider);
@@ -351,7 +352,7 @@ impl ProviderRouter {
             }
 
             trace!(
-                "Smooth WRR selected provider {} (weight: {}, total: {})",
+                "Smooth rate-based RR selected provider {} (rate_limit: {}, total: {})",
                 entry.provider.id(),
                 effective,
                 total_weight
@@ -425,13 +426,14 @@ mod tests {
     #[test]
     fn test_selection_strategy_default() {
         let strategy = SelectionStrategy::default();
-        assert_eq!(strategy, SelectionStrategy::SmoothWeightedRoundRobin);
+        assert_eq!(strategy, SelectionStrategy::SmoothRateBasedRoundRobin);
     }
 
     #[test]
-    fn test_provider_entry_weight_management() {
-        // This is a basic test - in real scenarios we'd need mock providers
-        // For now, just verify the types compile correctly
-        assert_eq!(SelectionStrategy::WeightedRandom as u8, SelectionStrategy::WeightedRandom as u8);
+    fn test_selection_strategy_variants() {
+        // Verify the strategy variants exist and can be compared
+        let random = SelectionStrategy::RateBasedRandom;
+        let round_robin = SelectionStrategy::SmoothRateBasedRoundRobin;
+        assert_ne!(random as u8, round_robin as u8);
     }
 }

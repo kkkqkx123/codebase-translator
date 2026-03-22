@@ -82,7 +82,6 @@ struct LLMProviderSummary {
     is_multi_model: bool,
     max_tokens: u32,
     temperature: f32,
-    weight: u32,
     base_url: String,
     api_keys_configured: bool,
     api_key_count: usize,
@@ -415,7 +414,6 @@ fn build_global_config_summary(config: &GlobalConfig, result: &ConfigValidationR
             is_multi_model: p.model_list.len() > 1,
             max_tokens: p.max_tokens,
             temperature: p.temperature,
-            weight: p.weight,
             base_url: p.base_url.clone(),
             api_keys_configured: has_valid_key,
             api_key_count: p.api_keys.len(),
@@ -607,7 +605,7 @@ fn write_validation_report(output_dir: &PathBuf, result: &ConfigValidationResult
             
             report.push_str(&format!("    - Max Tokens: {}\n", provider.max_tokens));
             report.push_str(&format!("    - Temperature: {}\n", provider.temperature));
-            report.push_str(&format!("    - 权重: {}\n", provider.weight));
+            report.push_str(&format!("    - 速率限制: {}\n", provider.rate_limit));
             report.push_str(&format!("    - Base URL: {}\n", provider.base_url));
             report.push_str(&format!("    - API Keys: {} (共 {} 个)\n",
                 if provider.api_keys_configured { "已配置" } else { "未配置" },
@@ -759,7 +757,7 @@ fn write_detailed_config(output_dir: &PathBuf, result: &ConfigValidationResult) 
             json_content.push_str("],\n");
             json_content.push_str(&format!("          \"max_tokens\": {},\n", provider.max_tokens));
             json_content.push_str(&format!("          \"temperature\": {},\n", provider.temperature));
-            json_content.push_str(&format!("          \"weight\": {},\n", provider.weight));
+            json_content.push_str(&format!("          \"rate_limit\": {},\n", provider.rate_limit));
             json_content.push_str(&format!("          \"base_url\": \"{}\",\n", provider.base_url));
             json_content.push_str(&format!("          \"api_keys_configured\": {},\n", provider.api_keys_configured));
             json_content.push_str(&format!("          \"proxy_configured\": {},\n", provider.proxy_configured));

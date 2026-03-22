@@ -217,4 +217,190 @@ mod tests {
         assert!(filter.should_translate("Hello %s"));
         assert!(filter.should_translate("Value: {name}"));
     }
+
+    #[test]
+    fn test_include_patterns_whitelist() {
+        // 当 include_patterns 设置时，只有匹配的内容才会被翻译
+        let config = FilterConfig {
+            include_patterns: vec![r"translate_me".to_string()],
+            ..Default::default()
+        };
+        let filter = PatternFilter::new(&config).unwrap();
+
+        // 匹配 include_patterns 的内容应该被翻译
+        assert!(filter.should_translate("Please translate_me today"));
+        assert!(filter.should_translate("translate_me is important"));
+
+        // 不匹配的内容应该被过滤
+        assert!(!filter.should_translate("Hello world"));
+        assert!(!filter.should_translate("Do not translate this"));
+    }
+
+    #[test]
+    fn test_include_patterns_multiple() {
+        // 测试多个 include_patterns
+        let config = FilterConfig {
+            include_patterns: vec![r"^PREFIX_".to_string(), r"_SUFFIX$".to_string()],
+            ..Default::default()
+        };
+        let filter = PatternFilter::new(&config).unwrap();
+
+        assert!(filter.should_translate("PREFIX_hello"));
+        assert!(filter.should_translate("hello_SUFFIX"));
+        assert!(!filter.should_translate("middle_text"));
+    }
+
+    #[test]
+    fn test_exclude_patterns_custom() {
+        // 测试自定义 exclude_patterns
+        let config = FilterConfig {
+            exclude_patterns: vec![r"secret:\s*\w+".to_string(), r"password\d*".to_string()],
+            ..Default::default()
+        };
+        let filter = PatternFilter::new(&config).unwrap();
+
+        assert!(!filter.should_translate("secret: token123"));
+        assert!(!filter.should_translate("password123 field"));
+        assert!(!filter.should_translate("my password"));
+        assert!(filter.should_translate("Hello world"));
+        assert!(filter.should_translate("This is safe text"));
+    }
+
+    #[test]
+    fn test_detect_code_patterns_enabled() {
+        // 测试代码模式检测（启用状态）
+        let config = FilterConfig {
+            detect_code_patterns: true,
+            allow_placeholders: true, // 允许占位符，避免与代码模式冲突
+            ..Default::default()
+        };
+        let filter = PatternFilter::new(&config).unwrap();
+
+        // 代码模式应该被过滤
+        assert!(!filter.should_translate("object.method()"));
+        assert!(!filter.should_translate("func(arg1, arg2)"));
+        assert!(!filter.should_translate("array[index]"));
+
+        // 普通文本应该通过
+        assert!(filter.should_translate("Hello world"));
+        assert!(filter.should_translate("This is a normal sentence."));
+    }
+
+    #[test]
+    fn test_detect_code_patterns_disabled() {
+        // 测试代码模式检测（禁用状态）
+        let config = FilterConfig {
+            detect_code_patterns: false,
+            ..Default::default()
+        };
+        let filter = PatternFilter::new(&config).unwrap();
+
+        // 代码模式应该被允许
+        assert!(filter.should_translate("object.method()"));
+        assert!(filter.should_translate("func(arg1, arg2)"));
+        assert!(filter.should_translate("array[index]"));
+    }
+
+    #[test]
+    fn test_placeholder_variations() {
+        let config = FilterConfig {
+            allow_placeholders: false,
+            ..Default::default()
+        };
+        let filter = PatternFilter::new(&config).unwrap();
+
+        // 各种占位符格式都应该被检测
+        assert!(!filter.should_translate("Hello %s"));
+        assert!(!filter.should_translate("Number: %d"));
+        assert!(!filter.should_translate("Float: %f"));
+        assert!(!filter.should_translate("Value: %v"));
+        assert!(!filter.should_translate("Arg $1 and $2"));
+        assert!(!filter.should_translate("Template: ${variable}"));
+        assert!(!filter.should_translate("Format: {name}"));
+    }
+
+    #[test]
+    fn test_markdown_patterns() {
+        let config = FilterConfig::default();
+        let filter = PatternFilter::new(&config).unwrap();
+
+        // Markdown 链接和图片应该被过滤
+        assert!(!filter.should_translate("[link text](https://example.com)"));
+        assert!(!filter.should_translate("![alt text](image.png)"));
+        assert!(!filter.should_translate("<div>HTML tag</div>"));
+        assert!(!filter.should_translate("`inline code`"));
+    }
+
+    #[test]
+    fn test_empty_patterns() {
+        // 测试空配置
+        let config = FilterConfig {
+            exclude_keywords: vec![],
+            exclude_patterns: vec![],
+            include_patterns: vec![],
+            ..Default::default()
+        };
+        let filter = PatternFilter::new(&config).unwrap();
+
+        // 应该允许所有内容（除了 placeholder 因为默认 allow_placeholders=false）
+        assert!(filter.should_translate("Hello world"));
+        assert!(filter.should_translate("TODO something"));
+        assert!(filter.should_translate("Visit https://example.com"));
+    }
+
+    #[test]
+    fn test_contains_placeholder_method() {
+        let config = FilterConfig::default();
+        let filter = PatternFilter::new(&config).unwrap();
+
+        assert!(filter.contains_placeholder("Hello %s"));
+        assert!(filter.contains_placeholder("Value: {name}"));
+        assert!(filter.contains_placeholder("Args: $1 $2"));
+        assert!(!filter.contains_placeholder("Plain text"));
+    }
+
+    #[test]
+    fn test_contains_code_pattern_method() {
+        let config = FilterConfig::default();
+        let filter = PatternFilter::new(&config).unwrap();
+
+        assert!(filter.contains_code_pattern("obj.method"));
+        assert!(filter.contains_code_pattern("func()"));
+        assert!(filter.contains_code_pattern("{key: value}"));
+        assert!(filter.contains_code_pattern("[item1, item2]"));
+        assert!(!filter.contains_code_pattern("Plain text"));
+    }
+
+    #[test]
+    fn test_invalid_keyword_regex() {
+        // 测试无效的关键字正则
+        let config = FilterConfig {
+            exclude_keywords: vec!["[invalid".to_string()], // 未闭合的字符类
+            ..Default::default()
+        };
+        let result = PatternFilter::new(&config);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_invalid_exclude_pattern_regex() {
+        // 测试无效的排除模式正则
+        let config = FilterConfig {
+            exclude_patterns: vec!["(unclosed".to_string()], // 未闭合的分组
+            ..Default::default()
+        };
+        let result = PatternFilter::new(&config);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_invalid_include_pattern_regex() {
+        // 测试无效的包含模式正则
+        let config = FilterConfig {
+            include_patterns: vec!["*invalid".to_string()], // 量词没有前置表达式
+            ..Default::default()
+        };
+        let result = PatternFilter::new(&config);
+        assert!(result.is_err());
+    }
 }

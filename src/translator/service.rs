@@ -225,7 +225,7 @@ pub struct BatchTranslationService {
 
 impl BatchTranslationService {
     /// Create a new batch translation service with multiple translators
-    pub fn new(translators: Vec<(Arc<TranslatorImpl>, u32)>, options: BatchOptions) -> Result<Self> {
+    pub fn new(translators: Vec<Arc<TranslatorImpl>>, options: BatchOptions) -> Result<Self> {
         let runtime = tokio::runtime::Runtime::new().map_err(|e| {
             TranslateError::Translation(format!("Failed to create Tokio runtime: {}", e))
         })?;

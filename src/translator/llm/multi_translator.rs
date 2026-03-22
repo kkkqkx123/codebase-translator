@@ -235,7 +235,7 @@ impl MultiProviderTranslator {
                 serde_json::json!({
                     "id": p.id(),
                     "max_chars": p.max_input_chars(),
-                    "weight": p.weight(),
+                    "rate_limit": p.rate_limit(),
                 })
             }).collect::<Vec<_>>(),
         })

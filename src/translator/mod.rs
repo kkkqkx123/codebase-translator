@@ -60,7 +60,7 @@ pub fn create_translation_service(
     }
 
     // Create all enabled translators
-    let mut translators: Vec<(std::sync::Arc<TranslatorImpl>, u32)> = Vec::new();
+    let mut translators: Vec<std::sync::Arc<TranslatorImpl>> = Vec::new();
 
     for provider_str in &enabled_providers {
         let provider_type = match provider_str.parse::<ProviderType>() {
@@ -75,8 +75,7 @@ pub fn create_translation_service(
         if provider_type == ProviderType::LLM {
             match create_llm_multi_provider_translator(global_config) {
                 Ok(translator_impl) => {
-                    let weight = get_provider_weight(provider_type, global_config);
-                    translators.push((std::sync::Arc::new(translator_impl), weight));
+                    translators.push(std::sync::Arc::new(translator_impl));
                     info!(provider = %provider_str, "LLM MultiProviderTranslator created successfully");
                 }
                 Err(e) => {
@@ -90,8 +89,7 @@ pub fn create_translation_service(
 
         match create_translator_from_config(&translator_config) {
             Ok(translator_impl) => {
-                let weight = get_provider_weight(provider_type, global_config);
-                translators.push((std::sync::Arc::new(translator_impl), weight));
+                translators.push(std::sync::Arc::new(translator_impl));
                 info!(provider = %provider_str, "Translator created successfully");
             }
             Err(e) => {
@@ -223,35 +221,7 @@ fn create_translator_config_for_provider(
     }
 }
 
-/// Get weight for a provider (for load balancing)
-fn get_provider_weight(provider: ProviderType, global_config: &GlobalConfig) -> u32 {
-    match provider {
-        ProviderType::DeepLX => 50,
-        ProviderType::LLM => {
-            // Calculate average weight of all valid LLM providers
-            let valid_weights: Vec<u32> = global_config
-                .llm
-                .providers
-                .iter()
-                .filter(|p| {
-                    !p.base_url.is_empty()
-                        && !p.base_url.starts_with("${")
-                        && p.api_keys.iter().any(|k| {
-                            !k.is_empty() && !k.starts_with("${") && !k.to_lowercase().contains("your")
-                        })
-                })
-                .map(|p| p.weight)
-                .collect();
 
-            if valid_weights.is_empty() {
-                50
-            } else {
-                valid_weights.iter().sum::<u32>() / valid_weights.len() as u32
-            }
-        }
-        ProviderType::Tencent => 50,
-    }
-}
 
 /// Create batch options for the translation service
 fn create_batch_options(

@@ -1,6 +1,6 @@
 //! LLM Provider Pool Integration Tests
 //!
-//! Tests for the provider pool with round-robin and weighted rotation strategies.
+//! Tests for the provider pool with round-robin and rate-based rotation strategies.
 //! Validates provider selection behavior and health check functionality.
 
 use std::time::Duration;
@@ -17,7 +17,7 @@ fn create_test_provider_configs() -> Vec<LLMProviderConfig> {
             api_keys: vec!["key1".to_string()],
             model: "llama2".to_string(),
             max_tokens: 2048,
-            weight: 1,
+            rate_limit: 1,
             timeout: 30,
             max_retries: 3,
             ..Default::default()
@@ -28,7 +28,7 @@ fn create_test_provider_configs() -> Vec<LLMProviderConfig> {
             api_keys: vec!["key2".to_string()],
             model: "llama3".to_string(),
             max_tokens: 4096,
-            weight: 2,
+            rate_limit: 2,
             timeout: 30,
             max_retries: 3,
             ..Default::default()
@@ -142,16 +142,16 @@ async fn test_round_robin_selection_cycles() {
     assert_ne!(provider1.id(), provider2.id());
 }
 
-/// Test weighted provider selection respects weights
+/// Test rate-based provider selection respects rate limits
 #[tokio::test]
-async fn test_weighted_selection_distribution() {
+async fn test_rate_based_selection_distribution() {
     let configs = vec![
         LLMProviderConfig {
             id: "light".to_string(),
             base_url: "http://localhost:11434".to_string(),
             api_keys: vec!["key1".to_string()],
             model: "model1".to_string(),
-            weight: 1,
+            rate_limit: 1,
             ..Default::default()
         },
         LLMProviderConfig {
@@ -159,12 +159,12 @@ async fn test_weighted_selection_distribution() {
             base_url: "http://localhost:11435".to_string(),
             api_keys: vec!["key2".to_string()],
             model: "model2".to_string(),
-            weight: 3,
+            rate_limit: 3,
             ..Default::default()
         },
     ];
     let pool_config = ProviderPoolConfig {
-        strategy: RotationStrategy::Weighted,
+        strategy: RotationStrategy::RateBased,
         health_check_enabled: false,
         ..Default::default()
     };
@@ -186,7 +186,7 @@ async fn test_weighted_selection_distribution() {
         }
     }
 
-    // Heavy provider (weight 3) should be selected roughly 3x more than light (weight 1)
+    // Heavy provider (rate_limit 3) should be selected roughly 3x more than light (rate_limit 1)
     assert!(heavy_count > light_count, "Heavy provider should be selected more often");
     let ratio = heavy_count as f64 / light_count as f64;
     assert!(ratio > 1.5 && ratio < 5.0, "Ratio should be approximately 3:1, got {}", ratio);
@@ -281,16 +281,16 @@ fn test_provider_pool_config_default() {
     assert_eq!(config.recovery_interval, Duration::from_secs(300));
 }
 
-/// Test provider pool with all zero weights falls back to round-robin
+/// Test provider pool with all zero rate limits falls back to round-robin
 #[tokio::test]
-async fn test_weighted_with_zero_weights_fallback() {
+async fn test_rate_based_with_zero_rate_limits_fallback() {
     let configs = vec![
         LLMProviderConfig {
             id: "p1".to_string(),
             base_url: "http://localhost:11434".to_string(),
             api_keys: vec!["key1".to_string()],
             model: "model1".to_string(),
-            weight: 0,
+            rate_limit: 0,
             ..Default::default()
         },
         LLMProviderConfig {
@@ -298,12 +298,12 @@ async fn test_weighted_with_zero_weights_fallback() {
             base_url: "http://localhost:11435".to_string(),
             api_keys: vec!["key2".to_string()],
             model: "model2".to_string(),
-            weight: 0,
+            rate_limit: 0,
             ..Default::default()
         },
     ];
     let pool_config = ProviderPoolConfig {
-        strategy: RotationStrategy::Weighted,
+        strategy: RotationStrategy::RateBased,
         health_check_enabled: false,
         ..Default::default()
     };
@@ -312,7 +312,7 @@ async fn test_weighted_with_zero_weights_fallback() {
         .await
         .expect("Should create pool");
 
-    // Should still work even with all zero weights
+    // Should still work even with all zero rate limits
     let provider = pool.get_provider().await;
     assert!(provider.is_ok());
 }

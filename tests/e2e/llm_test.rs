@@ -107,7 +107,7 @@ async fn test_llm_batch_translation() {
     };
 
     let batch_translator =
-        codebase_translate::translator::BatchTranslator::new(vec![(translator, 50)], batch_options);
+        codebase_translate::translator::BatchTranslator::new(vec![translator], batch_options);
 
     // Small batch to minimize API calls
     let texts = vec!["Hello".to_string(), "World".to_string()];
@@ -197,7 +197,6 @@ async fn test_llm_invalid_api_key() {
         proxy_url: None,
         timeout: 30,
         rate_limit: 5,
-        weight: 50,
         extra_headers: std::collections::HashMap::new(),
         extra_params: std::collections::HashMap::new(),
     };
@@ -255,7 +254,7 @@ async fn test_llm_rate_limiting() {
     };
 
     let batch_translator =
-        codebase_translate::translator::BatchTranslator::new(vec![(translator, 50)], batch_options);
+        codebase_translate::translator::BatchTranslator::new(vec![translator], batch_options);
 
     let texts = vec!["Hello".to_string(), "World".to_string(), "Test".to_string()];
 

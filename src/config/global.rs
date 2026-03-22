@@ -574,9 +574,6 @@ pub struct LLMProviderConfig {
     pub id: String,
     /// Provider name (human readable)
     pub name: String,
-    /// Weight for capacity-based routing (higher = preferred for larger texts)
-    #[serde(default)]
-    pub weight: u32,
     /// Base URL for API
     pub base_url: String,
     /// API keys (for rotation)
@@ -599,7 +596,7 @@ pub struct LLMProviderConfig {
     /// Request timeout in seconds
     #[serde(default = "default_timeout")]
     pub timeout: u64,
-    /// Rate limit (requests per second)
+    /// Rate limit (requests per second, also used for routing weight)
     #[serde(default = "default_rate_limit")]
     pub rate_limit: u32,
     /// Extra headers
@@ -817,7 +814,6 @@ mod tests {
             LLMProviderConfig {
                 id: "provider1".to_string(),
                 name: "Provider 1".to_string(),
-                weight: 1,
                 base_url: "https://api.example.com".to_string(),
                 api_keys: vec!["valid-key".to_string(), "xxx".to_string()],
                 model: "model1".to_string(),
@@ -833,7 +829,6 @@ mod tests {
             LLMProviderConfig {
                 id: "provider2".to_string(),
                 name: "Provider 2".to_string(),
-                weight: 1,
                 base_url: "https://api.example2.com".to_string(),
                 api_keys: vec!["xxx".to_string()],
                 model: "".to_string(), // Invalid: empty model name
@@ -964,7 +959,6 @@ mod tests {
         config.llm.providers = vec![LLMProviderConfig {
             id: "silicon".to_string(),
             name: "Siliconflow".to_string(),
-            weight: 50,
             base_url: "https://api.siliconflow.cn/v1".to_string(),
             api_keys: vec!["test-api-key".to_string()],
             model: "".to_string(), // Empty model, should use first from model_list
@@ -1001,7 +995,6 @@ mod tests {
         config.llm.providers = vec![LLMProviderConfig {
             id: "silicon".to_string(),
             name: "Siliconflow".to_string(),
-            weight: 50,
             base_url: "https://api.siliconflow.cn/v1".to_string(),
             api_keys: vec!["${SILICON_API_KEY}".to_string()], // Unresolved placeholder
             model: "tencent/Hunyuan-MT-7B".to_string(),
@@ -1037,7 +1030,6 @@ mod tests {
         config.llm.providers = vec![LLMProviderConfig {
             id: "silicon".to_string(),
             name: "Siliconflow".to_string(),
-            weight: 50,
             base_url: "https://api.siliconflow.cn/v1".to_string(),
             api_keys: vec!["original-key".to_string()],
             model: "original-model".to_string(),

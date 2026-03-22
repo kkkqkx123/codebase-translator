@@ -21,18 +21,16 @@ use crate::translator::{Translator, TranslatorImpl};
 struct TranslatorEntry {
     translator: Arc<TranslatorImpl>,
     name: String,
-    weight: u32,
     healthy: AtomicU64,
     failure_count: AtomicU64,
 }
 
 impl TranslatorEntry {
-    fn new(translator: Arc<TranslatorImpl>, weight: u32) -> Self {
+    fn new(translator: Arc<TranslatorImpl>) -> Self {
         let name = translator.name().to_string();
         Self {
             translator,
             name,
-            weight,
             healthy: AtomicU64::new(1),
             failure_count: AtomicU64::new(0),
         }
@@ -82,7 +80,7 @@ pub struct BatchTranslator {
 
 impl BatchTranslator {
     /// Create a new batch translator with multiple translators
-    pub fn new(translators: Vec<(Arc<TranslatorImpl>, u32)>, options: BatchOptions) -> Self {
+    pub fn new(translators: Vec<Arc<TranslatorImpl>>, options: BatchOptions) -> Self {
         debug!(translator_count = translators.len(), "Creating batch translator");
         let limit_policy = options.limit_policy.unwrap_or_default();
 
@@ -106,7 +104,7 @@ impl BatchTranslator {
 
         let translator_entries: Vec<TranslatorEntry> = translators
             .into_iter()
-            .map(|(t, w)| TranslatorEntry::new(t, w))
+            .map(TranslatorEntry::new)
             .collect();
 
         info!(
@@ -152,7 +150,7 @@ impl BatchTranslator {
         }
     }
 
-    /// Select next healthy translator using round-robin
+    /// Select next healthy translator using simple round-robin
     fn select_translator(&self) -> Option<&TranslatorEntry> {
         let healthy_translators: Vec<&TranslatorEntry> = self
             .translators
@@ -167,23 +165,9 @@ impl BatchTranslator {
             return self.translators.get(index);
         }
 
-        let total_weight: u32 = healthy_translators.iter().map(|t| t.weight).sum();
-        if total_weight == 0 {
-            let index = self.current_index.fetch_add(1, Ordering::Relaxed) as usize % healthy_translators.len();
-            return healthy_translators.get(index).copied();
-        }
-
-        let target = self.current_index.fetch_add(1, Ordering::Relaxed) as u32 % total_weight;
-        let mut current_weight = 0u32;
-
-        for entry in &healthy_translators {
-            current_weight += entry.weight;
-            if target < current_weight {
-                return Some(entry);
-            }
-        }
-
-        healthy_translators.first().copied()
+        // Simple round-robin selection
+        let index = self.current_index.fetch_add(1, Ordering::Relaxed) as usize % healthy_translators.len();
+        healthy_translators.get(index).copied()
     }
 
     /// Translate a batch of texts
@@ -490,7 +474,7 @@ impl BatchTranslator {
 /// Create a batch translator from multiple translator instances
 /// Uses static dispatch via TranslatorImpl for better performance.
 pub fn create_batch_translator(
-    translators: Vec<(Arc<TranslatorImpl>, u32)>,
+    translators: Vec<Arc<TranslatorImpl>>,
     options: BatchOptions,
 ) -> BatchTranslator {
     BatchTranslator::new(translators, options)
