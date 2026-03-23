@@ -554,4 +554,46 @@ pub mod module_a {
         let cleaned = parser.string_processor.clean_string_literal(raw);
         assert_eq!(cleaned, r#"hello "world""#);
     }
+
+    #[test]
+    fn test_chinese_doc_comments() {
+        // Create parser with Chinese as source language
+        let config = ParserConfig::default();
+        let extraction_config = ExtractionConfig::default();
+        let filter_config = crate::parser::filtering::FilterConfig {
+            source_langs: vec!["zh".to_string()],
+            target_lang: "en".to_string(),
+            ..crate::parser::filtering::FilterConfig::default()
+        };
+        let filter = std::sync::Arc::new(
+            crate::parser::filtering::composite::CompositeFilter::new(filter_config).unwrap()
+        );
+        let parser = RustParser::new(config, extraction_config, filter).unwrap();
+
+        let content = r#"//! 通用基础设施模块
+//!
+//! 这个模块包含了所有通用的基础设施代码，包括：
+//! - 基础工具和ID生成
+//! - 内存管理
+//! - 线程管理
+
+fn main() {
+    println!("Hello");
+}
+"#;
+
+        let file = create_test_file(content, "test.rs");
+        let units = parser.parse(&file).expect("Parsing should succeed");
+
+        println!("Extracted {} units:", units.len());
+        for unit in &units {
+            println!("  Type: {:?}, Content: {:?}", unit.node_type, unit.content);
+        }
+
+        assert!(!units.is_empty(), "Should extract Chinese doc comments");
+        
+        // Check that we extracted the Chinese content
+        let has_chinese = units.iter().any(|u| u.content.contains("通用基础设施模块"));
+        assert!(has_chinese, "Should contain Chinese text '通用基础设施模块'");
+    }
 }

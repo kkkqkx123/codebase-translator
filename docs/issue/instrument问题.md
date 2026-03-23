@@ -1,0 +1,1 @@
+固定输出终端信息：instrument
