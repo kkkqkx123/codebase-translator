@@ -66,7 +66,7 @@ impl WriterFactory {
         );
 
         let writer_config = WriterConfig {
-            preview_only: project_config.writer.dry_run,
+            dry_run: project_config.writer.dry_run,
             backup: project_config.writer.backup,
             backup_dir: project_config
                 .writer
@@ -105,7 +105,7 @@ mod tests {
     #[test]
     fn test_writer_config_default() {
         let config = WriterConfig::default();
-        assert!(!config.preview_only);
+        assert!(!config.dry_run);
         assert!(config.backup);
         assert!(config.backup_dir.is_none());
         assert!(!config.strict_encoding);

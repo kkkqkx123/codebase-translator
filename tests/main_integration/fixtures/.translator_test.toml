@@ -26,8 +26,8 @@ detect_code_patterns = false
 enabled = false
 
 [writer]
-preview_only = false
-backup = true
+dry_run = true
+backup = false
 
 [extraction]
 comments = true

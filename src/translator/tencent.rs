@@ -306,8 +306,8 @@ impl TencentTranslator {
                 )));
             }
 
-            let tencent_resp: TencentTranslateResponse =
-                serde_json::from_str(&response_text).map_err(|e| {
+            let tencent_resp: TencentTranslateResponse = serde_json::from_str(&response_text)
+                .map_err(|e| {
                     TranslateError::Parse(format!(
                         "Failed to parse Tencent response: {} - {}",
                         e, response_text
@@ -333,7 +333,8 @@ impl TencentTranslator {
                 target_lang: tencent_resp.response.target,
                 ..Default::default()
             })
-        }.await;
+        }
+        .await;
 
         // Report statistics
         let latency_ms = start_time.elapsed().as_millis() as u64;

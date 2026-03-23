@@ -564,7 +564,7 @@ pub mod module_a {
             ..crate::parser::filtering::FilterConfig::default()
         };
         let filter = std::sync::Arc::new(
-            crate::parser::filtering::composite::CompositeFilter::new(filter_config).unwrap()
+            crate::parser::filtering::composite::CompositeFilter::new(filter_config).unwrap(),
         );
         let parser = RustParser::new(config, extraction_config, filter).unwrap();
 
@@ -589,9 +589,12 @@ fn main() {
         }
 
         assert!(!units.is_empty(), "Should extract Chinese doc comments");
-        
+
         // Check that we extracted the Chinese content
         let has_chinese = units.iter().any(|u| u.content.contains("通用基础设施模块"));
-        assert!(has_chinese, "Should contain Chinese text '通用基础设施模块'");
+        assert!(
+            has_chinese,
+            "Should contain Chinese text '通用基础设施模块'"
+        );
     }
 }

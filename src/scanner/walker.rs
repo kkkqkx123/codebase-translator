@@ -78,7 +78,8 @@ impl FSScanner {
         })?;
 
         // For single file, relative path is just the file name
-        let relative_path = file_path.file_name()
+        let relative_path = file_path
+            .file_name()
             .map(|n| Path::new(n).to_path_buf())
             .unwrap_or_else(|| file_path.to_path_buf());
 

@@ -16,7 +16,7 @@ use crate::parser::languages::python::patterns::PythonPatterns;
 use crate::parser::languages::python::queries::PythonQueries;
 use crate::parser::ParserConfig;
 use crate::parser::{ContentFilter, FunctionCategory};
-use tracing::{debug, error, info, warn};
+use tracing::{debug, error, info};
 
 /// Python language parser
 pub struct PythonParser {

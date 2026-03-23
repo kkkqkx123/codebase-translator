@@ -88,7 +88,7 @@ async fn test_file_writer_preview_mode() {
     units[0].set_translated("你好");
 
     let config = WriterConfig {
-        preview_only: true,
+        dry_run: true,
         ..Default::default()
     };
     let writer = FileWriter::new(config);
@@ -274,17 +274,17 @@ async fn test_file_writer_crlf_preservation() {
 }
 
 #[tokio::test]
-async fn test_file_writer_set_preview_mode() {
+async fn test_file_writer_set_dry_run_mode() {
     let config = WriterConfig::default();
     let writer = FileWriter::new(config);
 
-    assert!(!writer.config().await.unwrap().preview_only);
+    assert!(!writer.config().await.unwrap().dry_run);
 
-    writer.set_preview_mode(true).await;
-    assert!(writer.config().await.unwrap().preview_only);
+    writer.set_dry_run_mode(true).await;
+    assert!(writer.config().await.unwrap().dry_run);
 
-    writer.set_preview_mode(false).await;
-    assert!(!writer.config().await.unwrap().preview_only);
+    writer.set_dry_run_mode(false).await;
+    assert!(!writer.config().await.unwrap().dry_run);
 }
 
 #[tokio::test]

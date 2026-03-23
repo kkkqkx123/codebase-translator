@@ -11,8 +11,7 @@ fn create_test_file(content: &str, path: &str) -> File {
 }
 
 fn create_test_coordinator() -> ParserCoordinator {
-    ParserCoordinator::with_defaults(ParserConfig::default())
-        .expect("Failed to create coordinator")
+    ParserCoordinator::with_defaults(ParserConfig::default()).expect("Failed to create coordinator")
 }
 
 #[test]

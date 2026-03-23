@@ -116,23 +116,16 @@ impl DefaultReporter {
                     "    Calls:      {} (success: {}, failed: {})\n",
                     stat.total_calls, stat.successful_calls, stat.failed_calls
                 ));
-                report.push_str(&format!(
-                    "    Characters: {}\n",
-                    stat.total_chars
-                ));
+                report.push_str(&format!("    Characters: {}\n", stat.total_chars));
                 report.push_str(&format!(
                     "    Latency:    avg {:.1}ms",
                     stat.average_latency_ms
                 ));
                 if let Some(min) = stat.min_latency_ms {
-                    report.push_str(&format!(", min {:.1}ms",
-                        min
-                    ));
+                    report.push_str(&format!(", min {:.1}ms", min));
                 }
                 if let Some(max) = stat.max_latency_ms {
-                    report.push_str(&format!(", max {:.1}ms",
-                        max
-                    ));
+                    report.push_str(&format!(", max {:.1}ms", max));
                 }
                 report.push('\n');
             }
@@ -151,23 +144,16 @@ impl DefaultReporter {
                     "    Calls:      {} (success: {}, failed: {})\n",
                     stat.total_calls, stat.successful_calls, stat.failed_calls
                 ));
-                report.push_str(&format!(
-                    "    Characters: {}\n",
-                    stat.total_chars
-                ));
+                report.push_str(&format!("    Characters: {}\n", stat.total_chars));
                 report.push_str(&format!(
                     "    Latency:    avg {:.1}ms",
                     stat.average_latency_ms
                 ));
                 if let Some(min) = stat.min_latency_ms {
-                    report.push_str(&format!(", min {:.1}ms",
-                        min
-                    ));
+                    report.push_str(&format!(", min {:.1}ms", min));
                 }
                 if let Some(max) = stat.max_latency_ms {
-                    report.push_str(&format!(", max {:.1}ms",
-                        max
-                    ));
+                    report.push_str(&format!(", max {:.1}ms", max));
                 }
                 report.push('\n');
             }

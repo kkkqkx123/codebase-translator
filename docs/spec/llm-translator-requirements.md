@@ -299,7 +299,7 @@ enabled = true
 directory = ".translator-cache"
 
 [writer]
-preview_only = false
+dry_run = false
 backup = false
 ```
 

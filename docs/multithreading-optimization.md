@@ -54,7 +54,7 @@ impl AsyncFileWriter {
     ) -> Result<()> {
         let config = self.config.read().await?;
 
-        if config.preview_only {
+        if config.dry_run {
             return self.write_preview(file, units, results);
         }
 

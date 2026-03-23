@@ -332,18 +332,10 @@ impl<'a> FileProcessor<'a> {
         } else {
             info!(
                 file = %file_path.display(),
-                "Dry run mode - skipping file write"
+                "Dry run mode - showing preview"
             );
-            for unit in &units {
-                if let Some(translated) = &unit.translated {
-                    info!(
-                        node_type = %unit.node_type,
-                        original = %unit.content,
-                        translated = %translated,
-                        "Translation preview"
-                    );
-                }
-            }
+            let rt = tokio::runtime::Runtime::new()?;
+            rt.block_on(async { self.writer.write(&file, &units).await })?;
         }
 
         info!(

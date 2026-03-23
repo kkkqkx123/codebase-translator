@@ -88,7 +88,10 @@ fn test_translator_trait_requires_source_lang() {
             5000
         }
 
-        fn set_reporter(&mut self, _reporter: std::sync::Arc<dyn codebase_translate::reporter::Reporter>) {
+        fn set_reporter(
+            &mut self,
+            _reporter: std::sync::Arc<dyn codebase_translate::reporter::Reporter>,
+        ) {
             // No-op for test
         }
 

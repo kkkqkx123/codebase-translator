@@ -6,11 +6,28 @@
 use crate::core::models::TranslationUnit;
 use crate::writer::format::prefix::extract_comment_prefix;
 
+/// A replacement segment to be applied to content
+#[derive(Debug, Clone)]
+struct Replacement {
+    /// Start byte offset in the original content
+    start_offset: usize,
+    /// End byte offset in the original content
+    end_offset: usize,
+    /// The text to replace with
+    replacement: String,
+    /// The raw_match text (for verification)
+    raw_match: String,
+}
+
 /// Applies translations to multi-line content
 pub struct MultilineApplier;
 
 impl MultilineApplier {
     /// Apply translations to multi-line units
+    ///
+    /// Uses a two-phase approach to avoid offset issues:
+    /// 1. Collect all replacements with their original positions
+    /// 2. Apply all replacements in reverse order (from end to start)
     ///
     /// # Arguments
     /// * `content` - Original file content
@@ -19,28 +36,152 @@ impl MultilineApplier {
     /// # Returns
     /// Modified content with translations applied
     pub fn apply(content: &str, units: &[&TranslationUnit]) -> String {
-        let mut result = content.to_string();
+        if units.is_empty() {
+            return content.to_string();
+        }
 
-        // Sort multiline units by position in reverse order to avoid offset issues
-        let mut sorted_units: Vec<&TranslationUnit> = units.to_vec();
-        sorted_units.sort_by(|a, b| b.start_pos.offset.cmp(&a.start_pos.offset));
+        // Phase 1: Collect all valid replacements
+        let replacements = Self::collect_replacements(content, units);
 
-        for unit in sorted_units {
+        if replacements.is_empty() {
+            return content.to_string();
+        }
+
+        // Phase 2: Apply replacements in reverse order (from end to start)
+        // This ensures that earlier replacements don't affect later ones
+        Self::apply_replacements(content, &replacements)
+    }
+
+    /// Collect all valid replacements from translation units
+    fn collect_replacements(content: &str, units: &[&TranslationUnit]) -> Vec<Replacement> {
+        let mut replacements = Vec::new();
+
+        for unit in units {
             if let (Some(raw_match), Some(translated)) = (&unit.raw_match, &unit.translated) {
-                result = Self::apply_single_unit(&result, raw_match, translated);
+                // Skip if content and translation are the same
+                if raw_match.trim() == translated.trim() {
+                    continue;
+                }
+
+                let formatted = Self::format_translation(raw_match, translated, false);
+
+                // Try to find the raw_match in content using offset information
+                if let Some(replacement) =
+                    Self::find_replacement(content, unit, raw_match, &formatted)
+                {
+                    replacements.push(replacement);
+                }
+            }
+        }
+
+        // Sort by start_offset in descending order (process from end to start)
+        replacements.sort_by(|a, b| b.start_offset.cmp(&a.start_offset));
+
+        replacements
+    }
+
+    /// Find a replacement location in content
+    fn find_replacement(
+        content: &str,
+        unit: &TranslationUnit,
+        raw_match: &str,
+        formatted: &str,
+    ) -> Option<Replacement> {
+        let start_offset = unit.start_pos.offset;
+        let end_offset = unit.end_pos.offset;
+
+        // Strategy 1: Try exact match at the reported offset
+        if let Some(slice) = content.get(start_offset..end_offset) {
+            if slice == raw_match {
+                return Some(Replacement {
+                    start_offset,
+                    end_offset,
+                    replacement: formatted.to_string(),
+                    raw_match: raw_match.to_string(),
+                });
+            }
+        }
+
+        // Strategy 2: Try to find raw_match anywhere in content
+        if let Some(pos) = content.find(raw_match) {
+            return Some(Replacement {
+                start_offset: pos,
+                end_offset: pos + raw_match.len(),
+                replacement: formatted.to_string(),
+                raw_match: raw_match.to_string(),
+            });
+        }
+
+        // Strategy 3: Try with normalized line endings
+        let normalized_raw_match = raw_match.replace("\r\n", "\n");
+        let normalized_content = content.replace("\r\n", "\n");
+
+        if let Some(pos) = normalized_content.find(&normalized_raw_match) {
+            // Map position back to original content
+            let original_pos = Self::map_normalized_to_original(content, pos);
+            let original_end =
+                Self::map_normalized_to_original(content, pos + normalized_raw_match.len());
+
+            return Some(Replacement {
+                start_offset: original_pos,
+                end_offset: original_end,
+                replacement: formatted.to_string(),
+                raw_match: raw_match.to_string(),
+            });
+        }
+
+        None
+    }
+
+    /// Map a position in normalized content (with \n) back to original content (with \r\n)
+    fn map_normalized_to_original(original: &str, normalized_pos: usize) -> usize {
+        let mut normalized_count = 0;
+
+        for (i, c) in original.char_indices() {
+            if normalized_count >= normalized_pos {
+                return i;
+            }
+
+            if c != '\r' {
+                // \r is not counted in normalized content
+                normalized_count += c.len_utf8();
+            }
+        }
+
+        original.len()
+    }
+
+    /// Apply all replacements to content
+    fn apply_replacements(content: &str, replacements: &[Replacement]) -> String {
+        let mut result = content.to_string();
+        let mut offset_adjustment: isize = 0;
+
+        // Process replacements in reverse order (already sorted)
+        for replacement in replacements.iter().rev() {
+            let adjusted_start =
+                (replacement.start_offset as isize + offset_adjustment).max(0) as usize;
+            let adjusted_end =
+                (replacement.end_offset as isize + offset_adjustment).max(0) as usize;
+
+            // Verify the slice matches expected content
+            if let Some(slice) = result.get(adjusted_start..adjusted_end) {
+                let expected = &replacement.raw_match;
+                let normalized_slice = slice.replace("\r\n", "\n");
+                let normalized_expected = expected.replace("\r\n", "\n");
+
+                if normalized_slice == normalized_expected {
+                    // Apply the replacement
+                    let old_len = adjusted_end - adjusted_start;
+                    let new_len = replacement.replacement.len();
+                    let diff = new_len as isize - old_len as isize;
+
+                    result.replace_range(adjusted_start..adjusted_end, &replacement.replacement);
+                    offset_adjustment += diff;
+                }
             }
         }
 
         result
-    }
-
-    /// Apply a single multi-line translation unit
-    fn apply_single_unit(content: &str, raw_match: &str, translated: &str) -> String {
-        // Always use raw_match-based replacement to avoid byte offset issues
-        // Byte offsets from the original file become invalid after previous replacements
-        // because the content length changes (e.g., English -> Chinese translation)
-        let formatted = Self::format_translation(raw_match, translated, false);
-        content.replace(raw_match, &formatted)
     }
 
     /// Format a multiline translation by applying it line by line to the raw match
@@ -428,5 +569,163 @@ mod tests {
         assert!(result.contains(" * 你好"));
         assert!(result.contains(" * 世界"));
         assert!(result.contains("other code"));
+    }
+
+    // Regression tests for Windows line ending handling
+    #[test]
+    fn test_apply_with_crlf_in_raw_match() {
+        // raw_match has \r\n but content has \n (common on Windows)
+        let content = "//! Hello World\n//! Second line\npub mod test;";
+        let mut unit = create_multiline_unit(
+            "Hello World",
+            "//! Hello World\r\n",
+            1,
+            1,
+            0,
+            15,
+        );
+        unit.set_translated("你好世界");
+
+        let units: Vec<&TranslationUnit> = vec![&unit];
+        let result = MultilineApplier::apply(content, &units);
+
+        assert!(result.contains("//! 你好世界"));
+        assert!(result.contains("//! Second line"));
+        assert!(result.contains("pub mod test;"));
+    }
+
+    #[test]
+    fn test_apply_with_crlf_in_content() {
+        // content has \r\n but raw_match has \n
+        let content = "//! Hello World\r\n//! Second line\r\npub mod test;";
+        let mut unit = create_multiline_unit(
+            "Hello World",
+            "//! Hello World\n",
+            1,
+            1,
+            0,
+            14,
+        );
+        unit.set_translated("你好世界");
+
+        let units: Vec<&TranslationUnit> = vec![&unit];
+        let result = MultilineApplier::apply(content, &units);
+
+        assert!(result.contains("//! 你好世界"));
+        assert!(result.contains("//! Second line"));
+        assert!(result.contains("pub mod test;"));
+    }
+
+    #[test]
+    fn test_apply_with_mixed_line_endings() {
+        // Mixed line endings in content
+        let content = "//! Line 1\r\n//! Line 2\n//! Line 3\r\npub mod test;";
+        let mut unit = create_multiline_unit(
+            "Line 2",
+            "//! Line 2\r\n",
+            2,
+            2,
+            14,
+            28,
+        );
+        unit.set_translated("第二行");
+
+        let units: Vec<&TranslationUnit> = vec![&unit];
+        let result = MultilineApplier::apply(content, &units);
+
+        assert!(result.contains("//! Line 1"));
+        assert!(result.contains("//! 第二行"));
+        assert!(result.contains("//! Line 3"));
+    }
+
+    #[test]
+    fn test_apply_multiline_with_crlf_line_endings() {
+        // Test full apply with multiple units having CRLF
+        let content = "//! 通用基础设施模块\r\n//!\r\n//! 这个模块包含了所有通用的基础设施代码\r\npub mod id;";
+        let mut unit1 =
+            create_multiline_unit("通用基础设施模块", "//! 通用基础设施模块\r\n", 1, 1, 0, 20);
+        unit1.set_translated("Common Infrastructure Module");
+
+        let mut unit2 = create_multiline_unit(
+            "这个模块包含了所有通用的基础设施代码",
+            "//! 这个模块包含了所有通用的基础设施代码\r\n",
+            3,
+            3,
+            0,
+            40,
+        );
+        unit2.set_translated("This module contains all the general infrastructure code");
+
+        let units: Vec<&TranslationUnit> = vec![&unit1, &unit2];
+        let result = MultilineApplier::apply(content, &units);
+
+        assert!(result.contains("//! Common Infrastructure Module"));
+        assert!(result.contains("//! This module contains all the general infrastructure code"));
+        assert!(result.contains("pub mod id;"));
+    }
+
+    #[test]
+    fn test_apply_no_match() {
+        // When raw_match doesn't exist in content, content should remain unchanged
+        let content = "//! Some content\n//! More content";
+        let mut unit = create_multiline_unit(
+            "Non-existent",
+            "//! Non-existent content\r\n",
+            1,
+            1,
+            0,
+            10,
+        );
+        unit.set_translated("翻译内容");
+
+        let units: Vec<&TranslationUnit> = vec![&unit];
+        let result = MultilineApplier::apply(content, &units);
+
+        // Content should remain unchanged since raw_match doesn't match
+        assert_eq!(result, content);
+    }
+
+    #[test]
+    fn test_apply_multiple_units_offset_handling() {
+        // Test that multiple units are correctly applied without offset issues
+        let content = "//! First\n//! Second\n//! Third\npub mod test;";
+
+        let mut unit1 = create_multiline_unit(
+            "First",
+            "//! First\n",
+            1,
+            1,
+            0,
+            10,
+        );
+        unit1.set_translated("第一");
+
+        let mut unit2 = create_multiline_unit(
+            "Second",
+            "//! Second\n",
+            2,
+            2,
+            10,
+            21,
+        );
+        unit2.set_translated("第二");
+
+        let mut unit3 = create_multiline_unit(
+            "Third",
+            "//! Third\n",
+            3,
+            3,
+            21,
+            31,
+        );
+        unit3.set_translated("第三");
+
+        let units: Vec<&TranslationUnit> = vec![&unit1, &unit2, &unit3];
+        let result = MultilineApplier::apply(content, &units);
+
+        assert!(result.contains("//! 第一"));
+        assert!(result.contains("//! 第二"));
+        assert!(result.contains("//! 第三"));
+        assert!(result.contains("pub mod test;"));
     }
 }

@@ -165,17 +165,18 @@ impl DeepLXTranslator {
                 )));
             }
 
-            let deeplx_resp: DeepLXResponse = serde_json::from_str(&response_text).map_err(|e| {
-                error!(
-                    error = %e,
-                    response_body = %response_text,
-                    "Failed to parse DeepLX response"
-                );
-                TranslateError::Parse(format!(
-                    "Failed to parse DeepLX response: {} - {}",
-                    e, response_text
-                ))
-            })?;
+            let deeplx_resp: DeepLXResponse =
+                serde_json::from_str(&response_text).map_err(|e| {
+                    error!(
+                        error = %e,
+                        response_body = %response_text,
+                        "Failed to parse DeepLX response"
+                    );
+                    TranslateError::Parse(format!(
+                        "Failed to parse DeepLX response: {} - {}",
+                        e, response_text
+                    ))
+                })?;
 
             Ok(TranslateResponse {
                 original_text: text.to_string(),
@@ -184,7 +185,8 @@ impl DeepLXTranslator {
                 target_lang: target_lang.to_string(),
                 ..Default::default()
             })
-        }.await;
+        }
+        .await;
 
         // Report statistics
         let latency_ms = start_time.elapsed().as_millis() as u64;
