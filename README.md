@@ -120,17 +120,89 @@ Validate configuration files.
 translator validate
 ```
 
+### Verify
+
+Verify extraction rules by scanning files and showing what would be extracted for translation.
+
+```bash
+translator verify [PATH] [OPTIONS]
+```
+
+**Options:**
+- `--pattern, -P <PATTERN>`: Filter by pattern name
+- `--extension, -E <EXT>`: Filter by file extension
+- `--category, -k <CATEGORY>`: Filter by category (comment, docstring, error)
+- `--search, -s <TEXT>`: Search for specific text
+- `--format, -F <FORMAT>`: Output format (table, json, csv) - default: table
+- `--output, -o <FILE>`: Write results to file
+- `--detailed, -d`: Show detailed match information - default: true
+- `--show-stats, -S`: Show statistics summary - default: true
+
+**Examples:**
+```bash
+# Verify extraction in current directory
+translator verify
+
+# Verify specific directory
+translator verify ./src
+
+# Filter by file extension
+translator verify ./src --extension rs
+
+# Search for specific text
+translator verify ./src --search "TODO"
+
+# Output to JSON file
+translator verify ./src --format json --output results.json
+```
+
+### Clean
+
+Clean cache and backup files to free disk space.
+
+```bash
+translator clean [OPTIONS]
+```
+
+**Options:**
+- `--cache`: Clean cache files
+- `--backup`: Clean backup files
+- `--all`: Clean both cache and backup files
+- `--older-than <DAYS>`: Only clean files older than N days
+- `--dry-run`: Show what would be deleted without deleting
+- `--backup-dir <DIR>`: Custom backup directory path
+- `--cache-dir <DIR>`: Custom cache directory path
+
+**Examples:**
+```bash
+# Clean cache files
+translator clean --cache
+
+# Clean backup files
+translator clean --backup
+
+# Clean both cache and backup files
+translator clean --all
+
+# Clean cache files older than 7 days
+translator clean --cache --older-than 7
+
+# Dry run to see what would be deleted
+translator clean --all --dry-run
+```
+
 ## Configuration
 
 ### Global Configuration File
 
-The global configuration file (`translator.toml`) contains API settings and provider configurations.
+The global configuration file (`config.toml` or `translator.toml`) contains API settings and provider configurations.
 
 **Search paths (in priority order):**
-1. Directory specified by `TRANSLATOR_CONFIG_HOME` environment variable
-2. Executable directory
-3. Current working directory
-4. User config directory: `~/.config/translator/` (Linux/Mac) or `%APPDATA%/translator/` (Windows)
+1. Directory specified by `--global-config` command-line option
+2. Directory specified by `TRANSLATOR_CONFIG_HOME` environment variable
+3. Executable directory
+4. Current working directory
+5. User config directory: `~/.config/codebase-translate/` (Linux/Mac) or `%APPDATA%/codebase-translate/` (Windows)
 
 **Configuration structure:**
 
