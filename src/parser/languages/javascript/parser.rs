@@ -16,7 +16,7 @@ use crate::parser::languages::javascript::patterns::JavaScriptPatterns;
 use crate::parser::languages::javascript::queries::JavaScriptQueries;
 use crate::parser::ParserConfig;
 use crate::parser::{ContentFilter, FunctionCategory};
-use tracing::{debug, error, info, instrument};
+use tracing::{debug, error, info};
 
 /// JavaScript language parser
 pub struct JavaScriptParser {
@@ -77,7 +77,6 @@ impl JavaScriptParser {
     }
 
     /// Parse file content into a syntax tree
-    #[instrument(skip(self, content))]
     fn parse_tree(&self, content: &str) -> Result<Tree> {
         let mut parser = Parser::new();
         parser
@@ -400,7 +399,6 @@ impl JavaScriptParser {
 }
 
 impl ParserTrait for JavaScriptParser {
-    #[instrument(skip(self, file))]
     fn parse(&self, file: &File) -> Result<Vec<TranslationUnit>> {
         let start = std::time::Instant::now();
         let file_path = file.path.to_string_lossy().to_string();

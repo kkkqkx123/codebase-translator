@@ -1,0 +1,46 @@
+# Translator 项目配置文件 - 测试专用
+
+[translate]
+source_langs = ["ZH"]
+target_lang = "EN"
+
+[include]
+patterns = [
+    "**/*.rs",
+]
+
+[exclude]
+patterns = []
+respect_gitignore = false
+
+[filter]
+exclude_keywords = []
+exclude_patterns = []
+include_patterns = []
+min_length = 0
+max_length = 0
+allow_placeholders = false
+detect_code_patterns = false
+
+[cache]
+enabled = false
+
+[writer]
+preview_only = false
+backup = true
+
+[extraction]
+comments = true
+doc_strings = true
+error_messages = false
+format_strings = false
+
+[encoding]
+detect_encodings = ["UTF-8"]
+min_confidence = 0.7
+convert_to_utf8 = true
+
+[logging]
+level = "info"
+output = "stdout"
+format = "pretty"

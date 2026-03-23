@@ -15,7 +15,7 @@ use crate::parser::languages::java::patterns::JavaPatterns;
 use crate::parser::languages::java::queries::JavaQueries;
 use crate::parser::ParserConfig;
 use crate::parser::{ContentFilter, FunctionCategory};
-use tracing::{debug, error, info, instrument};
+use tracing::{debug, error, info};
 
 /// Java language parser
 pub struct JavaParser {
@@ -71,7 +71,6 @@ impl JavaParser {
     }
 
     /// Parse file content into a syntax tree
-    #[instrument(skip(self, content))]
     fn parse_tree(&self, content: &str) -> Result<Tree> {
         let mut parser = Parser::new();
         parser
@@ -324,7 +323,6 @@ impl JavaParser {
 }
 
 impl ParserTrait for JavaParser {
-    #[instrument(skip(self, file))]
     fn parse(&self, file: &File) -> Result<Vec<TranslationUnit>> {
         let start = std::time::Instant::now();
         let file_path = file.path.to_string_lossy().to_string();

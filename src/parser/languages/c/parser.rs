@@ -15,7 +15,7 @@ use crate::parser::languages::c::patterns::CPatterns;
 use crate::parser::languages::c::queries::CQueries;
 use crate::parser::ParserConfig;
 use crate::parser::{ContentFilter, FunctionCategory};
-use tracing::{debug, error, info, instrument};
+use tracing::{debug, error, info};
 
 /// C language parser
 pub struct CParser {
@@ -64,7 +64,6 @@ impl CParser {
     }
 
     /// Parse file content into a syntax tree
-    #[instrument(skip(self, content))]
     fn parse_tree(&self, content: &str) -> Result<Tree> {
         let mut parser = Parser::new();
         parser
@@ -377,7 +376,6 @@ impl CParser {
 }
 
 impl ParserTrait for CParser {
-    #[instrument(skip(self, file))]
     fn parse(&self, file: &File) -> Result<Vec<TranslationUnit>> {
         let start = std::time::Instant::now();
         let file_path = file.path.to_string_lossy().to_string();

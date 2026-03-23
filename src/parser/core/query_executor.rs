@@ -5,7 +5,7 @@ use tree_sitter::{Node, Query, QueryCursor};
 
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::Position;
-use tracing::{debug, error, instrument};
+use tracing::{debug, error};
 
 /// Query match result
 #[derive(Debug, Clone)]
@@ -90,7 +90,6 @@ impl QueryExecutor {
     }
 
     /// Execute query and return matches
-    #[instrument(skip(self, root_node, content))]
     pub fn execute<'a>(
         &'a self,
         root_node: &'a Node,

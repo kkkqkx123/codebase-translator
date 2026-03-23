@@ -15,7 +15,7 @@ use crate::parser::languages::csharp::patterns::CSharpPatterns;
 use crate::parser::languages::csharp::queries::CSharpQueries;
 use crate::parser::ParserConfig;
 use crate::parser::{ContentFilter, FunctionCategory};
-use tracing::{debug, error, info, instrument};
+use tracing::{debug, error, info};
 
 /// C# language parser
 pub struct CSharpParser {
@@ -71,7 +71,6 @@ impl CSharpParser {
     }
 
     /// Parse file content into a syntax tree
-    #[instrument(skip(self, content))]
     fn parse_tree(&self, content: &str) -> Result<Tree> {
         let mut parser = Parser::new();
         parser
@@ -400,7 +399,6 @@ impl CSharpParser {
 }
 
 impl ParserTrait for CSharpParser {
-    #[instrument(skip(self, file))]
     fn parse(&self, file: &File) -> Result<Vec<TranslationUnit>> {
         let start = std::time::Instant::now();
         let file_path = file.path.to_string_lossy().to_string();

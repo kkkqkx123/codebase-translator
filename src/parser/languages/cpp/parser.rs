@@ -15,7 +15,7 @@ use crate::parser::languages::cpp::patterns::CppPatterns;
 use crate::parser::languages::cpp::queries::CppQueries;
 use crate::parser::ParserConfig;
 use crate::parser::{ContentFilter, FunctionCategory};
-use tracing::{debug, error, info, instrument};
+use tracing::{debug, error, info};
 
 /// C++ language parser
 pub struct CppParser {
@@ -64,7 +64,6 @@ impl CppParser {
     }
 
     /// Parse file content into a syntax tree
-    #[instrument(skip(self, content))]
     fn parse_tree(&self, content: &str) -> Result<Tree> {
         let mut parser = Parser::new();
         parser
@@ -415,7 +414,6 @@ impl CppParser {
 }
 
 impl ParserTrait for CppParser {
-    #[instrument(skip(self, file))]
     fn parse(&self, file: &File) -> Result<Vec<TranslationUnit>> {
         let start = std::time::Instant::now();
         let file_path = file.path.to_string_lossy().to_string();

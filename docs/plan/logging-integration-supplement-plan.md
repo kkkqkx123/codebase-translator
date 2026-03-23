@@ -28,9 +28,8 @@
 **需要补充的日志：**
 
 ```rust
-use tracing::{debug, info, warn, error, instrument};
+use tracing::{debug, info, warn, error};
 
-#[instrument(skip(self))]
 pub async fn execute(&self) -> Result<WorkflowResult> {
     info!(
         root_path = %self.workflow_config.root_path,
@@ -650,9 +649,8 @@ pub fn parse(&self, file: &File) -> Result<Vec<TranslationUnit>> {
 **需要补充的日志：**
 
 ```rust
-use tracing::{debug, instrument};
+use tracing::{debug};
 
-#[instrument(skip(self, tree, content))]
 pub fn execute<'a>(
     &self,
     query: &Query,
@@ -697,9 +695,8 @@ pub fn execute<'a>(
 **需要补充的日志：**
 
 ```rust
-use tracing::{debug, instrument};
+use tracing::{debug};
 
-#[instrument(skip(self, node, content))]
 pub fn extract(&self, node: &Node, content: &str) -> Result<ExtractionCandidate> {
     debug!(
         node_type = node.kind(),
@@ -735,7 +732,6 @@ pub fn extract(&self, node: &Node, content: &str) -> Result<ExtractionCandidate>
 use tracing::{debug, info};
 
 impl LanguageParser {
-    #[instrument(skip(self, content))]
     pub fn parse(&self, file: &File) -> Result<Vec<TranslationUnit>> {
         info!(
             file = %file.path.display(),

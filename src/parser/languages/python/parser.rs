@@ -16,7 +16,7 @@ use crate::parser::languages::python::patterns::PythonPatterns;
 use crate::parser::languages::python::queries::PythonQueries;
 use crate::parser::ParserConfig;
 use crate::parser::{ContentFilter, FunctionCategory};
-use tracing::{debug, error, info, instrument, warn};
+use tracing::{debug, error, info, warn};
 
 /// Python language parser
 pub struct PythonParser {
@@ -106,7 +106,6 @@ impl PythonParser {
     }
 
     /// Parse file content into a syntax tree
-    #[instrument(skip(self, content))]
     fn parse_tree(&self, content: &str) -> Result<Tree> {
         let mut parser = Parser::new();
         parser
@@ -130,7 +129,6 @@ impl PythonParser {
     }
 
     /// Extract comments using the core framework
-    #[instrument(skip(self, root_node, content))]
     fn extract_comments(
         &self,
         root_node: &Node,
@@ -238,7 +236,6 @@ impl PythonParser {
 
     /// Extract docstrings using the core framework
     /// In Python, docstrings are string literals that appear as the first statement in modules, classes, or functions
-    #[instrument(skip(self, root_node, content))]
     fn extract_docstrings(
         &self,
         root_node: &Node,
@@ -354,7 +351,6 @@ impl PythonParser {
     }
 
     /// Extract function call strings using the core framework
-    #[instrument(skip(self, root_node, content))]
     fn extract_function_strings(
         &self,
         root_node: &Node,
@@ -532,7 +528,6 @@ impl PythonParser {
 }
 
 impl ParserTrait for PythonParser {
-    #[instrument(skip(self, file))]
     fn parse(&self, file: &File) -> Result<Vec<TranslationUnit>> {
         let start = std::time::Instant::now();
         let file_path = file.path.to_string_lossy().to_string();

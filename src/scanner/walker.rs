@@ -54,6 +54,56 @@ impl FSScanner {
         }
     }
 
+    /// Scan a single file and return it as a FileEntry if it matches include/exclude patterns
+    fn scan_single_file(&self, file_path: &Path, opts: &ScanOptions) -> Result<Vec<FileEntry>> {
+        let gitignore = self.load_gitignore(opts);
+
+        // Check if file matches include/exclude patterns
+        if !self.should_include_file(
+            file_path,
+            &opts.include_patterns,
+            &opts.exclude_patterns,
+            &gitignore,
+        ) {
+            info!(path = %file_path.display(), "Single file excluded by patterns");
+            return Ok(Vec::new());
+        }
+
+        let metadata = std::fs::metadata(file_path).map_err(|e| {
+            crate::core::error::TranslateError::Io(format!(
+                "failed to get file metadata for {}: {}",
+                file_path.display(),
+                e
+            ))
+        })?;
+
+        // For single file, relative path is just the file name
+        let relative_path = file_path.file_name()
+            .map(|n| Path::new(n).to_path_buf())
+            .unwrap_or_else(|| file_path.to_path_buf());
+
+        let file_entry = FileEntry {
+            path: file_path.to_path_buf(),
+            relative_path,
+            size: metadata.len(),
+            modified: metadata.modified().map_err(|e| {
+                crate::core::error::TranslateError::Io(format!(
+                    "failed to get modified time for {}: {}",
+                    file_path.display(),
+                    e
+                ))
+            })?,
+        };
+
+        info!(
+            path = %file_path.display(),
+            size = file_entry.size,
+            "Scanned single file"
+        );
+
+        Ok(vec![file_entry])
+    }
+
     fn scan_directory(
         &self,
         dir: &Path,
@@ -293,14 +343,27 @@ impl Scanner for FSScanner {
 
         if !abs_root.exists() {
             return Err(crate::core::error::TranslateError::NotFound(format!(
-                "directory does not exist: {}",
+                "path does not exist: {}",
                 abs_root.display()
             )));
         }
 
+        info!(
+            path = %abs_root.display(),
+            is_file = abs_root.is_file(),
+            is_dir = abs_root.is_dir(),
+            "Checking path type"
+        );
+
+        // Handle single file case
+        if abs_root.is_file() {
+            info!(path = %abs_root.display(), "Path is a file, using single file scanner");
+            return self.scan_single_file(&abs_root, &opts);
+        }
+
         if !abs_root.is_dir() {
             return Err(crate::core::error::TranslateError::InvalidArgument(
-                format!("path is not a directory: {}", abs_root.display()),
+                format!("path is not a file or directory: {}", abs_root.display()),
             ));
         }
 

@@ -14,7 +14,7 @@ use crate::parser::core::StringProcessor;
 use crate::parser::filtering::traits::Filter;
 use crate::parser::ParserConfig;
 use crate::parser::{ContentFilter, FunctionCategory};
-use tracing::{debug, error, instrument};
+use tracing::{debug, error};
 
 /// Generic language parser trait
 ///
@@ -37,7 +37,6 @@ pub trait LanguageParser: Send + Sync {
     fn tree_sitter_language(&self) -> Language;
 
     /// Parse content into a syntax tree
-    #[instrument(skip(self, content))]
     fn parse_tree(&self, content: &str) -> Result<Tree> {
         let mut parser = tree_sitter::Parser::new();
         parser

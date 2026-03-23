@@ -15,7 +15,7 @@ use crate::parser::languages::go::patterns::GoPatterns;
 use crate::parser::languages::go::queries::GoQueries;
 use crate::parser::ParserConfig;
 use crate::parser::{ContentFilter, FunctionCategory};
-use tracing::{debug, error, info, instrument};
+use tracing::{debug, error, info};
 
 /// Go language parser
 pub struct GoParser {
@@ -64,7 +64,6 @@ impl GoParser {
     }
 
     /// Parse file content into a syntax tree
-    #[instrument(skip(self, content))]
     fn parse_tree(&self, content: &str) -> Result<Tree> {
         let mut parser = Parser::new();
         parser
@@ -329,7 +328,6 @@ impl GoParser {
 }
 
 impl ParserTrait for GoParser {
-    #[instrument(skip(self, file))]
     fn parse(&self, file: &File) -> Result<Vec<TranslationUnit>> {
         let start = std::time::Instant::now();
         let file_path = file.path.to_string_lossy().to_string();

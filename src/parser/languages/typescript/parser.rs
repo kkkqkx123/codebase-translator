@@ -15,7 +15,7 @@ use crate::parser::languages::typescript::patterns::TypeScriptPatterns;
 use crate::parser::languages::typescript::queries::TypeScriptQueries;
 use crate::parser::ParserConfig;
 use crate::parser::{ContentFilter, FunctionCategory};
-use tracing::{debug, error, info, instrument};
+use tracing::{debug, error, info};
 
 /// TypeScript language parser
 pub struct TypeScriptParser {
@@ -71,7 +71,6 @@ impl TypeScriptParser {
     }
 
     /// Parse file content into a syntax tree
-    #[instrument(skip(self, content))]
     fn parse_tree(&self, content: &str) -> Result<Tree> {
         let mut parser = Parser::new();
         parser
@@ -376,7 +375,6 @@ impl TypeScriptParser {
 }
 
 impl ParserTrait for TypeScriptParser {
-    #[instrument(skip(self, file))]
     fn parse(&self, file: &File) -> Result<Vec<TranslationUnit>> {
         let start = std::time::Instant::now();
         let file_path = file.path.to_string_lossy().to_string();

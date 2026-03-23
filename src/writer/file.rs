@@ -146,15 +146,60 @@ impl FileWriter {
             "Previewing translations"
         );
 
-        println!("\n=== File: {} ===", file.path.display());
+        // Generate the modified content
+        let content = String::from_utf8_lossy(&file.content);
+        let line_ending = detect_line_ending(&content);
+        let modified_content = TranslationApplier::apply_translations(&content, units)?;
+        let modified_content = normalize_line_ending(&modified_content, line_ending);
 
-        for unit in units {
-            if let Some(translated) = &unit.translated {
-                println!("\n[{}] Line {}", unit.node_type, unit.start_pos.line);
-                println!("Original:   {}", unit.content);
-                println!("Translated: {}", translated);
+        // Check if there are any actual changes
+        if content == modified_content {
+            println!("\n=== File: {} ===", file.path.display());
+            println!("No changes would be made to this file.");
+            return Ok(());
+        }
+
+        // Print diff-style output
+        println!("\n========================================");
+        println!("  FILE: {}", file.path.display());
+        println!("========================================");
+        println!("\n--- ORIGINAL ---");
+        println!("{}", content);
+        println!("\n+++ TRANSLATED +++");
+        println!("{}", modified_content);
+        println!("\n========================================");
+        println!("  SUMMARY");
+        println!("========================================");
+
+        // Count changes
+        let changed_units: Vec<&TranslationUnit> = units
+            .iter()
+            .filter(|u| {
+                u.translated
+                    .as_ref()
+                    .map(|t| t != &u.content)
+                    .unwrap_or(false)
+            })
+            .collect();
+
+        println!("Total translation units: {}", units.len());
+        println!("Units with changes: {}", changed_units.len());
+
+        if !changed_units.is_empty() {
+            println!("\n--- Changes Detail ---");
+            for unit in &changed_units {
+                if let Some(translated) = &unit.translated {
+                    println!(
+                        "\n[{}] Line {}-{}:",
+                        unit.node_type, unit.start_pos.line, unit.end_pos.line
+                    );
+                    println!("  - {}", unit.content.replace('\n', "\n    "));
+                    println!("  + {}", translated.replace('\n', "\n    "));
+                }
             }
         }
+
+        println!("\n========================================\n");
 
         Ok(())
     }
