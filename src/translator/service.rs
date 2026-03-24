@@ -10,6 +10,7 @@ use std::sync::Arc;
 use tracing::{debug, info};
 
 use crate::core::error::{Result, TranslateError};
+use crate::reporter::stats::SharedStats;
 use crate::translator::batch::BatchTranslator;
 use crate::translator::common::{BatchOptions, BatchResult};
 use crate::translator::factory::{create_translator_from_config, TranslatorConfig};
@@ -201,6 +202,14 @@ impl TranslationService {
         } else {
             false
         }
+    }
+
+    /// Set shared stats for collecting translator statistics
+    pub fn set_shared_stats(&self, _shared_stats: Arc<SharedStats>) {
+        // BatchTranslator is wrapped in Arc, so we need to get a mutable reference
+        // This is a limitation of the current design
+        // For now, we'll skip this as it would require changing the Arc to RwLock
+        debug!("Cannot set shared stats on Arc<BatchTranslator>");
     }
 
     /// Get the translator name

@@ -71,6 +71,7 @@ impl From<FileProcessResult> for TranslationStats {
         };
         stats.error_count = result.errors;
         stats.api_call_count = result.api_calls;
+
         stats
     }
 }

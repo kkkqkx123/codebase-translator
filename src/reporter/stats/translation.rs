@@ -260,7 +260,77 @@ impl TranslationStats {
         self.error_count += other.error_count;
         self.cache_hit_count += other.cache_hit_count;
         self.cache_miss_count += other.cache_miss_count;
-        // Note: translator_stats and llm_provider_stats are not merged
-        // as they require more complex merging logic
+
+        // Merge translator stats
+        for (translator_type, other_stats) in &other.translator_stats {
+            if let Some(stats) = self.translator_stats.get_mut(translator_type) {
+                stats.total_calls += other_stats.total_calls;
+                stats.successful_calls += other_stats.successful_calls;
+                stats.failed_calls += other_stats.failed_calls;
+                stats.total_chars += other_stats.total_chars;
+                // Recalculate average latency
+                let total_successful = stats.successful_calls;
+                if total_successful > 0 {
+                    let other_total_successful = other_stats.successful_calls;
+                    if other_total_successful > 0 {
+                        let total_latency = stats.average_latency_ms * (total_successful - other_total_successful) as f64
+                            + other_stats.average_latency_ms * other_total_successful as f64;
+                        stats.average_latency_ms = total_latency / total_successful as f64;
+                    }
+                }
+                // Update min/max latency
+                if let Some(other_min) = other_stats.min_latency_ms {
+                    stats.min_latency_ms = Some(stats.min_latency_ms.map_or(other_min, |m| m.min(other_min)));
+                }
+                if let Some(other_max) = other_stats.max_latency_ms {
+                    stats.max_latency_ms = Some(stats.max_latency_ms.map_or(other_max, |m| m.max(other_max)));
+                }
+                // Update last call time
+                if let Some(other_last) = &other_stats.last_call_time {
+                    stats.last_call_time = Some(stats.last_call_time.map_or_else(
+                        || other_last.clone(),
+                        |last| if last < *other_last { other_last.clone() } else { last },
+                    ));
+                }
+            } else {
+                self.translator_stats.insert(translator_type.clone(), other_stats.clone());
+            }
+        }
+
+        // Merge LLM provider stats
+        for (provider_id, other_stats) in &other.llm_provider_stats {
+            if let Some(stats) = self.llm_provider_stats.get_mut(provider_id) {
+                stats.total_calls += other_stats.total_calls;
+                stats.successful_calls += other_stats.successful_calls;
+                stats.failed_calls += other_stats.failed_calls;
+                stats.total_chars += other_stats.total_chars;
+                // Recalculate average latency
+                let total_successful = stats.successful_calls;
+                if total_successful > 0 {
+                    let other_total_successful = other_stats.successful_calls;
+                    if other_total_successful > 0 {
+                        let total_latency = stats.average_latency_ms * (total_successful - other_total_successful) as f64
+                            + other_stats.average_latency_ms * other_total_successful as f64;
+                        stats.average_latency_ms = total_latency / total_successful as f64;
+                    }
+                }
+                // Update min/max latency
+                if let Some(other_min) = other_stats.min_latency_ms {
+                    stats.min_latency_ms = Some(stats.min_latency_ms.map_or(other_min, |m| m.min(other_min)));
+                }
+                if let Some(other_max) = other_stats.max_latency_ms {
+                    stats.max_latency_ms = Some(stats.max_latency_ms.map_or(other_max, |m| m.max(other_max)));
+                }
+                // Update last call time
+                if let Some(other_last) = &other_stats.last_call_time {
+                    stats.last_call_time = Some(stats.last_call_time.map_or_else(
+                        || other_last.clone(),
+                        |last| if last < *other_last { other_last.clone() } else { last },
+                    ));
+                }
+            } else {
+                self.llm_provider_stats.insert(provider_id.clone(), other_stats.clone());
+            }
+        }
     }
 }

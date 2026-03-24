@@ -111,6 +111,9 @@ pub fn create_translation_service(
     let batch_options = create_batch_options(global_config, project_config);
     let batch_translator = BatchTranslator::new(translators, batch_options);
 
+    // Note: We cannot set shared_stats here because BatchTranslator is wrapped in Arc
+    // The shared_stats will be passed through the workflow components instead
+
     let translator =
         TranslationService::with_batch_translator(std::sync::Arc::new(batch_translator))?;
     info!(

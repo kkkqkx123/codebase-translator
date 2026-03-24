@@ -1,0 +1,42 @@
+============================================================
+Translation Report
+============================================================
+
+Time:
+  Start:      2026-03-24 01:27:03
+  End:        2026-03-24 01:27:03
+  Duration:   0.000s
+  Speed:      0.0 files/s
+
+Files:
+  Total:      5
+  Processed:  5
+  Skipped:    0
+  Failed:     0
+
+Translation Units:
+  Total:      20
+  Translated: 15
+  Progress:   75.0%
+
+API Calls:
+  Total:      3
+
+Cache:
+  Hits:       2
+  Misses:     3
+  Hit Rate:   40.0%
+
+Translator Statistics:
+  deeplx:
+    Calls:      2 (success: 2, failed: 0)
+    Characters: 220
+    Latency:    avg 165.0ms, min 150.0ms, max 180.0ms
+
+LLM Provider Statistics:
+  openai-gpt4 (openai / gpt-4):
+    Calls:      1 (success: 1, failed: 0)
+    Characters: 100
+    Latency:    avg 300.0ms, min 300.0ms, max 300.0ms
+
+============================================================

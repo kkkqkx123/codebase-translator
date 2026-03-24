@@ -13,6 +13,7 @@ use tokio::sync::{RwLock, Semaphore};
 use tracing::{debug, error, info, warn};
 
 use crate::core::error::{Result, TranslateError};
+use crate::reporter::stats::SharedStats;
 use crate::translator::common::{BatchOptions, BatchResult, LimitPolicy, TranslateResponse};
 use crate::translator::{Translator, TranslatorImpl};
 
@@ -76,6 +77,7 @@ pub struct BatchTranslator {
     semaphore: Arc<Semaphore>,
     max_retries: usize,
     limit_policy: LimitPolicy,
+    shared_stats: Option<Arc<SharedStats>>,
 }
 
 impl BatchTranslator {
@@ -122,7 +124,13 @@ impl BatchTranslator {
             semaphore,
             max_retries: options.max_retries.max(1),
             limit_policy,
+            shared_stats: None,
         }
+    }
+
+    /// Set shared stats for collecting translator statistics
+    pub fn set_shared_stats(&mut self, shared_stats: Arc<SharedStats>) {
+        self.shared_stats = Some(shared_stats);
     }
 
     /// Set rate limit dynamically
@@ -273,6 +281,8 @@ impl BatchTranslator {
     ) -> Result<TranslateResponse> {
         let mut last_error = None;
         let mut attempted_translators = std::collections::HashSet::new();
+        let start_time = Instant::now();
+        let mut final_translator_type: Option<String> = None;
 
         for attempt in 0..self.max_retries {
             // Check character limit and split if needed
@@ -302,6 +312,7 @@ impl BatchTranslator {
             };
 
             attempted_translators.insert(entry.name.clone());
+            final_translator_type = Some(entry.name.clone());
 
             debug!(
                 attempt = attempt + 1,
@@ -318,6 +329,20 @@ impl BatchTranslator {
                 Ok(translated) => {
                     if let Some(translated_text) = translated.first() {
                         entry.mark_healthy();
+                        
+                        // Record statistics if shared stats is available
+                        if let Some(ref shared_stats) = self.shared_stats {
+                            let latency_ms = start_time.elapsed().as_millis() as u64;
+                            if let Some(ref translator_type) = final_translator_type {
+                                shared_stats.record_translator_call(
+                                    translator_type,
+                                    latency_ms,
+                                    true,
+                                    text.len(),
+                                );
+                            }
+                        }
+                        
                         return Ok(TranslateResponse {
                             original_text: text.to_string(),
                             translated_text: translated_text.clone(),
@@ -343,6 +368,19 @@ impl BatchTranslator {
                         tokio::time::sleep(delay).await;
                     }
                 }
+            }
+        }
+
+        // Record failed statistics if shared stats is available
+        if let Some(ref shared_stats) = self.shared_stats {
+            let latency_ms = start_time.elapsed().as_millis() as u64;
+            if let Some(ref translator_type) = final_translator_type {
+                shared_stats.record_translator_call(
+                    translator_type,
+                    latency_ms,
+                    false,
+                    text.len(),
+                );
             }
         }
 

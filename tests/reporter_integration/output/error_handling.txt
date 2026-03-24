@@ -1,0 +1,49 @@
+============================================================
+Translation Report
+============================================================
+
+Time:
+  Start:      2026-03-24 01:27:03
+  End:        2026-03-24 01:27:03
+  Duration:   0.000s
+  Speed:      0.0 files/s
+
+Files:
+  Total:      5
+  Processed:  4
+  Skipped:    0
+  Failed:     1
+
+Translation Units:
+  Total:      20
+  Translated: 16
+  Progress:   80.0%
+
+API Calls:
+  Total:      4
+
+Cache:
+  Hits:       0
+  Misses:     4
+  Hit Rate:   0.0%
+
+Errors (1)
+  1. /path/to/failed/file.rs: Translation failed due to network error
+
+Translator Statistics:
+  deeplx:
+    Calls:      2 (success: 2, failed: 0)
+    Characters: 220
+    Latency:    avg 165.0ms, min 150.0ms, max 180.0ms
+  tencent:
+    Calls:      1 (success: 0, failed: 1)
+    Characters: 150
+    Latency:    avg 200.0ms, min 200.0ms, max 200.0ms
+
+LLM Provider Statistics:
+  openai-gpt4 (openai / gpt-4):
+    Calls:      1 (success: 1, failed: 0)
+    Characters: 100
+    Latency:    avg 300.0ms, min 300.0ms, max 300.0ms
+
+============================================================

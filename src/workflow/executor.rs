@@ -141,11 +141,6 @@ impl TranslationWorkflow {
             reporter.report_total_files(files.len());
         }
 
-        if files.is_empty() {
-            info!("No files found to translate");
-            return Ok(result);
-        }
-
         let builder = WorkflowBuilder::new(
             self.global_config.clone(),
             self.project_config.clone(),
@@ -153,6 +148,15 @@ impl TranslationWorkflow {
         );
 
         let components = builder.build()?;
+
+        if files.is_empty() {
+            info!("No files found to translate");
+            result.stats.finalize();
+            if let Some(ref reporter) = self.reporter {
+                reporter.finalize(&result.stats);
+            }
+            return Ok(result);
+        }
 
         let processor = FileProcessor::new(
             &components.cache,
@@ -211,6 +215,18 @@ impl TranslationWorkflow {
             files_processed = result.files_processed,
             "Workflow execution completed"
         );
+
+        // Merge translator statistics from SharedStats
+        let translator_stats = components.shared_stats.get_all_translator_stats();
+        for stat in translator_stats {
+            result.stats.translator_stats.insert(stat.translator_type.clone(), stat);
+        }
+
+        // Merge LLM provider statistics from SharedStats
+        let llm_provider_stats = components.shared_stats.get_all_llm_provider_stats();
+        for stat in llm_provider_stats {
+            result.stats.llm_provider_stats.insert(stat.provider_id.clone(), stat);
+        }
 
         // Finalize stats before passing to reporter
         result.stats.finalize();

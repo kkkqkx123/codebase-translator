@@ -10,6 +10,7 @@ use crate::{
     encoding::{Detector, Encoder},
     parser::ParserFactory,
     reporter::Reporter,
+    reporter::stats::SharedStats,
     translator::create_translation_service,
     writer::WriterFactory,
 };
@@ -23,6 +24,7 @@ pub struct WorkflowComponents {
     pub writer: crate::writer::FileWriter,
     pub detector: Detector,
     pub encoder: Encoder,
+    pub shared_stats: Arc<SharedStats>,
 }
 
 /// Builder for creating workflow components
@@ -63,6 +65,7 @@ impl WorkflowBuilder {
             WriterFactory::from_project_config(&self.project_config, Some(&self.root_path))?;
         let detector = Detector::default();
         let encoder = Encoder::default();
+        let shared_stats = Arc::new(SharedStats::new());
 
         Ok(WorkflowComponents {
             cache,
@@ -71,6 +74,7 @@ impl WorkflowBuilder {
             writer,
             detector,
             encoder,
+            shared_stats,
         })
     }
 
