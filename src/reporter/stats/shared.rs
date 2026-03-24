@@ -1,7 +1,7 @@
 use super::provider::{LLMProviderStats, TranslatorStats};
 use super::translation::TranslationStats;
 use std::sync::{Arc, RwLock};
-use tracing::{debug, warn};
+use tracing::debug;
 
 #[derive(Debug, Clone)]
 pub struct SharedStats {
@@ -17,104 +17,67 @@ impl SharedStats {
     }
 
     pub fn record_processed(&self) {
-        match self.inner.write() {
-            Ok(mut stats) => stats.record_processed(),
-            Err(e) => warn!(error = %e, "Failed to acquire write lock for record_processed"),
+        if let Ok(mut stats) = self.inner.write() {
+            stats.record_processed();
         }
     }
 
     pub fn record_skipped(&self) {
-        match self.inner.write() {
-            Ok(mut stats) => stats.record_skipped(),
-            Err(e) => warn!(error = %e, "Failed to acquire write lock for record_skipped"),
+        if let Ok(mut stats) = self.inner.write() {
+            stats.record_skipped();
         }
     }
 
     pub fn record_failed(&self, file_path: &str, error: &str) {
-        match self.inner.write() {
-            Ok(mut stats) => stats.record_failed(file_path, error),
-            Err(e) => {
-                warn!(error = %e, file_path = %file_path, "Failed to acquire write lock for record_failed")
-            }
+        if let Ok(mut stats) = self.inner.write() {
+            stats.record_failed(file_path, error);
         }
     }
 
     pub fn record_total_files(&self, count: usize) {
-        match self.inner.write() {
-            Ok(mut stats) => stats.record_total_files(count),
-            Err(e) => warn!(error = %e, "Failed to acquire write lock for record_total_files"),
+        if let Ok(mut stats) = self.inner.write() {
+            stats.record_total_files(count);
         }
     }
 
     pub fn record_units(&self, count: usize) {
-        match self.inner.write() {
-            Ok(mut stats) => stats.record_units(count),
-            Err(e) => warn!(error = %e, "Failed to acquire write lock for record_units"),
+        if let Ok(mut stats) = self.inner.write() {
+            stats.record_units(count);
         }
     }
 
     pub fn record_translated(&self, count: usize) {
-        match self.inner.write() {
-            Ok(mut stats) => stats.record_translated(count),
-            Err(e) => warn!(error = %e, "Failed to acquire write lock for record_translated"),
+        if let Ok(mut stats) = self.inner.write() {
+            stats.record_translated(count);
         }
     }
 
     pub fn record_api_call(&self, count: usize) {
-        match self.inner.write() {
-            Ok(mut stats) => stats.record_api_call(count),
-            Err(e) => warn!(error = %e, "Failed to acquire write lock for record_api_call"),
+        if let Ok(mut stats) = self.inner.write() {
+            stats.record_api_call(count);
         }
     }
 
     pub fn record_cache_hit(&self) {
-        match self.inner.write() {
-            Ok(mut stats) => stats.record_cache_hit(),
-            Err(e) => warn!(error = %e, "Failed to acquire write lock for record_cache_hit"),
+        if let Ok(mut stats) = self.inner.write() {
+            stats.record_cache_hit();
         }
     }
 
     pub fn record_cache_miss(&self) {
-        match self.inner.write() {
-            Ok(mut stats) => stats.record_cache_miss(),
-            Err(e) => warn!(error = %e, "Failed to acquire write lock for record_cache_miss"),
-        }
-    }
-
-    pub fn record_progress(&self, current: usize, total: usize) {
-        match self.inner.write() {
-            Ok(mut stats) => stats.record_progress(current, total),
-            Err(e) => warn!(error = %e, "Failed to acquire write lock for record_progress"),
+        if let Ok(mut stats) = self.inner.write() {
+            stats.record_cache_miss();
         }
     }
 
     pub fn finalize(&self) {
-        match self.inner.write() {
-            Ok(mut stats) => stats.finalize(),
-            Err(e) => warn!(error = %e, "Failed to acquire write lock for finalize"),
+        if let Ok(mut stats) = self.inner.write() {
+            stats.finalize();
         }
     }
 
     pub fn has_errors(&self) -> bool {
         self.inner.read().map(|s| s.has_errors()).unwrap_or(false)
-    }
-
-    pub fn get_progress(&self) -> f64 {
-        self.inner.read().map(|s| s.get_progress()).unwrap_or(0.0)
-    }
-
-    pub fn get_translation_progress(&self) -> f64 {
-        self.inner
-            .read()
-            .map(|s| s.get_translation_progress())
-            .unwrap_or(0.0)
-    }
-
-    pub fn get_cache_hit_rate(&self) -> f64 {
-        self.inner
-            .read()
-            .map(|s| s.get_cache_hit_rate())
-            .unwrap_or(0.0)
     }
 
     pub fn get_stats(&self) -> TranslationStats {
@@ -123,9 +86,8 @@ impl SharedStats {
 
     pub fn reset(&self) {
         debug!("Resetting shared statistics");
-        match self.inner.write() {
-            Ok(mut stats) => *stats = TranslationStats::new(),
-            Err(e) => warn!(error = %e, "Failed to acquire write lock for reset"),
+        if let Ok(mut stats) = self.inner.write() {
+            *stats = TranslationStats::new();
         }
     }
 
@@ -136,11 +98,8 @@ impl SharedStats {
         success: bool,
         chars: usize,
     ) {
-        match self.inner.write() {
-            Ok(mut stats) => {
-                stats.record_translator_call(translator_type, latency_ms, success, chars)
-            }
-            Err(e) => warn!(error = %e, "Failed to acquire write lock for record_translator_call"),
+        if let Ok(mut stats) = self.inner.write() {
+            stats.record_translator_call(translator_type, latency_ms, success, chars);
         }
     }
 
@@ -153,18 +112,15 @@ impl SharedStats {
         success: bool,
         chars: usize,
     ) {
-        match self.inner.write() {
-            Ok(mut stats) => stats.record_llm_provider_call(
+        if let Ok(mut stats) = self.inner.write() {
+            stats.record_llm_provider_call(
                 provider_id,
                 provider_name,
                 model,
                 latency_ms,
                 success,
                 chars,
-            ),
-            Err(e) => {
-                warn!(error = %e, "Failed to acquire write lock for record_llm_provider_call")
-            }
+            );
         }
     }
 

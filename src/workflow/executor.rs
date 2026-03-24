@@ -147,7 +147,7 @@ impl TranslationWorkflow {
             self.workflow_config.root_path.clone(),
         );
 
-        let components = builder.build()?;
+        let (components, workflow_reporter) = builder.build_with_reporter()?;
 
         if files.is_empty() {
             info!("No files found to translate");
@@ -166,7 +166,7 @@ impl TranslationWorkflow {
             &components.detector,
             &components.encoder,
             &self.project_config,
-            self.reporter.clone(),
+            self.reporter.clone().or(Some(workflow_reporter)),
         );
 
         for (idx, file_entry) in files.iter().enumerate() {

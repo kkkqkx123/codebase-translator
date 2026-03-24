@@ -35,10 +35,6 @@ fn test_reporter_finalization() -> Result<()> {
         stats.end_time.is_some(),
         "Should have end time after finalization"
     );
-    assert!(
-        stats.total_duration_ms >= 0,
-        "Should have duration after finalization"
-    );
 
     let report_path = temp_dir_path.join("finalization_report.txt");
     reporter.save_report(&report_path, &stats, ReportFormat::Text)?;

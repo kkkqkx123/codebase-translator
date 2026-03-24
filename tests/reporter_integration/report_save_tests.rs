@@ -1,5 +1,4 @@
 use std::fs;
-use std::path::{Path, PathBuf};
 use tempfile::TempDir;
 
 use codebase_translate::{

@@ -1,174 +1,43 @@
 //! Default reporter implementation
 
-use chrono::Utc;
 use std::path::Path;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 
 use crate::core::error::TranslateError;
+use crate::reporter::generator::{DefaultReportGenerator, ReportGenerator};
+use crate::reporter::logger::EventLogger;
+use crate::reporter::progress::ProgressTracker;
 use crate::reporter::r#trait::{ReportFormat, Reporter};
-use crate::reporter::stats::TranslationStats;
-use tracing::{debug, info, warn};
+use crate::reporter::stats::{SharedStats, TranslationStats};
 
-/// Default reporter implementation
-///
-/// This reporter only tracks progress and errors for logging purposes.
-/// Statistics are collected externally and passed in when generating reports.
 #[derive(Debug, Clone)]
 pub struct DefaultReporter {
-    /// Total files to process (for progress tracking)
-    total_files: Arc<RwLock<usize>>,
-    /// Current progress (for progress tracking)
-    current_progress: Arc<RwLock<usize>>,
-    /// Error flag
-    has_errors: Arc<RwLock<bool>>,
-    /// Final stats (set during finalize)
-    final_stats: Arc<RwLock<Option<TranslationStats>>>,
+    progress_tracker: ProgressTracker,
+    event_logger: EventLogger,
+    report_generator: DefaultReportGenerator,
+    shared_stats: Option<Arc<SharedStats>>,
+    final_stats: Arc<std::sync::RwLock<Option<TranslationStats>>>,
 }
 
 impl DefaultReporter {
     pub fn new() -> Self {
         Self {
-            total_files: Arc::new(RwLock::new(0)),
-            current_progress: Arc::new(RwLock::new(0)),
-            has_errors: Arc::new(RwLock::new(false)),
-            final_stats: Arc::new(RwLock::new(None)),
+            progress_tracker: ProgressTracker::new(),
+            event_logger: EventLogger::new(),
+            report_generator: DefaultReportGenerator::new(),
+            shared_stats: None,
+            final_stats: Arc::new(std::sync::RwLock::new(None)),
         }
     }
 
-    fn generate_text_report(&self, stats: &TranslationStats) -> Result<String, TranslateError> {
-        info!(
-            files = stats.processed_files,
-            units = stats.translated_units,
-            errors = stats.error_count,
-            "Generating translation report"
-        );
-
-        let end_time = stats
-            .end_time
-            .ok_or_else(|| TranslateError::Parse("Stats should be finalized".to_string()))?;
-
-        let duration = end_time.signed_duration_since(stats.start_time);
-
-        let mut report = String::new();
-        report.push_str(&format!("\n{}\n", "=".repeat(60)));
-        report.push_str("Translation Report\n");
-        report.push_str(&format!("{}\n\n", "=".repeat(60)));
-
-        report.push_str("Time:\n");
-        report.push_str(&format!(
-            "  Start:      {}\n",
-            stats.start_time.format("%Y-%m-%d %H:%M:%S")
-        ));
-        report.push_str(&format!(
-            "  End:        {}\n",
-            end_time.format("%Y-%m-%d %H:%M:%S")
-        ));
-        report.push_str(&format!(
-            "  Duration:   {:.3}s\n",
-            duration.num_milliseconds() as f64 / 1000.0
-        ));
-        report.push_str(&format!(
-            "  Speed:      {:.1} files/s\n\n",
-            stats.avg_speed_files_per_sec
-        ));
-
-        report.push_str("Files:\n");
-        report.push_str(&format!("  Total:      {}\n", stats.total_files));
-        report.push_str(&format!("  Processed:  {}\n", stats.processed_files));
-        report.push_str(&format!("  Skipped:    {}\n", stats.skipped_files));
-        report.push_str(&format!("  Failed:     {}\n\n", stats.failed_files));
-
-        report.push_str("Translation Units:\n");
-        report.push_str(&format!("  Total:      {}\n", stats.total_units));
-        report.push_str(&format!("  Translated: {}\n", stats.translated_units));
-
-        if stats.total_units > 0 {
-            let percentage = stats.get_translation_progress();
-            report.push_str(&format!("  Progress:   {:.1}%\n\n", percentage));
+    pub fn with_shared_stats(shared_stats: Arc<SharedStats>) -> Self {
+        Self {
+            progress_tracker: ProgressTracker::new(),
+            event_logger: EventLogger::new(),
+            report_generator: DefaultReportGenerator::new(),
+            shared_stats: Some(shared_stats),
+            final_stats: Arc::new(std::sync::RwLock::new(None)),
         }
-
-        report.push_str("API Calls:\n");
-        report.push_str(&format!("  Total:      {}\n\n", stats.api_call_count));
-
-        report.push_str("Cache:\n");
-        report.push_str(&format!("  Hits:       {}\n", stats.cache_hit_count));
-        report.push_str(&format!("  Misses:     {}\n", stats.cache_miss_count));
-
-        if stats.cache_hit_count + stats.cache_miss_count > 0 {
-            let hit_rate = stats.get_cache_hit_rate();
-            report.push_str(&format!("  Hit Rate:   {:.1}%\n\n", hit_rate));
-        }
-
-        if stats.error_count > 0 {
-            report.push_str(&format!("Errors ({})\n", stats.error_count));
-            for (i, err) in stats.errors.iter().enumerate() {
-                report.push_str(&format!("  {}. {}: {}\n", i + 1, err.file_path, err.error));
-            }
-            report.push('\n');
-        }
-
-        // Translator Statistics
-        if !stats.translator_stats.is_empty() {
-            report.push_str("Translator Statistics:\n");
-            for (name, stat) in &stats.translator_stats {
-                report.push_str(&format!("  {}:\n", name));
-                report.push_str(&format!(
-                    "    Calls:      {} (success: {}, failed: {})\n",
-                    stat.total_calls, stat.successful_calls, stat.failed_calls
-                ));
-                report.push_str(&format!("    Characters: {}\n", stat.total_chars));
-                report.push_str(&format!(
-                    "    Latency:    avg {:.1}ms",
-                    stat.average_latency_ms
-                ));
-                if let Some(min) = stat.min_latency_ms {
-                    report.push_str(&format!(", min {:.1}ms", min));
-                }
-                if let Some(max) = stat.max_latency_ms {
-                    report.push_str(&format!(", max {:.1}ms", max));
-                }
-                report.push('\n');
-            }
-            report.push('\n');
-        }
-
-        // LLM Provider Statistics
-        if !stats.llm_provider_stats.is_empty() {
-            report.push_str("LLM Provider Statistics:\n");
-            for (id, stat) in &stats.llm_provider_stats {
-                report.push_str(&format!(
-                    "  {} ({} / {}):\n",
-                    id, stat.provider_name, stat.model
-                ));
-                report.push_str(&format!(
-                    "    Calls:      {} (success: {}, failed: {})\n",
-                    stat.total_calls, stat.successful_calls, stat.failed_calls
-                ));
-                report.push_str(&format!("    Characters: {}\n", stat.total_chars));
-                report.push_str(&format!(
-                    "    Latency:    avg {:.1}ms",
-                    stat.average_latency_ms
-                ));
-                if let Some(min) = stat.min_latency_ms {
-                    report.push_str(&format!(", min {:.1}ms", min));
-                }
-                if let Some(max) = stat.max_latency_ms {
-                    report.push_str(&format!(", max {:.1}ms", max));
-                }
-                report.push('\n');
-            }
-            report.push('\n');
-        }
-
-        report.push_str(&format!("{}\n", "=".repeat(60)));
-
-        Ok(report)
-    }
-
-    fn generate_json_report(&self, stats: &TranslationStats) -> Result<String, TranslateError> {
-        debug!("Generating JSON report");
-        serde_json::to_string_pretty(stats)
-            .map_err(|e| TranslateError::Parse(format!("Failed to serialize JSON report: {}", e)))
     }
 }
 
@@ -180,60 +49,55 @@ impl Default for DefaultReporter {
 
 impl Reporter for DefaultReporter {
     fn report_total_files(&self, count: usize) {
-        debug!(count = count, "Reporting total files");
-        if let Ok(mut total) = self.total_files.write() {
-            *total = count;
+        self.progress_tracker.set_total(count);
+        self.event_logger.log_total_files(count);
+        if let Some(ref shared_stats) = self.shared_stats {
+            shared_stats.record_total_files(count);
         }
     }
 
     fn report_file(&self, path: &Path, units: usize) {
-        debug!(
-            file = %path.display(),
-            units = units,
-            "Reporting file processed"
-        );
-        // Only for logging, does not affect stats
+        self.event_logger.log_file_processed(path, units);
     }
 
     fn report_progress(&self, current: usize, total: usize) {
-        debug!(current = current, total = total, "Reporting progress");
-        if let Ok(mut progress) = self.current_progress.write() {
-            *progress = current;
-        }
+        self.progress_tracker.update(current);
+        self.event_logger.log_progress(current, total);
     }
 
     fn report_error(&self, path: &Path, error: &TranslateError) {
-        warn!(
-            file = %path.display(),
-            error = %error,
-            "Reporting error"
-        );
-        if let Ok(mut has_errors) = self.has_errors.write() {
-            *has_errors = true;
+        self.event_logger.log_error(path, error);
+        if let Some(ref shared_stats) = self.shared_stats {
+            shared_stats.record_failed(&path.to_string_lossy(), &error.to_string());
         }
     }
 
     fn report_skipped(&self, path: &Path) {
-        debug!(
-            file = %path.display(),
-            "Reporting skipped file"
-        );
-        // Only for logging, does not affect stats
+        self.event_logger.log_skipped(path);
+        if let Some(ref shared_stats) = self.shared_stats {
+            shared_stats.record_skipped();
+        }
     }
 
     fn report_api_call(&self, count: usize) {
-        debug!(count = count, "Reporting API call");
-        // Only for logging, does not affect stats
+        self.event_logger.log_api_call(count);
+        if let Some(ref shared_stats) = self.shared_stats {
+            shared_stats.record_api_call(count);
+        }
     }
 
     fn report_cache_hit(&self) {
-        debug!("Reporting cache hit");
-        // Only for logging, does not affect stats
+        self.event_logger.log_cache_hit();
+        if let Some(ref shared_stats) = self.shared_stats {
+            shared_stats.record_cache_hit();
+        }
     }
 
     fn report_cache_miss(&self) {
-        debug!("Reporting cache miss");
-        // Only for logging, does not affect stats
+        self.event_logger.log_cache_miss();
+        if let Some(ref shared_stats) = self.shared_stats {
+            shared_stats.record_cache_miss();
+        }
     }
 
     fn report_translator_call(
@@ -243,14 +107,10 @@ impl Reporter for DefaultReporter {
         success: bool,
         chars: usize,
     ) {
-        debug!(
-            translator = translator_type,
-            latency_ms = latency_ms,
-            success = success,
-            chars = chars,
-            "Reporting translator call"
-        );
-        // Statistics are recorded externally in TranslationStats
+        self.event_logger.log_translator_call(translator_type, latency_ms, success, chars);
+        if let Some(ref shared_stats) = self.shared_stats {
+            shared_stats.record_translator_call(translator_type, latency_ms, success, chars);
+        }
     }
 
     fn report_llm_provider_call(
@@ -262,16 +122,24 @@ impl Reporter for DefaultReporter {
         success: bool,
         chars: usize,
     ) {
-        debug!(
-            provider_id = provider_id,
-            provider_name = provider_name,
-            model = model,
-            latency_ms = latency_ms,
-            success = success,
-            chars = chars,
-            "Reporting LLM provider call"
+        self.event_logger.log_llm_provider_call(
+            provider_id,
+            provider_name,
+            model,
+            latency_ms,
+            success,
+            chars,
         );
-        // Statistics are recorded externally in TranslationStats
+        if let Some(ref shared_stats) = self.shared_stats {
+            shared_stats.record_llm_provider_call(
+                provider_id,
+                provider_name,
+                model,
+                latency_ms,
+                success,
+                chars,
+            );
+        }
     }
 
     fn final_report(
@@ -279,15 +147,8 @@ impl Reporter for DefaultReporter {
         stats: &TranslationStats,
         format: ReportFormat,
     ) -> Result<String, TranslateError> {
-        debug!(
-            format = ?format,
-            "Generating final report"
-        );
-
-        match format {
-            ReportFormat::Text => self.generate_text_report(stats),
-            ReportFormat::Json => self.generate_json_report(stats),
-        }
+        self.event_logger.log_report_generation(&format!("{:?}", format));
+        self.report_generator.generate(stats, format)
     }
 
     fn get_stats(&self) -> Option<TranslationStats> {
@@ -295,21 +156,18 @@ impl Reporter for DefaultReporter {
     }
 
     fn has_errors(&self) -> bool {
-        self.has_errors.read().map(|e| *e).unwrap_or(false)
-    }
-
-    fn get_progress(&self) -> f64 {
-        let total = self.total_files.read().map(|t| *t).unwrap_or(0);
-        let current = self.current_progress.read().map(|c| *c).unwrap_or(0);
-        if total == 0 {
-            0.0
+        if let Some(ref shared_stats) = self.shared_stats {
+            shared_stats.has_errors()
         } else {
-            (current as f64 / total as f64) * 100.0
+            false
         }
     }
 
+    fn get_progress(&self) -> f64 {
+        self.progress_tracker.get_percentage()
+    }
+
     fn finalize(&self, stats: &TranslationStats) {
-        info!("Finalizing reporter with external statistics");
         if let Ok(mut final_stats) = self.final_stats.write() {
             *final_stats = Some(stats.clone());
         }
@@ -321,23 +179,8 @@ impl Reporter for DefaultReporter {
         stats: &TranslationStats,
         format: ReportFormat,
     ) -> Result<(), TranslateError> {
-        debug!(
-            path = %path.display(),
-            format = ?format,
-            "Saving report to file"
-        );
-        let report = self.final_report(stats, format)?;
-
-        if let Some(parent) = path.parent() {
-            std::fs::create_dir_all(parent).map_err(|e| TranslateError::Io(e.to_string()))?;
-        }
-
-        std::fs::write(path, report).map_err(|e| TranslateError::Io(e.to_string()))?;
-
-        info!(
-            path = %path.display(),
-            "Report saved successfully"
-        );
+        self.report_generator.save(path, stats, format)?;
+        self.event_logger.log_report_saved(path);
         Ok(())
     }
 
@@ -348,43 +191,23 @@ impl Reporter for DefaultReporter {
         stats: &TranslationStats,
         format: ReportFormat,
     ) -> Result<std::path::PathBuf, TranslateError> {
-        debug!(
-            dir = %dir.display(),
-            template = template,
-            format = ?format,
-            "Saving report with template"
-        );
-        std::fs::create_dir_all(dir).map_err(|e| TranslateError::Io(e.to_string()))?;
-
-        let timestamp = Utc::now().format("%Y%m%d_%H%M%S");
-        let ext = match format {
-            ReportFormat::Text => "txt",
-            ReportFormat::Json => "json",
-        };
-        let filename = template
-            .replace("{timestamp}", &timestamp.to_string())
-            .replace("{format}", ext);
-        let path = dir.join(filename);
-
-        self.save_report(&path, stats, format)?;
-
-        info!(
-            path = %path.display(),
-            "Report saved with template"
-        );
+        let path = self.report_generator.save_with_template(dir, template, stats, format)?;
+        self.event_logger.log_report_saved(&path);
         Ok(path)
     }
 }
 
-/// Create a new default reporter
 pub fn create_reporter() -> Arc<dyn Reporter> {
     Arc::new(DefaultReporter::new())
+}
+
+pub fn create_reporter_with_stats(shared_stats: Arc<SharedStats>) -> Arc<dyn Reporter> {
+    Arc::new(DefaultReporter::with_shared_stats(shared_stats))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::path::Path;
 
     #[test]
     fn test_default_reporter_new() {
@@ -412,15 +235,6 @@ mod tests {
         reporter.report_total_files(100);
         reporter.report_progress(50, 100);
         assert_eq!(reporter.get_progress(), 50.0);
-    }
-
-    #[test]
-    fn test_default_reporter_report_error() {
-        let reporter = DefaultReporter::new();
-        assert!(!reporter.has_errors());
-        let error = TranslateError::Io("test error".to_string());
-        reporter.report_error(Path::new("test.rs"), &error);
-        assert!(reporter.has_errors());
     }
 
     #[test]

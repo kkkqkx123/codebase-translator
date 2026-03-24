@@ -9,9 +9,9 @@ use crate::{
     core::error::Result,
     encoding::{Detector, Encoder},
     parser::ParserFactory,
-    reporter::Reporter,
+    reporter::{create_reporter_with_stats, Reporter},
     reporter::stats::SharedStats,
-    translator::create_translation_service,
+    translator::create_translation_service_with_stats,
     writer::WriterFactory,
 };
 use std::sync::Arc;
@@ -59,7 +59,11 @@ impl WorkflowBuilder {
     /// Build all workflow components
     pub fn build(&self) -> Result<WorkflowComponents> {
         let cache = CacheFactory::create(&self.project_config.cache, &self.root_path)?;
-        let translator = create_translation_service(&self.global_config, &self.project_config)?;
+        let translator = create_translation_service_with_stats(
+            &self.global_config,
+            &self.project_config,
+            None,
+        )?;
         let parser = ParserFactory::create(&self.project_config)?;
         let writer =
             WriterFactory::from_project_config(&self.project_config, Some(&self.root_path))?;
@@ -76,6 +80,35 @@ impl WorkflowBuilder {
             encoder,
             shared_stats,
         })
+    }
+
+    /// Build all workflow components with reporter
+    pub fn build_with_reporter(&self) -> Result<(WorkflowComponents, Arc<dyn Reporter>)> {
+        let cache = CacheFactory::create(&self.project_config.cache, &self.root_path)?;
+        let shared_stats = Arc::new(SharedStats::new());
+        let translator = create_translation_service_with_stats(
+            &self.global_config,
+            &self.project_config,
+            Some(shared_stats.clone()),
+        )?;
+        let parser = ParserFactory::create(&self.project_config)?;
+        let writer =
+            WriterFactory::from_project_config(&self.project_config, Some(&self.root_path))?;
+        let detector = Detector::default();
+        let encoder = Encoder::default();
+        let reporter = create_reporter_with_stats(shared_stats.clone());
+
+        let components = WorkflowComponents {
+            cache,
+            translator,
+            parser,
+            writer,
+            detector,
+            encoder,
+            shared_stats,
+        };
+
+        Ok((components, reporter))
     }
 
     /// Get the global config

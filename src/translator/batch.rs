@@ -83,6 +83,15 @@ pub struct BatchTranslator {
 impl BatchTranslator {
     /// Create a new batch translator with multiple translators
     pub fn new(translators: Vec<Arc<TranslatorImpl>>, options: BatchOptions) -> Self {
+        Self::new_with_stats(translators, options, None)
+    }
+
+    /// Create a new batch translator with multiple translators and shared stats
+    pub fn new_with_stats(
+        translators: Vec<Arc<TranslatorImpl>>,
+        options: BatchOptions,
+        shared_stats: Option<Arc<SharedStats>>,
+    ) -> Self {
         debug!(
             translator_count = translators.len(),
             "Creating batch translator"
@@ -124,7 +133,7 @@ impl BatchTranslator {
             semaphore,
             max_retries: options.max_retries.max(1),
             limit_policy,
-            shared_stats: None,
+            shared_stats,
         }
     }
 

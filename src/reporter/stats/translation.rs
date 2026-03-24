@@ -24,9 +24,6 @@ pub struct TranslationStats {
     pub avg_speed_files_per_sec: f64,
     pub translator_stats: HashMap<String, TranslatorStats>,
     pub llm_provider_stats: HashMap<String, LLMProviderStats>,
-    /// Current progress tracking
-    pub current_progress: usize,
-    pub total_progress: usize,
 }
 
 impl Default for TranslationStats {
@@ -49,8 +46,6 @@ impl Default for TranslationStats {
             avg_speed_files_per_sec: 0.0,
             translator_stats: HashMap::new(),
             llm_provider_stats: HashMap::new(),
-            current_progress: 0,
-            total_progress: 0,
         }
     }
 }
@@ -134,12 +129,6 @@ impl TranslationStats {
         self.cache_miss_count += 1;
     }
 
-    pub fn record_progress(&mut self, current: usize, total: usize) {
-        debug!(current = current, total = total, "Recording progress");
-        self.current_progress = current;
-        self.total_progress = total;
-    }
-
     pub fn finalize(&mut self) {
         info!(
             total_files = self.total_files,
@@ -172,28 +161,6 @@ impl TranslationStats {
 
     pub fn has_errors(&self) -> bool {
         self.error_count > 0
-    }
-
-    pub fn get_progress(&self) -> f64 {
-        if self.total_files == 0 {
-            return 0.0;
-        }
-        (self.processed_files as f64 / self.total_files as f64) * 100.0
-    }
-
-    pub fn get_translation_progress(&self) -> f64 {
-        if self.total_units == 0 {
-            return 0.0;
-        }
-        (self.translated_units as f64 / self.total_units as f64) * 100.0
-    }
-
-    pub fn get_cache_hit_rate(&self) -> f64 {
-        let total = self.cache_hit_count + self.cache_miss_count;
-        if total == 0 {
-            return 0.0;
-        }
-        (self.cache_hit_count as f64 / total as f64) * 100.0
     }
 
     pub fn record_translator_call(
@@ -288,8 +255,8 @@ impl TranslationStats {
                 // Update last call time
                 if let Some(other_last) = &other_stats.last_call_time {
                     stats.last_call_time = Some(stats.last_call_time.map_or_else(
-                        || other_last.clone(),
-                        |last| if last < *other_last { other_last.clone() } else { last },
+                        || *other_last,
+                        |last| if last < *other_last { *other_last } else { last },
                     ));
                 }
             } else {
@@ -324,8 +291,8 @@ impl TranslationStats {
                 // Update last call time
                 if let Some(other_last) = &other_stats.last_call_time {
                     stats.last_call_time = Some(stats.last_call_time.map_or_else(
-                        || other_last.clone(),
-                        |last| if last < *other_last { other_last.clone() } else { last },
+                        || *other_last,
+                        |last| if last < *other_last { *other_last } else { last },
                     ));
                 }
             } else {

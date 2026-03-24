@@ -16,6 +16,7 @@ pub mod r#trait;
 
 use crate::config::{global::GlobalConfig, project::ProjectConfig};
 use crate::core::error::Result;
+use crate::reporter::SharedStats;
 use tracing::{info, warn};
 
 // Re-export traits
@@ -49,6 +50,15 @@ pub use service::{BatchTranslationService, TranslationService};
 pub fn create_translation_service(
     global_config: &GlobalConfig,
     project_config: &ProjectConfig,
+) -> Result<TranslationService> {
+    create_translation_service_with_stats(global_config, project_config, None)
+}
+
+/// Create translator instance from global and project configs with shared stats
+pub fn create_translation_service_with_stats(
+    global_config: &GlobalConfig,
+    project_config: &ProjectConfig,
+    shared_stats: Option<std::sync::Arc<SharedStats>>,
 ) -> Result<TranslationService> {
     let enabled_providers = global_config.get_enabled_providers();
     info!(
@@ -109,10 +119,7 @@ pub fn create_translation_service(
 
     // Create BatchTranslator with all enabled translators
     let batch_options = create_batch_options(global_config, project_config);
-    let batch_translator = BatchTranslator::new(translators, batch_options);
-
-    // Note: We cannot set shared_stats here because BatchTranslator is wrapped in Arc
-    // The shared_stats will be passed through the workflow components instead
+    let batch_translator = BatchTranslator::new_with_stats(translators, batch_options, shared_stats);
 
     let translator =
         TranslationService::with_batch_translator(std::sync::Arc::new(batch_translator))?;
