@@ -576,14 +576,7 @@ mod tests {
     fn test_apply_with_crlf_in_raw_match() {
         // raw_match has \r\n but content has \n (common on Windows)
         let content = "//! Hello World\n//! Second line\npub mod test;";
-        let mut unit = create_multiline_unit(
-            "Hello World",
-            "//! Hello World\r\n",
-            1,
-            1,
-            0,
-            15,
-        );
+        let mut unit = create_multiline_unit("Hello World", "//! Hello World\r\n", 1, 1, 0, 15);
         unit.set_translated("你好世界");
 
         let units: Vec<&TranslationUnit> = vec![&unit];
@@ -598,14 +591,7 @@ mod tests {
     fn test_apply_with_crlf_in_content() {
         // content has \r\n but raw_match has \n
         let content = "//! Hello World\r\n//! Second line\r\npub mod test;";
-        let mut unit = create_multiline_unit(
-            "Hello World",
-            "//! Hello World\n",
-            1,
-            1,
-            0,
-            14,
-        );
+        let mut unit = create_multiline_unit("Hello World", "//! Hello World\n", 1, 1, 0, 14);
         unit.set_translated("你好世界");
 
         let units: Vec<&TranslationUnit> = vec![&unit];
@@ -620,14 +606,7 @@ mod tests {
     fn test_apply_with_mixed_line_endings() {
         // Mixed line endings in content
         let content = "//! Line 1\r\n//! Line 2\n//! Line 3\r\npub mod test;";
-        let mut unit = create_multiline_unit(
-            "Line 2",
-            "//! Line 2\r\n",
-            2,
-            2,
-            14,
-            28,
-        );
+        let mut unit = create_multiline_unit("Line 2", "//! Line 2\r\n", 2, 2, 14, 28);
         unit.set_translated("第二行");
 
         let units: Vec<&TranslationUnit> = vec![&unit];
@@ -668,14 +647,8 @@ mod tests {
     fn test_apply_no_match() {
         // When raw_match doesn't exist in content, content should remain unchanged
         let content = "//! Some content\n//! More content";
-        let mut unit = create_multiline_unit(
-            "Non-existent",
-            "//! Non-existent content\r\n",
-            1,
-            1,
-            0,
-            10,
-        );
+        let mut unit =
+            create_multiline_unit("Non-existent", "//! Non-existent content\r\n", 1, 1, 0, 10);
         unit.set_translated("翻译内容");
 
         let units: Vec<&TranslationUnit> = vec![&unit];
@@ -690,34 +663,13 @@ mod tests {
         // Test that multiple units are correctly applied without offset issues
         let content = "//! First\n//! Second\n//! Third\npub mod test;";
 
-        let mut unit1 = create_multiline_unit(
-            "First",
-            "//! First\n",
-            1,
-            1,
-            0,
-            10,
-        );
+        let mut unit1 = create_multiline_unit("First", "//! First\n", 1, 1, 0, 10);
         unit1.set_translated("第一");
 
-        let mut unit2 = create_multiline_unit(
-            "Second",
-            "//! Second\n",
-            2,
-            2,
-            10,
-            21,
-        );
+        let mut unit2 = create_multiline_unit("Second", "//! Second\n", 2, 2, 10, 21);
         unit2.set_translated("第二");
 
-        let mut unit3 = create_multiline_unit(
-            "Third",
-            "//! Third\n",
-            3,
-            3,
-            21,
-            31,
-        );
+        let mut unit3 = create_multiline_unit("Third", "//! Third\n", 3, 3, 21, 31);
         unit3.set_translated("第三");
 
         let units: Vec<&TranslationUnit> = vec![&unit1, &unit2, &unit3];

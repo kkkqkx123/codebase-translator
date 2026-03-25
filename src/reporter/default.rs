@@ -107,7 +107,8 @@ impl Reporter for DefaultReporter {
         success: bool,
         chars: usize,
     ) {
-        self.event_logger.log_translator_call(translator_type, latency_ms, success, chars);
+        self.event_logger
+            .log_translator_call(translator_type, latency_ms, success, chars);
         if let Some(ref shared_stats) = self.shared_stats {
             shared_stats.record_translator_call(translator_type, latency_ms, success, chars);
         }
@@ -147,7 +148,8 @@ impl Reporter for DefaultReporter {
         stats: &TranslationStats,
         format: ReportFormat,
     ) -> Result<String, TranslateError> {
-        self.event_logger.log_report_generation(&format!("{:?}", format));
+        self.event_logger
+            .log_report_generation(&format!("{:?}", format));
         self.report_generator.generate(stats, format)
     }
 
@@ -191,7 +193,9 @@ impl Reporter for DefaultReporter {
         stats: &TranslationStats,
         format: ReportFormat,
     ) -> Result<std::path::PathBuf, TranslateError> {
-        let path = self.report_generator.save_with_template(dir, template, stats, format)?;
+        let path = self
+            .report_generator
+            .save_with_template(dir, template, stats, format)?;
         self.event_logger.log_report_saved(&path);
         Ok(path)
     }

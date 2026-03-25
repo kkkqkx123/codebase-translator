@@ -78,6 +78,7 @@ pub struct BatchTranslator {
     max_retries: usize,
     limit_policy: LimitPolicy,
     shared_stats: Option<Arc<SharedStats>>,
+    batch_size: usize,
 }
 
 impl BatchTranslator {
@@ -134,6 +135,7 @@ impl BatchTranslator {
             max_retries: options.max_retries.max(1),
             limit_policy,
             shared_stats,
+            batch_size: options.batch_size.max(1),
         }
     }
 
@@ -187,6 +189,9 @@ impl BatchTranslator {
     }
 
     /// Translate a batch of texts
+    /// 
+    /// This method processes texts in batches according to the configured batch_size.
+    /// Each batch is sent to the translator as a single request, improving efficiency.
     pub async fn translate_batch(
         &self,
         texts: &[String],
@@ -197,20 +202,34 @@ impl BatchTranslator {
         let total_count = texts.len();
         let mut results = Vec::with_capacity(total_count);
         let mut errors = Vec::new();
-        let mut success_count = 0;
-        let mut failed_count = 0;
+        let mut success_count: usize = 0;
+        let mut failed_count: usize = 0;
         let mut total_chars = 0;
         let mut total_latency_ms = 0u64;
 
-        for text in texts {
-            let text_start = Instant::now();
-            total_chars += text.len();
+        // Process texts in batches
+        let chunks: Vec<&[String]> = texts.chunks(self.batch_size).collect();
+        let total_batches = chunks.len();
 
+        info!(
+            total_texts = total_count,
+            batch_size = self.batch_size,
+            total_batches = total_batches,
+            "Starting batch translation"
+        );
+
+        for (batch_idx, batch) in chunks.iter().enumerate() {
+            let batch_start = Instant::now();
+            let batch_chars: usize = batch.iter().map(|t| t.len()).sum();
+            total_chars += batch_chars;
+
+            // Acquire semaphore permit for concurrency control
             let permit = self.semaphore.clone().acquire_owned().await.map_err(|e| {
                 error!(error = %e, "Failed to acquire semaphore");
                 TranslateError::Translation(format!("Failed to acquire semaphore: {}", e))
             })?;
 
+            // Apply rate limiting
             {
                 let limiter = self.rate_limiter.read().await;
                 if let Some(ref limiter) = *limiter {
@@ -218,42 +237,65 @@ impl BatchTranslator {
                 }
             }
 
-            let result = self
-                .translate_with_retry(text, source_lang, target_lang)
+            // Translate the batch
+            let batch_result = self
+                .translate_batch_chunk(batch, source_lang, target_lang)
                 .await;
 
-            let latency = text_start.elapsed().as_millis() as u64;
-            total_latency_ms += latency;
+            let batch_latency = batch_start.elapsed().as_millis() as u64;
+            total_latency_ms += batch_latency;
 
-            match result {
-                Ok(response) => {
-                    results.push(response);
-                    success_count += 1;
+            match batch_result {
+                Ok(batch_responses) => {
+                    for response in batch_responses {
+                        if response.translated_text != response.original_text {
+                            success_count += 1;
+                        } else {
+                            // If translation returned same text, count as success but log warning
+                            debug!("Translation returned same text");
+                            success_count += 1;
+                        }
+                        results.push(response);
+                    }
+                    debug!(
+                        batch_idx = batch_idx + 1,
+                        total_batches = total_batches,
+                        batch_size = batch.len(),
+                        "Batch completed successfully"
+                    );
                 }
                 Err(e) => {
                     error!(
+                        batch_idx = batch_idx + 1,
+                        total_batches = total_batches,
                         error = %e,
-                        text_length = text.len(),
-                        "Translation failed"
+                        "Batch translation failed"
                     );
-                    errors.push(e.to_string());
-                    results.push(TranslateResponse {
-                        original_text: text.clone(),
-                        translated_text: text.clone(),
-                        source_lang: source_lang.to_string(),
-                        target_lang: target_lang.to_string(),
-                        alternatives: Vec::new(),
-                    });
-                    failed_count += 1;
+                    errors.push(format!("Batch {}: {}", batch_idx + 1, e));
+                    
+                    // For failed batch, add fallback responses for each text
+                    for text in batch.iter() {
+                        results.push(TranslateResponse {
+                            original_text: text.clone(),
+                            translated_text: text.clone(),
+                            source_lang: source_lang.to_string(),
+                            target_lang: target_lang.to_string(),
+                            alternatives: Vec::new(),
+                        });
+                        failed_count += 1;
+                    }
                 }
             }
 
             drop(permit);
         }
 
+        // Adjust success_count to not double count (it was counting per text, but we need to subtract failed)
+        success_count = success_count.saturating_sub(failed_count);
+
         let processing_time = start_time.elapsed().as_millis() as u64;
-        let average_latency_ms = if success_count > 0 {
-            total_latency_ms as f64 / success_count as f64
+        let average_latency_ms = if total_batches > 0 {
+            total_latency_ms as f64 / total_batches as f64
         } else {
             0.0
         };
@@ -262,6 +304,7 @@ impl BatchTranslator {
             total_count = total_count,
             success_count = success_count,
             failed_count = failed_count,
+            total_batches = total_batches,
             processing_time_ms = processing_time,
             average_latency_ms = average_latency_ms,
             total_chars = total_chars,
@@ -279,6 +322,100 @@ impl BatchTranslator {
             total_tokens: 0,
             average_latency_ms,
         })
+    }
+
+    /// Translate a batch chunk (subset of texts)
+    async fn translate_batch_chunk(
+        &self,
+        texts: &[String],
+        source_lang: &str,
+        target_lang: &str,
+    ) -> Result<Vec<TranslateResponse>> {
+        let mut responses = Vec::with_capacity(texts.len());
+        
+        // Try to translate the entire batch at once
+        match self.translate_batch_request(texts, source_lang, target_lang).await {
+            Ok(batch_responses) => {
+                return Ok(batch_responses);
+            }
+            Err(e) => {
+                warn!(
+                    error = %e,
+                    batch_size = texts.len(),
+                    "Batch translation failed, falling back to individual translations"
+                );
+                
+                // Fallback: translate each text individually
+                for text in texts {
+                    match self.translate_with_retry(text, source_lang, target_lang).await {
+                        Ok(response) => {
+                            responses.push(response);
+                        }
+                        Err(e) => {
+                            error!(
+                                error = %e,
+                                text_length = text.len(),
+                                "Individual translation failed"
+                            );
+                            responses.push(TranslateResponse {
+                                original_text: text.clone(),
+                                translated_text: text.clone(),
+                                source_lang: source_lang.to_string(),
+                                target_lang: target_lang.to_string(),
+                                alternatives: Vec::new(),
+                            });
+                        }
+                    }
+                }
+            }
+        }
+        
+        Ok(responses)
+    }
+
+    /// Send a batch translation request to the translator
+    async fn translate_batch_request(
+        &self,
+        texts: &[String],
+        source_lang: &str,
+        target_lang: &str,
+    ) -> Result<Vec<TranslateResponse>> {
+        let entry = self.select_translator()
+            .ok_or_else(|| TranslateError::Translation("No translator available".to_string()))?;
+
+        debug!(
+            batch_size = texts.len(),
+            translator = %entry.name,
+            "Sending batch translation request"
+        );
+
+        match entry
+            .translator
+            .translate(texts, source_lang, target_lang)
+            .await
+        {
+            Ok(translated_texts) => {
+                entry.mark_healthy();
+                
+                let responses: Vec<TranslateResponse> = texts
+                    .iter()
+                    .zip(translated_texts.iter())
+                    .map(|(original, translated)| TranslateResponse {
+                        original_text: original.clone(),
+                        translated_text: translated.clone(),
+                        source_lang: source_lang.to_string(),
+                        target_lang: target_lang.to_string(),
+                        alternatives: Vec::new(),
+                    })
+                    .collect();
+                
+                Ok(responses)
+            }
+            Err(e) => {
+                entry.increment_failure();
+                Err(e)
+            }
+        }
     }
 
     /// Translate with exponential backoff retry and failover
@@ -338,7 +475,7 @@ impl BatchTranslator {
                 Ok(translated) => {
                     if let Some(translated_text) = translated.first() {
                         entry.mark_healthy();
-                        
+
                         // Record statistics if shared stats is available
                         if let Some(ref shared_stats) = self.shared_stats {
                             let latency_ms = start_time.elapsed().as_millis() as u64;
@@ -351,7 +488,7 @@ impl BatchTranslator {
                                 );
                             }
                         }
-                        
+
                         return Ok(TranslateResponse {
                             original_text: text.to_string(),
                             translated_text: translated_text.clone(),
@@ -384,12 +521,7 @@ impl BatchTranslator {
         if let Some(ref shared_stats) = self.shared_stats {
             let latency_ms = start_time.elapsed().as_millis() as u64;
             if let Some(ref translator_type) = final_translator_type {
-                shared_stats.record_translator_call(
-                    translator_type,
-                    latency_ms,
-                    false,
-                    text.len(),
-                );
+                shared_stats.record_translator_call(translator_type, latency_ms, false, text.len());
             }
         }
 

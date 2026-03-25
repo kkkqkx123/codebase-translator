@@ -37,10 +37,7 @@ fn test_reporter_records_cache_operations() -> Result<()> {
 
     let report_content = fs::read_to_string(&report_path)?;
     let total_cache_ops = stats.cache_hit_count + stats.cache_miss_count;
-    assert!(
-        total_cache_ops > 0,
-        "Should record cache operations"
-    );
+    assert!(total_cache_ops > 0, "Should record cache operations");
     assert!(
         report_content.contains("Hits:       2"),
         "Should record cache hits"

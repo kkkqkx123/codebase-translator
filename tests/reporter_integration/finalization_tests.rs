@@ -26,7 +26,14 @@ fn test_reporter_finalization() -> Result<()> {
     stats.record_translator_call("tencent", 200, true, 150);
 
     stats.record_llm_provider_call("openai-gpt4", "openai", "gpt-4", 300, true, 100);
-    stats.record_llm_provider_call("anthropic-claude3", "anthropic", "claude-3-opus", 350, true, 120);
+    stats.record_llm_provider_call(
+        "anthropic-claude3",
+        "anthropic",
+        "claude-3-opus",
+        350,
+        true,
+        120,
+    );
 
     stats.finalize();
     reporter.finalize(&stats);

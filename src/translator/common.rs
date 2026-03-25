@@ -120,6 +120,8 @@ pub struct BatchOptions {
     pub max_retries: usize,
     /// Limit policy
     pub limit_policy: Option<LimitPolicy>,
+    /// Batch size for translation API calls
+    pub batch_size: usize,
 }
 
 impl Default for BatchOptions {
@@ -129,6 +131,7 @@ impl Default for BatchOptions {
             workers: 5,
             max_retries: 3,
             limit_policy: None,
+            batch_size: 50,
         }
     }
 }

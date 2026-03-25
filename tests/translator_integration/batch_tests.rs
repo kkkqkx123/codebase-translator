@@ -66,6 +66,7 @@ fn test_batch_translator_custom_options() {
         workers: 3,
         max_retries: 2,
         limit_policy: Some(LimitPolicy::from_char_count(3000)),
+        batch_size: 25,
     };
     let batch = BatchTranslator::new(vec![(translator, 50)], options);
 
@@ -95,6 +96,7 @@ fn test_batch_options_default() {
     assert_eq!(options.workers, 5);
     assert_eq!(options.max_retries, 3);
     assert!(options.limit_policy.is_none());
+    assert_eq!(options.batch_size, 50);
 }
 
 /// Test BatchOptions custom values
@@ -105,11 +107,13 @@ fn test_batch_options_custom() {
         workers: 10,
         max_retries: 5,
         limit_policy: Some(LimitPolicy::default()),
+        batch_size: 100,
     };
     assert_eq!(options.rate_limit, 20);
     assert_eq!(options.workers, 10);
     assert_eq!(options.max_retries, 5);
     assert!(options.limit_policy.is_some());
+    assert_eq!(options.batch_size, 100);
 }
 
 /// Test BatchOptions clone
@@ -120,11 +124,13 @@ fn test_batch_options_clone() {
         workers: 7,
         max_retries: 4,
         limit_policy: Some(LimitPolicy::from_char_count(2000)),
+        batch_size: 75,
     };
     let cloned = options.clone();
     assert_eq!(options.rate_limit, cloned.rate_limit);
     assert_eq!(options.workers, cloned.workers);
     assert_eq!(options.max_retries, cloned.max_retries);
+    assert_eq!(options.batch_size, cloned.batch_size);
 }
 
 /// Test LimitPolicy default values

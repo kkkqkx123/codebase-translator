@@ -1,0 +1,14 @@
+Extracted 1 translation units
+==================================================
+
+--- Unit 1 ---
+ID: test_format_chinese.rs_macro_0
+Type: FormatString
+Position: Line 14, Column 76 (Offset: 445)
+End Position: Line 14, Column 88 (Offset: 457)
+Content:
+2024-01-01
+Raw Match:
+"2024-01-01"
+Should Translate: true
+

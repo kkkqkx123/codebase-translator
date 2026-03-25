@@ -219,13 +219,19 @@ impl TranslationWorkflow {
         // Merge translator statistics from SharedStats
         let translator_stats = components.shared_stats.get_all_translator_stats();
         for stat in translator_stats {
-            result.stats.translator_stats.insert(stat.translator_type.clone(), stat);
+            result
+                .stats
+                .translator_stats
+                .insert(stat.translator_type.clone(), stat);
         }
 
         // Merge LLM provider statistics from SharedStats
         let llm_provider_stats = components.shared_stats.get_all_llm_provider_stats();
         for stat in llm_provider_stats {
-            result.stats.llm_provider_stats.insert(stat.provider_id.clone(), stat);
+            result
+                .stats
+                .llm_provider_stats
+                .insert(stat.provider_id.clone(), stat);
         }
 
         // Finalize stats before passing to reporter

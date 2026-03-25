@@ -119,7 +119,8 @@ pub fn create_translation_service_with_stats(
 
     // Create BatchTranslator with all enabled translators
     let batch_options = create_batch_options(global_config, project_config);
-    let batch_translator = BatchTranslator::new_with_stats(translators, batch_options, shared_stats);
+    let batch_translator =
+        BatchTranslator::new_with_stats(translators, batch_options, shared_stats);
 
     let translator =
         TranslationService::with_batch_translator(std::sync::Arc::new(batch_translator))?;
@@ -246,5 +247,6 @@ fn create_batch_options(
             max_char_count: 5000,
             split_max_chars: global_config.limits.split_max_chars as usize,
         }),
+        batch_size: project_config.translate.batch_size.max(1),
     }
 }

@@ -240,27 +240,37 @@ impl TranslationStats {
                 if total_successful > 0 {
                     let other_total_successful = other_stats.successful_calls;
                     if other_total_successful > 0 {
-                        let total_latency = stats.average_latency_ms * (total_successful - other_total_successful) as f64
+                        let total_latency = stats.average_latency_ms
+                            * (total_successful - other_total_successful) as f64
                             + other_stats.average_latency_ms * other_total_successful as f64;
                         stats.average_latency_ms = total_latency / total_successful as f64;
                     }
                 }
                 // Update min/max latency
                 if let Some(other_min) = other_stats.min_latency_ms {
-                    stats.min_latency_ms = Some(stats.min_latency_ms.map_or(other_min, |m| m.min(other_min)));
+                    stats.min_latency_ms =
+                        Some(stats.min_latency_ms.map_or(other_min, |m| m.min(other_min)));
                 }
                 if let Some(other_max) = other_stats.max_latency_ms {
-                    stats.max_latency_ms = Some(stats.max_latency_ms.map_or(other_max, |m| m.max(other_max)));
+                    stats.max_latency_ms =
+                        Some(stats.max_latency_ms.map_or(other_max, |m| m.max(other_max)));
                 }
                 // Update last call time
                 if let Some(other_last) = &other_stats.last_call_time {
                     stats.last_call_time = Some(stats.last_call_time.map_or_else(
                         || *other_last,
-                        |last| if last < *other_last { *other_last } else { last },
+                        |last| {
+                            if last < *other_last {
+                                *other_last
+                            } else {
+                                last
+                            }
+                        },
                     ));
                 }
             } else {
-                self.translator_stats.insert(translator_type.clone(), other_stats.clone());
+                self.translator_stats
+                    .insert(translator_type.clone(), other_stats.clone());
             }
         }
 
@@ -276,27 +286,37 @@ impl TranslationStats {
                 if total_successful > 0 {
                     let other_total_successful = other_stats.successful_calls;
                     if other_total_successful > 0 {
-                        let total_latency = stats.average_latency_ms * (total_successful - other_total_successful) as f64
+                        let total_latency = stats.average_latency_ms
+                            * (total_successful - other_total_successful) as f64
                             + other_stats.average_latency_ms * other_total_successful as f64;
                         stats.average_latency_ms = total_latency / total_successful as f64;
                     }
                 }
                 // Update min/max latency
                 if let Some(other_min) = other_stats.min_latency_ms {
-                    stats.min_latency_ms = Some(stats.min_latency_ms.map_or(other_min, |m| m.min(other_min)));
+                    stats.min_latency_ms =
+                        Some(stats.min_latency_ms.map_or(other_min, |m| m.min(other_min)));
                 }
                 if let Some(other_max) = other_stats.max_latency_ms {
-                    stats.max_latency_ms = Some(stats.max_latency_ms.map_or(other_max, |m| m.max(other_max)));
+                    stats.max_latency_ms =
+                        Some(stats.max_latency_ms.map_or(other_max, |m| m.max(other_max)));
                 }
                 // Update last call time
                 if let Some(other_last) = &other_stats.last_call_time {
                     stats.last_call_time = Some(stats.last_call_time.map_or_else(
                         || *other_last,
-                        |last| if last < *other_last { *other_last } else { last },
+                        |last| {
+                            if last < *other_last {
+                                *other_last
+                            } else {
+                                last
+                            }
+                        },
                     ));
                 }
             } else {
-                self.llm_provider_stats.insert(provider_id.clone(), other_stats.clone());
+                self.llm_provider_stats
+                    .insert(provider_id.clone(), other_stats.clone());
             }
         }
     }

@@ -379,7 +379,11 @@ fn test_cache_hit_rate_calculation() {
 
     // Initially 0% hit rate
     let total = stats.cache_hit_count + stats.cache_miss_count;
-    let rate = if total == 0 { 0.0 } else { (stats.cache_hit_count as f64 / total as f64) * 100.0 };
+    let rate = if total == 0 {
+        0.0
+    } else {
+        (stats.cache_hit_count as f64 / total as f64) * 100.0
+    };
     assert_eq!(rate, 0.0);
 
     // Add some cache hits and misses
@@ -390,7 +394,11 @@ fn test_cache_hit_rate_calculation() {
 
     // 2 hits out of 4 = 50%
     let total = stats.cache_hit_count + stats.cache_miss_count;
-    let rate = if total == 0 { 0.0 } else { (stats.cache_hit_count as f64 / total as f64) * 100.0 };
+    let rate = if total == 0 {
+        0.0
+    } else {
+        (stats.cache_hit_count as f64 / total as f64) * 100.0
+    };
     assert!((rate - 50.0).abs() < 0.01);
 
     // Add more hits
@@ -399,7 +407,11 @@ fn test_cache_hit_rate_calculation() {
 
     // 4 hits out of 6 = 66.67%
     let total = stats.cache_hit_count + stats.cache_miss_count;
-    let rate = if total == 0 { 0.0 } else { (stats.cache_hit_count as f64 / total as f64) * 100.0 };
+    let rate = if total == 0 {
+        0.0
+    } else {
+        (stats.cache_hit_count as f64 / total as f64) * 100.0
+    };
     assert!((rate - 66.67).abs() < 0.1);
 }
 
@@ -439,7 +451,11 @@ fn test_cache_statistics_tracking() {
 
     // Hit rate should be 3/5 = 60%
     let total = stats.cache_hit_count + stats.cache_miss_count;
-    let rate = if total == 0 { 0.0 } else { (stats.cache_hit_count as f64 / total as f64) * 100.0 };
+    let rate = if total == 0 {
+        0.0
+    } else {
+        (stats.cache_hit_count as f64 / total as f64) * 100.0
+    };
     assert!((rate - 60.0).abs() < 0.01);
 }
 

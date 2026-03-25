@@ -15,10 +15,12 @@
 //!    - Distinguishes between languages in same script (e.g., Japanese vs Chinese)
 
 mod detector;
+mod language_only;
 mod script;
 mod strategy;
 
 pub use detector::{LanguageDetector, LanguageInfo};
+pub use language_only::LanguageOnlyFilter;
 pub use script::Script;
 pub use strategy::{DetectionStrategy, QuickDetector, SampledDetector};
 

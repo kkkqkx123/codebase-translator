@@ -3,6 +3,7 @@
 //! This module provides a composite filter that orchestrates all filter checks.
 //! Checks are applied in order of complexity for optimal performance.
 
+use crate::parser::filtering::checks::language::LanguageOnlyFilter;
 use crate::parser::filtering::checks::{
     ContentFilter, LanguageFilter, LengthFilter, PatternFilter,
 };
@@ -17,21 +18,39 @@ use tracing::debug;
 /// 2. LanguageFilter - O(k) language detection
 /// 3. PatternFilter - O(n) regex matching
 /// 4. ContentFilter - O(len) content analysis
+///
+/// When `force_extract_by_language` is enabled, only LanguageOnlyFilter is used.
 pub struct CompositeFilter {
     length: LengthFilter,
     language: LanguageFilter,
     pattern: PatternFilter,
     content: ContentFilter,
+    language_only: Option<LanguageOnlyFilter>,
 }
 
 impl CompositeFilter {
     /// Create a new composite filter
     pub fn new(config: FilterConfig) -> crate::core::error::Result<Self> {
+        // Create language-only filter if force_extract_by_language is enabled
+        let language_only = if config.force_extract_by_language {
+            if config.extract_languages.is_empty() {
+                tracing::warn!(
+                    "force_extract_by_language is enabled but extract_languages is empty, ignoring"
+                );
+                None
+            } else {
+                Some(LanguageOnlyFilter::new(config.extract_languages.clone()))
+            }
+        } else {
+            None
+        };
+
         Ok(Self {
             length: LengthFilter::new(&config),
             language: LanguageFilter::new(&config),
             pattern: PatternFilter::new(&config)?,
             content: ContentFilter::new(),
+            language_only,
         })
     }
 
@@ -60,6 +79,12 @@ impl CompositeFilter {
 
 impl Filter for CompositeFilter {
     fn should_translate(&self, text: &str) -> bool {
+        // If force_extract_by_language is enabled, only use language filter
+        if let Some(ref lang_filter) = self.language_only {
+            return lang_filter.should_translate(text);
+        }
+
+        // Otherwise, use the complete filter chain
         // Check 1: Length checks (fastest)
         if !self.length.should_translate(text) {
             return false;
@@ -85,7 +110,11 @@ impl Filter for CompositeFilter {
     }
 
     fn name(&self) -> &str {
-        "CompositeFilter"
+        if self.language_only.is_some() {
+            "CompositeFilter (LanguageOnly mode)"
+        } else {
+            "CompositeFilter"
+        }
     }
 }
 
@@ -120,6 +149,8 @@ pub fn from_project_config(
         },
         allow_placeholders: config.allow_placeholders,
         detect_code_patterns: config.detect_code_patterns,
+        force_extract_by_language: config.force_extract_by_language,
+        extract_languages: config.extract_languages.clone(),
     };
     CompositeFilter::new(filter_config)
 }
@@ -146,6 +177,8 @@ pub fn from_project_config_with_translator(
         max_length,
         allow_placeholders: project_config.allow_placeholders,
         detect_code_patterns: project_config.detect_code_patterns,
+        force_extract_by_language: project_config.force_extract_by_language,
+        extract_languages: project_config.extract_languages.clone(),
     };
     CompositeFilter::new(filter_config)
 }
@@ -186,5 +219,78 @@ mod tests {
 
         // Keyword should be rejected by pattern check
         assert!(!filter.should_translate("TODO"));
+    }
+
+    #[test]
+    fn test_force_extract_mode_enabled() {
+        let config = FilterConfig {
+            force_extract_by_language: true,
+            extract_languages: vec!["ZH".to_string()],
+            ..Default::default()
+        };
+        let filter = CompositeFilter::new(config).unwrap();
+
+        // Should extract all text containing Chinese, ignoring other filters
+        assert!(filter.should_translate("TODO: 修复中文bug"));
+        assert!(filter.should_translate("https://example.com/你好"));
+        assert!(filter.should_translate("Hello %s 你好"));
+        assert!(!filter.should_translate("Hello World"));
+    }
+
+    #[test]
+    fn test_force_extract_mode_disabled() {
+        let config = FilterConfig {
+            force_extract_by_language: false,
+            source_langs: vec!["EN".to_string()],
+            exclude_keywords: vec!["TODO".to_string()],
+            ..Default::default()
+        };
+        let filter = CompositeFilter::new(config).unwrap();
+
+        // Should follow complete filter chain
+        assert!(!filter.should_translate("TODO: fix this"));
+        assert!(filter.should_translate("Hello World"));
+    }
+
+    #[test]
+    fn test_empty_languages_warning() {
+        let config = FilterConfig {
+            force_extract_by_language: true,
+            extract_languages: vec![],
+            ..Default::default()
+        };
+        let filter = CompositeFilter::new(config).unwrap();
+
+        // Should log warning and use complete filter chain
+        assert!(!filter.should_translate("Hello World"));
+    }
+
+    #[test]
+    fn test_name_with_force_extract() {
+        let config = FilterConfig {
+            force_extract_by_language: true,
+            extract_languages: vec!["ZH".to_string()],
+            ..Default::default()
+        };
+        let filter = CompositeFilter::new(config).unwrap();
+
+        assert_eq!(filter.name(), "CompositeFilter (LanguageOnly mode)");
+    }
+
+    #[test]
+    fn test_force_extract_multiple_languages() {
+        let config = FilterConfig {
+            force_extract_by_language: true,
+            extract_languages: vec!["ZH".to_string(), "JA".to_string()],
+            ..Default::default()
+        };
+        let filter = CompositeFilter::new(config).unwrap();
+
+        // Should extract text containing Chinese or Japanese
+        assert!(filter.should_translate("你好世界"));
+        assert!(filter.should_translate("こんにちは"));
+        assert!(filter.should_translate("Hello 你好"));
+        assert!(filter.should_translate("Hello こんにちは"));
+        assert!(!filter.should_translate("Hello World"));
     }
 }

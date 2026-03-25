@@ -1,22 +1,31 @@
-use std::path::Path;
 use crate::core::error::TranslateError;
 use crate::reporter::r#trait::ReportFormat;
 use crate::reporter::stats::TranslationStats;
+use std::path::Path;
 
 pub trait ReportGenerator: Send + Sync {
-    fn generate(&self, stats: &TranslationStats, format: ReportFormat) -> Result<String, TranslateError>;
-    
-    fn save(&self, path: &Path, stats: &TranslationStats, format: ReportFormat) -> Result<(), TranslateError> {
+    fn generate(
+        &self,
+        stats: &TranslationStats,
+        format: ReportFormat,
+    ) -> Result<String, TranslateError>;
+
+    fn save(
+        &self,
+        path: &Path,
+        stats: &TranslationStats,
+        format: ReportFormat,
+    ) -> Result<(), TranslateError> {
         let report = self.generate(stats, format)?;
-        
+
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent).map_err(|e| TranslateError::Io(e.to_string()))?;
         }
-        
+
         std::fs::write(path, report).map_err(|e| TranslateError::Io(e.to_string()))?;
         Ok(())
     }
-    
+
     fn save_with_template(
         &self,
         dir: &Path,
@@ -25,7 +34,7 @@ pub trait ReportGenerator: Send + Sync {
         format: ReportFormat,
     ) -> Result<std::path::PathBuf, TranslateError> {
         std::fs::create_dir_all(dir).map_err(|e| TranslateError::Io(e.to_string()))?;
-        
+
         let timestamp = chrono::Utc::now().format("%Y%m%d_%H%M%S");
         let ext = match format {
             ReportFormat::Text => "txt",
@@ -35,7 +44,7 @@ pub trait ReportGenerator: Send + Sync {
             .replace("{timestamp}", &timestamp.to_string())
             .replace("{format}", ext);
         let path = dir.join(filename);
-        
+
         self.save(&path, stats, format)?;
         Ok(path)
     }
@@ -57,7 +66,11 @@ impl Default for DefaultReportGenerator {
 }
 
 impl ReportGenerator for DefaultReportGenerator {
-    fn generate(&self, stats: &TranslationStats, format: ReportFormat) -> Result<String, TranslateError> {
+    fn generate(
+        &self,
+        stats: &TranslationStats,
+        format: ReportFormat,
+    ) -> Result<String, TranslateError> {
         match format {
             ReportFormat::Text => self.generate_text_report(stats),
             ReportFormat::Json => self.generate_json_report(stats),
@@ -226,7 +239,7 @@ mod tests {
         stats.total_files = 10;
         stats.processed_files = 5;
         stats.finalize();
-        
+
         let result = generator.generate(&stats, ReportFormat::Json);
         assert!(result.is_ok());
         let json = result.unwrap();
@@ -240,7 +253,7 @@ mod tests {
         let mut stats = TranslationStats::new();
         stats.total_units = 100;
         stats.translated_units = 50;
-        
+
         let progress = generator.calculate_translation_progress(&stats);
         assert_eq!(progress, 50.0);
     }
@@ -251,7 +264,7 @@ mod tests {
         let mut stats = TranslationStats::new();
         stats.cache_hit_count = 80;
         stats.cache_miss_count = 20;
-        
+
         let rate = generator.calculate_cache_hit_rate(&stats);
         assert_eq!(rate, 80.0);
     }

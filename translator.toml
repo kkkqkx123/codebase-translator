@@ -6,7 +6,7 @@
 #   1. 环境变量 TRANSLATOR_CONFIG_HOME 指定的目录
 #   2. 可执行文件所在目录（exe 同目录）
 #   3. 当前工作目录
-#   4. 用户配置目录: ~/.config/translator/ (Linux/Mac) 或 %APPDATA%/translator/ (Windows)
+#   4. 用户配置目录：~/.config/translator/ (Linux/Mac) 或 %APPDATA%/translator/ (Windows)
 #
 # 安全提示：
 #   - 不要在此文件中直接写入 API 密钥等敏感信息
@@ -14,79 +14,95 @@
 #   - 将实际的 API 密钥写入同目录的 .env 文件中
 
 # 启用的翻译器列表（支持多个）
-# 可选值: "deeplx", "llm", "tencent"
+# 可选值："deeplx", "llm", "tencent"
 enabled_providers = ["deeplx", "llm", "tencent"]
 
 # DeepLX 配置
 [deeplx]
-api_url = "${DEEPLX_API_URL}"    # API URL (默认为 https://api.deeplx.org)
+api_url = "${DEEPLX_API_URL}"    # API URL (默认为 http://localhost:1188)
 api_key = "${DEEPLX_API_KEY}"    # API Key (可选，用于认证)
 proxy_url = "${DEEPLX_PROXY_URL}"  # 代理 URL (可选)
-rate_limit = 5                       # 每秒请求数
-max_retries = 3                      # 最大重试次数
+rate_limit = 10                    # 每秒请求数
+max_retries = 3                    # 最大重试次数
 
 # LLM 配置
 [llm]
-# 路由策略:
-# - 短文本(<阈值): 在所有供应商间按权重分配
-# - 长文本(>=阈值): 在能处理的供应商中按权重分配
-# 阈值 = 所有供应商中最小的 max_tokens
-
+# 健康检查配置
 [llm.health_check]
 enabled = true          # 是否启用健康检查
 interval = 30           # 健康检查间隔（秒）
 timeout = 5             # 健康检查超时（秒）
 failure_threshold = 3   # 连续失败次数标记为不可用
-recovery_interval = 300 # 恢复检查间隔（秒），仅检查不健康的供应商
+recovery_interval = 60  # 恢复检查间隔（秒），仅检查不健康的供应商
 
-# 供应商 1: siliconflow (多模型轮询，相同容量)
+# 供应商配置
+# 每个供应商代表一个单一的模型/端点组合
+# 对于具有不同上下文长度的模型，应将它们配置为单独的供应商
 [[llm.providers]]
 id = "silicon"
 name = "Siliconflow"
-# 模型列表（多模型轮询，共享容量限制）
-models = [
+# 模型列表（多模型轮询）
+# 注意：如果 model 为空但 model_list 有值，将使用 model_list 的第一个模型
+model_list = [
     "tencent/Hunyuan-MT-7B",
     "THUDM/GLM-4-9B-0414",
     "Qwen/Qwen2.5-7B-Instruct"
 ]
-max_tokens = 8192       # 容量限制（决定路由阈值）
-temperature = 0.3
-weight = 50             # 权重（短文本轮询 + 长文本分配）
+model = ""              # 单一模型名称（可选，为空时使用 model_list 第一个）
+max_tokens = 8192       # 每次请求的最大 token 数（决定容量）
+temperature = 0.3       # 温度参数 (0.0 - 2.0)
 base_url = "https://api.siliconflow.cn/v1"
 api_keys = ["${SILCON_API_KEY}"]
 proxy_url = ""
 timeout = 20
-rate_limit = 40
+rate_limit = 40         # 每秒请求数限制
+extra_headers = {}      # 额外请求头
+extra_params = {}       # 额外请求参数
 
 # 供应商 2: zhipu
 [[llm.providers]]
 id = "zhipu"
 name = "Zhipu"
-models = ["glm-4-flash"]
+model = "glm-4-flash"
+model_list = []
 max_tokens = 4096
 temperature = 0.3
-weight = 20
 base_url = "https://open.bigmodel.cn/api/paas/v4"
 api_keys = ["${ZHIPU_API_KEY}"]
 proxy_url = ""
 timeout = 60
 rate_limit = 5
-
-# 日志配置
-[logging]
-level = "info"               # 日志级别: trace, debug, info, warn, error
-format = "json"              # 日志格式: pretty, compact 或 json
-output = "file"              # 输出目标: stdout, stderr, file
-file = "translator.log"      # 日志文件路径（当 output 为 file 时）
+extra_headers = {}
+extra_params = {}
 
 # Tencent Cloud 配置
-# 需要在腾讯云控制台搜索机器翻译，开启服务。每月500万字符免费，默认仅使用免费额度
+# 需要在腾讯云控制台搜索机器翻译，开启服务。每月 500 万字符免费，默认仅使用免费额度
 [tencent]
 secret_id = "${TENCENT_SECRET_ID}"       # 腾讯云 Secret ID
 secret_key = "${TENCENT_SECRET_KEY}"     # 腾讯云 Secret Key
 region = "ap-guangzhou"                  # 区域（默认：ap-guangzhou）
-project_id = 0                           # 项目 ID（可选，0是腾讯云自带的）
+project_id = 0                           # 项目 ID（可选，0 是腾讯云自带的）
+endpoint = "tmt.tencentcloudapi.com"     # API 端点
 proxy_url = ""                           # 代理 URL（可选）
 timeout = 30                             # 超时时间（秒）
-rate_limit = 5                           # 速率限制（1-5 请求/秒）(腾讯云要求单个接口每秒请求次数不高于5次)
+rate_limit = 5                           # 速率限制（1-5 请求/秒）(腾讯云要求单个接口每秒请求次数不高于 5 次)
 max_retries = 3                          # 最大重试次数
+# 未翻译文本模式（可选）
+untranslated_text = []
+# 术语库 ID 列表（可选）
+term_repo_id_list = []
+# 句库 ID 列表（可选）
+sent_repo_id_list = []
+
+# 全局限制配置
+[limits]
+rate_limit = 10             # 每秒请求数限制
+max_char_count = 0          # 每个请求的最大字符数（0 表示不限制）
+split_max_chars = 1000      # 分割块的最大字符数
+
+# 日志配置
+[logging]
+level = "info"               # 日志级别：trace, debug, info, warn, error
+format = "pretty"            # 日志格式：pretty, json, compact
+output = "stdout"            # 输出目标：stdout, stderr, file
+file = ".translator/translator.log"  # 日志文件路径（当 output 为 file 时）

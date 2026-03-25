@@ -109,3 +109,4 @@ strip = true
 [profile.dev]
 opt-level = 0
 debug = true
+codegen-units = 64

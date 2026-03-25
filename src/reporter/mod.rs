@@ -4,8 +4,8 @@ pub mod default;
 pub mod generator;
 pub mod logger;
 pub mod progress;
-pub mod r#trait;
 pub mod stats;
+pub mod r#trait;
 
 pub use default::{create_reporter, create_reporter_with_stats, DefaultReporter};
 pub use generator::{DefaultReportGenerator, ReportGenerator};

@@ -40,6 +40,37 @@ pub struct FilterConfig {
     /// Detect and filter code patterns
     #[serde(default = "default_true")]
     pub detect_code_patterns: bool,
+
+    /// Force extract text containing specific language characters
+    ///
+    /// When enabled, all other filtering rules (patterns, length, placeholders, etc.)
+    /// are skipped, and only language characteristics are checked.
+    ///
+    /// This is useful for scenarios like:
+    /// - Extracting all Chinese comments in a codebase
+    /// - Batch processing multilingual mixed content
+    /// - When other filtering conditions don't matter
+    ///
+    /// Default: false (disabled)
+    #[serde(default)]
+    pub force_extract_by_language: bool,
+
+    /// List of languages to extract
+    ///
+    /// Only effective when `force_extract_by_language` is true.
+    /// Supported language codes:
+    /// - `ZH`, `ZH-CN`, `ZH-TW`: Chinese
+    /// - `JA`: Japanese
+    /// - `KO`: Korean
+    /// - `EN`: English
+    /// - `AR`: Arabic
+    /// - `RU`: Russian
+    /// - `UK`: Ukrainian
+    /// - `BG`: Bulgarian
+    ///
+    /// Default: empty list (force extraction not enabled)
+    #[serde(default)]
+    pub extract_languages: Vec<String>,
 }
 
 fn default_exclude_keywords() -> Vec<String> {
@@ -88,8 +119,10 @@ impl Default for FilterConfig {
             exclude_patterns: default_exclude_patterns(),
             include_patterns: Vec::new(),
             max_length: 10000,
-            allow_placeholders: false,
+            allow_placeholders: true,
             detect_code_patterns: true,
+            force_extract_by_language: false,
+            extract_languages: Vec::new(),
         }
     }
 }

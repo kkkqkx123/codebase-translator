@@ -9,8 +9,8 @@ use crate::{
     core::error::Result,
     encoding::{Detector, Encoder},
     parser::ParserFactory,
-    reporter::{create_reporter_with_stats, Reporter},
     reporter::stats::SharedStats,
+    reporter::{create_reporter_with_stats, Reporter},
     translator::create_translation_service_with_stats,
     writer::WriterFactory,
 };
@@ -59,11 +59,8 @@ impl WorkflowBuilder {
     /// Build all workflow components
     pub fn build(&self) -> Result<WorkflowComponents> {
         let cache = CacheFactory::create(&self.project_config.cache, &self.root_path)?;
-        let translator = create_translation_service_with_stats(
-            &self.global_config,
-            &self.project_config,
-            None,
-        )?;
+        let translator =
+            create_translation_service_with_stats(&self.global_config, &self.project_config, None)?;
         let parser = ParserFactory::create(&self.project_config)?;
         let writer =
             WriterFactory::from_project_config(&self.project_config, Some(&self.root_path))?;
