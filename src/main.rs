@@ -3,7 +3,7 @@ use std::path::Path;
 use tracing::info;
 
 use codebase_translate::{
-    commands::{cache, clean, init, translate, validate, verify, Command},
+    commands::{cache, clean, detect, init, translate, validate, verify, Command},
     config::loader::ConfigLoader,
     core::error::Result,
     logger,
@@ -56,6 +56,9 @@ enum Commands {
 
     /// Clean cache and backup files
     Clean(clean::CleanArgs),
+
+    /// Detect language content in files
+    Detect(detect::DetectArgs),
 }
 
 /// Main entry point - synchronous
@@ -107,6 +110,11 @@ fn run() -> Result<()> {
         }
         Some(Commands::Clean(args)) => {
             logger::init(&global_config.logging, None)?;
+            args.execute(&global_config, &project_config)?
+        }
+        Some(Commands::Detect(args)) => {
+            let project_path = args.get_project_path();
+            logger::init(&global_config.logging, project_path.map(Path::new))?;
             args.execute(&global_config, &project_config)?
         }
         None => {

@@ -20,7 +20,6 @@
 [translate]
 source_langs = ["AUTO"]       # 多源语言支持，可指定多个源语言，AUTO 表示自动检测
 target_lang = "EN"            # 目标语言代码
-provider = "deeplx"           # 翻译提供器：deeplx, llm, tencent
 batch_size = 50               # 批量翻译大小
 concurrency = 5               # 并发请求数
 
