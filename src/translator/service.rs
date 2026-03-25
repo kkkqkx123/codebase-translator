@@ -12,7 +12,7 @@ use tracing::{debug, info};
 use crate::core::error::{Result, TranslateError};
 use crate::reporter::stats::SharedStats;
 use crate::translator::batch::BatchTranslator;
-use crate::translator::common::{BatchOptions, BatchResult};
+use crate::translator::common::{BatchOptions, BatchResult, TranslateResponse};
 use crate::translator::factory::{create_translator_from_config, TranslatorConfig};
 use crate::translator::{Translator, TranslatorImpl};
 
@@ -136,6 +136,111 @@ impl TranslationService {
                 "Batch translation completed"
             );
             Ok(result)
+        } else {
+            Err(TranslateError::Translation(
+                "No translator configured".to_string(),
+            ))
+        }
+    }
+
+    /// Translate a batch of texts and return complete result with statistics
+    ///
+    /// # Arguments
+    /// * `texts` - Texts to translate
+    /// * `source_lang` - Source language code (or "AUTO")
+    /// * `target_lang` - Target language code
+    ///
+    /// # Returns
+    /// Complete BatchResult with translation texts and statistics
+    pub fn translate_batch_with_result(
+        &self,
+        texts: &[String],
+        source_lang: &str,
+        target_lang: &str,
+    ) -> Result<BatchResult> {
+        debug!(
+            texts_count = texts.len(),
+            source_lang = %source_lang,
+            target_lang = %target_lang,
+            "Translating batch of texts with result"
+        );
+
+        if let Some(ref batch_translator) = self.batch_translator {
+            let texts = texts.to_vec();
+            let source_lang = source_lang.to_string();
+            let target_lang = target_lang.to_string();
+            let batch_translator = batch_translator.clone();
+
+            let result = self.runtime.block_on(async move {
+                batch_translator
+                    .translate_batch(&texts, &source_lang, &target_lang)
+                    .await
+            })?;
+
+            debug!(
+                translated_count = result.results.len(),
+                total_batches = result.total_batches,
+                "Batch translation completed with statistics"
+            );
+            Ok(result)
+        } else if let Some(ref translator) = self.translator {
+            // Calculate total_chars before moving texts
+            let total_chars: usize = texts.iter().map(|t| t.len()).sum();
+
+            // Keep original references for later use
+            let source_lang_ref = source_lang;
+            let target_lang_ref = target_lang;
+
+            let texts = texts.to_vec();
+            let source_lang = source_lang_ref.to_string();
+            let target_lang = target_lang_ref.to_string();
+            // Clone for later use in results
+            let source_lang_for_result = source_lang.clone();
+            let target_lang_for_result = target_lang.clone();
+            let translator = translator.clone();
+
+            let start_time = std::time::Instant::now();
+            let translated = self.runtime.block_on(async move {
+                translator
+                    .translate(&texts, &source_lang, &target_lang)
+                    .await
+            })?;
+            let processing_time = start_time.elapsed().as_millis() as u64;
+
+            debug!(
+                translated_count = translated.len(),
+                "Batch translation completed"
+            );
+
+            // Convert Vec<String> to BatchResult for backward compatibility
+            let results: Vec<TranslateResponse> = translated
+                .into_iter()
+                .map(|translated_text| TranslateResponse {
+                    original_text: String::new(),
+                    translated_text,
+                    source_lang: source_lang_for_result.clone(),
+                    target_lang: target_lang_for_result.clone(),
+                    alternatives: Vec::new(),
+                })
+                .collect();
+
+            let results_count = results.len();
+            Ok(BatchResult {
+                total_count: results_count,
+                success_count: results_count,
+                failed_count: 0,
+                results,
+                errors: Vec::new(),
+                processing_time,
+                total_chars,
+                total_tokens: 0,
+                average_latency_ms: if results_count > 0 {
+                    processing_time as f64 / results_count as f64
+                } else {
+                    0.0
+                },
+                total_batches: 1, // Single batch for non-batch translator
+            })
         } else {
             Err(TranslateError::Translation(
                 "No translator configured".to_string(),

@@ -65,6 +65,8 @@ pub struct BatchResult {
     pub total_tokens: u64,
     /// Average latency in milliseconds
     pub average_latency_ms: f64,
+    /// Total number of batch API calls made
+    pub total_batches: usize,
 }
 
 /// Limit policy for rate limiting

@@ -258,28 +258,30 @@ impl<'a> FileProcessor<'a> {
             .map(|s| s.as_str())
             .unwrap_or("auto");
 
-        let translated_texts = self.translator.translate_batch(
+        let batch_result = self.translator.translate_batch_with_result(
             &texts,
             source_lang,
             &self.project_config.translate.target_lang,
         )?;
 
-        result.api_calls = 1;
+        // Use the actual number of batch API calls made
+        result.api_calls = batch_result.total_batches;
         if let Some(ref reporter) = self.reporter {
-            reporter.report_api_call(1);
+            reporter.report_api_call(batch_result.total_batches);
         }
 
         info!(
             file = %file_path.display(),
-            translated_units = translated_texts.len(),
+            translated_units = batch_result.results.len(),
+            api_batches = batch_result.total_batches,
             "Translation completed"
         );
 
         let mut translate_idx = 0;
         for unit in units.iter_mut() {
             if unit.should_translate {
-                if let Some(translated) = translated_texts.get(translate_idx) {
-                    unit.set_translated(translated.clone());
+                if let Some(translated) = batch_result.results.get(translate_idx).map(|r| r.translated_text.as_str()) {
+                    unit.set_translated(translated.to_string());
                     translate_idx += 1;
                 }
             }

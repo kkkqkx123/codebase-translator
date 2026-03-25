@@ -321,6 +321,7 @@ impl BatchTranslator {
             total_chars,
             total_tokens: 0,
             average_latency_ms,
+            total_batches,
         })
     }
 
@@ -389,6 +390,9 @@ impl BatchTranslator {
             "Sending batch translation request"
         );
 
+        let start_time = Instant::now();
+        let batch_chars: usize = texts.iter().map(|t| t.len()).sum();
+
         match entry
             .translator
             .translate(texts, source_lang, target_lang)
@@ -396,7 +400,18 @@ impl BatchTranslator {
         {
             Ok(translated_texts) => {
                 entry.mark_healthy();
-                
+
+                // Record successful batch translation statistics
+                if let Some(ref shared_stats) = self.shared_stats {
+                    let latency_ms = start_time.elapsed().as_millis() as u64;
+                    shared_stats.record_translator_call(
+                        &entry.name,
+                        latency_ms,
+                        true,
+                        batch_chars,
+                    );
+                }
+
                 let responses: Vec<TranslateResponse> = texts
                     .iter()
                     .zip(translated_texts.iter())
@@ -408,11 +423,23 @@ impl BatchTranslator {
                         alternatives: Vec::new(),
                     })
                     .collect();
-                
+
                 Ok(responses)
             }
             Err(e) => {
                 entry.increment_failure();
+
+                // Record failed batch translation statistics
+                if let Some(ref shared_stats) = self.shared_stats {
+                    let latency_ms = start_time.elapsed().as_millis() as u64;
+                    shared_stats.record_translator_call(
+                        &entry.name,
+                        latency_ms,
+                        false,
+                        batch_chars,
+                    );
+                }
+
                 Err(e)
             }
         }
