@@ -6,7 +6,7 @@
 
 use crate::cache::util;
 use crate::core::error::{Result, TranslateError};
-use crate::core::models::{CacheConfig, CacheEntry, CacheEntryInfo, CacheStats};
+use crate::core::models::{CacheConfig, CacheEntry, CacheEntryInfo, CacheMode, CacheStats};
 
 use crc32fast::Hasher as Crc32Hasher;
 use rand::Rng;
@@ -132,6 +132,48 @@ impl BinaryCache {
     /// Get the project fingerprint for this cache
     pub fn project_fingerprint(&self) -> &str {
         &self.project_fingerprint
+    }
+
+    /// Try to load cache from a specific directory path
+    /// Returns None if cache file doesn't exist or fails to load
+    pub fn try_load_from_dir(cache_dir: &Path) -> Result<Option<Self>> {
+        let cache_file_path = cache_dir.join("cache.bin");
+
+        if !cache_file_path.exists() {
+            return Ok(None);
+        }
+
+        let config = CacheConfig {
+            enabled: true,
+            mode: CacheMode::Local,
+            directory: ".translator".to_string(),
+            format: "binary".to_string(),
+        };
+
+        let project_fingerprint = util::generate_project_fingerprint(cache_dir)?;
+
+        let cache = Self {
+            config,
+            project_fingerprint,
+            cache_file_path,
+            entries: Arc::new(RwLock::new(HashMap::new())),
+            dirty: Arc::new(RwLock::new(false)),
+        };
+
+        if let Err(e) = cache.load_index() {
+            debug!(
+                cache_dir = %cache_dir.display(),
+                error = %e,
+                "Failed to load cache from directory"
+            );
+            return Ok(None);
+        }
+
+        debug!(
+            cache_dir = %cache_dir.display(),
+            "Successfully loaded cache from directory"
+        );
+        Ok(Some(cache))
     }
 
     fn ensure_cache_dir(&self) -> Result<()> {
@@ -473,8 +515,8 @@ impl BinaryCache {
         Ok(())
     }
 
-    /// Get raw cached entry without config validation (for internal use)
-    fn get_raw(&self, file_hash: &str) -> Result<Option<CacheEntry>> {
+    /// Get raw cached entry without fingerprint validation (for internal use)
+    pub fn get_raw(&self, file_hash: &str) -> Result<Option<CacheEntry>> {
         if !self.config.enabled {
             return Ok(None);
         }
@@ -497,10 +539,6 @@ impl BinaryCache {
             let cache_entry: CacheEntry = rmp_serde::from_slice(&data).map_err(|e| {
                 TranslateError::Cache(format!("Failed to deserialize entry: {}", e))
             })?;
-
-            if cache_entry.project_fingerprint != self.project_fingerprint {
-                return Ok(None);
-            }
 
             Ok(Some(cache_entry))
         } else {

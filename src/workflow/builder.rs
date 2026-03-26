@@ -4,7 +4,7 @@
 //! needed for the translation workflow.
 
 use crate::{
-    cache::CacheFactory,
+    cache::{CacheFactory, HierarchicalCache},
     config::{global::GlobalConfig, project::ProjectConfig},
     core::error::Result,
     encoding::{Detector, Encoder},
@@ -14,11 +14,13 @@ use crate::{
     translator::create_translation_service_with_stats,
     writer::WriterFactory,
 };
+use std::path::Path;
 use std::sync::Arc;
+use tracing::debug;
 
 /// Workflow components container
 pub struct WorkflowComponents {
-    pub cache: crate::cache::binary::BinaryCache,
+    pub cache: HierarchicalCache,
     pub translator: crate::translator::service::TranslationService,
     pub parser: crate::parser::ParserCoordinator,
     pub writer: crate::writer::FileWriter,
@@ -58,7 +60,12 @@ impl WorkflowBuilder {
 
     /// Build all workflow components
     pub fn build(&self) -> Result<WorkflowComponents> {
-        let cache = CacheFactory::create(&self.project_config.cache, &self.root_path)?;
+        let mut cache =
+            CacheFactory::create_hierarchical(&self.project_config.cache, &self.root_path)?;
+
+        // Load caches from all subdirectories that contain .translator/cache.bin
+        self.load_hierarchical_caches(Path::new(&self.root_path), &mut cache)?;
+
         let translator =
             create_translation_service_with_stats(&self.global_config, &self.project_config, None)?;
         let parser = ParserFactory::create(&self.project_config)?;
@@ -81,7 +88,12 @@ impl WorkflowBuilder {
 
     /// Build all workflow components with reporter
     pub fn build_with_reporter(&self) -> Result<(WorkflowComponents, Arc<dyn Reporter>)> {
-        let cache = CacheFactory::create(&self.project_config.cache, &self.root_path)?;
+        let mut cache =
+            CacheFactory::create_hierarchical(&self.project_config.cache, &self.root_path)?;
+
+        // Load caches from all subdirectories that contain .translator/cache.bin
+        self.load_hierarchical_caches(Path::new(&self.root_path), &mut cache)?;
+
         let shared_stats = Arc::new(SharedStats::new());
         let translator = create_translation_service_with_stats(
             &self.global_config,
@@ -106,6 +118,54 @@ impl WorkflowBuilder {
         };
 
         Ok((components, reporter))
+    }
+
+    /// Load hierarchical caches from all subdirectories
+    fn load_hierarchical_caches(&self, dir: &Path, cache: &mut HierarchicalCache) -> Result<()> {
+        let translator_dir = dir.join(".translator");
+        if translator_dir.exists() {
+            if let Err(e) = cache.load_cache_from_dir(&translator_dir) {
+                debug!(
+                    cache_dir = %translator_dir.display(),
+                    error = %e,
+                    "Failed to load cache from .translator directory"
+                );
+            }
+        }
+
+        // Recursively load caches from subdirectories
+        let entries = match std::fs::read_dir(dir) {
+            Ok(entries) => entries,
+            Err(e) => {
+                debug!(
+                    dir = %dir.display(),
+                    error = %e,
+                    "Failed to read directory for hierarchical cache loading"
+                );
+                return Ok(());
+            }
+        };
+
+        for entry in entries {
+            let entry = match entry {
+                Ok(e) => e,
+                Err(e) => {
+                    debug!(
+                        dir = %dir.display(),
+                        error = %e,
+                        "Failed to read directory entry"
+                    );
+                    continue;
+                }
+            };
+
+            let path = entry.path();
+            if path.is_dir() {
+                self.load_hierarchical_caches(&path, cache)?;
+            }
+        }
+
+        Ok(())
     }
 
     /// Get the global config

@@ -67,7 +67,10 @@ fn test_file_processor_saves_correct_fingerprint() {
     let config_hash = codebase_translate::config::calculate_config_hash(builder.project_config());
 
     // Verify cache is empty initially
-    let cached = components.cache.get(&file_hash, &config_hash).unwrap();
+    let cached = components
+        .cache
+        .get(&test_file_path, &file_hash, &config_hash)
+        .unwrap();
     assert!(cached.is_none(), "Cache should be empty initially");
 
     // Create FileProcessor and process the file
@@ -96,7 +99,10 @@ fn test_file_processor_saves_correct_fingerprint() {
     }
 
     // Check that cache entry was saved with correct fingerprint
-    let cached = components.cache.get(&file_hash, &config_hash).unwrap();
+    let cached = components
+        .cache
+        .get(&test_file_path, &file_hash, &config_hash)
+        .unwrap();
 
     // This assertion would have failed before the fix because FileProcessor
     // was passing an empty string as project_fingerprint
@@ -191,7 +197,10 @@ fn test_file_processor_cache_hit() {
         }
 
         // Verify cache entry exists with correct fingerprint
-        let cached_before = components.cache.get(&file_hash, &config_hash).unwrap();
+        let cached_before = components
+            .cache
+            .get(&test_file_path, &file_hash, &config_hash)
+            .unwrap();
         if let Some(entry) = &cached_before {
             println!(
                 "Cache entry after first processing: fingerprint='{}', is_translated={}",
@@ -322,7 +331,10 @@ fn test_file_processor_cache_entry_lifecycle() {
             codebase_translate::config::calculate_config_hash(builder.project_config());
 
         // Verify we can retrieve the entry
-        let entry = components.cache.get(&file_hash, &config_hash).unwrap();
+        let entry = components
+            .cache
+            .get(&test_file_path, &file_hash, &config_hash)
+            .unwrap();
 
         if let Some(e) = &entry {
             println!(
