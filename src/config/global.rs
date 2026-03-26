@@ -687,6 +687,26 @@ fn default_temperature() -> f32 {
     0.3
 }
 
+impl Default for LLMProviderConfig {
+    fn default() -> Self {
+        Self {
+            id: "default".to_string(),
+            name: "Default Provider".to_string(),
+            base_url: String::new(),
+            api_keys: Vec::new(),
+            model: String::new(),
+            model_list: Vec::new(),
+            max_tokens: default_max_tokens(),
+            temperature: default_temperature(),
+            proxy_url: None,
+            timeout: default_timeout(),
+            rate_limit: default_rate_limit(),
+            extra_headers: HashMap::new(),
+            extra_params: HashMap::new(),
+        }
+    }
+}
+
 /// Tencent Cloud configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TencentConfig {

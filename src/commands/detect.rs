@@ -289,7 +289,7 @@ impl DetectArgs {
                         }
                     }
 
-                    output.push_str("\n");
+                    output.push('\n');
                 }
 
                 output.push_str(&format!(

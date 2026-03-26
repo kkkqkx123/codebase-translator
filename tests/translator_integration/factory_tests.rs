@@ -6,7 +6,7 @@
 
 use codebase_translate::translator::{
     create_translator_from_config, DeepLXConfig, LLMConfig, ProviderType, TencentConfig,
-    TranslatorConfig, TranslatorImpl,
+    Translator, TranslatorConfig, TranslatorImpl,
 };
 
 /// Test factory creates DeepLX translator correctly with default config

@@ -4,4 +4,4 @@ mod routing;
 
 pub use multi_translator::MultiProviderTranslator;
 pub use provider::{LLMProvider, ProviderHealth, ProviderStats, TokenEstimationConfig};
-pub use routing::{ProviderRouter, SelectionStrategy};
+pub use routing::SelectionStrategy;

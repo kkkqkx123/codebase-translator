@@ -2,82 +2,66 @@
 
 ## Summary
 
-- **Total Errors**: 10
-- **Total Warnings**: 0
+- **Total Errors**: 0
+- **Total Warnings**: 10
 - **Total Issues**: 10
-- **Unique Error Patterns**: 1
-- **Unique Warning Patterns**: 0
-- **Files with Issues**: 10
+- **Unique Error Patterns**: 0
+- **Unique Warning Patterns**: 8
+- **Files with Issues**: 6
 
 ## Error Statistics
 
-**Total Errors**: 10
-
-### Error Type Breakdown
-
-- **error[E0432]**: 10 errors
-
-### Files with Errors (Top 10)
-
-- `src\parser\languages\cpp\parser.rs`: 1 errors
-- `src\parser\languages\csharp\parser.rs`: 1 errors
-- `src\parser\languages\java\parser.rs`: 1 errors
-- `src\parser\languages\javascript\parser.rs`: 1 errors
-- `src\parser\languages\python\parser.rs`: 1 errors
-- `src\parser\languages\go\parser.rs`: 1 errors
-- `src\parser\engine\tree_sitter.rs`: 1 errors
-- `src\parser\languages\c\parser.rs`: 1 errors
-- `src\parser\languages\rust\parser.rs`: 1 errors
-- `src\parser\languages\typescript\parser.rs`: 1 errors
+**Total Errors**: 0
 
 ## Warning Statistics
 
-**Total Warnings**: 0
+**Total Warnings**: 10
 
-## Detailed Error Categorization
+### Warning Type Breakdown
 
-### error[E0432]: unresolved import `crate::parser::abstraction::strategy::ConfigBasedStrategy`: no `ConfigBasedStrategy` in `parser::abstraction::strategy`
+- **warning**: 10 warnings
+
+### Files with Warnings (Top 10)
+
+- `tests\translator_integration\stats_accuracy_tests.rs`: 3 warnings
+- `tests\parser_integration\debug_format_macro.rs`: 3 warnings
+- `src\translator\llm\routing.rs`: 1 warnings
+- `tests\translator_integration\source_lang_tests.rs`: 1 warnings
+- `tests\translator_integration\service_tests.rs`: 1 warnings
+- `src\commands\detect.rs`: 1 warnings
+
+## Detailed Warning Categorization
+
+### warning: transmute used without annotations: help: consider adding missing annotations: `transmute::<std::sync::Arc<translator_integration::source_lang_tests::MockTranslator>, std::sync::Arc<codebase_translate::translator::TranslatorImpl>>`
 
 **Total Occurrences**: 10  
-**Unique Files**: 10
+**Unique Files**: 6
 
-#### `src\parser\engine\tree_sitter.rs`: 1 occurrences
+#### `tests\translator_integration\stats_accuracy_tests.rs`: 3 occurrences
 
-- Line 808: unresolved import `crate::parser::abstraction::strategy::ConfigBasedStrategy`: no `ConfigBasedStrategy` in `parser::abstraction::strategy`
+- Line 59: manually reimplementing `div_ceil`: help: consider using `.div_ceil()`: `texts.len().div_ceil(2)`
+- Line 49: useless use of `vec!`
+- Line 76: useless use of `vec!`
 
-#### `src\parser\languages\cpp\parser.rs`: 1 occurrences
+#### `tests\parser_integration\debug_format_macro.rs`: 3 occurrences
 
-- Line 474: unresolved import `crate::parser::abstraction::strategy::ConfigBasedStrategy`: no `ConfigBasedStrategy` in `parser::abstraction::strategy`
+- Line 41: the borrowed expression implements the required traits: help: change this to: `content`
+- Line 164: the borrowed expression implements the required traits: help: change this to: `content`
+- Line 189: this expression creates a reference which is immediately dereferenced by the compiler: help: change this to: `content`
 
-#### `src\parser\languages\csharp\parser.rs`: 1 occurrences
+#### `tests\translator_integration\source_lang_tests.rs`: 1 occurrences
 
-- Line 454: unresolved import `crate::parser::abstraction::strategy::ConfigBasedStrategy`: no `ConfigBasedStrategy` in `parser::abstraction::strategy`
+- Line 122: transmute used without annotations: help: consider adding missing annotations: `transmute::<std::sync::Arc<translator_integration::source_lang_tests::MockTranslator>, std::sync::Arc<codebase_translate::translator::TranslatorImpl>>`
 
-#### `src\parser\languages\go\parser.rs`: 1 occurrences
+#### `tests\translator_integration\service_tests.rs`: 1 occurrences
 
-- Line 384: unresolved import `crate::parser::abstraction::strategy::ConfigBasedStrategy`: no `ConfigBasedStrategy` in `parser::abstraction::strategy`
+- Line 294: this assertion is always `true`
 
-#### `src\parser\languages\java\parser.rs`: 1 occurrences
+#### `src\commands\detect.rs`: 1 occurrences
 
-- Line 379: unresolved import `crate::parser::abstraction::strategy::ConfigBasedStrategy`: no `ConfigBasedStrategy` in `parser::abstraction::strategy`
+- Line 120: unneeded `return` statement
 
-#### `src\parser\languages\javascript\parser.rs`: 1 occurrences
+#### `src\translator\llm\routing.rs`: 1 occurrences
 
-- Line 455: unresolved import `crate::parser::abstraction::strategy::ConfigBasedStrategy`: no `ConfigBasedStrategy` in `parser::abstraction::strategy`
-
-#### `src\parser\languages\c\parser.rs`: 1 occurrences
-
-- Line 432: unresolved import `crate::parser::abstraction::strategy::ConfigBasedStrategy`: no `ConfigBasedStrategy` in `parser::abstraction::strategy`
-
-#### `src\parser\languages\rust\parser.rs`: 1 occurrences
-
-- Line 429: unresolved import `crate::parser::abstraction::strategy::ConfigBasedStrategy`: no `ConfigBasedStrategy` in `parser::abstraction::strategy`
-
-#### `src\parser\languages\typescript\parser.rs`: 1 occurrences
-
-- Line 434: unresolved import `crate::parser::abstraction::strategy::ConfigBasedStrategy`: no `ConfigBasedStrategy` in `parser::abstraction::strategy`
-
-#### `src\parser\languages\python\parser.rs`: 1 occurrences
-
-- Line 586: unresolved import `crate::parser::abstraction::strategy::ConfigBasedStrategy`: no `ConfigBasedStrategy` in `parser::abstraction::strategy`
+- Line 384: methods `capacity_threshold`, `can_handle`, and `translate` are never used
 

@@ -95,7 +95,7 @@ fn test_batch_translation_service_creation() {
     );
 
     let options = BatchOptions::default();
-    let result = BatchTranslationService::new(vec![(translator, 50)], options);
+    let result = BatchTranslationService::new(vec![translator], options);
 
     assert!(result.is_ok(), "Should create batch translation service");
 }
@@ -118,8 +118,9 @@ fn test_batch_translation_service_custom_options() {
         workers: 3,
         max_retries: 2,
         limit_policy: Some(codebase_translate::translator::LimitPolicy::from_char_count(2000)),
+        batch_size: 50,
     };
-    let result = BatchTranslationService::new(vec![(translator, 50)], options);
+    let result = BatchTranslationService::new(vec![translator], options);
 
     assert!(result.is_ok(), "Should create batch translation service with custom options");
 }
@@ -243,7 +244,7 @@ fn test_batch_translation_service_different_types() {
     );
 
     let options = BatchOptions::default();
-    let service = BatchTranslationService::new(deeplx_translator, options);
+    let service = BatchTranslationService::new(vec![deeplx_translator], options);
     assert!(service.is_ok());
 
     // LLM
@@ -270,7 +271,7 @@ fn test_batch_translation_service_different_types() {
     );
 
     let options = BatchOptions::default();
-    let service = BatchTranslationService::new(llm_translator, options);
+    let service = BatchTranslationService::new(vec![llm_translator], options);
     assert!(service.is_ok());
 }
 

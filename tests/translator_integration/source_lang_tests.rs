@@ -12,12 +12,14 @@ use std::sync::Arc;
 use codebase_translate::translator::{
     BatchTranslator, BatchOptions, Translator, TranslatorImpl,
 };
-use codebase_translate::translator::common::{TranslateResponse, LimitPolicy};
+use codebase_translate::translator::common::LimitPolicy;
+use codebase_translate::reporter::Reporter;
 
 /// Mock translator for testing source_lang propagation
 struct MockTranslator {
     name: &'static str,
     received_source_lang: std::sync::Mutex<String>,
+    reporter: std::sync::Mutex<Option<Arc<dyn Reporter>>>,
 }
 
 impl MockTranslator {
@@ -25,6 +27,7 @@ impl MockTranslator {
         Self {
             name,
             received_source_lang: std::sync::Mutex::new(String::new()),
+            reporter: std::sync::Mutex::new(None),
         }
     }
 
@@ -80,6 +83,14 @@ impl Translator for MockTranslator {
     fn max_input_chars(&self) -> usize {
         5000
     }
+
+    fn set_reporter(&mut self, reporter: Arc<dyn Reporter>) {
+        *self.reporter.lock().unwrap() = Some(reporter);
+    }
+
+    fn reporter(&self) -> Option<Arc<dyn Reporter>> {
+        self.reporter.lock().unwrap().clone()
+    }
 }
 
 #[tokio::test]
@@ -111,11 +122,14 @@ async fn test_batch_translator_propagates_source_lang() {
         std::mem::transmute::<_, Arc<TranslatorImpl>>(mock.clone())
     };
 
-    let batch_translator = BatchTranslator::new(
+    let _batch_translator = BatchTranslator::new(
         vec![translator_impl],
         BatchOptions {
             workers: 1,
             max_retries: 1,
+            batch_size: 50,
+            rate_limit: 10,
+            limit_policy: Some(LimitPolicy::default()),
         },
     );
 

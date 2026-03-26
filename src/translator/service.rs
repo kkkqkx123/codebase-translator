@@ -327,6 +327,25 @@ impl TranslationService {
             "unknown".to_string()
         }
     }
+
+    /// Get maximum input characters for this translator
+    pub fn max_input_chars(&self) -> usize {
+        if let Some(ref translator) = self.translator {
+            translator.max_input_chars()
+        } else if self.batch_translator.is_some() {
+            // For batch translator, use a reasonable default
+            // The actual limit depends on which provider is selected
+            5000
+        } else {
+            0
+        }
+    }
+
+    /// Check if this translator can handle text of given length
+    pub fn can_handle(&self, text_len: usize) -> bool {
+        let max = self.max_input_chars();
+        max == 0 || text_len <= max
+    }
 }
 
 impl Drop for TranslationService {

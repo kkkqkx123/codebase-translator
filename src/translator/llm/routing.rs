@@ -26,6 +26,8 @@ use crate::translator::llm::provider::LLMProvider;
 /// Selection strategy for provider routing
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum SelectionStrategy {
+    /// Simple round-robin (for backward compatibility)
+    RoundRobin,
     /// Pure random selection weighted by rate_limit
     RateBasedRandom,
     /// Smooth round-robin weighted by rate_limit (better distribution over time)
@@ -225,6 +227,7 @@ impl ProviderRouter {
         }
 
         match self.strategy {
+            SelectionStrategy::RoundRobin => self.select_round_robin(&candidates),
             SelectionStrategy::RateBasedRandom => self.select_rate_based_random(&candidates),
             SelectionStrategy::SmoothRateBasedRoundRobin => {
                 self.select_smooth_rate_based_rr(&candidates)
@@ -357,6 +360,24 @@ impl ProviderRouter {
 
         // Fallback
         candidates.first().map(|e| &e.provider)
+    }
+
+    /// Select provider using simple round-robin
+    fn select_round_robin<'a>(
+        &self,
+        candidates: &[&'a ProviderEntry],
+    ) -> Option<&'a Arc<LLMProvider>> {
+        if candidates.is_empty() {
+            return None;
+        }
+
+        static INDEX: AtomicU32 = AtomicU32::new(0);
+        let idx = INDEX.fetch_add(1, Ordering::Relaxed) as usize % candidates.len();
+        trace!(
+            "Round-robin selected provider at index {}",
+            idx
+        );
+        Some(&candidates[idx].provider)
     }
 
     /// Get capacity threshold (minimum capacity among all providers)
