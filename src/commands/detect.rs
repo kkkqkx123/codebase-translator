@@ -6,7 +6,6 @@ use crate::{
     config::{global::GlobalConfig, project::ProjectConfig},
     core::error::{Result, TranslateError},
     core::models::FileEntry,
-    parser::filtering::checks::language::{LanguageDetector, Script},
     scanner::{FSScanner, ScanOptions, Scanner},
 };
 
@@ -48,10 +47,8 @@ impl Command for DetectArgs {
         _global_config: &GlobalConfig,
         _project_config: &ProjectConfig,
     ) -> Result<()> {
-        let detector = LanguageDetector::new();
         let scanner = FSScanner::new();
 
-        // Validate language argument
         let target_script = self.parse_target_script()?;
 
         info!(
@@ -84,9 +81,8 @@ impl Command for DetectArgs {
             ..Default::default()
         };
 
-        // Detect language in each file
         for file in &files {
-            self.detect_file(file, &detector, &target_script, &mut report)?;
+            self.detect_file(file, &target_script, &mut report)?;
         }
 
         // Generate report
@@ -136,18 +132,16 @@ impl DetectArgs {
     fn detect_file(
         &self,
         file: &FileEntry,
-        detector: &LanguageDetector,
         target_script: &str,
         report: &mut LanguageDetectionReport,
     ) -> Result<()> {
         let content = std::fs::read_to_string(&file.path)?;
         let lines: Vec<&str> = content.lines().collect();
 
-        // Find all matching lines
         let mut matching_lines: Vec<(usize, String)> = Vec::new();
         for (line_num, line) in lines.iter().enumerate() {
-            let line_num = line_num + 1; // 1-based
-            if self.matches_script(line, detector, target_script) {
+            let line_num = line_num + 1;
+            if self.matches_script(line, target_script) {
                 matching_lines.push((line_num, line.to_string()));
             }
         }
@@ -174,15 +168,14 @@ impl DetectArgs {
         Ok(())
     }
 
-    fn matches_script(&self, text: &str, detector: &LanguageDetector, target_script: &str) -> bool {
-        let info = detector.detect(text);
+    fn matches_script(&self, text: &str, target_script: &str) -> bool {
         match target_script {
-            "CJK" => info.script == Script::Cjk,
-            "CYRILLIC" => info.script == Script::Cyrillic,
-            "LATIN" => info.script == Script::Latin,
-            "ARABIC" => info.script == Script::Arabic,
-            "HEBREW" => info.script == Script::Hebrew,
-            "GREEK" => info.script == Script::Greek,
+            "CJK" => contains_cjk(text),
+            "CYRILLIC" => contains_cyrillic(text),
+            "LATIN" => contains_latin(text),
+            "ARABIC" => contains_arabic(text),
+            "HEBREW" => contains_hebrew(text),
+            "GREEK" => contains_greek(text),
             _ => false,
         }
     }
@@ -348,4 +341,56 @@ pub struct Segment {
     pub start_line: usize,
     pub end_line: usize,
     pub lines: Vec<(usize, String)>,
+}
+
+fn contains_cjk(text: &str) -> bool {
+    text.chars().any(|c| {
+        let cp = c as u32;
+        (0x3400..=0x4DBF).contains(&cp)
+            || (0x4E00..=0x9FFF).contains(&cp)
+            || (0xF900..=0xFAFF).contains(&cp)
+            || (0x3040..=0x309F).contains(&cp)
+            || (0x30A0..=0x30FF).contains(&cp)
+            || (0xAC00..=0xD7AF).contains(&cp)
+            || (0x1100..=0x11FF).contains(&cp)
+            || (0x2E80..=0x2EFF).contains(&cp)
+            || (0x2F00..=0x2FDF).contains(&cp)
+            || (0x31C0..=0x31EF).contains(&cp)
+            || (0x20000..=0x2EBEF).contains(&cp)
+            || (0x2F800..=0x2FA1F).contains(&cp)
+    })
+}
+
+fn contains_cyrillic(text: &str) -> bool {
+    text.chars().any(|c| {
+        let cp = c as u32;
+        (0x0400..=0x04FF).contains(&cp) || (0x0500..=0x052F).contains(&cp)
+    })
+}
+
+fn contains_latin(text: &str) -> bool {
+    text.chars().any(|c| {
+        c.is_ascii_alphabetic() || ((0x00C0..=0x024F).contains(&(c as u32)))
+    })
+}
+
+fn contains_arabic(text: &str) -> bool {
+    text.chars().any(|c| {
+        let cp = c as u32;
+        (0x0600..=0x06FF).contains(&cp) || (0x0750..=0x077F).contains(&cp)
+    })
+}
+
+fn contains_hebrew(text: &str) -> bool {
+    text.chars().any(|c| {
+        let cp = c as u32;
+        (0x0590..=0x05FF).contains(&cp)
+    })
+}
+
+fn contains_greek(text: &str) -> bool {
+    text.chars().any(|c| {
+        let cp = c as u32;
+        (0x0370..=0x03FF).contains(&cp) || (0x1F00..=0x1FFF).contains(&cp)
+    })
 }
