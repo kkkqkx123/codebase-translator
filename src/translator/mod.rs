@@ -132,7 +132,9 @@ pub fn create_translation_service_with_stats(
 }
 
 /// Create LLM MultiProviderTranslator with all valid providers
-fn create_llm_multi_provider_translator(global_config: &GlobalConfig) -> Result<TranslatorImpl> {
+pub fn create_llm_multi_provider_translator(
+    global_config: &GlobalConfig,
+) -> Result<TranslatorImpl> {
     // Filter valid LLM providers
     let valid_configs: Vec<_> = global_config
         .llm

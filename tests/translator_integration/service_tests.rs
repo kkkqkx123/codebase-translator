@@ -75,7 +75,10 @@ fn test_translation_service_creation_tencent() {
     };
 
     let result = TranslationService::new(config);
-    assert!(result.is_ok(), "Should create translation service with Tencent");
+    assert!(
+        result.is_ok(),
+        "Should create translation service with Tencent"
+    );
 
     let service = result.expect("Should get service");
     assert!(service.name().contains("tencent"));
@@ -122,7 +125,10 @@ fn test_batch_translation_service_custom_options() {
     };
     let result = BatchTranslationService::new(vec![translator], options);
 
-    assert!(result.is_ok(), "Should create batch translation service with custom options");
+    assert!(
+        result.is_ok(),
+        "Should create batch translation service with custom options"
+    );
 }
 
 /// Test TranslationService with all provider types
@@ -291,6 +297,4 @@ fn test_translation_service_drop() {
     }
 
     // If we reach here without panic, drop worked correctly
-    assert!(true);
 }
-

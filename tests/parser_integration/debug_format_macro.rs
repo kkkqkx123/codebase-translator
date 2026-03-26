@@ -38,7 +38,7 @@ fn main() {
         .set_language(&tree_sitter_rust::LANGUAGE.into())
         .expect("Failed to set language");
 
-    let tree = parser.parse(&content, None).expect("Failed to parse");
+    let tree = parser.parse(content, None).expect("Failed to parse");
     let root_node = tree.root_node();
 
     // Test 1: Simple macro_invocation query
@@ -110,10 +110,7 @@ fn main() {
                     let kind = child.kind();
                     if kind == "string_literal" || kind == "raw_string_literal" {
                         let child_text = child.utf8_text(content.as_bytes()).unwrap_or("ERROR");
-                        println!("    Found {}@{:?}",
-                            kind,
-                            child_text
-                        );
+                        println!("    Found {}@{:?}", kind, child_text);
                     }
                 }
             } else if node.kind() == "identifier" {
@@ -161,7 +158,7 @@ let message = format!("图空间 '{}' 不存在", name);
         .set_language(&tree_sitter_rust::LANGUAGE.into())
         .expect("Failed to set language");
 
-    let tree = parser.parse(&content, None).expect("Failed to parse");
+    let tree = parser.parse(content, None).expect("Failed to parse");
     let root_node = tree.root_node();
 
     println!("=== Simple format! macro analysis ===");
@@ -186,7 +183,7 @@ let message = format!("图空间 '{}' 不存在", name);
         }
     }
 
-    print_tree(&root_node, &content, 0);
+    print_tree(&root_node, content, 0);
 
     println!("\n=== Query results ===");
     let query_str = r#"

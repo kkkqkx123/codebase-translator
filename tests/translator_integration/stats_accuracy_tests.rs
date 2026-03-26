@@ -14,8 +14,8 @@ use std::sync::Arc;
 
 use codebase_translate::reporter::{SharedStats, TranslationStats};
 use codebase_translate::translator::{
-    BatchOptions, BatchResult, BatchTranslator, DeepLXConfig,
-    ProviderType, TranslatorConfig, TranslatorImpl,
+    BatchOptions, BatchResult, BatchTranslator, DeepLXConfig, ProviderType, TranslatorConfig,
+    TranslatorImpl,
 };
 
 /// Test that API call count matches actual batch count for single file
@@ -46,7 +46,7 @@ fn test_api_call_count_matches_batch_count() {
     let _batch = BatchTranslator::new(vec![translator], options);
 
     // Create test texts that will span multiple batches
-    let texts = vec![
+    let texts = [
         "Hello world".to_string(),
         "Good morning".to_string(),
         "How are you".to_string(),
@@ -56,7 +56,7 @@ fn test_api_call_count_matches_batch_count() {
     ];
 
     // Expected: 6 texts with batch_size=2 → 3 batches
-    let expected_batches = (texts.len() + 2 - 1) / 2; // ceil(6/2) = 3
+    let expected_batches = texts.len().div_ceil(2);
 
     // Note: We can't actually call translate_batch here because it requires
     // a real translator API. This test validates the infrastructure.
@@ -73,11 +73,11 @@ fn test_api_call_count_matches_batch_count() {
 #[test]
 fn test_character_count_accumulation() {
     // Create test texts with known character counts
-    let texts = vec![
-        "Hello".to_string(),           // 5 chars
-        "World".to_string(),           // 5 chars
-        "Rust".to_string(),            // 4 chars
-        "Translation".to_string(),     // 11 chars
+    let texts = [
+        "Hello".to_string(),       // 5 chars
+        "World".to_string(),       // 5 chars
+        "Rust".to_string(),        // 4 chars
+        "Translation".to_string(), // 11 chars
     ];
 
     let expected_total_chars: usize = texts.iter().map(|t| t.len()).sum(); // 25 chars
@@ -166,17 +166,15 @@ fn test_api_call_count_equals_translator_stats_sum() {
     let expected_api_calls = 3;
     let actual_api_calls = stats.api_call_count;
 
-    let translator_calls_sum: usize = stats
-        .translator_stats
-        .values()
-        .map(|s| s.total_calls)
-        .sum();
+    let translator_calls_sum: usize = stats.translator_stats.values().map(|s| s.total_calls).sum();
 
     assert_eq!(actual_api_calls, expected_api_calls);
     assert_eq!(actual_api_calls, translator_calls_sum);
 
-    println!("API call count ({}) equals translator stats sum ({})",
-             actual_api_calls, translator_calls_sum);
+    println!(
+        "API call count ({}) equals translator stats sum ({})",
+        actual_api_calls, translator_calls_sum
+    );
 }
 
 /// Test different batch sizes produce correct API call counts
@@ -221,11 +219,7 @@ fn test_character_statistics_accumulation() {
     let tencent_stats = stats.translator_stats.get("tencent").unwrap();
     assert_eq!(tencent_stats.total_chars, 150);
 
-    let total_chars: usize = stats
-        .translator_stats
-        .values()
-        .map(|s| s.total_chars)
-        .sum();
+    let total_chars: usize = stats.translator_stats.values().map(|s| s.total_chars).sum();
 
     assert_eq!(total_chars, 370); // 220 + 150
 
@@ -254,11 +248,7 @@ fn test_mixed_translator_statistics() {
     let total_api_calls = stats.api_call_count;
     assert_eq!(total_api_calls, 6);
 
-    let translator_calls_sum: usize = stats
-        .translator_stats
-        .values()
-        .map(|s| s.total_calls)
-        .sum();
+    let translator_calls_sum: usize = stats.translator_stats.values().map(|s| s.total_calls).sum();
 
     assert_eq!(translator_calls_sum, 6);
 
@@ -278,6 +268,8 @@ fn test_batch_result_total_batches_calculation() {
 
     assert_eq!(expected_total_batches, 3);
 
-    println!("Total batches calculation: {} texts / {} batch_size = {} batches",
-             total_texts, batch_size, expected_total_batches);
+    println!(
+        "Total batches calculation: {} texts / {} batch_size = {} batches",
+        total_texts, batch_size, expected_total_batches
+    );
 }

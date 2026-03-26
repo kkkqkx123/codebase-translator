@@ -23,6 +23,28 @@ use crate::config::LLMProviderConfig;
 use crate::core::error::{Result, TranslateError};
 use crate::translator::llm::provider::LLMProvider;
 
+/// Provider statistics for monitoring and debugging
+#[derive(Debug, Clone)]
+pub struct ProviderStats {
+    pub id: String,
+    pub rate_limit: u32,
+    pub effective_weight: u32,
+    pub current_weight: u32,
+    pub max_capacity: usize,
+    pub is_healthy: bool,
+}
+
+/// Router statistics for monitoring and debugging
+#[derive(Debug, Clone)]
+pub struct RouterStats {
+    pub total_providers: usize,
+    pub capacity_threshold: usize,
+    pub max_capacity: usize,
+    pub strategy: SelectionStrategy,
+    pub total_effective_weight: u32,
+    pub providers: Vec<ProviderStats>,
+}
+
 /// Selection strategy for provider routing
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum SelectionStrategy {
@@ -39,7 +61,6 @@ pub enum SelectionStrategy {
 #[derive(Debug)]
 struct ProviderEntry {
     provider: Arc<LLMProvider>,
-    #[allow(dead_code)]
     current_weight: AtomicU32,
     effective_weight: AtomicU32,
 }
@@ -54,7 +75,6 @@ impl ProviderEntry {
         }
     }
 
-    #[allow(dead_code)]
     fn rate_limit(&self) -> u32 {
         self.provider.rate_limit()
     }
@@ -63,12 +83,10 @@ impl ProviderEntry {
         self.effective_weight.load(Ordering::Relaxed)
     }
 
-    #[allow(dead_code)]
     fn current_weight(&self) -> u32 {
         self.current_weight.load(Ordering::Relaxed)
     }
 
-    #[allow(dead_code)]
     fn update_effective_weight(&self, is_healthy: bool) {
         let base_weight = self.rate_limit().max(1);
         let new_weight = if is_healthy { base_weight } else { 0 };
@@ -85,11 +103,8 @@ impl ProviderEntry {
 #[derive(Debug)]
 pub struct ProviderRouter {
     providers: Vec<ProviderEntry>,
-    #[allow(dead_code)]
     capacity_threshold: usize,
-    #[allow(dead_code)]
     strategy: SelectionStrategy,
-    #[allow(dead_code)]
     total_effective_weight: AtomicU32,
 }
 
@@ -204,8 +219,21 @@ impl ProviderRouter {
             self.capacity_threshold
         );
 
+        let can_handle = self.can_handle(text_len);
+        if !can_handle {
+            warn!(
+                "Text length {} exceeds maximum provider capacity {}",
+                text_len,
+                self.max_capacity()
+            );
+            return None;
+        }
+
         // Update effective weights based on current health status
         self.update_effective_weights();
+
+        // Log detailed provider state at TRACE level
+        self.log_provider_state();
 
         // Filter candidates based on capacity
         let candidates: Vec<&ProviderEntry> = if text_len < self.capacity_threshold {
@@ -226,6 +254,12 @@ impl ProviderRouter {
             return None;
         }
 
+        debug!(
+            "Provider selection: {} candidates available for text length {}",
+            candidates.len(),
+            text_len
+        );
+
         match self.strategy {
             SelectionStrategy::RoundRobin => self.select_round_robin(&candidates),
             SelectionStrategy::RateBasedRandom => self.select_rate_based_random(&candidates),
@@ -236,11 +270,29 @@ impl ProviderRouter {
     }
 
     /// Update effective weights based on provider health
-    /// Note: This is a placeholder for future async health checking
-    /// Currently, health is managed internally by each provider
+    /// Note: Health is managed internally by LLMProvider with threshold-based tracking
+    /// The effective weight is updated when provider health changes
     fn update_effective_weights(&self) {
-        // Health is managed internally by LLMProvider with threshold-based tracking
-        // The effective weight is updated when provider health changes
+        if tracing::enabled!(tracing::Level::DEBUG) {
+            let mut healthy_count = 0;
+            let mut unhealthy_count = 0;
+
+            for entry in &self.providers {
+                let is_healthy = entry.effective_weight() > 0;
+                if is_healthy {
+                    healthy_count += 1;
+                } else {
+                    unhealthy_count += 1;
+                }
+            }
+
+            if unhealthy_count > 0 {
+                debug!(
+                    "Provider health status: {} healthy, {} unhealthy",
+                    healthy_count, unhealthy_count
+                );
+            }
+        }
     }
 
     /// Select provider using rate-based random strategy
@@ -373,10 +425,7 @@ impl ProviderRouter {
 
         static INDEX: AtomicU32 = AtomicU32::new(0);
         let idx = INDEX.fetch_add(1, Ordering::Relaxed) as usize % candidates.len();
-        trace!(
-            "Round-robin selected provider at index {}",
-            idx
-        );
+        trace!("Round-robin selected provider at index {}", idx);
         Some(&candidates[idx].provider)
     }
 
@@ -411,6 +460,65 @@ impl ProviderRouter {
             .any(|p| p.provider.can_handle(text_len))
     }
 
+    /// Get router statistics for monitoring and debugging
+    pub fn statistics(&self) -> RouterStats {
+        RouterStats {
+            total_providers: self.providers.len(),
+            capacity_threshold: self.capacity_threshold,
+            max_capacity: self.max_capacity(),
+            strategy: self.strategy,
+            total_effective_weight: self.total_effective_weight.load(Ordering::Relaxed),
+            providers: self
+                .providers
+                .iter()
+                .map(|entry| ProviderStats {
+                    id: entry.provider.id().to_string(),
+                    rate_limit: entry.rate_limit(),
+                    effective_weight: entry.effective_weight(),
+                    current_weight: entry.current_weight(),
+                    max_capacity: entry.provider.max_input_chars(),
+                    is_healthy: entry.effective_weight() > 0,
+                })
+                .collect(),
+        }
+    }
+
+    /// Log router statistics at INFO level
+    pub fn log_statistics(&self) {
+        let stats = self.statistics();
+        info!("Router Statistics:");
+        info!("  Total providers: {}", stats.total_providers);
+        info!("  Capacity threshold: {}", stats.capacity_threshold);
+        info!("  Max capacity: {}", stats.max_capacity);
+        info!("  Strategy: {:?}", stats.strategy);
+        info!("  Total effective weight: {}", stats.total_effective_weight);
+
+        for provider in &stats.providers {
+            info!("  Provider {}:", provider.id);
+            info!("    Rate limit: {}", provider.rate_limit);
+            info!("    Effective weight: {}", provider.effective_weight);
+            info!("    Current weight: {}", provider.current_weight);
+            info!("    Max capacity: {}", provider.max_capacity);
+            info!("    Healthy: {}", provider.is_healthy);
+        }
+    }
+
+    /// Log detailed provider state at TRACE level
+    pub fn log_provider_state(&self) {
+        if tracing::enabled!(tracing::Level::TRACE) {
+            for entry in &self.providers {
+                trace!(
+                    "Provider state: id={}, rate_limit={}, effective_weight={}, current_weight={}, max_capacity={}",
+                    entry.provider.id(),
+                    entry.rate_limit(),
+                    entry.effective_weight(),
+                    entry.current_weight(),
+                    entry.provider.max_input_chars()
+                );
+            }
+        }
+    }
+
     /// Route and translate a single text
     pub async fn translate(
         &self,
@@ -420,6 +528,11 @@ impl ProviderRouter {
     ) -> Result<String> {
         let text_len = text.len();
 
+        info!(
+            "Translation request: {} -> {}, text length: {} chars",
+            source_lang, target_lang, text_len
+        );
+
         let provider = self.select_provider(text_len).ok_or_else(|| {
             TranslateError::Translation(format!(
                 "No provider can handle text of length {}. Maximum capacity: {}",
@@ -428,7 +541,21 @@ impl ProviderRouter {
             ))
         })?;
 
+        info!(
+            "Routing translation to provider {} (text_len: {}, strategy: {:?})",
+            provider.id(),
+            text_len,
+            self.strategy
+        );
+
         let response = provider.translate(text, source_lang, target_lang).await?;
+
+        debug!(
+            "Translation completed by provider {} (input: {} chars, output: {} chars)",
+            provider.id(),
+            text_len,
+            response.translated_text.len()
+        );
 
         Ok(response.translated_text)
     }

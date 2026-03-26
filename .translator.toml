@@ -88,6 +88,10 @@ gitignore_patterns = [
 # 过滤配置
 # 指定文本内容的过滤规则
 [filter]
+# 强制提取包含目标语言字符的文本，跳过所有其他过滤
+# 启用后，仅检查语言特征，忽略模式、长度、占位符等过滤
+force_extract_by_language = false  # 默认关闭
+
 # 排除关键词：包含这些关键词的文本不会被翻译
 exclude_keywords = [
     "TODO",

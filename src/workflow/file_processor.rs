@@ -280,7 +280,11 @@ impl<'a> FileProcessor<'a> {
         let mut translate_idx = 0;
         for unit in units.iter_mut() {
             if unit.should_translate {
-                if let Some(translated) = batch_result.results.get(translate_idx).map(|r| r.translated_text.as_str()) {
+                if let Some(translated) = batch_result
+                    .results
+                    .get(translate_idx)
+                    .map(|r| r.translated_text.as_str())
+                {
                     unit.set_translated(translated.to_string());
                     translate_idx += 1;
                 }

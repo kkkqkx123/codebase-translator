@@ -40,7 +40,10 @@ fn test_factory_creates_deeplx_with_custom_config() {
     };
 
     let result = create_translator_from_config(&config);
-    assert!(result.is_ok(), "Factory should create DeepLX translator with custom config");
+    assert!(
+        result.is_ok(),
+        "Factory should create DeepLX translator with custom config"
+    );
 
     let translator = result.expect("Should get translator");
     assert_eq!(translator.name(), "deeplx");
@@ -127,10 +130,15 @@ fn test_factory_fails_without_tencent_config() {
     };
 
     let result = create_translator_from_config(&config);
-    assert!(result.is_err(), "Factory should fail without Tencent config");
+    assert!(
+        result.is_err(),
+        "Factory should fail without Tencent config"
+    );
 
     let err = result.unwrap_err();
-    assert!(err.to_string().contains("Tencent configuration is required"));
+    assert!(err
+        .to_string()
+        .contains("Tencent configuration is required"));
 }
 
 /// Test factory creates all provider types
@@ -265,4 +273,3 @@ fn test_factory_error_propagation() {
     let err_string = err.to_string();
     assert!(err_string.contains("LLM") || err_string.contains("configuration"));
 }
-

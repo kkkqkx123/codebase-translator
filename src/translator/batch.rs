@@ -189,7 +189,7 @@ impl BatchTranslator {
     }
 
     /// Translate a batch of texts
-    /// 
+    ///
     /// This method processes texts in batches according to the configured batch_size.
     /// Each batch is sent to the translator as a single request, improving efficiency.
     pub async fn translate_batch(
@@ -272,7 +272,7 @@ impl BatchTranslator {
                         "Batch translation failed"
                     );
                     errors.push(format!("Batch {}: {}", batch_idx + 1, e));
-                    
+
                     // For failed batch, add fallback responses for each text
                     for text in batch.iter() {
                         results.push(TranslateResponse {
@@ -333,9 +333,12 @@ impl BatchTranslator {
         target_lang: &str,
     ) -> Result<Vec<TranslateResponse>> {
         let mut responses = Vec::with_capacity(texts.len());
-        
+
         // Try to translate the entire batch at once
-        match self.translate_batch_request(texts, source_lang, target_lang).await {
+        match self
+            .translate_batch_request(texts, source_lang, target_lang)
+            .await
+        {
             Ok(batch_responses) => {
                 return Ok(batch_responses);
             }
@@ -345,10 +348,13 @@ impl BatchTranslator {
                     batch_size = texts.len(),
                     "Batch translation failed, falling back to individual translations"
                 );
-                
+
                 // Fallback: translate each text individually
                 for text in texts {
-                    match self.translate_with_retry(text, source_lang, target_lang).await {
+                    match self
+                        .translate_with_retry(text, source_lang, target_lang)
+                        .await
+                    {
                         Ok(response) => {
                             responses.push(response);
                         }
@@ -370,7 +376,7 @@ impl BatchTranslator {
                 }
             }
         }
-        
+
         Ok(responses)
     }
 
@@ -381,7 +387,8 @@ impl BatchTranslator {
         source_lang: &str,
         target_lang: &str,
     ) -> Result<Vec<TranslateResponse>> {
-        let entry = self.select_translator()
+        let entry = self
+            .select_translator()
             .ok_or_else(|| TranslateError::Translation("No translator available".to_string()))?;
 
         debug!(
@@ -404,12 +411,7 @@ impl BatchTranslator {
                 // Record successful batch translation statistics
                 if let Some(ref shared_stats) = self.shared_stats {
                     let latency_ms = start_time.elapsed().as_millis() as u64;
-                    shared_stats.record_translator_call(
-                        &entry.name,
-                        latency_ms,
-                        true,
-                        batch_chars,
-                    );
+                    shared_stats.record_translator_call(&entry.name, latency_ms, true, batch_chars);
                 }
 
                 let responses: Vec<TranslateResponse> = texts

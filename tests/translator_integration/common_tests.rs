@@ -4,8 +4,8 @@
 //! functions and configuration structures behavior.
 
 use codebase_translate::translator::common::{
-    chars_to_tokens, tokens_to_chars, BatchOptions, BatchResult, DeepLXConfig, LimitPolicy,
-    LLMConfig, TencentConfig, TranslateRequest, TranslateResponse,
+    chars_to_tokens, tokens_to_chars, BatchOptions, BatchResult, DeepLXConfig, LLMConfig,
+    LimitPolicy, TencentConfig, TranslateRequest, TranslateResponse,
 };
 
 /// Test character to token conversion ratio
@@ -173,4 +173,3 @@ fn test_conversion_roundtrip() {
     assert!(back_to_chars >= original_chars);
     assert!(back_to_chars <= original_chars + 15); // Within 1.5 char tolerance
 }
-

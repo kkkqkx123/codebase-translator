@@ -6,8 +6,8 @@
 use std::sync::Arc;
 
 use codebase_translate::translator::{
-    create_batch_translator, BatchOptions, BatchResult, BatchTranslator, DeepLXConfig,
-    LimitPolicy, ProviderType, TranslatorConfig, TranslatorImpl,
+    create_batch_translator, BatchOptions, BatchResult, BatchTranslator, DeepLXConfig, LimitPolicy,
+    ProviderType, TranslatorConfig, TranslatorImpl,
 };
 
 /// Test BatchTranslator creation with default options
@@ -179,15 +179,13 @@ fn test_batch_result_with_data() {
         total_count: 10,
         success_count: 8,
         failed_count: 2,
-        results: vec![
-            TranslateResponse {
-                original_text: "Hello".to_string(),
-                translated_text: "你好".to_string(),
-                source_lang: "EN".to_string(),
-                target_lang: "ZH".to_string(),
-                alternatives: vec![],
-            },
-        ],
+        results: vec![TranslateResponse {
+            original_text: "Hello".to_string(),
+            translated_text: "你好".to_string(),
+            source_lang: "EN".to_string(),
+            target_lang: "ZH".to_string(),
+            alternatives: vec![],
+        }],
         errors: vec!["Error 1".to_string(), "Error 2".to_string()],
         processing_time: 1500,
         total_chars: 100,
@@ -316,4 +314,3 @@ fn test_translate_response_with_data() {
     assert_eq!(response.target_lang, "ZH");
     assert_eq!(response.alternatives.len(), 1);
 }
-

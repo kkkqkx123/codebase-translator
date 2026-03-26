@@ -9,11 +9,9 @@
 
 use std::sync::Arc;
 
-use codebase_translate::translator::{
-    BatchTranslator, BatchOptions, Translator, TranslatorImpl,
-};
-use codebase_translate::translator::common::LimitPolicy;
 use codebase_translate::reporter::Reporter;
+use codebase_translate::translator::common::LimitPolicy;
+use codebase_translate::translator::{BatchOptions, BatchTranslator, Translator, TranslatorImpl};
 
 /// Mock translator for testing source_lang propagation
 struct MockTranslator {
@@ -119,7 +117,9 @@ async fn test_batch_translator_propagates_source_lang() {
     let mock = Arc::new(MockTranslator::new("mock"));
     let translator_impl = unsafe {
         // This is safe only for testing purposes
-        std::mem::transmute::<_, Arc<TranslatorImpl>>(mock.clone())
+        std::mem::transmute::<std::sync::Arc<MockTranslator>, std::sync::Arc<TranslatorImpl>>(
+            mock.clone(),
+        )
     };
 
     let _batch_translator = BatchTranslator::new(

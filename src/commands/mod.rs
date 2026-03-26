@@ -15,6 +15,7 @@ pub mod cache;
 pub mod clean;
 pub mod detect;
 pub mod init;
+pub mod status;
 pub mod translate;
 pub mod validate;
 pub mod verify;

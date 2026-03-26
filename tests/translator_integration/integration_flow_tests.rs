@@ -6,9 +6,8 @@
 use std::sync::Arc;
 
 use codebase_translate::translator::{
-    create_batch_translator, create_translator_from_config, BatchOptions,
-    DeepLXConfig, ProviderType, TencentConfig,
-    TranslationService, Translator, TranslatorConfig,
+    create_batch_translator, create_translator_from_config, BatchOptions, DeepLXConfig,
+    ProviderType, TencentConfig, TranslationService, Translator, TranslatorConfig,
 };
 
 /// Test complete flow: Config -> Factory -> TranslatorImpl -> BatchTranslator

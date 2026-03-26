@@ -56,7 +56,8 @@ fn main() {
 
     // Write output for inspection
     fs::create_dir_all("tests/parser_integration/output").expect("Failed to create output dir");
-    let output_path = PathBuf::from("tests/parser_integration/output/format_macro_chinese_extraction.txt");
+    let output_path =
+        PathBuf::from("tests/parser_integration/output/format_macro_chinese_extraction.txt");
 
     let mut output = String::new();
     output.push_str(&format!("Extracted {} translation units\n", units.len()));
@@ -90,13 +91,25 @@ fn main() {
     println!("Total units: {}", units.len());
 
     // Count units by type
-    let format_strings = units.iter().filter(|u| {
-        matches!(u.node_type, codebase_translate::core::models::NodeType::FormatString)
-    }).count();
+    let format_strings = units
+        .iter()
+        .filter(|u| {
+            matches!(
+                u.node_type,
+                codebase_translate::core::models::NodeType::FormatString
+            )
+        })
+        .count();
 
-    let log_messages = units.iter().filter(|u| {
-        matches!(u.node_type, codebase_translate::core::models::NodeType::LogMessage)
-    }).count();
+    let log_messages = units
+        .iter()
+        .filter(|u| {
+            matches!(
+                u.node_type,
+                codebase_translate::core::models::NodeType::LogMessage
+            )
+        })
+        .count();
 
     println!("Format strings: {}", format_strings);
     println!("Log messages: {}", log_messages);
@@ -122,11 +135,20 @@ fn main() {
     }
 
     // Assertions to verify extraction
-    assert!(has_graph_space, "Should extract '图空间' from format! macro");
-    assert!(has_config_file, "Should extract '配置文件' from format! macro");
+    assert!(
+        has_graph_space,
+        "Should extract '图空间' from format! macro"
+    );
+    assert!(
+        has_config_file,
+        "Should extract '配置文件' from format! macro"
+    );
     assert!(has_database, "Should extract '数据库' from format! macro");
     assert!(has_user_access, "Should extract '用户' from format! macro");
-    assert!(has_file_size, "Should extract '处理文件' from format_args! macro");
+    assert!(
+        has_file_size,
+        "Should extract '处理文件' from format_args! macro"
+    );
 
     // We should have at least 5 format strings extracted
     assert!(

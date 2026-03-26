@@ -43,7 +43,11 @@ pub struct DetectArgs {
 }
 
 impl Command for DetectArgs {
-    fn execute(&self, _global_config: &GlobalConfig, _project_config: &ProjectConfig) -> Result<()> {
+    fn execute(
+        &self,
+        _global_config: &GlobalConfig,
+        _project_config: &ProjectConfig,
+    ) -> Result<()> {
         let detector = LanguageDetector::new();
         let scanner = FSScanner::new();
 
@@ -116,12 +120,10 @@ impl DetectArgs {
                 let lang_upper = lang.to_uppercase();
                 match lang_upper.as_str() {
                     "CJK" | "CYRILLIC" | "LATIN" | "ARABIC" | "HEBREW" | "GREEK" => Ok(lang_upper),
-                    _ => {
-                        return Err(TranslateError::InvalidArgument(format!(
-                            "Unsupported language family: '{}'. Supported families: cjk, cyrillic, latin, arabic, hebrew, greek",
-                            lang
-                        )))
-                    }
+                    _ => Err(TranslateError::InvalidArgument(format!(
+                        "Unsupported language family: '{}'. Supported families: cjk, cyrillic, latin, arabic, hebrew, greek",
+                        lang
+                    ))),
                 }
             }
             None => {
@@ -242,7 +244,10 @@ impl DetectArgs {
         output.push_str(&format!("  Total Files:       {}\n", report.total_files));
         output.push_str(&format!("  Total Lines:       {}\n", report.total_lines));
         output.push_str(&format!("  Matching Lines:    {}\n", report.matching_lines));
-        output.push_str(&format!("  Matching Segments: {}\n", report.matching_segments));
+        output.push_str(&format!(
+            "  Matching Segments: {}\n",
+            report.matching_segments
+        ));
         output.push_str(&format!("  Target Script:     {}\n", report.target_script));
         output.push_str(&format!("{}\n\n", "-".repeat(80)));
 

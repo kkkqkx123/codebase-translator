@@ -45,9 +45,10 @@ impl MultiProviderTranslator {
         let max_retries = if max_retries == 0 { 3 } else { max_retries };
 
         info!(
-            "Created MultiProviderTranslator with {} providers, max_retries: {}",
+            "Created MultiProviderTranslator with {} providers, max_retries: {}, capacity_threshold: {} chars",
             router.providers().len(),
-            max_retries
+            max_retries,
+            router.capacity_threshold()
         );
 
         Ok(Self {
@@ -67,10 +68,11 @@ impl MultiProviderTranslator {
         let max_retries = if max_retries == 0 { 3 } else { max_retries };
 
         info!(
-            "Created MultiProviderTranslator with {} providers, max_retries: {}, strategy: {:?}",
+            "Created MultiProviderTranslator with {} providers, max_retries: {}, strategy: {:?}, capacity_threshold: {} chars",
             router.providers().len(),
             max_retries,
-            strategy
+            strategy,
+            router.capacity_threshold()
         );
 
         Ok(Self {
@@ -243,6 +245,7 @@ impl MultiProviderTranslator {
         serde_json::json!({
             "total_providers": self.router.providers().len(),
             "max_capacity": self.router.max_capacity(),
+            "capacity_threshold": self.router.capacity_threshold(),
             "strategy": format!("{:?}", self.router.strategy()),
             "providers": self.router.providers().iter().map(|p| {
                 serde_json::json!({
