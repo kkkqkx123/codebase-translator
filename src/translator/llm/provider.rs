@@ -52,8 +52,8 @@ impl Default for TokenEstimationConfig {
             non_cjk_chars_per_token: 4.0,
             // Reserve 40% for output (translation can be 20-30% longer)
             output_reserve_ratio: 0.4,
-            // System prompt + formatting overhead
-            system_prompt_tokens: 50,
+            // System prompt + user prompt overhead (increased due to separate system message)
+            system_prompt_tokens: 150,
         }
     }
 }
@@ -65,7 +65,8 @@ impl TokenEstimationConfig {
             cjk_chars_per_token: 1.5,
             non_cjk_chars_per_token: 3.5,
             output_reserve_ratio: 0.5,
-            system_prompt_tokens: 60,
+            // System prompt + user prompt overhead (increased due to separate system message)
+            system_prompt_tokens: 180,
         }
     }
 
@@ -231,6 +232,8 @@ pub struct LLMProvider {
     temperature: f64,
     extra_headers: Option<Vec<(String, String)>>,
     extra_params: Option<serde_json::Map<String, serde_json::Value>>,
+    custom_system_prompt: Option<String>,
+    custom_user_prompt: Option<String>,
 
     // Capacity
     max_input_chars: usize,
@@ -386,6 +389,8 @@ impl LLMProvider {
             rate_limit: config.rate_limit,
             current_key_index: Arc::new(AtomicU32::new(0)),
             health_config,
+            custom_system_prompt: config.custom_system_prompt.clone(),
+            custom_user_prompt: config.custom_user_prompt.clone(),
             reporter: None,
         })
     }
@@ -561,15 +566,43 @@ impl LLMProvider {
     // Translation
     // -------------------------------------------------------------------------
 
-    /// Build translation prompt
-    fn build_prompt(&self, text: &str, target_lang: &str) -> String {
+    /// Build system prompt for translation
+    fn build_system_prompt(&self) -> String {
+        if let Some(ref custom_prompt) = self.custom_system_prompt {
+            return custom_prompt.clone();
+        }
+
+        r#"You are a professional translator specializing in code comments and technical documentation.
+
+Your task is to translate natural language content while:
+- Preserving all code syntax and structure
+- Maintaining markdown formatting if present
+- Preserving code examples and fenced code blocks
+- Returning ONLY the translated text without explanations
+- Skipping translation for segments that appear to be code rather than natural language"#.to_string()
+    }
+
+    /// Build user prompt for translation
+    fn build_user_prompt(&self, text: &str, source_lang: &str, target_lang: &str) -> String {
+        if let Some(ref template) = self.custom_user_prompt {
+            return template
+                .replace("{source_lang}", source_lang)
+                .replace("{target_lang}", target_lang)
+                .replace("{text}", text);
+        }
+
+        let source_instruction = if source_lang == "AUTO" {
+            "Auto-detect the source language".to_string()
+        } else {
+            format!("Translate from {}", source_lang)
+        };
+
         format!(
-            r#"You are a professional translator. Translate the following text to {}.
-Only return the translated text, without any explanations or additional content.
+            r#"{} to {}.
 
 Text to translate:
 {}"#,
-            target_lang, text
+            source_instruction, target_lang, text
         )
     }
 
@@ -602,15 +635,22 @@ Text to translate:
         source_lang: &str,
         target_lang: &str,
     ) -> Result<TranslateResponse> {
-        let prompt = self.build_prompt(text, target_lang);
+        let system_prompt = self.build_system_prompt();
+        let user_prompt = self.build_user_prompt(text, source_lang, target_lang);
         let api_key = self.current_api_key();
 
         let req_body = ChatCompletionRequest {
             model: self.model.clone(),
-            messages: vec![Message {
-                role: "user".to_string(),
-                content: prompt,
-            }],
+            messages: vec![
+                Message {
+                    role: "system".to_string(),
+                    content: system_prompt,
+                },
+                Message {
+                    role: "user".to_string(),
+                    content: user_prompt,
+                },
+            ],
             max_tokens: Some(self.max_tokens.max(1)),
             temperature: Some(self.temperature.clamp(0.0, 2.0)),
             top_p: None,
@@ -908,7 +948,7 @@ mod tests {
         assert_eq!(config.cjk_chars_per_token, 1.5);
         assert_eq!(config.non_cjk_chars_per_token, 4.0);
         assert_eq!(config.output_reserve_ratio, 0.4);
-        assert_eq!(config.system_prompt_tokens, 50);
+        assert_eq!(config.system_prompt_tokens, 150);
     }
 
     #[test]
@@ -917,7 +957,7 @@ mod tests {
         assert_eq!(config.cjk_chars_per_token, 1.5);
         assert_eq!(config.non_cjk_chars_per_token, 3.5);
         assert_eq!(config.output_reserve_ratio, 0.5);
-        assert_eq!(config.system_prompt_tokens, 60);
+        assert_eq!(config.system_prompt_tokens, 180);
     }
 
     #[test]
@@ -934,10 +974,10 @@ mod tests {
         assert_eq!(non_cjk_count, 0);
 
         let tokens = config.estimate_tokens(chinese);
-        // CJK tokens: 4 / 1.5 = 2.67 -> 3 + 50 system = 53
+        // CJK tokens: 4 / 1.5 = 2.67 -> 3 + 150 system = 153
         assert!(
-            (52..=54).contains(&tokens),
-            "Expected ~53 tokens, got {}",
+            (152..=154).contains(&tokens),
+            "Expected ~153 tokens, got {}",
             tokens
         );
     }
@@ -948,8 +988,8 @@ mod tests {
         // English text: "Hello world" (11 chars, non-CJK)
         let english = "Hello world";
         let tokens = config.estimate_tokens(english);
-        // 11 chars / 4 chars/token = 2.75 -> 3 + 50 system = 53
-        assert!((50..=55).contains(&tokens));
+        // 11 chars / 4 chars/token = 2.75 -> 3 + 150 system = 153
+        assert!((150..=155).contains(&tokens));
     }
 
     #[test]
@@ -958,10 +998,10 @@ mod tests {
         // Mixed text: "Hello 世界" (5 non-CJK letters + 1 space + 2 CJK = 8 chars)
         let mixed = "Hello 世界";
         let tokens = config.estimate_tokens(mixed);
-        // 2 CJK / 1.5 = 1.33, 6 non-CJK / 4 = 1.5, total ~2.83 -> 3 + 50 = 53
+        // 2 CJK / 1.5 = 1.33, 6 non-CJK / 4 = 1.5, total ~2.83 -> 3 + 150 = 153
         assert!(
-            (52..=54).contains(&tokens),
-            "Expected ~53 tokens, got {}",
+            (152..=154).contains(&tokens),
+            "Expected ~153 tokens, got {}",
             tokens
         );
     }
@@ -969,11 +1009,11 @@ mod tests {
     #[test]
     fn test_calculate_max_chars() {
         let config = TokenEstimationConfig::conservative();
-        // With 1000 tokens, 50% reserved for output, 60 for system
-        // Available: 1000 * 0.5 - 60 = 440 tokens for input
-        // At 1.5 chars/token: 440 * 1.5 = 660 chars
+        // With 1000 tokens, 50% reserved for output, 180 for system
+        // Available: 1000 * (1.0 - 0.5) - 180 = 320 tokens for input
+        // At 1.5 chars/token: 320 * 1.5 = 480 chars
         let max_chars = config.calculate_max_chars(1000);
-        assert_eq!(max_chars, 660);
+        assert_eq!(max_chars, 480);
     }
 
     #[test]
@@ -985,5 +1025,107 @@ mod tests {
         assert!(!is_cjk('A'));
         assert!(!is_cjk('1'));
         assert!(!is_cjk(' '));
+    }
+
+    #[test]
+    fn test_build_system_prompt_default() {
+        let config = LLMProviderConfig {
+            id: "test".to_string(),
+            name: "Test".to_string(),
+            base_url: "https://api.example.com".to_string(),
+            api_keys: vec!["key".to_string()],
+            model: "gpt-4".to_string(),
+            custom_system_prompt: None,
+            custom_user_prompt: None,
+            ..Default::default()
+        };
+
+        let provider = LLMProvider::new(&config).expect("Failed to create provider");
+        let prompt = provider.build_system_prompt();
+
+        assert!(prompt.contains("professional translator"));
+        assert!(prompt.contains("code comments"));
+    }
+
+    #[test]
+    fn test_build_system_prompt_custom() {
+        let config = LLMProviderConfig {
+            id: "test".to_string(),
+            name: "Test".to_string(),
+            base_url: "https://api.example.com".to_string(),
+            api_keys: vec!["key".to_string()],
+            model: "gpt-4".to_string(),
+            custom_system_prompt: Some("Custom system prompt".to_string()),
+            custom_user_prompt: None,
+            ..Default::default()
+        };
+
+        let provider = LLMProvider::new(&config).expect("Failed to create provider");
+        let prompt = provider.build_system_prompt();
+
+        assert_eq!(prompt, "Custom system prompt");
+    }
+
+    #[test]
+    fn test_build_user_prompt_default() {
+        let config = LLMProviderConfig {
+            id: "test".to_string(),
+            name: "Test".to_string(),
+            base_url: "https://api.example.com".to_string(),
+            api_keys: vec!["key".to_string()],
+            model: "gpt-4".to_string(),
+            custom_system_prompt: None,
+            custom_user_prompt: None,
+            ..Default::default()
+        };
+
+        let provider = LLMProvider::new(&config).expect("Failed to create provider");
+        let prompt = provider.build_user_prompt("Hello world", "AUTO", "zh");
+
+        assert!(prompt.contains("Auto-detect the source language"));
+        assert!(prompt.contains("to zh"));
+        assert!(prompt.contains("Hello world"));
+    }
+
+    #[test]
+    fn test_build_user_prompt_custom() {
+        let config = LLMProviderConfig {
+            id: "test".to_string(),
+            name: "Test".to_string(),
+            base_url: "https://api.example.com".to_string(),
+            api_keys: vec!["key".to_string()],
+            model: "gpt-4".to_string(),
+            custom_system_prompt: None,
+            custom_user_prompt: Some(
+                "Translate from {source_lang} to {target_lang}: {text}".to_string(),
+            ),
+            ..Default::default()
+        };
+
+        let provider = LLMProvider::new(&config).expect("Failed to create provider");
+        let prompt = provider.build_user_prompt("Hello", "en", "zh");
+
+        assert_eq!(prompt, "Translate from en to zh: Hello");
+    }
+
+    #[test]
+    fn test_build_user_prompt_with_auto() {
+        let config = LLMProviderConfig {
+            id: "test".to_string(),
+            name: "Test".to_string(),
+            base_url: "https://api.example.com".to_string(),
+            api_keys: vec!["key".to_string()],
+            model: "gpt-4".to_string(),
+            custom_system_prompt: None,
+            custom_user_prompt: Some(
+                "Translate from {source_lang} to {target_lang}: {text}".to_string(),
+            ),
+            ..Default::default()
+        };
+
+        let provider = LLMProvider::new(&config).expect("Failed to create provider");
+        let prompt = provider.build_user_prompt("Hello", "AUTO", "zh");
+
+        assert_eq!(prompt, "Translate from AUTO to zh: Hello");
     }
 }

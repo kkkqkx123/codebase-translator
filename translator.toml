@@ -58,6 +58,11 @@ timeout = 20
 rate_limit = 40         # 每秒请求数限制
 extra_headers = {}      # 额外请求头
 extra_params = {}       # 额外请求参数
+# 自定义系统提示词（可选，覆盖默认提示词）
+# custom_system_prompt = "You are a professional translator specializing in technical documentation."
+# 自定义用户提示词模板（可选，覆盖默认模板）
+# 支持的占位符：{source_lang}, {target_lang}, {text}
+# custom_user_prompt = "Translate from {source_lang} to {target_lang}:\n\n{text}"
 
 # 供应商 2: zhipu
 [[llm.providers]]
@@ -74,6 +79,11 @@ timeout = 60
 rate_limit = 5
 extra_headers = {}
 extra_params = {}
+# 自定义系统提示词（可选，覆盖默认提示词）
+# custom_system_prompt = "You are a professional translator specializing in technical documentation."
+# 自定义用户提示词模板（可选，覆盖默认模板）
+# 支持的占位符：{source_lang}, {target_lang}, {text}
+# custom_user_prompt = "Translate from {source_lang} to {target_lang}:\n\n{text}"
 
 # Tencent Cloud 配置
 # 需要在腾讯云控制台搜索机器翻译，开启服务。每月 500 万字符免费，默认仅使用免费额度

@@ -677,6 +677,13 @@ pub struct LLMProviderConfig {
     /// Extra parameters
     #[serde(default)]
     pub extra_params: HashMap<String, serde_json::Value>,
+    /// Custom system prompt (optional, overrides default)
+    #[serde(default)]
+    pub custom_system_prompt: Option<String>,
+    /// Custom user prompt template (optional, overrides default)
+    /// Supported placeholders: {source_lang}, {target_lang}, {text}
+    #[serde(default)]
+    pub custom_user_prompt: Option<String>,
 }
 
 fn default_max_tokens() -> u32 {
@@ -703,7 +710,27 @@ impl Default for LLMProviderConfig {
             rate_limit: default_rate_limit(),
             extra_headers: HashMap::new(),
             extra_params: HashMap::new(),
+            custom_system_prompt: None,
+            custom_user_prompt: None,
         }
+    }
+}
+
+impl LLMProviderConfig {
+    /// Validate custom user prompt template
+    pub fn validate(&self) -> Result<(), String> {
+        if let Some(ref user_prompt) = self.custom_user_prompt {
+            let required_placeholders = ["{text}"];
+            for placeholder in &required_placeholders {
+                if !user_prompt.contains(placeholder) {
+                    return Err(format!(
+                        "Custom user prompt must contain placeholder: {}",
+                        placeholder
+                    ));
+                }
+            }
+        }
+        Ok(())
     }
 }
 
@@ -917,6 +944,8 @@ mod tests {
                 rate_limit: 10,
                 extra_headers: std::collections::HashMap::new(),
                 extra_params: std::collections::HashMap::new(),
+                custom_system_prompt: None,
+                custom_user_prompt: None,
             },
             LLMProviderConfig {
                 id: "provider2".to_string(),
@@ -932,6 +961,8 @@ mod tests {
                 rate_limit: 10,
                 extra_headers: std::collections::HashMap::new(),
                 extra_params: std::collections::HashMap::new(),
+                custom_system_prompt: None,
+                custom_user_prompt: None,
             },
         ];
 
@@ -1066,6 +1097,8 @@ mod tests {
             rate_limit: 40,
             extra_headers: std::collections::HashMap::new(),
             extra_params: std::collections::HashMap::new(),
+            custom_system_prompt: None,
+            custom_user_prompt: None,
         }];
 
         // Validate should filter and set model from model_list
@@ -1098,6 +1131,8 @@ mod tests {
             rate_limit: 40,
             extra_headers: std::collections::HashMap::new(),
             extra_params: std::collections::HashMap::new(),
+            custom_system_prompt: None,
+            custom_user_prompt: None,
         }];
 
         // Validate should fail because provider has no valid API keys
@@ -1134,6 +1169,8 @@ mod tests {
             rate_limit: 40,
             extra_headers: std::collections::HashMap::new(),
             extra_params: std::collections::HashMap::new(),
+            custom_system_prompt: None,
+            custom_user_prompt: None,
         }];
 
         config.apply_env_vars();
@@ -1271,6 +1308,8 @@ mod tests {
             rate_limit: 10,
             extra_headers: std::collections::HashMap::new(),
             extra_params: std::collections::HashMap::new(),
+            custom_system_prompt: None,
+            custom_user_prompt: None,
         }];
 
         let result = config.validate();
@@ -1321,6 +1360,8 @@ mod tests {
             rate_limit: 10,
             extra_headers: std::collections::HashMap::new(),
             extra_params: std::collections::HashMap::new(),
+            custom_system_prompt: None,
+            custom_user_prompt: None,
         }];
 
         let result = config.validate();
@@ -1353,6 +1394,8 @@ mod tests {
             rate_limit: 10,
             extra_headers: std::collections::HashMap::new(),
             extra_params: std::collections::HashMap::new(),
+            custom_system_prompt: None,
+            custom_user_prompt: None,
         }];
 
         let result = config.validate();
@@ -1360,5 +1403,87 @@ mod tests {
         let error_msg = result.unwrap_err();
         assert!(error_msg.contains("No valid provider configuration found"));
         assert!(error_msg.contains("LLM: no valid providers configured"));
+    }
+
+    #[test]
+    fn test_custom_prompts_default() {
+        let config = LLMProviderConfig::default();
+        assert!(config.custom_system_prompt.is_none());
+        assert!(config.custom_user_prompt.is_none());
+    }
+
+    #[test]
+    fn test_custom_prompts_with_values() {
+        let config = LLMProviderConfig {
+            id: "test".to_string(),
+            name: "Test".to_string(),
+            base_url: "https://api.example.com".to_string(),
+            api_keys: vec!["key".to_string()],
+            model: "gpt-4".to_string(),
+            custom_system_prompt: Some("Custom system prompt".to_string()),
+            custom_user_prompt: Some(
+                "Translate from {source_lang} to {target_lang}: {text}".to_string(),
+            ),
+            ..Default::default()
+        };
+
+        assert_eq!(
+            config.custom_system_prompt,
+            Some("Custom system prompt".to_string())
+        );
+        assert_eq!(
+            config.custom_user_prompt,
+            Some("Translate from {source_lang} to {target_lang}: {text}".to_string())
+        );
+    }
+
+    #[test]
+    fn test_validate_custom_user_prompt_valid() {
+        let config = LLMProviderConfig {
+            id: "test".to_string(),
+            name: "Test".to_string(),
+            base_url: "https://api.example.com".to_string(),
+            api_keys: vec!["key".to_string()],
+            model: "gpt-4".to_string(),
+            custom_user_prompt: Some("Translate: {text}".to_string()),
+            ..Default::default()
+        };
+
+        let result = config.validate();
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_validate_custom_user_prompt_missing_placeholder() {
+        let config = LLMProviderConfig {
+            id: "test".to_string(),
+            name: "Test".to_string(),
+            base_url: "https://api.example.com".to_string(),
+            api_keys: vec!["key".to_string()],
+            model: "gpt-4".to_string(),
+            custom_user_prompt: Some("Translate from zh to en".to_string()),
+            ..Default::default()
+        };
+
+        let result = config.validate();
+        assert!(result.is_err());
+        let error_msg = result.unwrap_err();
+        assert!(error_msg.contains("Custom user prompt must contain placeholder: {text}"));
+    }
+
+    #[test]
+    fn test_validate_custom_user_prompt_none() {
+        let config = LLMProviderConfig {
+            id: "test".to_string(),
+            name: "Test".to_string(),
+            base_url: "https://api.example.com".to_string(),
+            api_keys: vec!["key".to_string()],
+            model: "gpt-4".to_string(),
+            custom_user_prompt: None,
+            ..Default::default()
+        };
+
+        let result = config.validate();
+        assert!(result.is_ok());
     }
 }
