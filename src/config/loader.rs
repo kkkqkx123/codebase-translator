@@ -98,15 +98,21 @@ impl ConfigLoader {
     }
 
     /// Load project configuration
+    ///
+    /// If no project config file is found, returns default configuration.
+    /// This allows the tool to work without a project-level config file,
+    /// using sensible defaults.
     pub fn load_project(&self) -> Result<ProjectConfig> {
         let path = self
             .project_config_path
             .clone()
             .or_else(|| Self::find_project_config(std::env::current_dir().ok()?.as_path()))
-            .or_else(|| Self::find_project_config_in_exe_dir())
-            .ok_or_else(|| {
-                TranslateError::Config("Could not find project config file".to_string())
-            })?;
+            .or_else(|| Self::find_project_config_in_exe_dir());
+
+        // If no config file found, use default configuration
+        let Some(path) = path else {
+            return Ok(ProjectConfig::default());
+        };
 
         if !path.exists() {
             return Ok(ProjectConfig::default());
@@ -175,12 +181,17 @@ impl ConfigLoader {
         Ok((global, project))
     }
 
-    /// Find project config by searching up the directory tree
+    /// Find project config by searching up the directory tree (limited to 2 levels)
     fn find_project_config(start_dir: &Path) -> Option<PathBuf> {
+        const MAX_SEARCH_DEPTH: usize = 2;
         let config_names = [".translator.toml"];
 
         let mut current = Some(start_dir);
+        let mut depth = 0;
         while let Some(dir) = current {
+            if depth > MAX_SEARCH_DEPTH {
+                break;
+            }
             for name in &config_names {
                 let path = dir.join(name);
                 if path.exists() {
@@ -188,6 +199,7 @@ impl ConfigLoader {
                 }
             }
             current = dir.parent();
+            depth += 1;
         }
 
         None
@@ -349,23 +361,27 @@ directory = ".translator"
     fn test_default_config() {
         let temp_dir = TempDir::new().expect("Failed to create temp directory");
         let original_dir = std::env::current_dir().expect("Failed to get current dir");
-        std::env::set_current_dir(temp_dir.path()).expect("Failed to set current dir");
-
+        
         // Create an empty .translator.toml file to avoid searching up the directory tree
         let config_path = temp_dir.path().join(".translator.toml");
         std::fs::write(&config_path, "").expect("Failed to create empty config file");
+
+        std::env::set_current_dir(temp_dir.path()).expect("Failed to set current dir");
 
         let loader = ConfigLoader::new();
         let config = loader
             .load_project()
             .expect("Failed to load project config");
 
-        // Restore original directory
-        std::env::set_current_dir(original_dir).expect("Failed to restore current dir");
+        // Restore original directory before temp_dir is dropped
+        std::env::set_current_dir(&original_dir).expect("Failed to restore current dir");
 
         assert_eq!(config.translate.target_lang, "en");
         assert!(!config.writer.dry_run);
         assert!(config.writer.backup);
+        
+        // Explicitly drop temp_dir after restoring directory
+        drop(temp_dir);
     }
 
     #[test]
@@ -526,5 +542,59 @@ output = "stderr"
         // The result depends on whether .translator.toml exists in the exe directory
         // We just verify the function doesn't panic
         let _ = result;
+    }
+
+    /// Test that no project config returns default configuration instead of error
+    #[test]
+    fn test_no_project_config_returns_default() {
+        let temp_dir = TempDir::new().expect("Failed to create temp directory");
+        let original_dir = std::env::current_dir().expect("Failed to get current dir");
+        std::env::set_current_dir(temp_dir.path()).expect("Failed to set current dir");
+
+        // Don't create any config file - should use defaults
+        let loader = ConfigLoader::new();
+        let config = loader
+            .load_project()
+            .expect("Should return default config instead of error");
+
+        // Restore original directory before temp_dir is dropped
+        std::env::set_current_dir(&original_dir).expect("Failed to restore current dir");
+
+        // Verify default values
+        assert_eq!(config.translate.target_lang, "en");
+        assert_eq!(config.translate.source_langs, vec!["auto"]);
+        assert!(!config.writer.dry_run);
+        assert!(config.writer.backup);
+        assert!(config.cache.enabled);
+        assert_eq!(config.cache.directory, ".translator");
+        
+        // Explicitly drop temp_dir after restoring directory
+        drop(temp_dir);
+    }
+
+    /// Test that project config search is limited to 2 levels
+    #[test]
+    fn test_project_config_search_depth_limit() {
+        // Create a directory structure: temp/a/b/c
+        // Place config in temp, search from c
+        // With depth limit 2, config should NOT be found (c -> b -> a, 2 levels up from c)
+        let temp_dir = TempDir::new().expect("Failed to create temp directory");
+
+        // Create nested directories
+        let level1 = temp_dir.path().join("level1");
+        let level2 = level1.join("level2");
+        let level3 = level2.join("level3");
+        std::fs::create_dir_all(&level3).expect("Failed to create nested dirs");
+
+        // Place config at temp root (3 levels above level3)
+        let config_path = temp_dir.path().join(".translator.toml");
+        std::fs::write(&config_path, "[translate]\ntarget_lang = \"zh\"")
+            .expect("Failed to write config");
+
+        // Search from level3 without changing current directory
+        let found = ConfigLoader::find_project_config(&level3);
+
+        // Config should NOT be found due to depth limit
+        assert_eq!(found, None, "Config should not be found beyond 2 levels");
     }
 }
