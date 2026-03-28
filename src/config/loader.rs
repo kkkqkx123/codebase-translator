@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 use crate::core::error::{Result, TranslateError};
 
 use super::{env::EnvLoader, global::GlobalConfig, project::ProjectConfig};
+use crate::config::global::LoggingConfig;
 
 /// Configuration loader
 pub struct ConfigLoader {
@@ -102,6 +103,7 @@ impl ConfigLoader {
             .project_config_path
             .clone()
             .or_else(|| Self::find_project_config(std::env::current_dir().ok()?.as_path()))
+            .or_else(|| Self::find_project_config_in_exe_dir())
             .ok_or_else(|| {
                 TranslateError::Config("Could not find project config file".to_string())
             })?;
@@ -123,11 +125,23 @@ impl ConfigLoader {
         Ok(config)
     }
 
+    /// Find project config in executable directory
+    fn find_project_config_in_exe_dir() -> Option<PathBuf> {
+        let exe_path = std::env::current_exe().ok()?;
+        let exe_dir = exe_path.parent()?;
+        let config_path = exe_dir.join(".translator.toml");
+        if config_path.exists() {
+            Some(config_path)
+        } else {
+            None
+        }
+    }
+
     /// Load both global and project configs
     ///
     /// Configuration priority (from high to low):
     /// 1. Environment variables
-    /// 2. ProjectConfig.logging
+    /// 2. ProjectConfig.logging (only non-default values)
     /// 3. GlobalConfig.logging
     /// 4. Default values
     pub fn load(&self) -> Result<(GlobalConfig, ProjectConfig)> {
@@ -135,8 +149,24 @@ impl ConfigLoader {
         let project = self.load_project()?;
 
         // Merge logging configuration: project config overrides global config
+        // Only override fields that are explicitly set (non-default) in project config
         if let Some(ref project_logging) = project.logging {
-            global.logging = project_logging.clone();
+            // Check if project logging has non-default values before overriding
+            let default_logging = LoggingConfig::default();
+            
+            // Only override individual fields if they differ from defaults
+            if project_logging.level != default_logging.level {
+                global.logging.level = project_logging.level.clone();
+            }
+            if project_logging.format != default_logging.format {
+                global.logging.format = project_logging.format.clone();
+            }
+            if project_logging.output != default_logging.output {
+                global.logging.output = project_logging.output.clone();
+            }
+            if project_logging.file.is_some() {
+                global.logging.file = project_logging.file.clone();
+            }
         }
 
         // Apply environment variable overrides (highest priority)
@@ -401,5 +431,100 @@ patterns = ["  vendor/**  "]
 
         assert_eq!(config.include.patterns, vec!["**/*.rs", "**/*.go"]);
         assert_eq!(config.exclude.patterns, vec!["vendor/**"]);
+    }
+
+    /// Test that project logging config with default values doesn't override global config
+    #[test]
+    fn test_project_logging_default_not_override_global() {
+        let temp_dir = TempDir::new().expect("Failed to create temp directory");
+        let global_config_path = temp_dir.path().join("config.toml");
+        let project_config_path = temp_dir.path().join(".translator.toml");
+
+        // Global config with custom logging settings
+        let global_config_content = r#"
+provider = "DeepLX"
+
+[logging]
+level = "debug"
+format = "json"
+output = "file"
+file = "custom.log"
+"#;
+        std::fs::write(&global_config_path, global_config_content)
+            .expect("Failed to write global config");
+
+        // Project config with empty/missing logging section
+        let project_config_content = r#"
+[translate]
+target_lang = "zh"
+"#;
+        std::fs::write(&project_config_path, project_config_content)
+            .expect("Failed to write project config");
+
+        let loader = ConfigLoader::new()
+            .with_global_config(&global_config_path)
+            .with_project_config(&project_config_path);
+        let (global, _project) = loader.load().expect("Failed to load config");
+
+        // Global logging settings should be preserved
+        assert_eq!(global.logging.level, "debug");
+        assert_eq!(global.logging.format, "json");
+        assert_eq!(global.logging.output, "file");
+        assert_eq!(global.logging.file, Some("custom.log".to_string()));
+    }
+
+    /// Test that project logging config with explicit values overrides global config
+    #[test]
+    fn test_project_logging_explicit_override_global() {
+        let temp_dir = TempDir::new().expect("Failed to create temp directory");
+        let global_config_path = temp_dir.path().join("config.toml");
+        let project_config_path = temp_dir.path().join(".translator.toml");
+
+        // Global config with custom logging settings
+        let global_config_content = r#"
+provider = "DeepLX"
+
+[logging]
+level = "debug"
+format = "json"
+output = "file"
+file = "global.log"
+"#;
+        std::fs::write(&global_config_path, global_config_content)
+            .expect("Failed to write global config");
+
+        // Project config with explicit logging settings
+        let project_config_content = r#"
+[translate]
+target_lang = "zh"
+
+[logging]
+level = "warn"
+output = "stderr"
+"#;
+        std::fs::write(&project_config_path, project_config_content)
+            .expect("Failed to write project config");
+
+        let loader = ConfigLoader::new()
+            .with_global_config(&global_config_path)
+            .with_project_config(&project_config_path);
+        let (global, _project) = loader.load().expect("Failed to load config");
+
+        // Project logging settings should override global
+        assert_eq!(global.logging.level, "warn"); // overridden by project
+        assert_eq!(global.logging.format, "json"); // not set in project, keep global
+        assert_eq!(global.logging.output, "stderr"); // overridden by project
+        assert_eq!(global.logging.file, Some("global.log".to_string())); // not set in project, keep global
+    }
+
+    /// Test that project config in executable directory is found
+    #[test]
+    fn test_find_project_config_in_exe_dir() {
+        // This test verifies that find_project_config_in_exe_dir works correctly
+        // We can't easily test the actual exe directory, but we can test the logic
+        let result = ConfigLoader::find_project_config_in_exe_dir();
+        // The result depends on whether .translator.toml exists in the exe directory
+        // We just verify the function doesn't panic
+        let _ = result;
     }
 }

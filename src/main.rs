@@ -25,8 +25,8 @@ struct Cli {
     global_config: Option<String>,
 
     /// Log level
-    #[arg(short, long, default_value = "info")]
-    log_level: String,
+    #[arg(short, long)]
+    log_level: Option<String>,
 
     /// Dry run mode
     #[arg(long)]
@@ -86,7 +86,10 @@ fn run() -> Result<()> {
 
     let (mut global_config, project_config) = loader.load()?;
 
-    global_config.logging.level = cli.log_level.clone();
+    // Only override log level if explicitly provided by user via command line
+    if let Some(log_level) = &cli.log_level {
+        global_config.logging.level = log_level.clone();
+    }
 
     match cli.command {
         Some(Commands::Translate(args)) => {
