@@ -105,33 +105,79 @@ impl CppQueries {
   (concatenated_string) @throw_string)
 "#
     }
+
+    /// Assert macro call query
+    /// Matches: assert(condition && "message"), assert(condition)
+    pub fn assert_calls() -> &'static str {
+        r#"
+(call_expression
+  function: (identifier) @assert_name
+  (#eq? @assert_name "assert")
+  arguments: (argument_list
+    (string_literal) @assert_string))
+"#
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tree_sitter::Query;
 
-    #[test]
-    fn test_comment_queries() {
-        assert!(!CppQueries::all_comments().is_empty());
+    fn validate_query_syntax(query_name: &str, query_str: &str) -> Result<(), String> {
+        let lang = tree_sitter_cpp::LANGUAGE;
+        match Query::new(&lang.into(), query_str) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(format!("Query '{}' syntax error: {:?}", query_name, e)),
+        }
     }
 
     #[test]
-    fn test_string_queries() {
-        assert!(!CppQueries::string_literals().is_empty());
-        assert!(!CppQueries::all_strings().is_empty());
+    fn test_all_comments_query_syntax_valid() {
+        let result = validate_query_syntax("all_comments", CppQueries::all_comments());
+        assert!(result.is_ok(), "All comments query syntax validation failed: {:?}", result.err());
     }
 
     #[test]
-    fn test_function_queries() {
-        assert!(!CppQueries::function_strings().is_empty());
+    fn test_doc_comments_query_syntax_valid() {
+        let result = validate_query_syntax("doc_comments", CppQueries::doc_comments());
+        assert!(result.is_ok(), "Doc comments query syntax validation failed: {:?}", result.err());
+    }
 
+    #[test]
+    fn test_string_literals_query_syntax_valid() {
+        let result = validate_query_syntax("string_literals", CppQueries::string_literals());
+        assert!(result.is_ok(), "String literals query syntax validation failed: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_all_strings_query_syntax_valid() {
+        let result = validate_query_syntax("all_strings", CppQueries::all_strings());
+        assert!(result.is_ok(), "All strings query syntax validation failed: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_function_strings_query_syntax_valid() {
+        let result = validate_query_syntax("function_strings", CppQueries::function_strings());
+        assert!(result.is_ok(), "Function strings query syntax validation failed: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_specific_functions_query_syntax_valid() {
         let specific = CppQueries::specific_functions(&["std::cout", "printf"]);
-        assert!(specific.contains("printf"));
+        let result = validate_query_syntax("specific_functions", &specific);
+        assert!(result.is_ok(), "Specific functions query syntax validation failed: {:?}", result.err());
     }
 
     #[test]
-    fn test_throw_queries() {
-        assert!(!CppQueries::throw_statements().is_empty());
+    fn test_throw_statements_query_syntax_valid() {
+        let result = validate_query_syntax("throw_statements", CppQueries::throw_statements());
+        assert!(result.is_ok(), "Throw statements query syntax validation failed: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_assert_calls_query_syntax_valid() {
+        let result = validate_query_syntax("assert_calls", CppQueries::assert_calls());
+        assert!(result.is_ok(), "Assert calls query syntax validation failed: {:?}", result.err());
     }
 }

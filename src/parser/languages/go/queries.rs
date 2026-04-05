@@ -14,9 +14,6 @@ impl GoQueries {
     /// Since tree-sitter query cannot reliably determine if a comment precedes a declaration,
     /// we return an empty query. All comments should be extracted via all_comments().
     pub fn doc_comments() -> &'static str {
-        // Go doc comments are syntactically identical to regular comments.
-        // They are identified by position (preceding a declaration) and convention.
-        // This requires AST-level analysis beyond simple queries.
         ""
     }
 
@@ -106,12 +103,30 @@ impl GoQueries {
         )
     }
 
+    /// Panic expression query
+    /// Matches: panic("message"), panic(fmt.Sprintf("format", args))
+    pub fn panic_expressions() -> &'static str {
+        r#"
+(call_expression
+  function: (identifier) @panic_name
+  (#eq? @panic_name "panic")
+  arguments: (argument_list
+    (interpreted_string_literal) @panic_string))
+
+(call_expression
+  function: (identifier) @panic_name
+  (#eq? @panic_name "panic")
+  arguments: (argument_list
+    (raw_string_literal) @panic_string))
+"#
+    }
+
     /// Error function call query (panic, fatal, etc.)
     pub fn error_functions() -> &'static str {
         r#"
 (call_expression
   function: (identifier) @func_name
-  (#match? @func_name "^(panic|fatal| Fatalf| Panicf)$")
+  (#match? @func_name "^(panic|fatal|Fatalf|Panicf)$")
   arguments: (argument_list
     (interpreted_string_literal) @error_string))
 
@@ -174,44 +189,80 @@ impl GoQueries {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tree_sitter::Query;
 
-    #[test]
-    fn test_comment_queries() {
-        assert!(!GoQueries::all_comments().is_empty());
-        // Go doc comments are syntactically identical to regular comments,
-        // so doc_comments() returns an empty query. All comments are extracted
-        // via all_comments() and treated as regular comments.
-        assert!(GoQueries::doc_comments().is_empty());
+    fn validate_query_syntax(query_name: &str, query_str: &str) -> Result<(), String> {
+        let lang = tree_sitter_go::LANGUAGE;
+        match Query::new(&lang.into(), query_str) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(format!("Query '{}' syntax error: {:?}", query_name, e)),
+        }
     }
 
     #[test]
-    fn test_string_queries() {
-        assert!(!GoQueries::interpreted_string_literals().is_empty());
-        assert!(!GoQueries::raw_string_literals().is_empty());
-        assert!(!GoQueries::all_strings().is_empty());
+    fn test_all_comments_query_syntax_valid() {
+        let result = validate_query_syntax("all_comments", GoQueries::all_comments());
+        assert!(result.is_ok(), "All comments query syntax validation failed: {:?}", result.err());
     }
 
     #[test]
-    fn test_function_queries() {
-        assert!(!GoQueries::function_call_strings().is_empty());
+    fn test_doc_comments_query_syntax_valid() {
+        let result = validate_query_syntax("doc_comments", GoQueries::doc_comments());
+        assert!(result.is_ok(), "Doc comments query syntax validation failed: {:?}", result.err());
+    }
 
+    #[test]
+    fn test_interpreted_string_literals_query_syntax_valid() {
+        let result = validate_query_syntax("interpreted_string_literals", GoQueries::interpreted_string_literals());
+        assert!(result.is_ok(), "Interpreted string literals query syntax validation failed: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_raw_string_literals_query_syntax_valid() {
+        let result = validate_query_syntax("raw_string_literals", GoQueries::raw_string_literals());
+        assert!(result.is_ok(), "Raw string literals query syntax validation failed: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_all_strings_query_syntax_valid() {
+        let result = validate_query_syntax("all_strings", GoQueries::all_strings());
+        assert!(result.is_ok(), "All strings query syntax validation failed: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_function_call_strings_query_syntax_valid() {
+        let result = validate_query_syntax("function_call_strings", GoQueries::function_call_strings());
+        assert!(result.is_ok(), "Function call strings query syntax validation failed: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_specific_functions_query_syntax_valid() {
         let specific = GoQueries::specific_functions(&["fmt.Printf", "log.Println"]);
-        assert!(specific.contains("fmt.Printf"));
-        assert!(specific.contains("log.Println"));
+        let result = validate_query_syntax("specific_functions", &specific);
+        assert!(result.is_ok(), "Specific functions query syntax validation failed: {:?}", result.err());
     }
 
     #[test]
-    fn test_error_function_queries() {
-        assert!(!GoQueries::error_functions().is_empty());
+    fn test_panic_expressions_query_syntax_valid() {
+        let result = validate_query_syntax("panic_expressions", GoQueries::panic_expressions());
+        assert!(result.is_ok(), "Panic expressions query syntax validation failed: {:?}", result.err());
     }
 
     #[test]
-    fn test_format_function_queries() {
-        assert!(!GoQueries::format_functions().is_empty());
+    fn test_error_functions_query_syntax_valid() {
+        let result = validate_query_syntax("error_functions", GoQueries::error_functions());
+        assert!(result.is_ok(), "Error functions query syntax validation failed: {:?}", result.err());
     }
 
     #[test]
-    fn test_log_function_queries() {
-        assert!(!GoQueries::log_functions().is_empty());
+    fn test_format_functions_query_syntax_valid() {
+        let result = validate_query_syntax("format_functions", GoQueries::format_functions());
+        assert!(result.is_ok(), "Format functions query syntax validation failed: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_log_functions_query_syntax_valid() {
+        let result = validate_query_syntax("log_functions", GoQueries::log_functions());
+        assert!(result.is_ok(), "Log functions query syntax validation failed: {:?}", result.err());
     }
 }

@@ -88,6 +88,29 @@ impl PythonQueries {
         )
     }
 
+    /// Raise statement query
+    /// Matches: raise Exception("message"), raise ValueError("message")
+    pub fn raise_statements() -> &'static str {
+        r#"
+(raise_statement
+  (call
+    arguments: (argument_list
+      (string) @raise_string)))
+
+(raise_statement
+  (string) @raise_string)
+"#
+    }
+
+    /// Assertion statement query
+    /// Matches: assert condition, "message"
+    pub fn assert_statements() -> &'static str {
+        r#"
+(assert_statement
+  (string) @assert_string)
+"#
+    }
+
     /// Error function call query (raise, assert, etc.)
     pub fn error_functions() -> &'static str {
         r#"
@@ -151,45 +174,86 @@ impl PythonQueries {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tree_sitter::Query;
 
-    #[test]
-    fn test_comment_queries() {
-        assert!(!PythonQueries::all_comments().is_empty());
+    fn validate_query_syntax(query_name: &str, query_str: &str) -> Result<(), String> {
+        let lang = tree_sitter_python::LANGUAGE;
+        match Query::new(&lang.into(), query_str) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(format!("Query '{}' syntax error: {:?}", query_name, e)),
+        }
     }
 
     #[test]
-    fn test_docstring_queries() {
-        assert!(!PythonQueries::docstrings().is_empty());
+    fn test_all_comments_query_syntax_valid() {
+        let result = validate_query_syntax("all_comments", PythonQueries::all_comments());
+        assert!(result.is_ok(), "All comments query syntax validation failed: {:?}", result.err());
     }
 
     #[test]
-    fn test_string_queries() {
-        assert!(!PythonQueries::string_literals().is_empty());
-        assert!(!PythonQueries::f_strings().is_empty());
-        assert!(!PythonQueries::all_strings().is_empty());
+    fn test_docstrings_query_syntax_valid() {
+        let result = validate_query_syntax("docstrings", PythonQueries::docstrings());
+        assert!(result.is_ok(), "Docstrings query syntax validation failed: {:?}", result.err());
     }
 
     #[test]
-    fn test_function_queries() {
-        assert!(!PythonQueries::function_call_strings().is_empty());
+    fn test_string_literals_query_syntax_valid() {
+        let result = validate_query_syntax("string_literals", PythonQueries::string_literals());
+        assert!(result.is_ok(), "String literals query syntax validation failed: {:?}", result.err());
+    }
 
+    #[test]
+    fn test_f_strings_query_syntax_valid() {
+        let result = validate_query_syntax("f_strings", PythonQueries::f_strings());
+        assert!(result.is_ok(), "F-strings query syntax validation failed: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_all_strings_query_syntax_valid() {
+        let result = validate_query_syntax("all_strings", PythonQueries::all_strings());
+        assert!(result.is_ok(), "All strings query syntax validation failed: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_function_call_strings_query_syntax_valid() {
+        let result = validate_query_syntax("function_call_strings", PythonQueries::function_call_strings());
+        assert!(result.is_ok(), "Function call strings query syntax validation failed: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_specific_functions_query_syntax_valid() {
         let specific = PythonQueries::specific_functions(&["print", "logging.info"]);
-        assert!(specific.contains("print"));
-        assert!(specific.contains("logging.info"));
+        let result = validate_query_syntax("specific_functions", &specific);
+        assert!(result.is_ok(), "Specific functions query syntax validation failed: {:?}", result.err());
     }
 
     #[test]
-    fn test_error_function_queries() {
-        assert!(!PythonQueries::error_functions().is_empty());
+    fn test_raise_statements_query_syntax_valid() {
+        let result = validate_query_syntax("raise_statements", PythonQueries::raise_statements());
+        assert!(result.is_ok(), "Raise statements query syntax validation failed: {:?}", result.err());
     }
 
     #[test]
-    fn test_format_function_queries() {
-        assert!(!PythonQueries::format_functions().is_empty());
+    fn test_assert_statements_query_syntax_valid() {
+        let result = validate_query_syntax("assert_statements", PythonQueries::assert_statements());
+        assert!(result.is_ok(), "Assert statements query syntax validation failed: {:?}", result.err());
     }
 
     #[test]
-    fn test_log_function_queries() {
-        assert!(!PythonQueries::log_functions().is_empty());
+    fn test_error_functions_query_syntax_valid() {
+        let result = validate_query_syntax("error_functions", PythonQueries::error_functions());
+        assert!(result.is_ok(), "Error functions query syntax validation failed: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_format_functions_query_syntax_valid() {
+        let result = validate_query_syntax("format_functions", PythonQueries::format_functions());
+        assert!(result.is_ok(), "Format functions query syntax validation failed: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_log_functions_query_syntax_valid() {
+        let result = validate_query_syntax("log_functions", PythonQueries::log_functions());
+        assert!(result.is_ok(), "Log functions query syntax validation failed: {:?}", result.err());
     }
 }

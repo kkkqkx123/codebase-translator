@@ -234,17 +234,48 @@ impl<'a> FileProcessor<'a> {
             return Ok(result);
         }
 
+        // Filter out empty content to avoid sending empty strings to LLM
         let texts: Vec<String> = units_to_translate
             .iter()
+            .filter(|u| !u.content.trim().is_empty())
             .map(|u| u.content.clone())
             .collect();
 
+        // Update count after filtering empty content
+        let num_non_empty = texts.len();
+        if num_non_empty < num_to_translate {
+            let empty_count = num_to_translate - num_non_empty;
+            warn!(
+                file = %file_path.display(),
+                empty_count = empty_count,
+                "Filtered out translation units with empty content"
+            );
+        }
+
         debug!(units_count = texts.len(), "Translating units");
 
-        if num_to_translate > 0 {
+        // Skip translation if all content is empty after filtering
+        if num_non_empty == 0 {
+            warn!(
+                file = %file_path.display(),
+                "All translation units have empty content, skipping translation"
+            );
+            result.skipped_units = units.len();
+            if let Some(ref reporter) = self.reporter {
+                reporter.report_skipped(file_path);
+            }
+            // Save cache even for files with empty content
+            if let Err(e) = save_cache() {
+                warn!(error = %e, "Failed to save cache entry");
+            }
+            return Ok(result);
+        }
+
+        if num_non_empty > 0 {
             info!(
                 file = %file_path.display(),
-                units_to_translate = num_to_translate,
+                units_to_translate = num_non_empty,
+                empty_filtered = num_to_translate - num_non_empty,
                 "Translating units"
             );
         }
@@ -277,9 +308,10 @@ impl<'a> FileProcessor<'a> {
             "Translation completed"
         );
 
+        // Match translation results to units, skipping empty content
         let mut translate_idx = 0;
         for unit in units.iter_mut() {
-            if unit.should_translate {
+            if unit.should_translate && !unit.content.trim().is_empty() {
                 if let Some(translated) = batch_result
                     .results
                     .get(translate_idx)
@@ -291,7 +323,8 @@ impl<'a> FileProcessor<'a> {
             }
         }
 
-        result.translated_units = num_to_translate;
+        // Update translated count to reflect actual non-empty translations
+        result.translated_units = num_non_empty;
 
         // Check if any units were actually translated (content changed)
         let has_translations = units.iter().any(|u| {

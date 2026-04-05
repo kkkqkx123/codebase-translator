@@ -120,6 +120,28 @@ impl CSharpQueries {
 "#
     }
 
+    /// Assert statement query
+    /// Matches: Debug.Assert(condition, "message"), Assert.IsTrue(condition, "message")
+    pub fn assert_calls() -> &'static str {
+        r#"
+(invocation_expression
+  function: (member_access_expression
+    name: (identifier) @assert_method
+    (#match? @assert_method "^(Assert|AssertTrue|AssertFalse|Fail)$"))
+  arguments: (argument_list
+    (argument
+      (string_literal) @assert_string)))
+
+(invocation_expression
+  function: (member_access_expression
+    name: (identifier) @assert_method
+    (#match? @assert_method "^(Assert|AssertTrue|AssertFalse|Fail)$"))
+  arguments: (argument_list
+    (argument
+      (verbatim_string_literal) @assert_string)))
+"#
+    }
+
     /// Attribute query for documentation
     pub fn doc_attributes() -> &'static str {
         r#"
@@ -143,34 +165,62 @@ impl CSharpQueries {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tree_sitter::Query;
 
-    #[test]
-    fn test_comment_queries() {
-        assert!(!CSharpQueries::all_comments().is_empty());
+    fn validate_query_syntax(query_name: &str, query_str: &str) -> Result<(), String> {
+        let lang = tree_sitter_c_sharp::LANGUAGE;
+        match Query::new(&lang.into(), query_str) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(format!("Query '{}' syntax error: {:?}", query_name, e)),
+        }
     }
 
     #[test]
-    fn test_string_queries() {
-        assert!(!CSharpQueries::string_literals().is_empty());
-        assert!(!CSharpQueries::all_strings().is_empty());
+    fn test_all_comments_query_syntax_valid() {
+        let result = validate_query_syntax("all_comments", CSharpQueries::all_comments());
+        assert!(result.is_ok(), "All comments query syntax validation failed: {:?}", result.err());
     }
 
     #[test]
-    fn test_method_queries() {
-        assert!(!CSharpQueries::method_strings().is_empty());
+    fn test_string_literals_query_syntax_valid() {
+        let result = validate_query_syntax("string_literals", CSharpQueries::string_literals());
+        assert!(result.is_ok(), "String literals query syntax validation failed: {:?}", result.err());
+    }
 
+    #[test]
+    fn test_all_strings_query_syntax_valid() {
+        let result = validate_query_syntax("all_strings", CSharpQueries::all_strings());
+        assert!(result.is_ok(), "All strings query syntax validation failed: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_method_strings_query_syntax_valid() {
+        let result = validate_query_syntax("method_strings", CSharpQueries::method_strings());
+        assert!(result.is_ok(), "Method strings query syntax validation failed: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_specific_methods_query_syntax_valid() {
         let specific = CSharpQueries::specific_methods(&["Console.WriteLine", "Debug.Log"]);
-        assert!(specific.contains("Console.WriteLine"));
-        assert!(specific.contains("Debug.Log"));
+        let result = validate_query_syntax("specific_methods", &specific);
+        assert!(result.is_ok(), "Specific methods query syntax validation failed: {:?}", result.err());
     }
 
     #[test]
-    fn test_throw_queries() {
-        assert!(!CSharpQueries::throw_statements().is_empty());
+    fn test_throw_statements_query_syntax_valid() {
+        let result = validate_query_syntax("throw_statements", CSharpQueries::throw_statements());
+        assert!(result.is_ok(), "Throw statements query syntax validation failed: {:?}", result.err());
     }
 
     #[test]
-    fn test_attribute_queries() {
-        assert!(!CSharpQueries::doc_attributes().is_empty());
+    fn test_assert_calls_query_syntax_valid() {
+        let result = validate_query_syntax("assert_calls", CSharpQueries::assert_calls());
+        assert!(result.is_ok(), "Assert calls query syntax validation failed: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_doc_attributes_query_syntax_valid() {
+        let result = validate_query_syntax("doc_attributes", CSharpQueries::doc_attributes());
+        assert!(result.is_ok(), "Doc attributes query syntax validation failed: {:?}", result.err());
     }
 }

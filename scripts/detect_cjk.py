@@ -65,12 +65,43 @@ def is_cjk_char(char: str) -> bool:
     return False
 
 
-def find_cjk_in_file(file_path: Path) -> List[Tuple[int, str, List[str]]]:
+def is_code_file(file_path: Path, extensions: List[str] = None) -> bool:
+    """
+    判断文件是否为代码文件。
+    
+    Args:
+        file_path: 文件路径
+        extensions: 允许的文件扩展名列表，None 表示使用默认列表
+    
+    Returns:
+        bool: 是否为代码文件
+    """
+    default_code_extensions = {
+        '.rs', '.py', '.js', '.ts', '.java', '.cpp', '.c', '.h', '.hpp',
+        '.go', '.rb', '.php', '.swift', '.kt', '.scala', '.sh', '.bash',
+        '.sql', '.css', '.html', '.xml', '.json', '.yaml', '.yml', '.toml',
+        '.md', '.txt', '.graphql', '.gql'
+    }
+    
+    use_extensions = extensions if extensions is not None else default_code_extensions
+    
+    return file_path.suffix.lower() in use_extensions
+
+
+def find_cjk_in_file(file_path: Path, extensions: List[str] = None) -> List[Tuple[int, str, List[str]]]:
     """
     在文件中查找所有包含 CJK 字符的行。
     
-    返回: [(行号，行内容，[CJK 字符列表]), ...]
+    Args:
+        file_path: 文件路径
+        extensions: 要扫描的文件扩展名列表，None 表示扫描所有代码文件
+    
+    Returns:
+        [(行号，行内容，[CJK 字符列表]), ...]
     """
+    if not is_code_file(file_path, extensions):
+        return []
+    
     results = []
     
     try:
@@ -109,11 +140,18 @@ def find_cjk_in_file(file_path: Path) -> List[Tuple[int, str, List[str]]]:
     return results
 
 
-def find_cjk_in_directory(directory_path: Path, recursive: bool = False) -> Dict[Path, List[Tuple[int, str, List[str]]]]:
+def find_cjk_in_directory(directory_path: Path, recursive: bool = False, 
+                          extensions: List[str] = None) -> Dict[Path, List[Tuple[int, str, List[str]]]]:
     """
     在目录中查找所有包含 CJK 字符的文件。
     
-    返回: {文件路径: [(行号，行内容，[CJK 字符列表]), ...], ...}
+    Args:
+        directory_path: 目录路径
+        recursive: 是否递归扫描
+        extensions: 要扫描的文件扩展名列表，None 表示扫描所有代码文件
+    
+    Returns:
+        {文件路径: [(行号，行内容，[CJK 字符列表]), ...], ...}
     """
     results = {}
     
@@ -125,7 +163,7 @@ def find_cjk_in_directory(directory_path: Path, recursive: bool = False) -> Dict
         
         for file_path in directory_path.glob(file_pattern):
             if file_path.is_file():
-                file_results = find_cjk_in_file(file_path)
+                file_results = find_cjk_in_file(file_path, extensions)
                 if file_results:
                     results[file_path] = file_results
     
@@ -138,15 +176,28 @@ def find_cjk_in_directory(directory_path: Path, recursive: bool = False) -> Dict
 
 
 def generate_report(file_path: Path, results: List[Tuple[int, str, List[str]]], 
-                    output_path: Path = None, is_directory: bool = False) -> str:
+                    output_path: Path = None, is_directory: bool = False,
+                    extensions: List[str] = None) -> str:
     """
     生成 CJK 字符检测报告。
+    
+    Args:
+        file_path: 检测的文件或目录路径
+        results: 检测结果
+        output_path: 输出路径
+        is_directory: 是否为目录
+        extensions: 扫描的文件扩展名
+    
+    Returns:
+        报告字符串
     """
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
     if is_directory:
         total_files = len(results)
         total_lines = sum(len(file_results) for file_results in results.values())
+        
+        ext_filter = ', '.join(sorted(extensions)) if extensions else 'all code files'
         
         report_lines = [
             "=" * 80,
@@ -155,6 +206,7 @@ def generate_report(file_path: Path, results: List[Tuple[int, str, List[str]]],
             "",
             f"检测目录：{file_path.absolute()}",
             f"检测时间：{timestamp}",
+            f"扫描的文件类型：{ext_filter}",
             f"包含 CJK 字符的文件数：{total_files}",
             f"包含 CJK 字符的总行数：{total_lines}",
             "",
@@ -253,6 +305,13 @@ def main():
         help="递归扫描目录（仅在路径为目录时有效）"
     )
     
+    parser.add_argument(
+        "--extensions", "-e",
+        type=str,
+        default=None,
+        help="要扫描的文件扩展名列表，逗号分隔（例如：'.rs,.py,.js'），默认扫描所有代码文件"
+    )
+    
     args = parser.parse_args()
     
     if not args.path.exists():
@@ -261,28 +320,32 @@ def main():
     
     is_directory = args.path.is_dir()
     
+    extensions = None
+    if args.extensions:
+        extensions = [ext.strip() for ext in args.extensions.split(',')]
+    
     if is_directory:
         # 扫描目录
-        results = find_cjk_in_directory(args.path, args.recursive)
+        results = find_cjk_in_directory(args.path, args.recursive, extensions)
         
         # 生成报告
         if args.output:
-            generate_report(args.path, results, args.output, is_directory=True)
+            generate_report(args.path, results, args.output, is_directory=True, extensions=extensions)
         else:
-            report = generate_report(args.path, results, is_directory=True)
+            report = generate_report(args.path, results, is_directory=True, extensions=extensions)
             print(report)
         
         # 返回状态码
         sys.exit(0 if not results else 1)
     else:
         # 扫描单个文件
-        results = find_cjk_in_file(args.path)
+        results = find_cjk_in_file(args.path, extensions)
         
         # 生成报告
         if args.output:
-            generate_report(args.path, results, args.output, is_directory=False)
+            generate_report(args.path, results, args.output, is_directory=False, extensions=extensions)
         else:
-            report = generate_report(args.path, results)
+            report = generate_report(args.path, results, extensions=extensions)
             print(report)
         
         # 返回状态码

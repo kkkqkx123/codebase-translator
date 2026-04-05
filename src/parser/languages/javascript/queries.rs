@@ -98,41 +98,136 @@ impl JavaScriptQueries {
     . (string) @console_string))
 "#
     }
+
+    /// Throw statement query for JavaScript
+    /// Matches: throw new Error("message"), throw "message", throw new CustomError("message")
+    pub fn throw_statements() -> &'static str {
+        r#"
+(throw_statement
+  (string) @throw_string)
+
+(throw_statement
+  (new_expression
+    constructor: (identifier) @error_class
+    arguments: (arguments
+      (string) @throw_string)))
+
+(throw_statement
+  (new_expression
+    constructor: (member_expression
+      property: (property_identifier) @error_class)
+    arguments: (arguments
+      (string) @throw_string)))
+"#
+    }
+
+    /// Assertion expression query
+    /// Matches: assert(...), expect(...).toThrow(...), console.assert(...)
+    pub fn assertion_expressions() -> &'static str {
+        r#"
+(call_expression
+  function: (identifier) @assert_func
+  (#match? @assert_func "^(assert|assertStrictEquals|assertEquals|assertThrows|rejects|throws)$")
+  arguments: (arguments
+    (string) @assert_string))
+
+(call_expression
+  function: (member_expression
+    object: (identifier) @assert_obj
+    (#match? @assert_obj "^(assert|console|expect|chai)$")
+    property: (property_identifier) @assert_method
+    (#match? @assert_method "^(assert|fail|throws|rejects|toThrow|toThrowError)$"))
+  arguments: (arguments
+    (string) @assert_string))
+
+(call_expression
+  function: (member_expression
+    object: (call_expression) @expect_call
+    property: (property_identifier) @expect_method
+    (#match? @expect_method "^(toThrow|toThrowError|rejects)$"))
+  arguments: (arguments
+    (string) @assert_string))
+"#
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tree_sitter::Query;
 
-    #[test]
-    fn test_comment_queries() {
-        assert!(!JavaScriptQueries::comments().is_empty());
-        assert!(!JavaScriptQueries::all_comments().is_empty());
+    fn validate_query_syntax(query_name: &str, query_str: &str) -> Result<(), String> {
+        let lang = tree_sitter_javascript::LANGUAGE;
+        match Query::new(&lang.into(), query_str) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(format!("Query '{}' syntax error: {:?}", query_name, e)),
+        }
     }
 
     #[test]
-    fn test_jsdoc_queries() {
-        let jsdoc_query = JavaScriptQueries::jsdoc_comments();
-        assert!(jsdoc_query.contains("#match?"));
-        assert!(jsdoc_query.contains("comment"));
-        assert!(jsdoc_query.contains("docstring"));
+    fn test_comments_query_syntax_valid() {
+        let result = validate_query_syntax("comments", JavaScriptQueries::comments());
+        assert!(result.is_ok(), "Comments query syntax validation failed: {:?}", result.err());
     }
 
     #[test]
-    fn test_string_queries() {
-        assert!(!JavaScriptQueries::string_literals().is_empty());
-        assert!(!JavaScriptQueries::template_strings().is_empty());
-        assert!(!JavaScriptQueries::all_strings().is_empty());
+    fn test_all_comments_query_syntax_valid() {
+        let result = validate_query_syntax("all_comments", JavaScriptQueries::all_comments());
+        assert!(result.is_ok(), "All comments query syntax validation failed: {:?}", result.err());
     }
 
     #[test]
-    fn test_call_queries() {
-        assert!(!JavaScriptQueries::call_strings().is_empty());
-        assert!(!JavaScriptQueries::console_calls().is_empty());
+    fn test_jsdoc_comments_query_syntax_valid() {
+        let result = validate_query_syntax("jsdoc_comments", JavaScriptQueries::jsdoc_comments());
+        assert!(result.is_ok(), "JSDoc comments query syntax validation failed: {:?}", result.err());
+    }
 
+    #[test]
+    fn test_string_literals_query_syntax_valid() {
+        let result = validate_query_syntax("string_literals", JavaScriptQueries::string_literals());
+        assert!(result.is_ok(), "String literals query syntax validation failed: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_template_strings_query_syntax_valid() {
+        let result = validate_query_syntax("template_strings", JavaScriptQueries::template_strings());
+        assert!(result.is_ok(), "Template strings query syntax validation failed: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_all_strings_query_syntax_valid() {
+        let result = validate_query_syntax("all_strings", JavaScriptQueries::all_strings());
+        assert!(result.is_ok(), "All strings query syntax validation failed: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_call_strings_query_syntax_valid() {
+        let result = validate_query_syntax("call_strings", JavaScriptQueries::call_strings());
+        assert!(result.is_ok(), "Call strings query syntax validation failed: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_specific_calls_query_syntax_valid() {
         let specific = JavaScriptQueries::specific_calls(&["log", "error", "warn"]);
-        assert!(specific.contains("log"));
-        assert!(specific.contains("error"));
-        assert!(specific.contains("warn"));
+        let result = validate_query_syntax("specific_calls", &specific);
+        assert!(result.is_ok(), "Specific calls query syntax validation failed: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_console_calls_query_syntax_valid() {
+        let result = validate_query_syntax("console_calls", JavaScriptQueries::console_calls());
+        assert!(result.is_ok(), "Console calls query syntax validation failed: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_throw_statements_query_syntax_valid() {
+        let result = validate_query_syntax("throw_statements", JavaScriptQueries::throw_statements());
+        assert!(result.is_ok(), "Throw statements query syntax validation failed: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_assertion_expressions_query_syntax_valid() {
+        let result = validate_query_syntax("assertion_expressions", JavaScriptQueries::assertion_expressions());
+        assert!(result.is_ok(), "Assertion expressions query syntax validation failed: {:?}", result.err());
     }
 }
