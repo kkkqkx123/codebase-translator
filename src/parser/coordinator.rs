@@ -83,6 +83,7 @@ impl ParserCoordinator {
             variable_strings: project_config.extraction.string_literals.categories.variables,
             property_strings: project_config.extraction.string_literals.categories.properties,
             log_messages: true,
+            test_descriptions: true,
         };
         let filter = Arc::new(from_project_config(
             &project_config.filter,
@@ -113,6 +114,7 @@ impl ParserCoordinator {
             variable_strings: project_config.extraction.string_literals.categories.variables,
             property_strings: project_config.extraction.string_literals.categories.properties,
             log_messages: true,
+            test_descriptions: true,
         };
         let filter = Arc::new(from_project_config_with_translator(
             &project_config.filter,

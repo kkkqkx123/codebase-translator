@@ -311,6 +311,7 @@ impl RustParser {
                             Some(FunctionCategory::Format) => StrategyNodeType::FormatString,
                             Some(FunctionCategory::Log) => StrategyNodeType::LogMessage,
                             Some(FunctionCategory::Debug) => StrategyNodeType::LogMessage,
+                            Some(FunctionCategory::Test) => StrategyNodeType::TestDescription,
                             None => continue, // Skip unknown macros
                         };
 

@@ -161,6 +161,8 @@ pub enum NodeType {
     LogMessage,
     /// String literal
     StringLiteral,
+    /// Test description (it, describe, test, etc.)
+    TestDescription,
 }
 
 impl NodeType {
@@ -173,6 +175,7 @@ impl NodeType {
             NodeType::LogMessage => 4,
             NodeType::FormatString => 5,
             NodeType::StringLiteral => 6,
+            NodeType::TestDescription => 7,
         }
     }
 }
@@ -186,6 +189,7 @@ impl std::fmt::Display for NodeType {
             NodeType::FormatString => write!(f, "format_string"),
             NodeType::LogMessage => write!(f, "log_message"),
             NodeType::StringLiteral => write!(f, "string_literal"),
+            NodeType::TestDescription => write!(f, "test_description"),
         }
     }
 }

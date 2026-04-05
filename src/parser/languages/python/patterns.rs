@@ -69,6 +69,51 @@ impl PythonPatterns {
             "log.critical".to_string(),
         ]);
 
+        // Test functions (pytest, unittest)
+        patterns.test_functions.extend(vec![
+            "pytest.mark.parametrize".to_string(),
+            "pytest.skip".to_string(),
+            "pytest.xfail".to_string(),
+            "pytest.mark.skip".to_string(),
+            "pytest.mark.xfail".to_string(),
+            "unittest.skip".to_string(),
+            "unittest.skipIf".to_string(),
+            "unittest.skipUnless".to_string(),
+            "unittest.expectedFailure".to_string(),
+            "self.assertEqual".to_string(),
+            "self.assertNotEqual".to_string(),
+            "self.assertTrue".to_string(),
+            "self.assertFalse".to_string(),
+            "self.assertIs".to_string(),
+            "self.assertIsNot".to_string(),
+            "self.assertIsNone".to_string(),
+            "self.assertIsNotNone".to_string(),
+            "self.assertIn".to_string(),
+            "self.assertNotIn".to_string(),
+            "self.assertIsInstance".to_string(),
+            "self.assertNotIsInstance".to_string(),
+            "self.assertGreater".to_string(),
+            "self.assertGreaterEqual".to_string(),
+            "self.assertLess".to_string(),
+            "self.assertLessEqual".to_string(),
+            "self.assertRegex".to_string(),
+            "self.assertNotRegex".to_string(),
+            "self.assertCountEqual".to_string(),
+            "self.assertMultiLineEqual".to_string(),
+            "self.assertSequenceEqual".to_string(),
+            "self.assertListEqual".to_string(),
+            "self.assertTupleEqual".to_string(),
+            "self.assertSetEqual".to_string(),
+            "self.assertDictEqual".to_string(),
+            "self.assertAlmostEqual".to_string(),
+            "self.assertNotAlmostEqual".to_string(),
+            "self.assertRaises".to_string(),
+            "self.assertRaisesRegex".to_string(),
+            "self.assertWarns".to_string(),
+            "self.assertWarnsRegex".to_string(),
+            "self.fail".to_string(),
+        ]);
+
         patterns
     }
 
@@ -90,6 +135,11 @@ impl PythonPatterns {
     /// Check if function is a log function
     pub fn is_log_function(&self, func_name: &str) -> bool {
         self.patterns.is_log_function(func_name)
+    }
+
+    /// Check if function is a test function
+    pub fn is_test_function(&self, func_name: &str) -> bool {
+        self.patterns.is_test_function(func_name)
     }
 
     /// Get all error functions
@@ -144,6 +194,53 @@ impl PythonPatterns {
             "log.warning",
             "log.error",
             "log.critical",
+        ]
+    }
+
+    /// Get all test functions
+    pub fn test_functions() -> &'static [&'static str] {
+        &[
+            "pytest.mark.parametrize",
+            "pytest.skip",
+            "pytest.xfail",
+            "pytest.mark.skip",
+            "pytest.mark.xfail",
+            "unittest.skip",
+            "unittest.skipIf",
+            "unittest.skipUnless",
+            "unittest.expectedFailure",
+            "self.assertEqual",
+            "self.assertNotEqual",
+            "self.assertTrue",
+            "self.assertFalse",
+            "self.assertIs",
+            "self.assertIsNot",
+            "self.assertIsNone",
+            "self.assertIsNotNone",
+            "self.assertIn",
+            "self.assertNotIn",
+            "self.assertIsInstance",
+            "self.assertNotIsInstance",
+            "self.assertGreater",
+            "self.assertGreaterEqual",
+            "self.assertLess",
+            "self.assertLessEqual",
+            "self.assertRegex",
+            "self.assertNotRegex",
+            "self.assertCountEqual",
+            "self.assertMultiLineEqual",
+            "self.assertSequenceEqual",
+            "self.assertListEqual",
+            "self.assertTupleEqual",
+            "self.assertSetEqual",
+            "self.assertDictEqual",
+            "self.assertAlmostEqual",
+            "self.assertNotAlmostEqual",
+            "self.assertRaises",
+            "self.assertRaisesRegex",
+            "self.assertWarns",
+            "self.assertWarnsRegex",
+            "self.fail",
         ]
     }
 

@@ -199,6 +199,43 @@ impl TypeScriptQueries {
       value: (template_string) @export_var_template)))
 "#
     }
+
+    /// Test description query
+    /// Matches: it("should work", fn), describe("module", fn), test("case", fn)
+    /// Supports Jest, Mocha, Jasmine, Vitest testing frameworks
+    pub fn test_descriptions() -> &'static str {
+        r#"
+(call_expression
+  function: (identifier) @test_func
+  (#match? @test_func "^(it|describe|test|specify|suite|context|fdescribe|fit|fspecify|xdescribe|xit|xspecify)$")
+  arguments: (arguments
+    (string) @test_description))
+
+(call_expression
+  function: (identifier) @test_func
+  (#match? @test_func "^(it|describe|test|specify|suite|context|fdescribe|fit|fspecify|xdescribe|xit|xspecify)$")
+  arguments: (arguments
+    (template_string) @test_description))
+
+(call_expression
+  function: (member_expression
+    object: (identifier) @test_obj
+    (#match? @test_obj "^(it|describe|test|suite|context)$")
+    property: (property_identifier) @test_method
+    (#match? @test_method "^(only|skip|todo|each|concurrent)$"))
+  arguments: (arguments
+    (string) @test_description))
+
+(call_expression
+  function: (member_expression
+    object: (identifier) @test_obj
+    (#match? @test_obj "^(it|describe|test|suite|context)$")
+    property: (property_identifier) @test_method
+    (#match? @test_method "^(only|skip|todo|each|concurrent)$"))
+  arguments: (arguments
+    (template_string) @test_description))
+"#
+    }
 }
 
 #[cfg(test)]
@@ -297,5 +334,11 @@ mod tests {
     fn test_export_variable_assignments_query_syntax_valid() {
         let result = validate_query_syntax("export_variable_assignments", TypeScriptQueries::export_variable_assignments());
         assert!(result.is_ok(), "Export variable assignments query syntax validation failed: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_test_descriptions_query_syntax_valid() {
+        let result = validate_query_syntax("test_descriptions", TypeScriptQueries::test_descriptions());
+        assert!(result.is_ok(), "Test descriptions query syntax validation failed: {:?}", result.err());
     }
 }

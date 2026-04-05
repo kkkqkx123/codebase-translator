@@ -61,6 +61,16 @@ impl RustPatterns {
         // Debug macros
         patterns.debug_functions.push("dbg!".to_string());
 
+        // Test macros
+        patterns.test_functions.extend(vec![
+            "assert!".to_string(),
+            "assert_eq!".to_string(),
+            "assert_ne!".to_string(),
+            "debug_assert!".to_string(),
+            "debug_assert_eq!".to_string(),
+            "debug_assert_ne!".to_string(),
+        ]);
+
         patterns
     }
 
@@ -87,6 +97,11 @@ impl RustPatterns {
     /// Check if macro is a debug macro
     pub fn is_debug_macro(&self, macro_name: &str) -> bool {
         self.patterns.is_debug_function(macro_name)
+    }
+
+    /// Check if macro is a test macro
+    pub fn is_test_macro(&self, macro_name: &str) -> bool {
+        self.patterns.is_test_function(macro_name)
     }
 
     /// Get all error macros
@@ -123,6 +138,18 @@ impl RustPatterns {
     /// Get all debug macros
     pub fn debug_macros() -> &'static [&'static str] {
         &["dbg!"]
+    }
+
+    /// Get all test macros
+    pub fn test_macros() -> &'static [&'static str] {
+        &[
+            "assert!",
+            "assert_eq!",
+            "assert_ne!",
+            "debug_assert!",
+            "debug_assert_eq!",
+            "debug_assert_ne!",
+        ]
     }
 
     /// Get the underlying patterns

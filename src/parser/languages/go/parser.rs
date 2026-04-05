@@ -271,7 +271,9 @@ impl GoParser {
                         Some(FunctionCategory::Error) => StrategyNodeType::ErrorMessage,
                         Some(FunctionCategory::Format) => StrategyNodeType::FormatString,
                         Some(FunctionCategory::Log) => StrategyNodeType::LogMessage,
-                        _ => continue, // Skip unknown functions
+                        Some(FunctionCategory::Debug) => StrategyNodeType::LogMessage,
+                        Some(FunctionCategory::Test) => StrategyNodeType::TestDescription,
+                        None => continue, // Skip unknown functions
                     };
 
                     // Apply extraction config

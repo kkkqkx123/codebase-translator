@@ -27,6 +27,9 @@ fn test_auto_to_en_filters_english_comments() {
         format_strings: false,
         log_messages: false,
         string_literals: false,
+        variable_strings: false,
+        property_strings: false,
+        test_descriptions: false,
     };
 
     let filter_config = FilterConfig {
@@ -89,6 +92,9 @@ fn test_auto_to_en_filters_english_strings() {
         format_strings: true,
         log_messages: true,
         string_literals: false,
+        variable_strings: false,
+        property_strings: false,
+        test_descriptions: false,
     };
 
     let filter_config = FilterConfig {
@@ -150,6 +156,9 @@ fn test_auto_to_en_mixed_content() {
         format_strings: true,
         log_messages: true,
         string_literals: false,
+        variable_strings: false,
+        property_strings: false,
+        test_descriptions: false,
     };
 
     let filter_config = FilterConfig {
@@ -240,6 +249,9 @@ fn test_auto_to_zh_filters_chinese() {
         format_strings: false,
         log_messages: false,
         string_literals: false,
+        variable_strings: false,
+        property_strings: false,
+        test_descriptions: false,
     };
 
     let filter_config = FilterConfig {
@@ -294,6 +306,9 @@ fn test_empty_source_langs_auto_behavior() {
         format_strings: false,
         log_messages: false,
         string_literals: false,
+        variable_strings: false,
+        property_strings: false,
+        test_descriptions: false,
     };
 
     let filter_config = FilterConfig {

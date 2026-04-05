@@ -169,6 +169,42 @@ impl PythonQueries {
     (string) @log_string))
 "#
     }
+
+    /// Test description query
+    /// Matches: pytest decorators, unittest assert methods with message
+    pub fn test_descriptions() -> &'static str {
+        r#"
+(call
+  function: (attribute
+    object: (identifier) @pytest_obj
+    (#match? @pytest_obj "^(pytest)$")
+    attribute: (identifier) @pytest_method
+    (#match? @pytest_method "^(skip|xfail)$"))
+  arguments: (argument_list
+    (string) @test_description))
+
+(call
+  function: (attribute
+    object: (attribute
+      object: (identifier) @pytest_mark
+      (#eq? @pytest_mark "pytest")
+      attribute: (identifier) @mark
+      (#eq? @mark "mark"))
+    attribute: (identifier) @pytest_method
+    (#match? @pytest_method "^(skip|xfail|parametrize)$"))
+  arguments: (argument_list
+    (string) @test_description))
+
+(call
+  function: (attribute
+    object: (identifier) @self_obj
+    (#eq? @self_obj "self")
+    attribute: (identifier) @assert_method
+    (#match? @assert_method "^(assertEqual|assertNotEqual|assertTrue|assertFalse|assertIs|assertIsNot|assertIsNone|assertIsNotNone|assertIn|assertNotIn|assertIsInstance|assertNotIsInstance|assertGreater|assertGreaterEqual|assertLess|assertLessEqual|assertRegex|assertNotRegex|assertCountEqual|assertMultiLineEqual|assertSequenceEqual|assertListEqual|assertTupleEqual|assertSetEqual|assertDictEqual|assertAlmostEqual|assertNotAlmostEqual|assertRaises|assertRaisesRegex|assertWarns|assertWarnsRegex|fail)$"))
+  arguments: (argument_list
+    (string) @test_description))
+"#
+    }
 }
 
 #[cfg(test)]
@@ -255,5 +291,11 @@ mod tests {
     fn test_log_functions_query_syntax_valid() {
         let result = validate_query_syntax("log_functions", PythonQueries::log_functions());
         assert!(result.is_ok(), "Log functions query syntax validation failed: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_test_descriptions_query_syntax_valid() {
+        let result = validate_query_syntax("test_descriptions", PythonQueries::test_descriptions());
+        assert!(result.is_ok(), "Test descriptions query syntax validation failed: {:?}", result.err());
     }
 }

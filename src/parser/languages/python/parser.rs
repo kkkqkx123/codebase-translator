@@ -492,6 +492,79 @@ impl PythonParser {
         Ok(units)
     }
 
+    /// Extract test descriptions using the core framework
+    /// Matches: pytest decorators, unittest assert methods with message
+    fn extract_test_descriptions(
+        &self,
+        root_node: &Node,
+        content: &str,
+        file_path: &str,
+    ) -> Result<Vec<TranslationUnit>> {
+        debug!(file = %file_path, "Extracting test descriptions");
+
+        let executor = QueryExecutor::from_string(
+            &tree_sitter_python::LANGUAGE.into(),
+            PythonQueries::test_descriptions(),
+        )?;
+
+        let matches = executor.execute(root_node, content)?;
+        debug!(
+            file = %file_path,
+            total_matches = matches.len(),
+            "Test description query executed"
+        );
+
+        let mut units = Vec::new();
+        let mut match_idx = 0usize;
+
+        for m in matches {
+            if m.capture_name == "test_description" {
+                let cleaned = self.string_processor.clean_string_literal(m.text);
+
+                if !self.filter.should_translate(&cleaned) {
+                    debug!(
+                        file = %file_path,
+                        text = %cleaned,
+                        "Test description filtered: content filter"
+                    );
+                    continue;
+                }
+
+                if !self
+                    .extraction_config
+                    .should_extract(StrategyNodeType::TestDescription)
+                {
+                    continue;
+                }
+
+                let id = format!("{}_test_{}", file_path, match_idx);
+                let node_type = self
+                    .extraction_config
+                    .get_node_type(StrategyNodeType::TestDescription);
+                let mut unit = TranslationUnit::new_with_pattern(
+                    id,
+                    node_type,
+                    cleaned,
+                    m.start_pos,
+                    m.end_pos,
+                    crate::core::models::PatternType::Builtin,
+                    "python",
+                );
+                unit.raw_match = Some(m.text.to_string());
+                units.push(unit);
+                match_idx += 1;
+            }
+        }
+
+        debug!(
+            file = %file_path,
+            extracted_units = units.len(),
+            "Test descriptions extracted"
+        );
+
+        Ok(units)
+    }
+
     /// Extract all translation units from the syntax tree
     fn extract_units(
         &self,
@@ -518,6 +591,12 @@ impl PythonParser {
         if self.config.extract_strings {
             let func_units = self.extract_function_strings(&root_node, content, file_path)?;
             units.extend(func_units);
+        }
+
+        // Extract test descriptions
+        if self.extraction_config.test_descriptions {
+            let test_units = self.extract_test_descriptions(&root_node, content, file_path)?;
+            units.extend(test_units);
         }
 
         // Sort by position for consistent ordering
@@ -556,6 +635,7 @@ impl ParserTrait for PythonParser {
             error_messages = units.iter().filter(|u| u.node_type == crate::core::models::NodeType::ErrorMessage).count(),
             log_messages = units.iter().filter(|u| u.node_type == crate::core::models::NodeType::LogMessage).count(),
             format_strings = units.iter().filter(|u| u.node_type == crate::core::models::NodeType::FormatString).count(),
+            test_descriptions = units.iter().filter(|u| u.node_type == crate::core::models::NodeType::TestDescription).count(),
             duration_ms = start.elapsed().as_millis(),
             "Python file parsed successfully"
         );

@@ -439,6 +439,59 @@ impl TypeScriptParser {
         Ok(units)
     }
 
+    /// Extract test descriptions using the core framework
+    /// Matches: it("should work", fn), describe("module", fn), test("case", fn)
+    fn extract_test_descriptions(
+        &self,
+        root_node: &Node,
+        content: &str,
+        file_path: &str,
+    ) -> Result<Vec<TranslationUnit>> {
+        let executor = QueryExecutor::from_string(
+            &tree_sitter_typescript::LANGUAGE_TYPESCRIPT.into(),
+            TypeScriptQueries::test_descriptions(),
+        )?;
+
+        let matches = executor.execute(root_node, content)?;
+        let mut units = Vec::new();
+        let mut match_idx = 0usize;
+
+        for m in matches {
+            if m.capture_name == "test_description" {
+                let text = if m.text.starts_with('`') && m.text.ends_with('`') {
+                    m.text
+                        .strip_prefix('`')
+                        .and_then(|s| s.strip_suffix('`'))
+                        .map(|s| s.to_string())
+                        .unwrap_or_else(|| m.text.to_string())
+                } else {
+                    self.string_processor.clean_string_literal(m.text)
+                };
+
+                if !self.filter.should_translate(&text) {
+                    continue;
+                }
+
+                if !self
+                    .extraction_config
+                    .should_extract(StrategyNodeType::TestDescription)
+                {
+                    continue;
+                }
+
+                let id = format!("{}_test_{}", file_path, match_idx);
+                let node_type = self
+                    .extraction_config
+                    .get_node_type(StrategyNodeType::TestDescription);
+                let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
+                units.push(unit);
+                match_idx += 1;
+            }
+        }
+
+        Ok(units)
+    }
+
     /// Extract all translation units from the syntax tree
     fn extract_units(
         &self,
@@ -483,6 +536,12 @@ impl TypeScriptParser {
             units.extend(prop_units);
         }
 
+        // Extract test descriptions
+        if self.extraction_config.test_descriptions {
+            let test_units = self.extract_test_descriptions(&root_node, content, file_path)?;
+            units.extend(test_units);
+        }
+
         // Sort by position for consistent ordering
         units.sort_by(|a, b| a.start_pos.offset.cmp(&b.start_pos.offset));
 
@@ -519,6 +578,7 @@ impl ParserTrait for TypeScriptParser {
             error_messages = units.iter().filter(|u| u.node_type == crate::core::models::NodeType::ErrorMessage).count(),
             log_messages = units.iter().filter(|u| u.node_type == crate::core::models::NodeType::LogMessage).count(),
             format_strings = units.iter().filter(|u| u.node_type == crate::core::models::NodeType::FormatString).count(),
+            test_descriptions = units.iter().filter(|u| u.node_type == crate::core::models::NodeType::TestDescription).count(),
             duration_ms = start.elapsed().as_millis(),
             "TypeScript file parsed successfully"
         );

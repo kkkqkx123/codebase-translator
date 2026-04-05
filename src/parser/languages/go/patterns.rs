@@ -54,12 +54,18 @@ impl GoPatterns {
             "log.Panic".to_string(),
             "log.Panicf".to_string(),
             "log.Panicln".to_string(),
+        ]);
+
+        // Test functions (testing package)
+        patterns.test_functions.extend(vec![
             "t.Log".to_string(),
             "t.Logf".to_string(),
             "t.Error".to_string(),
             "t.Errorf".to_string(),
             "t.Fatal".to_string(),
             "t.Fatalf".to_string(),
+            "t.Skip".to_string(),
+            "t.Skipf".to_string(),
             "b.Log".to_string(),
             "b.Logf".to_string(),
             "b.Error".to_string(),
@@ -87,6 +93,11 @@ impl GoPatterns {
     /// Check if function is a log function
     pub fn is_log_function(&self, func_name: &str) -> bool {
         self.patterns.is_log_function(func_name)
+    }
+
+    /// Check if function is a test function
+    pub fn is_test_function(&self, func_name: &str) -> bool {
+        self.patterns.is_test_function(func_name)
     }
 
     /// Get all error functions
@@ -131,11 +142,21 @@ impl GoPatterns {
         ]
     }
 
-    /// Get all testing functions
-    pub fn testing_functions() -> &'static [&'static str] {
+    /// Get all test functions
+    pub fn test_functions() -> &'static [&'static str] {
         &[
-            "t.Log", "t.Logf", "t.Error", "t.Errorf", "t.Fatal", "t.Fatalf", "b.Log", "b.Logf",
-            "b.Error", "b.Errorf",
+            "t.Log",
+            "t.Logf",
+            "t.Error",
+            "t.Errorf",
+            "t.Fatal",
+            "t.Fatalf",
+            "t.Skip",
+            "t.Skipf",
+            "b.Log",
+            "b.Logf",
+            "b.Error",
+            "b.Errorf",
         ]
     }
 
@@ -191,7 +212,7 @@ mod tests {
         assert!(GoPatterns::error_functions().contains(&"panic"));
         assert!(GoPatterns::format_functions().contains(&"fmt.Printf"));
         assert!(GoPatterns::log_functions().contains(&"log.Println"));
-        assert!(GoPatterns::testing_functions().contains(&"t.Errorf"));
+        assert!(GoPatterns::test_functions().contains(&"t.Errorf"));
     }
 
     #[test]

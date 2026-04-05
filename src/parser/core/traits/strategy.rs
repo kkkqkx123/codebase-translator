@@ -24,6 +24,8 @@ pub enum StrategyNodeType {
     VariableString,
     /// Object property string
     PropertyString,
+    /// Test description (it, describe, test, etc.)
+    TestDescription,
     /// Markdown paragraph
     MarkdownParagraph,
     /// Markdown heading
@@ -46,6 +48,7 @@ impl StrategyNodeType {
             Self::StringLiteral => "string_literal",
             Self::VariableString => "variable_string",
             Self::PropertyString => "property_string",
+            Self::TestDescription => "test_description",
             Self::MarkdownParagraph => "markdown_paragraph",
             Self::MarkdownHeading => "markdown_heading",
             Self::MarkdownListItem => "markdown_list_item",
@@ -79,6 +82,8 @@ pub struct ExtractionConfig {
     pub variable_strings: bool,
     /// Extract object property strings (e.g., { description: "message" })
     pub property_strings: bool,
+    /// Extract test descriptions (e.g., it("should work", fn))
+    pub test_descriptions: bool,
 }
 
 impl Default for ExtractionConfig {
@@ -92,6 +97,7 @@ impl Default for ExtractionConfig {
             log_messages: true,
             variable_strings: false,
             property_strings: false,
+            test_descriptions: true,
         }
     }
 }
@@ -108,6 +114,7 @@ impl ExtractionConfig {
             StrategyNodeType::StringLiteral => self.string_literals,
             StrategyNodeType::VariableString => self.variable_strings,
             StrategyNodeType::PropertyString => self.property_strings,
+            StrategyNodeType::TestDescription => self.test_descriptions,
             StrategyNodeType::MarkdownParagraph
             | StrategyNodeType::MarkdownHeading
             | StrategyNodeType::MarkdownListItem
@@ -126,6 +133,7 @@ impl ExtractionConfig {
             StrategyNodeType::StringLiteral => NodeType::StringLiteral,
             StrategyNodeType::VariableString => NodeType::StringLiteral,
             StrategyNodeType::PropertyString => NodeType::StringLiteral,
+            StrategyNodeType::TestDescription => NodeType::TestDescription,
             StrategyNodeType::MarkdownParagraph => NodeType::Comment,
             StrategyNodeType::MarkdownHeading => NodeType::Comment,
             StrategyNodeType::MarkdownListItem => NodeType::Comment,

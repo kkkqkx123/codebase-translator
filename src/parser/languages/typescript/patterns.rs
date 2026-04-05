@@ -51,6 +51,26 @@ impl TypeScriptPatterns {
             "EvalError".to_string(),
         ]);
 
+        // Test functions (Jest, Mocha, Jasmine, Vitest, etc.)
+        patterns.test_functions.extend(vec![
+            "it".to_string(),
+            "describe".to_string(),
+            "test".to_string(),
+            "specify".to_string(),
+            "xdescribe".to_string(),
+            "xit".to_string(),
+            "xspecify".to_string(),
+            "fdescribe".to_string(),
+            "fit".to_string(),
+            "fspecify".to_string(),
+            "beforeEach".to_string(),
+            "afterEach".to_string(),
+            "beforeAll".to_string(),
+            "afterAll".to_string(),
+            "suite".to_string(),
+            "context".to_string(),
+        ]);
+
         patterns
     }
 
@@ -67,6 +87,11 @@ impl TypeScriptPatterns {
     /// Check if function is an error-related method
     pub fn is_error_function(&self, func_name: &str) -> bool {
         self.patterns.is_error_function(func_name)
+    }
+
+    /// Check if function is a test function
+    pub fn is_test_function(&self, func_name: &str) -> bool {
+        self.patterns.is_test_function(func_name)
     }
 
     /// Get all console/log methods
@@ -101,6 +126,28 @@ impl TypeScriptPatterns {
             "RangeError",
             "URIError",
             "EvalError",
+        ]
+    }
+
+    /// Get all test functions
+    pub fn test_functions() -> &'static [&'static str] {
+        &[
+            "it",
+            "describe",
+            "test",
+            "specify",
+            "xdescribe",
+            "xit",
+            "xspecify",
+            "fdescribe",
+            "fit",
+            "fspecify",
+            "beforeEach",
+            "afterEach",
+            "beforeAll",
+            "afterAll",
+            "suite",
+            "context",
         ]
     }
 

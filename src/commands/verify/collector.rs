@@ -88,6 +88,7 @@ impl MatchCollector {
                 NodeType::FormatString => "format_string".to_string(),
                 NodeType::LogMessage => "log_message".to_string(),
                 NodeType::StringLiteral => "string_literal".to_string(),
+                NodeType::TestDescription => "test_description".to_string(),
             }
         }
     }
