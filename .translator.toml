@@ -148,13 +148,7 @@ preserve_formatting = true    # 保留原始格式
 [extraction]
 comments = true               # 是否提取注释
 doc_strings = true            # 是否提取文档字符串
-error_messages = true         # 是否提取错误消息
-format_strings = true         # 是否提取格式化字符串
-log_messages = true           # 是否提取日志消息
-test_descriptions = true      # 是否提取测试描述
 string_literals = false       # 是否提取字符串字面量
-variable_strings = false      # 是否提取变量赋值字符串
-property_strings = false      # 是否提取对象属性字符串
 
 # 自定义正则模式（简单）
 # 用于简单的单步正则匹配，提取特定模式的文本

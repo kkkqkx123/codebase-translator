@@ -357,7 +357,7 @@ impl<'a> FileProcessor<'a> {
             return Ok(result);
         }
 
-        if !self.project_config.writer.dry_run {
+        if !self.project_config.writer.preview_only {
             info!(
                 file = %file_path.display(),
                 "Writing file"

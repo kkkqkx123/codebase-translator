@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 use crate::config::global::LoggingConfig;
 use crate::core::models::CacheConfig;
@@ -77,8 +76,8 @@ impl ProjectConfig {
         if !other.cache.format.is_empty() {
             self.cache.format = other.cache.format;
         }
-        if other.writer.dry_run {
-            self.writer.dry_run = other.writer.dry_run;
+        if other.writer.preview_only {
+            self.writer.preview_only = other.writer.preview_only;
         }
         if other.writer.backup {
             self.writer.backup = other.writer.backup;
@@ -176,9 +175,6 @@ pub struct TranslateConfig {
     /// Translation provider to use
     #[serde(default)]
     pub provider: ProviderType,
-    /// Language-specific settings
-    #[serde(default)]
-    pub lang_settings: HashMap<String, LanguageSettings>,
     /// Batch size for translation API calls
     #[serde(default = "default_batch_size")]
     pub batch_size: usize,
@@ -212,40 +208,10 @@ impl Default for TranslateConfig {
             source_langs: vec!["auto".to_string()],
             target_lang: "en".to_string(),
             provider: ProviderType::DeepLX,
-            lang_settings: HashMap::new(),
             batch_size: default_batch_size(),
             concurrency: default_concurrency(),
         }
     }
-}
-
-/// Language-specific settings
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct LanguageSettings {
-    /// File extensions for this language
-    #[serde(default)]
-    pub extensions: Vec<String>,
-    /// Whether to translate comments
-    #[serde(default = "default_true")]
-    pub translate_comments: bool,
-    /// Whether to translate doc strings
-    #[serde(default = "default_true")]
-    pub translate_docstrings: bool,
-    /// Whether to translate error messages
-    #[serde(default = "default_true")]
-    pub translate_errors: bool,
-    /// Whether to translate format strings
-    #[serde(default = "default_true")]
-    pub translate_formats: bool,
-    /// Whether to translate log messages
-    #[serde(default = "default_true")]
-    pub translate_logs: bool,
-    /// Comment patterns (for languages with custom comment syntax)
-    #[serde(default)]
-    pub comment_patterns: Vec<String>,
-    /// Doc comment patterns
-    #[serde(default)]
-    pub doc_patterns: Vec<String>,
 }
 
 /// Writer configuration
@@ -257,9 +223,9 @@ pub struct WriterConfig {
     /// Backup directory
     #[serde(default)]
     pub backup_dir: Option<String>,
-    /// Dry run mode (don't actually write)
+    /// Preview only mode (don't actually write)
     #[serde(default)]
-    pub dry_run: bool,
+    pub preview_only: bool,
     /// Max concurrent writes
     #[serde(default = "default_max_concurrent_writes")]
     pub max_concurrent_writes: usize,
@@ -273,7 +239,7 @@ impl Default for WriterConfig {
         Self {
             backup: true,
             backup_dir: None,
-            dry_run: false,
+            preview_only: false,
             max_concurrent_writes: default_max_concurrent_writes(),
             preserve_formatting: true,
         }
@@ -767,7 +733,7 @@ mod tests {
         assert_eq!(config.cache.format, "binary");
         assert_eq!(config.cache.directory, ".translator");
         assert!(config.cache.enabled);
-        assert!(!config.writer.dry_run);
+        assert!(!config.writer.preview_only);
         assert!(config.writer.backup);
     }
 
@@ -782,7 +748,6 @@ mod tests {
                 source_langs: vec!["ZH".to_string()],
                 target_lang: "zh".to_string(),
                 provider: ProviderType::LLM,
-                lang_settings: std::collections::HashMap::new(),
                 batch_size: 100,
                 concurrency: 10,
             },

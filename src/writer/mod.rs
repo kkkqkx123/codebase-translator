@@ -60,13 +60,13 @@ impl WriterFactory {
         project_path: Option<&str>,
     ) -> Result<FileWriter> {
         info!(
-            dry_run = project_config.writer.dry_run,
+            preview_only = project_config.writer.preview_only,
             backup = project_config.writer.backup,
             "Creating file writer"
         );
 
         let writer_config = WriterConfig {
-            dry_run: project_config.writer.dry_run,
+            preview_only: project_config.writer.preview_only,
             backup: project_config.writer.backup,
             backup_dir: project_config
                 .writer
@@ -105,7 +105,7 @@ mod tests {
     #[test]
     fn test_writer_config_default() {
         let config = WriterConfig::default();
-        assert!(!config.dry_run);
+        assert!(!config.preview_only);
         assert!(config.backup);
         assert!(config.backup_dir.is_none());
         assert!(!config.strict_encoding);

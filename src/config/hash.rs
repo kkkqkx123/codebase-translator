@@ -173,7 +173,7 @@ mod tests {
     fn test_config_hash_unchanged_with_writer_settings() {
         let config1 = ProjectConfig::default();
         let mut config2 = ProjectConfig::default();
-        config2.writer.dry_run = true;
+        config2.writer.preview_only = true;
         config2.writer.backup = false;
 
         let hash1 = calculate_config_hash(&config1);

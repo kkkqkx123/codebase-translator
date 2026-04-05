@@ -377,7 +377,7 @@ directory = ".translator"
         std::env::set_current_dir(&original_dir).expect("Failed to restore current dir");
 
         assert_eq!(config.translate.target_lang, "en");
-        assert!(!config.writer.dry_run);
+        assert!(!config.writer.preview_only);
         assert!(config.writer.backup);
 
         // Explicitly drop temp_dir after restoring directory
@@ -563,7 +563,7 @@ output = "stderr"
         // Verify default values
         assert_eq!(config.translate.target_lang, "en");
         assert_eq!(config.translate.source_langs, vec!["auto"]);
-        assert!(!config.writer.dry_run);
+        assert!(!config.writer.preview_only);
         assert!(config.writer.backup);
         assert!(config.cache.enabled);
         assert_eq!(config.cache.directory, ".translator");

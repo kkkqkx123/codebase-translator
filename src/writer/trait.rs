@@ -27,8 +27,8 @@ pub trait Writer: Send + Sync {
     /// Create a backup of the file
     fn backup(&self, file: &File) -> Result<PathBuf>;
 
-    /// Check if dry run mode
-    fn is_dry_run(&self) -> bool;
+    /// Check if preview only mode
+    fn is_preview_only(&self) -> bool;
 }
 
 /// AsyncWriter trait for async writing operations

@@ -18,8 +18,8 @@ use super::core::TranslationApplier;
 /// Configuration for file writer
 #[derive(Debug, Clone)]
 pub struct WriterConfig {
-    /// Dry run mode - only show changes without writing
-    pub dry_run: bool,
+    /// Preview only mode - only show changes without writing
+    pub preview_only: bool,
     /// Whether to create backups
     pub backup: bool,
     /// Backup directory (empty means same directory as original file)
@@ -31,7 +31,7 @@ pub struct WriterConfig {
 impl Default for WriterConfig {
     fn default() -> Self {
         Self {
-            dry_run: false,
+            preview_only: false,
             backup: true,
             backup_dir: None,
             strict_encoding: false,
@@ -82,13 +82,13 @@ impl FileWriter {
             "Starting async file write"
         );
 
-        // Check dry run mode first to avoid unnecessary processing
-        let is_dry_run = {
+        // Check preview only mode first to avoid unnecessary processing
+        let is_preview_only = {
             let config = self.config.read().await;
-            config.dry_run
+            config.preview_only
         };
 
-        if is_dry_run {
+        if is_preview_only {
             return self.write_preview(file, units);
         }
 
@@ -401,10 +401,10 @@ impl FileWriter {
         Ok(backup_path)
     }
 
-    /// Set dry run mode
-    pub async fn set_dry_run_mode(&self, dry_run: bool) {
+    /// Set preview only mode
+    pub async fn set_preview_only_mode(&self, preview_only: bool) {
         let mut config = self.config.write().await;
-        config.dry_run = dry_run;
+        config.preview_only = preview_only;
     }
 
     /// Set backup mode
@@ -502,7 +502,7 @@ mod tests {
     #[tokio::test]
     async fn test_file_writer_preview_mode() {
         let config = WriterConfig {
-            dry_run: true,
+            preview_only: true,
             ..Default::default()
         };
         let writer = FileWriter::new(config);
