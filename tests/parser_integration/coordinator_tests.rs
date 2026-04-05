@@ -10,7 +10,7 @@ use codebase_translate::core::models::File;
 use codebase_translate::parser::coordinator::{ParserCoordinator, ParserType};
 use codebase_translate::parser::filtering::{ContentFilter, FilterConfig};
 use codebase_translate::parser::regex::RegexParser;
-use codebase_translate::parser::core::traits::ExtractionConfig;
+use codebase_translate::parser::core::ExtractionConfig;
 use codebase_translate::parser::ParserConfig;
 
 fn create_test_file(content: &str, path: &str) -> File {

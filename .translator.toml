@@ -150,18 +150,11 @@ comments = true               # 是否提取注释
 doc_strings = true            # 是否提取文档字符串
 error_messages = true         # 是否提取错误消息
 format_strings = true         # 是否提取格式化字符串
-
-# 字符串字面量提取配置
-# 控制是否从代码中提取字符串字面量进行翻译
-[extraction.string_literals]
-enabled = false               # 是否启用字符串字面量提取（默认关闭）
-
-# 按类别启用/禁用字符串提取
-[extraction.string_literals.categories]
-error_handling = true         # 错误处理相关：panic, Error, throw 等
-output = false                # 输出/日志：print, console, logging 等
-variables = false             # 变量赋值（匹配特定模式）
-properties = false            # 对象属性（匹配特定键名）
+log_messages = true           # 是否提取日志消息
+test_descriptions = true      # 是否提取测试描述
+string_literals = false       # 是否提取字符串字面量
+variable_strings = false      # 是否提取变量赋值字符串
+property_strings = false      # 是否提取对象属性字符串
 
 # 自定义正则模式（简单）
 # 用于简单的单步正则匹配，提取特定模式的文本

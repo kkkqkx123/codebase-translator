@@ -9,8 +9,8 @@ use tree_sitter::{Language as TSLanguage, Node, Parser, Query, QueryCursor, Tree
 
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, Position, TranslationUnit};
-use crate::parser::core::traits::{ExtractionConfig, Parser as ParserTrait, StrategyNodeType};
 use crate::parser::core::{CommentType, StringProcessor};
+use crate::parser::core::{ExtractionConfig, Parser as ParserTrait, StrategyNodeType};
 use crate::parser::filtering::traits::Filter;
 use crate::parser::languages::c::queries::CQueries;
 use crate::parser::languages::cpp::queries::CppQueries;
@@ -711,7 +711,7 @@ impl TreeSitterParserFactory {
 mod tests {
     use super::*;
 
-    use crate::parser::core::traits::ExtractionConfig;
+    use crate::parser::core::ExtractionConfig;
     use crate::parser::ParserConfig;
     use std::path::PathBuf;
 

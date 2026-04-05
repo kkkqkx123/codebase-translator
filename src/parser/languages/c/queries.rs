@@ -122,55 +122,91 @@ mod tests {
     #[test]
     fn test_line_comments_query_syntax_valid() {
         let result = validate_query_syntax("line_comments", CQueries::line_comments());
-        assert!(result.is_ok(), "Line comments query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Line comments query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_all_comments_query_syntax_valid() {
         let result = validate_query_syntax("all_comments", CQueries::all_comments());
-        assert!(result.is_ok(), "All comments query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "All comments query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_doc_comments_query_syntax_valid() {
         let result = validate_query_syntax("doc_comments", CQueries::doc_comments());
-        assert!(result.is_ok(), "Doc comments query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Doc comments query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_string_literals_query_syntax_valid() {
         let result = validate_query_syntax("string_literals", CQueries::string_literals());
-        assert!(result.is_ok(), "String literals query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "String literals query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_all_strings_query_syntax_valid() {
         let result = validate_query_syntax("all_strings", CQueries::all_strings());
-        assert!(result.is_ok(), "All strings query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "All strings query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_function_strings_query_syntax_valid() {
         let result = validate_query_syntax("function_strings", CQueries::function_strings());
-        assert!(result.is_ok(), "Function strings query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Function strings query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_specific_functions_query_syntax_valid() {
         let specific = CQueries::specific_functions(&["printf", "fprintf"]);
         let result = validate_query_syntax("specific_functions", &specific);
-        assert!(result.is_ok(), "Specific functions query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Specific functions query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_assert_calls_query_syntax_valid() {
         let result = validate_query_syntax("assert_calls", CQueries::assert_calls());
-        assert!(result.is_ok(), "Assert calls query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Assert calls query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_error_functions_query_syntax_valid() {
         let result = validate_query_syntax("error_functions", CQueries::error_functions());
-        assert!(result.is_ok(), "Error functions query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Error functions query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 }

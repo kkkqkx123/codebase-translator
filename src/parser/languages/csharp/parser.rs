@@ -5,10 +5,12 @@
 use std::sync::Arc;
 use tree_sitter::{Node, Parser, Tree};
 
+use crate::config::project::ExtractionConfig;
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, TranslationUnit};
+use crate::core::StrategyNodeType;
 use crate::parser::core::query_executor::QueryExecutor;
-use crate::parser::core::traits::{ExtractionConfig, Parser as ParserTrait, StrategyNodeType};
+use crate::parser::core::Parser as ParserTrait;
 use crate::parser::core::{CommentType, StringProcessor};
 use crate::parser::filtering::traits::Filter;
 use crate::parser::languages::csharp::patterns::CSharpPatterns;
@@ -449,7 +451,7 @@ mod tests {
     use super::*;
     use crate::core::models::NodeType;
 
-    use crate::parser::core::traits::ExtractionConfig;
+    use crate::parser::core::ExtractionConfig;
     use std::path::PathBuf;
 
     fn create_test_file(content: &str, path: &str) -> File {

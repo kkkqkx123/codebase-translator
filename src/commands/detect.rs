@@ -369,9 +369,8 @@ fn contains_cyrillic(text: &str) -> bool {
 }
 
 fn contains_latin(text: &str) -> bool {
-    text.chars().any(|c| {
-        c.is_ascii_alphabetic() || ((0x00C0..=0x024F).contains(&(c as u32)))
-    })
+    text.chars()
+        .any(|c| c.is_ascii_alphabetic() || ((0x00C0..=0x024F).contains(&(c as u32))))
 }
 
 fn contains_arabic(text: &str) -> bool {

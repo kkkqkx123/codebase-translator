@@ -254,91 +254,164 @@ mod tests {
     #[test]
     fn test_comments_query_syntax_valid() {
         let result = validate_query_syntax("comments", TypeScriptQueries::comments());
-        assert!(result.is_ok(), "Comments query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Comments query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_all_comments_query_syntax_valid() {
         let result = validate_query_syntax("all_comments", TypeScriptQueries::all_comments());
-        assert!(result.is_ok(), "All comments query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "All comments query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_jsdoc_comments_query_syntax_valid() {
         let result = validate_query_syntax("jsdoc_comments", TypeScriptQueries::jsdoc_comments());
-        assert!(result.is_ok(), "JSDoc comments query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "JSDoc comments query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_string_literals_query_syntax_valid() {
         let result = validate_query_syntax("string_literals", TypeScriptQueries::string_literals());
-        assert!(result.is_ok(), "String literals query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "String literals query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_template_strings_query_syntax_valid() {
-        let result = validate_query_syntax("template_strings", TypeScriptQueries::template_strings());
-        assert!(result.is_ok(), "Template strings query syntax validation failed: {:?}", result.err());
+        let result =
+            validate_query_syntax("template_strings", TypeScriptQueries::template_strings());
+        assert!(
+            result.is_ok(),
+            "Template strings query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_all_strings_query_syntax_valid() {
         let result = validate_query_syntax("all_strings", TypeScriptQueries::all_strings());
-        assert!(result.is_ok(), "All strings query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "All strings query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_call_strings_query_syntax_valid() {
         let result = validate_query_syntax("call_strings", TypeScriptQueries::call_strings());
-        assert!(result.is_ok(), "Call strings query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Call strings query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_specific_calls_query_syntax_valid() {
         let specific = TypeScriptQueries::specific_calls(&["log", "error", "warn"]);
         let result = validate_query_syntax("specific_calls", &specific);
-        assert!(result.is_ok(), "Specific calls query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Specific calls query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_console_calls_query_syntax_valid() {
         let result = validate_query_syntax("console_calls", TypeScriptQueries::console_calls());
-        assert!(result.is_ok(), "Console calls query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Console calls query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_throw_statements_query_syntax_valid() {
-        let result = validate_query_syntax("throw_statements", TypeScriptQueries::throw_statements());
-        assert!(result.is_ok(), "Throw statements query syntax validation failed: {:?}", result.err());
+        let result =
+            validate_query_syntax("throw_statements", TypeScriptQueries::throw_statements());
+        assert!(
+            result.is_ok(),
+            "Throw statements query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_assertion_expressions_query_syntax_valid() {
-        let result = validate_query_syntax("assertion_expressions", TypeScriptQueries::assertion_expressions());
-        assert!(result.is_ok(), "Assertion expressions query syntax validation failed: {:?}", result.err());
+        let result = validate_query_syntax(
+            "assertion_expressions",
+            TypeScriptQueries::assertion_expressions(),
+        );
+        assert!(
+            result.is_ok(),
+            "Assertion expressions query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_variable_assignments_query_syntax_valid() {
-        let result = validate_query_syntax("variable_assignments", TypeScriptQueries::variable_assignments());
-        assert!(result.is_ok(), "Variable assignments query syntax validation failed: {:?}", result.err());
+        let result = validate_query_syntax(
+            "variable_assignments",
+            TypeScriptQueries::variable_assignments(),
+        );
+        assert!(
+            result.is_ok(),
+            "Variable assignments query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_object_properties_query_syntax_valid() {
-        let result = validate_query_syntax("object_properties", TypeScriptQueries::object_properties());
-        assert!(result.is_ok(), "Object properties query syntax validation failed: {:?}", result.err());
+        let result =
+            validate_query_syntax("object_properties", TypeScriptQueries::object_properties());
+        assert!(
+            result.is_ok(),
+            "Object properties query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_export_variable_assignments_query_syntax_valid() {
-        let result = validate_query_syntax("export_variable_assignments", TypeScriptQueries::export_variable_assignments());
-        assert!(result.is_ok(), "Export variable assignments query syntax validation failed: {:?}", result.err());
+        let result = validate_query_syntax(
+            "export_variable_assignments",
+            TypeScriptQueries::export_variable_assignments(),
+        );
+        assert!(
+            result.is_ok(),
+            "Export variable assignments query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_test_descriptions_query_syntax_valid() {
-        let result = validate_query_syntax("test_descriptions", TypeScriptQueries::test_descriptions());
-        assert!(result.is_ok(), "Test descriptions query syntax validation failed: {:?}", result.err());
+        let result =
+            validate_query_syntax("test_descriptions", TypeScriptQueries::test_descriptions());
+        assert!(
+            result.is_ok(),
+            "Test descriptions query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 }

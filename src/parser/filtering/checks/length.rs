@@ -2,14 +2,15 @@
 //!
 //! Check 1: O(1) constant-time checks
 //! - Empty text detection
-//! - Maximum length validation
+//! - Minimum/Maximum length validation
 
-use crate::parser::filtering::config::FilterConfig;
+use crate::config::project::FilterConfig;
 use crate::parser::filtering::traits::Filter;
 use tracing::debug;
 
 /// Length filter for O(1) constant-time checks
 pub struct LengthFilter {
+    min_length: usize,
     max_length: usize,
 }
 
@@ -17,6 +18,7 @@ impl LengthFilter {
     /// Create a new length filter
     pub fn new(config: &FilterConfig) -> Self {
         Self {
+            min_length: config.min_length,
             max_length: config.max_length,
         }
     }
@@ -24,7 +26,6 @@ impl LengthFilter {
 
 impl Filter for LengthFilter {
     fn should_translate(&self, text: &str) -> bool {
-        // Empty or whitespace-only check
         if text.trim().is_empty() {
             debug!(
                 reason = "empty_or_whitespace",
@@ -33,8 +34,18 @@ impl Filter for LengthFilter {
             return false;
         }
 
-        // Maximum length check
         let len = text.len();
+
+        if self.min_length > 0 && len < self.min_length {
+            debug!(
+                length = len,
+                min_length = self.min_length,
+                reason = "too_short",
+                "Text filtered by length check"
+            );
+            return false;
+        }
+
         if self.max_length > 0 && len > self.max_length {
             debug!(
                 length = len,
@@ -62,10 +73,7 @@ mod tests {
         let config = FilterConfig::default();
         let filter = LengthFilter::new(&config);
 
-        // 空字符串应该被过滤
         assert!(!filter.should_translate(""));
-
-        // 纯空白也应该被过滤
         assert!(!filter.should_translate("   "));
         assert!(!filter.should_translate("\t\t\t"));
         assert!(!filter.should_translate("\n\n"));
@@ -80,9 +88,23 @@ mod tests {
         };
         let filter = LengthFilter::new(&config);
 
-        assert!(filter.should_translate("abc")); // short is ok
-        assert!(filter.should_translate("abcdefghij")); // exact max
-        assert!(!filter.should_translate("abcdefghijk")); // too long
+        assert!(filter.should_translate("abc"));
+        assert!(filter.should_translate("abcdefghij"));
+        assert!(!filter.should_translate("abcdefghijk"));
+    }
+
+    #[test]
+    fn test_min_length_filtering() {
+        let config = FilterConfig {
+            min_length: 5,
+            ..Default::default()
+        };
+        let filter = LengthFilter::new(&config);
+
+        assert!(!filter.should_translate("abc"));
+        assert!(!filter.should_translate("abcd"));
+        assert!(filter.should_translate("abcde"));
+        assert!(filter.should_translate("abcdefghij"));
     }
 
     #[test]

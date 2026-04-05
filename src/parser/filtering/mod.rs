@@ -37,15 +37,14 @@
 
 pub mod checks;
 pub mod composite;
-pub mod config;
 pub mod traits;
 
 // Re-export main types
+pub use crate::config::project::FilterConfig;
 pub use composite::CompositeFilter as ContentFilter;
 pub use composite::{
     default_filter, from_project_config, from_project_config_with_translator, test_filter,
 };
-pub use config::FilterConfig;
 pub use traits::Filter;
 
 // Re-export checks for advanced usage

@@ -145,18 +145,8 @@ impl GoPatterns {
     /// Get all test functions
     pub fn test_functions() -> &'static [&'static str] {
         &[
-            "t.Log",
-            "t.Logf",
-            "t.Error",
-            "t.Errorf",
-            "t.Fatal",
-            "t.Fatalf",
-            "t.Skip",
-            "t.Skipf",
-            "b.Log",
-            "b.Logf",
-            "b.Error",
-            "b.Errorf",
+            "t.Log", "t.Logf", "t.Error", "t.Errorf", "t.Fatal", "t.Fatalf", "t.Skip", "t.Skipf",
+            "b.Log", "b.Logf", "b.Error", "b.Errorf",
         ]
     }
 

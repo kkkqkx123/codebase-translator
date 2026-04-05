@@ -7,9 +7,10 @@ use rayon::prelude::*;
 use std::collections::HashMap;
 use std::sync::Arc;
 
+use crate::config::project::ExtractionConfig;
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, PatternType, TranslationUnit};
-use crate::parser::core::traits::{ExtractionConfig, Parser as ParserTrait};
+use crate::parser::core::Parser as ParserTrait;
 use crate::parser::filtering::traits::Filter;
 use crate::parser::regex::custom_pattern_matcher::CustomPatternMatcher;
 use crate::parser::regex::state_machine::StateMachineMatcher;
@@ -74,23 +75,13 @@ impl ParserCoordinator {
     ) -> Result<Self> {
         use crate::parser::filtering::from_project_config;
 
-        let extraction_config = ExtractionConfig {
-            comments: project_config.extraction.comments,
-            docstrings: project_config.extraction.doc_strings,
-            error_messages: project_config.extraction.error_messages,
-            format_strings: project_config.extraction.format_strings,
-            string_literals: project_config.extraction.string_literals.enabled,
-            variable_strings: project_config.extraction.string_literals.categories.variables,
-            property_strings: project_config.extraction.string_literals.categories.properties,
-            log_messages: true,
-            test_descriptions: true,
-        };
+        let extraction_config = project_config.extraction.clone();
         let filter = Arc::new(from_project_config(
             &project_config.filter,
             &project_config.translate,
         )?);
 
-        Self::with_extraction_config(config, extraction_config, filter, Some(project_config.extraction.clone()))
+        Self::with_extraction_config(config, extraction_config, filter)
     }
 
     /// Creates a new parser coordinator from project and translator configuration.
@@ -105,24 +96,14 @@ impl ParserCoordinator {
     ) -> Result<Self> {
         use crate::parser::filtering::from_project_config_with_translator;
 
-        let extraction_config = ExtractionConfig {
-            comments: project_config.extraction.comments,
-            docstrings: project_config.extraction.doc_strings,
-            error_messages: project_config.extraction.error_messages,
-            format_strings: project_config.extraction.format_strings,
-            string_literals: project_config.extraction.string_literals.enabled,
-            variable_strings: project_config.extraction.string_literals.categories.variables,
-            property_strings: project_config.extraction.string_literals.categories.properties,
-            log_messages: true,
-            test_descriptions: true,
-        };
+        let extraction_config = project_config.extraction.clone();
         let filter = Arc::new(from_project_config_with_translator(
             &project_config.filter,
             &project_config.translate,
             translator_max_length,
         )?);
 
-        Self::with_extraction_config(config, extraction_config, filter, Some(project_config.extraction.clone()))
+        Self::with_extraction_config(config, extraction_config, filter)
     }
 
     /// Creates a new parser coordinator with unified configuration.
@@ -132,10 +113,9 @@ impl ParserCoordinator {
     pub fn with_unified_config(config: ParserConfig) -> Result<Self> {
         use crate::parser::filtering::default_filter;
 
-        // Derive ExtractionConfig from ParserConfig to ensure consistency
         let extraction_config = ExtractionConfig {
             comments: config.extract_comments,
-            docstrings: config.extract_docstrings,
+            doc_strings: config.extract_docstrings,
             string_literals: config.extract_strings,
             ..Default::default()
         };
@@ -151,7 +131,7 @@ impl ParserCoordinator {
         extraction_config: ExtractionConfig,
         filter: Arc<ContentFilter>,
     ) -> Result<Self> {
-        Self::with_extraction_config(config, extraction_config, filter, None)
+        Self::with_extraction_config(config, extraction_config, filter)
     }
 
     /// Creates a new parser coordinator with extraction config for state machine patterns.
@@ -159,7 +139,6 @@ impl ParserCoordinator {
         config: ParserConfig,
         extraction_config: ExtractionConfig,
         filter: Arc<ContentFilter>,
-        project_extraction_config: Option<crate::config::project::ExtractionConfig>,
     ) -> Result<Self> {
         let mut tree_sitter_parsers: Vec<TreeSitterParser> = Vec::new();
 
@@ -182,17 +161,12 @@ impl ParserCoordinator {
 
         let fallback_parser = FallbackParser::new(config.clone());
 
-        // Load custom patterns from project extraction config
-        let custom_patterns = project_extraction_config
-            .as_ref()
-            .and_then(|cfg| {
-                if cfg.custom_patterns.is_empty() {
-                    None
-                } else {
-                    Some(cfg.custom_patterns.clone())
-                }
-            })
-            .unwrap_or_default();
+        // Load custom patterns from extraction config
+        let custom_patterns = if extraction_config.custom_patterns.is_empty() {
+            Vec::new()
+        } else {
+            extraction_config.custom_patterns.clone()
+        };
 
         // Create custom pattern matchers
         let custom_pattern_matchers: Vec<_> = custom_patterns
@@ -217,16 +191,12 @@ impl ParserCoordinator {
             }
         }
 
-        // Load state machine patterns from project extraction config
-        let state_machine_patterns = project_extraction_config
-            .and_then(|cfg| {
-                if cfg.state_machine_patterns.is_empty() {
-                    None
-                } else {
-                    Some(cfg.state_machine_patterns)
-                }
-            })
-            .unwrap_or_default();
+        // Load state machine patterns from extraction config
+        let state_machine_patterns = if extraction_config.state_machine_patterns.is_empty() {
+            Vec::new()
+        } else {
+            extraction_config.state_machine_patterns.clone()
+        };
 
         // Create state machine matchers
         let state_machine_matchers: Vec<_> = state_machine_patterns

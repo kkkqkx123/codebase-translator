@@ -5,11 +5,13 @@
 use std::sync::Arc;
 use tree_sitter::{Node, Parser, Tree};
 
+use crate::config::project::ExtractionConfig;
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, TranslationUnit};
+use crate::core::StrategyNodeType;
 use crate::parser::core::query_executor::QueryExecutor;
 use crate::parser::core::string_processor::{CleanedComment, CommentType};
-use crate::parser::core::traits::{ExtractionConfig, Parser as ParserTrait, StrategyNodeType};
+use crate::parser::core::Parser as ParserTrait;
 use crate::parser::core::StringProcessor;
 use crate::parser::filtering::traits::Filter;
 use crate::parser::languages::rust::patterns::RustPatterns;
@@ -432,7 +434,7 @@ mod tests {
     use super::*;
     use crate::core::models::NodeType;
 
-    use crate::parser::core::traits::ExtractionConfig;
+    use crate::parser::core::ExtractionConfig;
     use std::path::PathBuf;
 
     fn create_test_file(content: &str, path: &str) -> File {
@@ -559,13 +561,14 @@ pub mod module_a {
         // Create parser with Chinese as source language
         let config = ParserConfig::default();
         let extraction_config = ExtractionConfig::default();
-        let filter_config = crate::parser::filtering::FilterConfig {
-            source_langs: vec!["zh".to_string()],
-            target_lang: "en".to_string(),
-            ..crate::parser::filtering::FilterConfig::default()
-        };
+        let filter_config = crate::parser::filtering::FilterConfig::default();
         let filter = std::sync::Arc::new(
-            crate::parser::filtering::composite::CompositeFilter::new(filter_config).unwrap(),
+            crate::parser::filtering::composite::CompositeFilter::with_language_settings(
+                &filter_config,
+                vec!["zh".to_string()],
+                "en".to_string(),
+            )
+            .unwrap(),
         );
         let parser = RustParser::new(config, extraction_config, filter).unwrap();
 

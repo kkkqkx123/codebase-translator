@@ -108,61 +108,101 @@ mod tests {
     #[test]
     fn test_line_comments_query_syntax_valid() {
         let result = validate_query_syntax("line_comments", JavaQueries::line_comments());
-        assert!(result.is_ok(), "Line comments query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Line comments query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_block_comments_query_syntax_valid() {
         let result = validate_query_syntax("block_comments", JavaQueries::block_comments());
-        assert!(result.is_ok(), "Block comments query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Block comments query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_all_comments_query_syntax_valid() {
         let result = validate_query_syntax("all_comments", JavaQueries::all_comments());
-        assert!(result.is_ok(), "All comments query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "All comments query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_javadoc_comments_query_syntax_valid() {
         let result = validate_query_syntax("javadoc_comments", JavaQueries::javadoc_comments());
-        assert!(result.is_ok(), "Javadoc comments query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Javadoc comments query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_string_literals_query_syntax_valid() {
         let result = validate_query_syntax("string_literals", JavaQueries::string_literals());
-        assert!(result.is_ok(), "String literals query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "String literals query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_all_strings_query_syntax_valid() {
         let result = validate_query_syntax("all_strings", JavaQueries::all_strings());
-        assert!(result.is_ok(), "All strings query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "All strings query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_method_strings_query_syntax_valid() {
         let result = validate_query_syntax("method_strings", JavaQueries::method_strings());
-        assert!(result.is_ok(), "Method strings query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Method strings query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_specific_methods_query_syntax_valid() {
         let specific = JavaQueries::specific_methods(&["println", "print"]);
         let result = validate_query_syntax("specific_methods", &specific);
-        assert!(result.is_ok(), "Specific methods query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Specific methods query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_throw_statements_query_syntax_valid() {
         let result = validate_query_syntax("throw_statements", JavaQueries::throw_statements());
-        assert!(result.is_ok(), "Throw statements query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Throw statements query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_assert_statements_query_syntax_valid() {
         let result = validate_query_syntax("assert_statements", JavaQueries::assert_statements());
-        assert!(result.is_ok(), "Assert statements query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Assert statements query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 }

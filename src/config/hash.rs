@@ -111,34 +111,20 @@ pub fn calculate_config_hash(config: &ProjectConfig) -> String {
     });
 
     // String literal extraction settings
-    hasher.update(b"|string_literals_enabled:");
-    hasher.update(if config.extraction.string_literals.enabled {
+    hasher.update(b"|string_literals:");
+    hasher.update(if config.extraction.string_literals {
         b"1"
     } else {
         b"0"
     });
-    hasher.update(b"|string_literals_error_handling:");
-    hasher.update(
-        if config.extraction.string_literals.categories.error_handling {
-            b"1"
-        } else {
-            b"0"
-        },
-    );
-    hasher.update(b"|string_literals_output:");
-    hasher.update(if config.extraction.string_literals.categories.output {
+    hasher.update(b"|variable_strings:");
+    hasher.update(if config.extraction.variable_strings {
         b"1"
     } else {
         b"0"
     });
-    hasher.update(b"|string_literals_variables:");
-    hasher.update(if config.extraction.string_literals.categories.variables {
-        b"1"
-    } else {
-        b"0"
-    });
-    hasher.update(b"|string_literals_properties:");
-    hasher.update(if config.extraction.string_literals.categories.properties {
+    hasher.update(b"|property_strings:");
+    hasher.update(if config.extraction.property_strings {
         b"1"
     } else {
         b"0"

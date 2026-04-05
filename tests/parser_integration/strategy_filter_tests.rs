@@ -8,7 +8,7 @@ use std::sync::Arc;
 use codebase_translate::core::models::{File, NodeType};
 use codebase_translate::parser::coordinator::ParserCoordinator;
 use codebase_translate::parser::filtering::{ContentFilter, FilterConfig};
-use codebase_translate::parser::core::traits::{ExtractionConfig, StrategyNodeType};
+use codebase_translate::parser::core::{ExtractionConfig, StrategyNodeType};
 use codebase_translate::parser::ParserConfig;
 
 fn create_test_file(content: &str, path: &str) -> File {

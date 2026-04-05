@@ -5,16 +5,20 @@
 
 pub mod extractor;
 pub mod language_parser;
+pub mod parser_trait;
 pub mod position_tracker;
 pub mod query_executor;
 pub mod string_processor;
-pub mod traits;
 pub mod types;
 
 pub use extractor::{ExtractionCandidate, ExtractionType, Extractor};
 pub use language_parser::LanguageParser;
+pub use parser_trait::Parser;
 pub use position_tracker::PositionTracker;
 pub use query_executor::{QueryExecutor, QueryMatch};
 pub use string_processor::{CommentType, StringProcessor};
-pub use traits::{ExtractionConfig, Parser, StrategyNodeType};
 pub use types::{FunctionCategory, LanguageFunctionPatterns};
+
+// Re-export types from other modules for convenience
+pub use crate::config::project::ExtractionConfig;
+pub use crate::core::StrategyNodeType;

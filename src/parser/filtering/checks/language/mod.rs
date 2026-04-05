@@ -24,7 +24,6 @@ pub use language_only::LanguageOnlyFilter;
 pub use script::Script;
 pub use strategy::{DetectionStrategy, QuickDetector, SampledDetector};
 
-use crate::parser::filtering::config::FilterConfig;
 use crate::parser::filtering::traits::Filter;
 use tracing::debug;
 
@@ -37,10 +36,14 @@ pub struct LanguageFilter {
 
 impl LanguageFilter {
     /// Create a new language filter
-    pub fn new(config: &FilterConfig) -> Self {
+    ///
+    /// # Arguments
+    /// * `source_langs` - Source languages to translate from (e.g., ["zh", "AUTO"])
+    /// * `target_lang` - Target language for translation (e.g., "EN")
+    pub fn new(source_langs: Vec<String>, target_lang: String) -> Self {
         Self {
-            source_langs: config.source_langs.clone(),
-            target_lang: config.target_lang.clone(),
+            source_langs,
+            target_lang,
             quick_detector: QuickDetector::new(),
         }
     }
@@ -51,24 +54,17 @@ impl LanguageFilter {
 
         match target.as_str() {
             "EN" | "EN-US" | "EN-GB" => {
-                // Check if text is primarily Latin AND doesn't contain significant non-Latin content
                 if !self.quick_detector.is_latin(text) {
                     return false;
                 }
-                // Also check that it doesn't contain significant CJK content
                 if self.quick_detector.has_cjk(text) {
                     return false;
                 }
                 true
             }
-            "ZH" | "ZH-CN" | "ZH-TW" => {
-                // Check if text has CJK characters
-                // Don't check for Latin content, as Chinese text often contains English words
-                self.quick_detector.has_cjk(text)
-            }
+            "ZH" | "ZH-CN" | "ZH-TW" => self.quick_detector.has_cjk(text),
             "JA" => self.quick_detector.has_japanese(text),
             "KO" => self.quick_detector.has_korean(text),
-            // For other languages, be conservative and allow translation
             _ => false,
         }
     }
@@ -79,20 +75,17 @@ impl LanguageFilter {
             return true;
         }
 
-        // Check if AUTO mode is enabled
         if self
             .source_langs
             .iter()
             .any(|lang| lang.to_uppercase() == "AUTO")
         {
-            // In AUTO mode, skip if text is already in target language
             if self.is_target_language(text) {
                 return false;
             }
             return true;
         }
 
-        // Check specific source languages
         for lang in &self.source_langs {
             let lang_upper = lang.to_uppercase();
             match lang_upper.as_str() {
@@ -126,7 +119,6 @@ impl LanguageFilter {
                         return true;
                     }
                 }
-                // For unknown languages, allow through
                 _ => return true,
             }
         }
@@ -140,8 +132,6 @@ impl Filter for LanguageFilter {
         let is_target = self.is_target_language(text);
         let has_source = self.contains_source_language(text);
 
-        // When source_langs is empty, use AUTO mode behavior:
-        // skip translation if text is already in target language
         if self.source_langs.is_empty() {
             if is_target {
                 debug!(
@@ -176,21 +166,17 @@ mod tests {
     use super::*;
 
     fn create_filter(source_langs: Vec<&str>, target_lang: &str) -> LanguageFilter {
-        let config = FilterConfig {
-            source_langs: source_langs.iter().map(|s| s.to_string()).collect(),
-            target_lang: target_lang.to_string(),
-            ..Default::default()
-        };
-        LanguageFilter::new(&config)
+        LanguageFilter::new(
+            source_langs.iter().map(|s| s.to_string()).collect(),
+            target_lang.to_string(),
+        )
     }
 
     #[test]
     fn test_no_language_restriction() {
-        // When source_langs is empty, use AUTO mode behavior:
-        // skip translation if text is already in target language
         let filter = create_filter(vec![], "EN");
-        assert!(!filter.should_translate("Hello")); // English text should be skipped (target language)
-        assert!(filter.should_translate("你好")); // Chinese text should be translated
+        assert!(!filter.should_translate("Hello"));
+        assert!(filter.should_translate("你好"));
     }
 
     #[test]
@@ -228,7 +214,6 @@ mod tests {
 
     #[test]
     fn test_auto_mode_skip_target() {
-        // When target is EN and source is AUTO, English text should be skipped
         let filter = create_filter(vec!["AUTO"], "EN");
 
         assert!(!filter.should_translate("Hello World"));
@@ -238,7 +223,6 @@ mod tests {
 
     #[test]
     fn test_auto_mode_skip_chinese() {
-        // When target is ZH and source is AUTO, Chinese text should be skipped
         let filter = create_filter(vec!["AUTO"], "ZH");
 
         assert!(!filter.should_translate("你好世界"));
@@ -249,7 +233,6 @@ mod tests {
     fn test_mixed_content() {
         let filter = create_filter(vec!["zh"], "EN");
 
-        // Mixed Chinese-English should pass if Chinese is detected
         assert!(filter.should_translate("Hello 你好"));
     }
 

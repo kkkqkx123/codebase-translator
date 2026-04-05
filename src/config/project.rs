@@ -314,10 +314,6 @@ fn default_true() -> bool {
     true
 }
 
-fn default_false() -> bool {
-    false
-}
-
 fn default_exclude_patterns() -> Vec<String> {
     vec![".translator/**".to_string(), ".translator.toml".to_string()]
 }
@@ -365,6 +361,9 @@ impl Default for ExcludeConfig {
 /// Filter configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FilterConfig {
+    /// Minimum text length (0 means no limit)
+    #[serde(default)]
+    pub min_length: usize,
     /// Keywords to exclude
     #[serde(default)]
     pub exclude_keywords: Vec<String>,
@@ -396,6 +395,7 @@ pub struct FilterConfig {
 impl Default for FilterConfig {
     fn default() -> Self {
         Self {
+            min_length: 0,
             exclude_keywords: vec![
                 "TODO".to_string(),
                 "FIXME".to_string(),
@@ -472,9 +472,21 @@ pub struct ExtractionConfig {
     /// Extract format strings
     #[serde(default = "default_true")]
     pub format_strings: bool,
+    /// Extract log messages
+    #[serde(default = "default_true")]
+    pub log_messages: bool,
+    /// Extract test descriptions
+    #[serde(default = "default_true")]
+    pub test_descriptions: bool,
     /// Extract string literals
     #[serde(default)]
-    pub string_literals: StringLiteralConfig,
+    pub string_literals: bool,
+    /// Extract variable assignment strings
+    #[serde(default)]
+    pub variable_strings: bool,
+    /// Extract object property strings
+    #[serde(default)]
+    pub property_strings: bool,
     /// Custom regex patterns (simple regex-based extraction)
     #[serde(default)]
     pub custom_patterns: Vec<CustomRegexPattern>,
@@ -490,63 +502,48 @@ impl Default for ExtractionConfig {
             doc_strings: true,
             error_messages: true,
             format_strings: true,
-            string_literals: StringLiteralConfig::default(),
+            log_messages: true,
+            test_descriptions: true,
+            string_literals: false,
+            variable_strings: false,
+            property_strings: false,
             custom_patterns: Vec::new(),
             state_machine_patterns: Vec::new(),
         }
     }
 }
 
-/// String literal extraction configuration
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct StringLiteralConfig {
-    /// Enable string literal extraction
-    #[serde(default)]
-    pub enabled: bool,
-    /// Categories to enable
-    #[serde(default = "default_categories")]
-    pub categories: StringLiteralCategories,
-}
-
-impl Default for StringLiteralConfig {
-    fn default() -> Self {
-        Self {
-            enabled: false,
-            categories: default_categories(),
+impl ExtractionConfig {
+    pub fn should_extract(&self, node_type: crate::core::StrategyNodeType) -> bool {
+        use crate::core::StrategyNodeType;
+        match node_type {
+            StrategyNodeType::Comment => self.comments,
+            StrategyNodeType::DocString => self.doc_strings,
+            StrategyNodeType::ErrorMessage => self.error_messages,
+            StrategyNodeType::FormatString => self.format_strings,
+            StrategyNodeType::LogMessage => self.log_messages,
+            StrategyNodeType::StringLiteral => self.string_literals,
+            StrategyNodeType::VariableString => self.variable_strings,
+            StrategyNodeType::PropertyString => self.property_strings,
+            StrategyNodeType::TestDescription => self.test_descriptions,
+            StrategyNodeType::MarkdownParagraph
+            | StrategyNodeType::MarkdownHeading
+            | StrategyNodeType::MarkdownListItem
+            | StrategyNodeType::MarkdownTableCell => true,
         }
     }
-}
 
-/// Categories of string literals that can be extracted
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct StringLiteralCategories {
-    /// Error handling: panic, Error, throw, etc.
-    #[serde(default = "default_true")]
-    pub error_handling: bool,
-    /// Output/logging: print, console, logging, etc.
-    #[serde(default = "default_false")]
-    pub output: bool,
-    /// Variable assignments matching specific patterns
-    #[serde(default = "default_false")]
-    pub variables: bool,
-    /// Object properties with specific keys
-    #[serde(default = "default_false")]
-    pub properties: bool,
-}
-
-impl Default for StringLiteralCategories {
-    fn default() -> Self {
-        Self {
-            error_handling: true,
-            output: false,
-            variables: false,
-            properties: false,
-        }
+    pub fn get_node_type(&self, node_type: crate::core::StrategyNodeType) -> crate::core::NodeType {
+        node_type.to_node_type()
     }
-}
 
-fn default_categories() -> StringLiteralCategories {
-    StringLiteralCategories::default()
+    pub fn docstrings(&self) -> bool {
+        self.doc_strings
+    }
+
+    pub fn string_literals_enabled(&self) -> bool {
+        self.string_literals
+    }
 }
 
 /// Custom regex pattern configuration

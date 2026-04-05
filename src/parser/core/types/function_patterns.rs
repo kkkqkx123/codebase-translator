@@ -180,7 +180,8 @@ mod tests {
     #[test]
     fn test_test_functions() {
         let mut patterns = LanguageFunctionPatterns::empty();
-        patterns.test_functions = vec!["it".to_string(), "describe".to_string(), "test".to_string()];
+        patterns.test_functions =
+            vec!["it".to_string(), "describe".to_string(), "test".to_string()];
 
         assert_eq!(patterns.classify("it"), Some(FunctionCategory::Test));
         assert_eq!(patterns.classify("describe"), Some(FunctionCategory::Test));

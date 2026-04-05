@@ -209,97 +209,163 @@ mod tests {
     #[test]
     fn test_line_comments_query_syntax_valid() {
         let result = validate_query_syntax("line_comments", RustQueries::line_comments());
-        assert!(result.is_ok(), "Line comments query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Line comments query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_block_comments_query_syntax_valid() {
         let result = validate_query_syntax("block_comments", RustQueries::block_comments());
-        assert!(result.is_ok(), "Block comments query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Block comments query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_all_comments_query_syntax_valid() {
         let result = validate_query_syntax("all_comments", RustQueries::all_comments());
-        assert!(result.is_ok(), "All comments query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "All comments query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_doc_comments_query_syntax_valid() {
         let result = validate_query_syntax("doc_comments", RustQueries::doc_comments());
-        assert!(result.is_ok(), "Doc comments query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Doc comments query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_outer_doc_comments_query_syntax_valid() {
         let result = validate_query_syntax("outer_doc_comments", RustQueries::outer_doc_comments());
-        assert!(result.is_ok(), "Outer doc comments query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Outer doc comments query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_inner_doc_comments_query_syntax_valid() {
         let result = validate_query_syntax("inner_doc_comments", RustQueries::inner_doc_comments());
-        assert!(result.is_ok(), "Inner doc comments query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Inner doc comments query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_string_literals_query_syntax_valid() {
         let result = validate_query_syntax("string_literals", RustQueries::string_literals());
-        assert!(result.is_ok(), "String literals query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "String literals query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_raw_string_literals_query_syntax_valid() {
-        let result = validate_query_syntax("raw_string_literals", RustQueries::raw_string_literals());
-        assert!(result.is_ok(), "Raw string literals query syntax validation failed: {:?}", result.err());
+        let result =
+            validate_query_syntax("raw_string_literals", RustQueries::raw_string_literals());
+        assert!(
+            result.is_ok(),
+            "Raw string literals query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_all_strings_query_syntax_valid() {
         let result = validate_query_syntax("all_strings", RustQueries::all_strings());
-        assert!(result.is_ok(), "All strings query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "All strings query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_macro_strings_query_syntax_valid() {
         let result = validate_query_syntax("macro_strings", RustQueries::macro_strings());
-        assert!(result.is_ok(), "Macro strings query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Macro strings query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_specific_macros_query_syntax_valid() {
         let specific = RustQueries::specific_macros(&["panic", "println"]);
         let result = validate_query_syntax("specific_macros", &specific);
-        assert!(result.is_ok(), "Specific macros query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Specific macros query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_attributes_query_syntax_valid() {
         let result = validate_query_syntax("attributes", RustQueries::attributes());
-        assert!(result.is_ok(), "Attributes query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Attributes query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_doc_attributes_query_syntax_valid() {
         let result = validate_query_syntax("doc_attributes", RustQueries::doc_attributes());
-        assert!(result.is_ok(), "Doc attributes query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Doc attributes query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_panic_macros_query_syntax_valid() {
         let result = validate_query_syntax("panic_macros", RustQueries::panic_macros());
-        assert!(result.is_ok(), "Panic macros query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Panic macros query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_assertion_macros_query_syntax_valid() {
         let result = validate_query_syntax("assertion_macros", RustQueries::assertion_macros());
-        assert!(result.is_ok(), "Assertion macros query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Assertion macros query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_unimplemented_macros_query_syntax_valid() {
-        let result = validate_query_syntax("unimplemented_macros", RustQueries::unimplemented_macros());
-        assert!(result.is_ok(), "Unimplemented macros query syntax validation failed: {:?}", result.err());
+        let result =
+            validate_query_syntax("unimplemented_macros", RustQueries::unimplemented_macros());
+        assert!(
+            result.is_ok(),
+            "Unimplemented macros query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 }

@@ -159,7 +159,7 @@ impl ConfigLoader {
         if let Some(ref project_logging) = project.logging {
             // Check if project logging has non-default values before overriding
             let default_logging = LoggingConfig::default();
-            
+
             // Only override individual fields if they differ from defaults
             if project_logging.level != default_logging.level {
                 global.logging.level = project_logging.level.clone();
@@ -361,7 +361,7 @@ directory = ".translator"
     fn test_default_config() {
         let temp_dir = TempDir::new().expect("Failed to create temp directory");
         let original_dir = std::env::current_dir().expect("Failed to get current dir");
-        
+
         // Create an empty .translator.toml file to avoid searching up the directory tree
         let config_path = temp_dir.path().join(".translator.toml");
         std::fs::write(&config_path, "").expect("Failed to create empty config file");
@@ -379,7 +379,7 @@ directory = ".translator"
         assert_eq!(config.translate.target_lang, "en");
         assert!(!config.writer.dry_run);
         assert!(config.writer.backup);
-        
+
         // Explicitly drop temp_dir after restoring directory
         drop(temp_dir);
     }
@@ -567,7 +567,7 @@ output = "stderr"
         assert!(config.writer.backup);
         assert!(config.cache.enabled);
         assert_eq!(config.cache.directory, ".translator");
-        
+
         // Explicitly drop temp_dir after restoring directory
         drop(temp_dir);
     }

@@ -4,7 +4,7 @@ use tracing::debug;
 
 use crate::core::error::Result;
 use crate::core::models::{File, TranslationUnit};
-use crate::parser::core::traits::Parser as ParserTrait;
+use crate::parser::core::Parser as ParserTrait;
 use crate::parser::regex::{RegexParser, RegexParserConfig};
 use crate::parser::ParserConfig;
 

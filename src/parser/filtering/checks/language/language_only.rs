@@ -65,8 +65,9 @@ impl LanguageOnlyFilter {
     /// * `languages` - List of language codes to extract
     /// * `protection` - Format protection configuration
     pub fn with_protection(languages: Vec<String>, protection: FormatProtectionConfig) -> Self {
-        let url_pattern = Regex::new(r"https?://[^\s]+|[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
-            .expect("Invalid URL pattern regex");
+        let url_pattern =
+            Regex::new(r"https?://[^\s]+|[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
+                .expect("Invalid URL pattern regex");
 
         let placeholder_patterns = vec![
             Regex::new(r"%[sdvf]").expect("Invalid placeholder regex"),

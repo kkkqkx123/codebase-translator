@@ -6,13 +6,12 @@
 use std::path::PathBuf;
 
 use codebase_translate::config::project::{
-    CustomRegexPattern, ExtractionConfig as ProjectExtractionConfig, ExtractionRule, PatternState,
+    CustomRegexPattern, ExtractionConfig, ExtractionRule, FilterConfig, PatternState,
     StateMachinePattern, StateTransition, StringLiteralCategory,
 };
 use codebase_translate::core::models::File;
 use codebase_translate::parser::coordinator::ParserCoordinator;
-use codebase_translate::parser::core::traits::ExtractionConfig;
-use codebase_translate::parser::filtering::{ContentFilter, FilterConfig};
+use codebase_translate::parser::filtering::ContentFilter;
 use codebase_translate::parser::ParserConfig;
 use std::sync::Arc;
 
@@ -23,11 +22,11 @@ fn create_test_file(content: &str, path: &str) -> File {
 /// Create a filter that allows English content to be extracted
 /// This is needed for tests that expect to extract English text
 fn create_test_filter() -> Arc<ContentFilter> {
-    let config = FilterConfig {
-        source_langs: vec!["EN".to_string()],
-        ..FilterConfig::default()
-    };
-    Arc::new(ContentFilter::new(config).expect("Failed to create filter"))
+    let config = FilterConfig::default();
+    Arc::new(
+        ContentFilter::with_language_settings(&config, vec!["EN".to_string()], "ZH".to_string())
+            .expect("Failed to create filter"),
+    )
 }
 
 #[test]
@@ -40,16 +39,15 @@ fn test_custom_pattern_applied_to_tree_sitter_files() {
         group: 1,
     }];
 
-    let project_extraction_config = ProjectExtractionConfig {
+    let extraction_config = ExtractionConfig {
         custom_patterns,
         ..Default::default()
     };
 
     let coordinator = ParserCoordinator::with_extraction_config(
         ParserConfig::default(),
-        ExtractionConfig::default(),
+        extraction_config,
         create_test_filter(),
-        Some(project_extraction_config),
     )
     .unwrap();
 
@@ -89,16 +87,15 @@ fn test_custom_pattern_applied_to_regex_parser_files() {
         group: 1,
     }];
 
-    let project_extraction_config = ProjectExtractionConfig {
+    let extraction_config = ExtractionConfig {
         custom_patterns,
         ..Default::default()
     };
 
     let coordinator = ParserCoordinator::with_extraction_config(
         ParserConfig::default(),
-        ExtractionConfig::default(),
+        extraction_config,
         create_test_filter(),
-        Some(project_extraction_config),
     )
     .unwrap();
 
@@ -150,16 +147,15 @@ fn test_state_machine_applied_to_tree_sitter_files() {
         accepting_states: vec!["extract".to_string()],
     }];
 
-    let project_extraction_config = ProjectExtractionConfig {
+    let extraction_config = ExtractionConfig {
         state_machine_patterns,
         ..Default::default()
     };
 
     let coordinator = ParserCoordinator::with_extraction_config(
         ParserConfig::default(),
-        ExtractionConfig::default(),
+        extraction_config,
         create_test_filter(),
-        Some(project_extraction_config),
     )
     .unwrap();
 
@@ -221,7 +217,7 @@ fn test_both_patterns_applied_to_same_file() {
         accepting_states: vec!["extract".to_string()],
     }];
 
-    let project_extraction_config = ProjectExtractionConfig {
+    let extraction_config = ExtractionConfig {
         custom_patterns,
         state_machine_patterns,
         ..Default::default()
@@ -229,9 +225,8 @@ fn test_both_patterns_applied_to_same_file() {
 
     let coordinator = ParserCoordinator::with_extraction_config(
         ParserConfig::default(),
-        ExtractionConfig::default(),
+        extraction_config,
         create_test_filter(),
-        Some(project_extraction_config),
     )
     .unwrap();
 
@@ -273,16 +268,15 @@ fn test_pattern_with_wildcard_extension() {
         group: 1,
     }];
 
-    let project_extraction_config = ProjectExtractionConfig {
+    let extraction_config = ExtractionConfig {
         custom_patterns,
         ..Default::default()
     };
 
     let coordinator = ParserCoordinator::with_extraction_config(
         ParserConfig::default(),
-        ExtractionConfig::default(),
+        extraction_config,
         create_test_filter(),
-        Some(project_extraction_config),
     )
     .unwrap();
 

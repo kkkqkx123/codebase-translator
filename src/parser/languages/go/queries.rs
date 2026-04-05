@@ -202,67 +202,115 @@ mod tests {
     #[test]
     fn test_all_comments_query_syntax_valid() {
         let result = validate_query_syntax("all_comments", GoQueries::all_comments());
-        assert!(result.is_ok(), "All comments query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "All comments query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_doc_comments_query_syntax_valid() {
         let result = validate_query_syntax("doc_comments", GoQueries::doc_comments());
-        assert!(result.is_ok(), "Doc comments query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Doc comments query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_interpreted_string_literals_query_syntax_valid() {
-        let result = validate_query_syntax("interpreted_string_literals", GoQueries::interpreted_string_literals());
-        assert!(result.is_ok(), "Interpreted string literals query syntax validation failed: {:?}", result.err());
+        let result = validate_query_syntax(
+            "interpreted_string_literals",
+            GoQueries::interpreted_string_literals(),
+        );
+        assert!(
+            result.is_ok(),
+            "Interpreted string literals query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_raw_string_literals_query_syntax_valid() {
         let result = validate_query_syntax("raw_string_literals", GoQueries::raw_string_literals());
-        assert!(result.is_ok(), "Raw string literals query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Raw string literals query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_all_strings_query_syntax_valid() {
         let result = validate_query_syntax("all_strings", GoQueries::all_strings());
-        assert!(result.is_ok(), "All strings query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "All strings query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_function_call_strings_query_syntax_valid() {
-        let result = validate_query_syntax("function_call_strings", GoQueries::function_call_strings());
-        assert!(result.is_ok(), "Function call strings query syntax validation failed: {:?}", result.err());
+        let result =
+            validate_query_syntax("function_call_strings", GoQueries::function_call_strings());
+        assert!(
+            result.is_ok(),
+            "Function call strings query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_specific_functions_query_syntax_valid() {
         let specific = GoQueries::specific_functions(&["fmt.Printf", "log.Println"]);
         let result = validate_query_syntax("specific_functions", &specific);
-        assert!(result.is_ok(), "Specific functions query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Specific functions query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_panic_expressions_query_syntax_valid() {
         let result = validate_query_syntax("panic_expressions", GoQueries::panic_expressions());
-        assert!(result.is_ok(), "Panic expressions query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Panic expressions query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_error_functions_query_syntax_valid() {
         let result = validate_query_syntax("error_functions", GoQueries::error_functions());
-        assert!(result.is_ok(), "Error functions query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Error functions query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_format_functions_query_syntax_valid() {
         let result = validate_query_syntax("format_functions", GoQueries::format_functions());
-        assert!(result.is_ok(), "Format functions query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Format functions query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
     fn test_log_functions_query_syntax_valid() {
         let result = validate_query_syntax("log_functions", GoQueries::log_functions());
-        assert!(result.is_ok(), "Log functions query syntax validation failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Log functions query syntax validation failed: {:?}",
+            result.err()
+        );
     }
 }

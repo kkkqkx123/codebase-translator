@@ -8,21 +8,33 @@
 use std::path::PathBuf;
 use std::sync::Arc;
 
+use codebase_translate::config::project::{ExtractionConfig, FilterConfig};
 use codebase_translate::core::models::File;
 use codebase_translate::parser::coordinator::ParserCoordinator;
-use codebase_translate::parser::core::traits::ExtractionConfig;
-use codebase_translate::parser::filtering::{ContentFilter, FilterConfig};
+use codebase_translate::parser::filtering::ContentFilter;
 use codebase_translate::parser::ParserConfig;
 
 fn create_test_file(content: &str, path: &str) -> File {
     File::new(PathBuf::from(path), content.as_bytes().to_vec(), "utf-8")
 }
 
+fn create_filter_with_language(source_langs: Vec<String>, target_lang: &str) -> Arc<ContentFilter> {
+    let filter_config = FilterConfig::default();
+    Arc::new(
+        ContentFilter::with_language_settings(
+            &filter_config,
+            source_langs,
+            target_lang.to_string(),
+        )
+        .expect("Failed to create filter"),
+    )
+}
+
 #[test]
 fn test_auto_to_en_filters_english_comments() {
     let strategy_config = ExtractionConfig {
         comments: true,
-        docstrings: true,
+        doc_strings: true,
         error_messages: false,
         format_strings: false,
         log_messages: false,
@@ -30,15 +42,10 @@ fn test_auto_to_en_filters_english_comments() {
         variable_strings: false,
         property_strings: false,
         test_descriptions: false,
-    };
-
-    let filter_config = FilterConfig {
-        source_langs: vec!["AUTO".to_string()],
-        target_lang: "EN".to_string(),
         ..Default::default()
     };
 
-    let filter = Arc::new(ContentFilter::new(filter_config).expect("Failed to create filter"));
+    let filter = create_filter_with_language(vec!["AUTO".to_string()], "EN");
 
     let parser_config = ParserConfig::default();
     let coordinator = ParserCoordinator::new(parser_config, strategy_config, filter)
@@ -87,7 +94,7 @@ fn test_auto_to_en_filters_english_comments() {
 fn test_auto_to_en_filters_english_strings() {
     let strategy_config = ExtractionConfig {
         comments: false,
-        docstrings: false,
+        doc_strings: false,
         error_messages: true,
         format_strings: true,
         log_messages: true,
@@ -95,15 +102,10 @@ fn test_auto_to_en_filters_english_strings() {
         variable_strings: false,
         property_strings: false,
         test_descriptions: false,
-    };
-
-    let filter_config = FilterConfig {
-        source_langs: vec!["AUTO".to_string()],
-        target_lang: "EN".to_string(),
         ..Default::default()
     };
 
-    let filter = Arc::new(ContentFilter::new(filter_config).expect("Failed to create filter"));
+    let filter = create_filter_with_language(vec!["AUTO".to_string()], "EN");
 
     let parser_config = ParserConfig::default();
     let coordinator = ParserCoordinator::new(parser_config, strategy_config, filter)
@@ -151,7 +153,7 @@ fn main() {
 fn test_auto_to_en_mixed_content() {
     let strategy_config = ExtractionConfig {
         comments: true,
-        docstrings: true,
+        doc_strings: true,
         error_messages: true,
         format_strings: true,
         log_messages: true,
@@ -159,15 +161,10 @@ fn test_auto_to_en_mixed_content() {
         variable_strings: false,
         property_strings: false,
         test_descriptions: false,
-    };
-
-    let filter_config = FilterConfig {
-        source_langs: vec!["AUTO".to_string()],
-        target_lang: "EN".to_string(),
         ..Default::default()
     };
 
-    let filter = Arc::new(ContentFilter::new(filter_config).expect("Failed to create filter"));
+    let filter = create_filter_with_language(vec!["AUTO".to_string()], "EN");
 
     let parser_config = ParserConfig::default();
     let coordinator = ParserCoordinator::new(parser_config, strategy_config, filter)
@@ -244,7 +241,7 @@ fn test() {
 fn test_auto_to_zh_filters_chinese() {
     let strategy_config = ExtractionConfig {
         comments: true,
-        docstrings: true,
+        doc_strings: true,
         error_messages: false,
         format_strings: false,
         log_messages: false,
@@ -252,15 +249,10 @@ fn test_auto_to_zh_filters_chinese() {
         variable_strings: false,
         property_strings: false,
         test_descriptions: false,
-    };
-
-    let filter_config = FilterConfig {
-        source_langs: vec!["AUTO".to_string()],
-        target_lang: "ZH".to_string(),
         ..Default::default()
     };
 
-    let filter = Arc::new(ContentFilter::new(filter_config).expect("Failed to create filter"));
+    let filter = create_filter_with_language(vec!["AUTO".to_string()], "ZH");
 
     let parser_config = ParserConfig::default();
     let coordinator = ParserCoordinator::new(parser_config, strategy_config, filter)
@@ -301,7 +293,7 @@ fn test_auto_to_zh_filters_chinese() {
 fn test_empty_source_langs_auto_behavior() {
     let strategy_config = ExtractionConfig {
         comments: true,
-        docstrings: true,
+        doc_strings: true,
         error_messages: false,
         format_strings: false,
         log_messages: false,
@@ -309,15 +301,10 @@ fn test_empty_source_langs_auto_behavior() {
         variable_strings: false,
         property_strings: false,
         test_descriptions: false,
-    };
-
-    let filter_config = FilterConfig {
-        source_langs: vec![],
-        target_lang: "EN".to_string(),
         ..Default::default()
     };
 
-    let filter = Arc::new(ContentFilter::new(filter_config).expect("Failed to create filter"));
+    let filter = create_filter_with_language(vec![], "EN");
 
     let parser_config = ParserConfig::default();
     let coordinator = ParserCoordinator::new(parser_config, strategy_config, filter)

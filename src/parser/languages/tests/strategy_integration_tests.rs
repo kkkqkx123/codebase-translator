@@ -6,8 +6,10 @@
 use std::path::PathBuf;
 use std::sync::Arc;
 
+use crate::config::project::ExtractionConfig;
 use crate::core::models::{File, NodeType};
-use crate::parser::core::traits::{ExtractionConfig, Parser, StrategyNodeType};
+use crate::core::StrategyNodeType;
+use crate::parser::core::Parser;
 use crate::parser::languages::*;
 use crate::parser::ContentFilter;
 use crate::parser::ParserConfig;
@@ -34,7 +36,7 @@ fn create_filter() -> Arc<ContentFilter> {
 fn test_strategy_comment_filtering() {
     let config = ExtractionConfig {
         comments: false, // Disable comments
-        docstrings: true,
+        doc_strings: true,
         ..Default::default()
     };
 
@@ -70,7 +72,7 @@ fn main() {
 fn test_strategy_docstring_filtering() {
     let config = ExtractionConfig {
         comments: true,
-        docstrings: false, // Disable docstrings
+        doc_strings: false, // Disable docstrings
         ..Default::default()
     };
 
@@ -213,7 +215,7 @@ func main() {
 fn test_c_parser_docstring_strategy() {
     let config = ExtractionConfig {
         comments: true,
-        docstrings: true,
+        doc_strings: true,
         ..Default::default()
     };
 
@@ -253,7 +255,7 @@ void function2() {}
 fn test_cpp_parser_docstring_strategy() {
     let config = ExtractionConfig {
         comments: true,
-        docstrings: true,
+        doc_strings: true,
         ..Default::default()
     };
 
@@ -290,7 +292,7 @@ public:
 fn test_java_parser_strategy_integration() {
     let config = ExtractionConfig {
         comments: true,
-        docstrings: true,
+        doc_strings: true,
         error_messages: true,
         format_strings: true,
         log_messages: true,
@@ -330,7 +332,7 @@ public class Test {
 fn test_csharp_parser_strategy_integration() {
     let config = ExtractionConfig {
         comments: true,
-        docstrings: true,
+        doc_strings: true,
         error_messages: true,
         format_strings: true,
         ..Default::default()
