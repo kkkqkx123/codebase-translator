@@ -19,7 +19,7 @@ use tracing::debug;
 /// 3. PatternFilter - O(n) regex matching
 /// 4. ContentFilter - O(len) content analysis
 ///
-/// When `force_extract_by_language` is enabled, only LanguageOnlyFilter is used.
+/// When `extract_languages` is non-empty, language-only filtering mode is enabled.
 pub struct CompositeFilter {
     length: LengthFilter,
     language: LanguageFilter,
@@ -30,17 +30,15 @@ pub struct CompositeFilter {
 
 impl CompositeFilter {
     /// Create a new composite filter
+    ///
+    /// If `extract_languages` is non-empty, enables language-only filtering mode:
+    /// - Only extracts text containing characters from specified languages
+    /// - Skips keyword and pattern filtering
+    /// - Still applies format protection (URL/placeholder filtering)
     pub fn new(config: FilterConfig) -> crate::core::error::Result<Self> {
-        // Create language-only filter if force_extract_by_language is enabled
-        let language_only = if config.force_extract_by_language {
-            if config.extract_languages.is_empty() {
-                tracing::warn!(
-                    "force_extract_by_language is enabled but extract_languages is empty, ignoring"
-                );
-                None
-            } else {
-                Some(LanguageOnlyFilter::new(config.extract_languages.clone()))
-            }
+        // Create language-only filter if extract_languages is non-empty
+        let language_only = if !config.extract_languages.is_empty() {
+            Some(LanguageOnlyFilter::new(config.extract_languages.clone()))
         } else {
             None
         };
@@ -79,7 +77,7 @@ impl CompositeFilter {
 
 impl Filter for CompositeFilter {
     fn should_translate(&self, text: &str) -> bool {
-        // If force_extract_by_language is enabled, only use language filter
+        // If extract_languages is non-empty, use language-only filter
         if let Some(ref lang_filter) = self.language_only {
             return lang_filter.should_translate(text);
         }
@@ -149,7 +147,6 @@ pub fn from_project_config(
         },
         allow_placeholders: config.allow_placeholders,
         detect_code_patterns: config.detect_code_patterns,
-        force_extract_by_language: config.force_extract_by_language,
         extract_languages: config.extract_languages.clone(),
     };
     CompositeFilter::new(filter_config)
@@ -177,7 +174,6 @@ pub fn from_project_config_with_translator(
         max_length,
         allow_placeholders: project_config.allow_placeholders,
         detect_code_patterns: project_config.detect_code_patterns,
-        force_extract_by_language: project_config.force_extract_by_language,
         extract_languages: project_config.extract_languages.clone(),
     };
     CompositeFilter::new(filter_config)
@@ -222,25 +218,28 @@ mod tests {
     }
 
     #[test]
-    fn test_force_extract_mode_enabled() {
+    fn test_language_only_mode() {
         let config = FilterConfig {
-            force_extract_by_language: true,
             extract_languages: vec!["ZH".to_string()],
             ..Default::default()
         };
         let filter = CompositeFilter::new(config).unwrap();
 
-        // Should extract all text containing Chinese, ignoring other filters
+        // Should extract all text containing Chinese, ignoring keyword filters
         assert!(filter.should_translate("TODO: 修复中文bug"));
-        assert!(filter.should_translate("https://example.com/你好"));
-        assert!(filter.should_translate("Hello %s 你好"));
+
+        // URLs and placeholders are filtered by format protection
+        assert!(!filter.should_translate("https://example.com/你好"));
+        assert!(!filter.should_translate("Hello %s 你好"));
+
+        // Pure Chinese text should pass
+        assert!(filter.should_translate("你好世界"));
         assert!(!filter.should_translate("Hello World"));
     }
 
     #[test]
-    fn test_force_extract_mode_disabled() {
+    fn test_standard_filter_mode() {
         let config = FilterConfig {
-            force_extract_by_language: false,
             source_langs: vec!["EN".to_string()],
             exclude_keywords: vec!["TODO".to_string()],
             ..Default::default()
@@ -253,22 +252,8 @@ mod tests {
     }
 
     #[test]
-    fn test_empty_languages_warning() {
+    fn test_name_with_language_only() {
         let config = FilterConfig {
-            force_extract_by_language: true,
-            extract_languages: vec![],
-            ..Default::default()
-        };
-        let filter = CompositeFilter::new(config).unwrap();
-
-        // Should log warning and use complete filter chain
-        assert!(!filter.should_translate("Hello World"));
-    }
-
-    #[test]
-    fn test_name_with_force_extract() {
-        let config = FilterConfig {
-            force_extract_by_language: true,
             extract_languages: vec!["ZH".to_string()],
             ..Default::default()
         };
@@ -278,9 +263,8 @@ mod tests {
     }
 
     #[test]
-    fn test_force_extract_multiple_languages() {
+    fn test_multiple_languages() {
         let config = FilterConfig {
-            force_extract_by_language: true,
             extract_languages: vec!["ZH".to_string(), "JA".to_string()],
             ..Default::default()
         };

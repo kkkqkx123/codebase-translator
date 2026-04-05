@@ -335,6 +335,110 @@ impl TypeScriptParser {
         Ok(units)
     }
 
+    /// Extract variable assignment strings using the core framework
+    fn extract_variable_strings(
+        &self,
+        root_node: &Node,
+        content: &str,
+        file_path: &str,
+    ) -> Result<Vec<TranslationUnit>> {
+        let executor = QueryExecutor::from_string(
+            &tree_sitter_typescript::LANGUAGE_TYPESCRIPT.into(),
+            TypeScriptQueries::variable_assignments(),
+        )?;
+
+        let matches = executor.execute(root_node, content)?;
+        let mut units = Vec::new();
+        let mut match_idx = 0usize;
+
+        for m in matches {
+            if m.capture_name == "var_string" || m.capture_name == "var_template" {
+                let text = if m.capture_name == "var_template" {
+                    m.text
+                        .strip_prefix('`')
+                        .and_then(|s| s.strip_suffix('`'))
+                        .map(|s| s.to_string())
+                        .unwrap_or_else(|| m.text.to_string())
+                } else {
+                    self.string_processor.clean_string_literal(m.text)
+                };
+
+                if !self.filter.should_translate(&text) {
+                    continue;
+                }
+
+                if !self
+                    .extraction_config
+                    .should_extract(StrategyNodeType::VariableString)
+                {
+                    continue;
+                }
+
+                let id = format!("{}_var_{}", file_path, match_idx);
+                let node_type = self
+                    .extraction_config
+                    .get_node_type(StrategyNodeType::VariableString);
+                let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
+                units.push(unit);
+                match_idx += 1;
+            }
+        }
+
+        Ok(units)
+    }
+
+    /// Extract object property strings using the core framework
+    fn extract_property_strings(
+        &self,
+        root_node: &Node,
+        content: &str,
+        file_path: &str,
+    ) -> Result<Vec<TranslationUnit>> {
+        let executor = QueryExecutor::from_string(
+            &tree_sitter_typescript::LANGUAGE_TYPESCRIPT.into(),
+            TypeScriptQueries::object_properties(),
+        )?;
+
+        let matches = executor.execute(root_node, content)?;
+        let mut units = Vec::new();
+        let mut match_idx = 0usize;
+
+        for m in matches {
+            if m.capture_name == "prop_string" || m.capture_name == "prop_template" {
+                let text = if m.capture_name == "prop_template" {
+                    m.text
+                        .strip_prefix('`')
+                        .and_then(|s| s.strip_suffix('`'))
+                        .map(|s| s.to_string())
+                        .unwrap_or_else(|| m.text.to_string())
+                } else {
+                    self.string_processor.clean_string_literal(m.text)
+                };
+
+                if !self.filter.should_translate(&text) {
+                    continue;
+                }
+
+                if !self
+                    .extraction_config
+                    .should_extract(StrategyNodeType::PropertyString)
+                {
+                    continue;
+                }
+
+                let id = format!("{}_prop_{}", file_path, match_idx);
+                let node_type = self
+                    .extraction_config
+                    .get_node_type(StrategyNodeType::PropertyString);
+                let unit = TranslationUnit::new(id, node_type, text, m.start_pos, m.end_pos);
+                units.push(unit);
+                match_idx += 1;
+            }
+        }
+
+        Ok(units)
+    }
+
     /// Extract all translation units from the syntax tree
     fn extract_units(
         &self,
@@ -365,6 +469,18 @@ impl TypeScriptParser {
             // Extract template strings
             let template_units = self.extract_template_strings(&root_node, content, file_path)?;
             units.extend(template_units);
+        }
+
+        // Extract variable assignment strings
+        if self.extraction_config.variable_strings {
+            let var_units = self.extract_variable_strings(&root_node, content, file_path)?;
+            units.extend(var_units);
+        }
+
+        // Extract object property strings
+        if self.extraction_config.property_strings {
+            let prop_units = self.extract_property_strings(&root_node, content, file_path)?;
+            units.extend(prop_units);
         }
 
         // Sort by position for consistent ordering

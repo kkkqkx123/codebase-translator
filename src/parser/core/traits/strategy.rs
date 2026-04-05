@@ -20,6 +20,10 @@ pub enum StrategyNodeType {
     LogMessage,
     /// String literal
     StringLiteral,
+    /// Variable assignment string
+    VariableString,
+    /// Object property string
+    PropertyString,
     /// Markdown paragraph
     MarkdownParagraph,
     /// Markdown heading
@@ -40,6 +44,8 @@ impl StrategyNodeType {
             Self::FormatString => "format_string",
             Self::LogMessage => "log_message",
             Self::StringLiteral => "string_literal",
+            Self::VariableString => "variable_string",
+            Self::PropertyString => "property_string",
             Self::MarkdownParagraph => "markdown_paragraph",
             Self::MarkdownHeading => "markdown_heading",
             Self::MarkdownListItem => "markdown_list_item",
@@ -69,6 +75,10 @@ pub struct ExtractionConfig {
     pub format_strings: bool,
     /// Extract log messages
     pub log_messages: bool,
+    /// Extract variable assignment strings (e.g., const x = "message")
+    pub variable_strings: bool,
+    /// Extract object property strings (e.g., { description: "message" })
+    pub property_strings: bool,
 }
 
 impl Default for ExtractionConfig {
@@ -80,6 +90,8 @@ impl Default for ExtractionConfig {
             error_messages: true,
             format_strings: true,
             log_messages: true,
+            variable_strings: false,
+            property_strings: false,
         }
     }
 }
@@ -94,6 +106,8 @@ impl ExtractionConfig {
             StrategyNodeType::FormatString => self.format_strings,
             StrategyNodeType::LogMessage => self.log_messages,
             StrategyNodeType::StringLiteral => self.string_literals,
+            StrategyNodeType::VariableString => self.variable_strings,
+            StrategyNodeType::PropertyString => self.property_strings,
             StrategyNodeType::MarkdownParagraph
             | StrategyNodeType::MarkdownHeading
             | StrategyNodeType::MarkdownListItem
@@ -110,6 +124,8 @@ impl ExtractionConfig {
             StrategyNodeType::FormatString => NodeType::FormatString,
             StrategyNodeType::LogMessage => NodeType::LogMessage,
             StrategyNodeType::StringLiteral => NodeType::StringLiteral,
+            StrategyNodeType::VariableString => NodeType::StringLiteral,
+            StrategyNodeType::PropertyString => NodeType::StringLiteral,
             StrategyNodeType::MarkdownParagraph => NodeType::Comment,
             StrategyNodeType::MarkdownHeading => NodeType::Comment,
             StrategyNodeType::MarkdownListItem => NodeType::Comment,

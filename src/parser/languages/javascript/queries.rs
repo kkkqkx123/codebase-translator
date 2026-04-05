@@ -149,6 +149,56 @@ impl JavaScriptQueries {
     (string) @assert_string))
 "#
     }
+
+    /// Variable assignment string query
+    /// Matches: const x = "message", let x = "message", var x = "message"
+    pub fn variable_assignments() -> &'static str {
+        r#"
+(variable_declarator
+  name: (identifier) @var_name
+  value: (string) @var_string)
+
+(variable_declarator
+  name: (identifier) @var_name
+  value: (template_string) @var_template)
+"#
+    }
+
+    /// Object property string query
+    /// Matches: { key: "value" }, { "key": "value" }
+    pub fn object_properties() -> &'static str {
+        r#"
+(pair
+  key: (property_identifier) @prop_key
+  value: (string) @prop_string)
+
+(pair
+  key: (string) @prop_key
+  value: (string) @prop_string)
+
+(pair
+  key: (property_identifier) @prop_key
+  value: (template_string) @prop_template)
+"#
+    }
+
+    /// Export variable assignment query
+    /// Matches: export const x = "message"
+    pub fn export_variable_assignments() -> &'static str {
+        r#"
+(export_statement
+  (variable_declaration
+    (variable_declarator
+      name: (identifier) @export_var_name
+      value: (string) @export_var_string)))
+
+(export_statement
+  (variable_declaration
+    (variable_declarator
+      name: (identifier) @export_var_name
+      value: (template_string) @export_var_template)))
+"#
+    }
 }
 
 #[cfg(test)]
@@ -229,5 +279,23 @@ mod tests {
     fn test_assertion_expressions_query_syntax_valid() {
         let result = validate_query_syntax("assertion_expressions", JavaScriptQueries::assertion_expressions());
         assert!(result.is_ok(), "Assertion expressions query syntax validation failed: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_variable_assignments_query_syntax_valid() {
+        let result = validate_query_syntax("variable_assignments", JavaScriptQueries::variable_assignments());
+        assert!(result.is_ok(), "Variable assignments query syntax validation failed: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_object_properties_query_syntax_valid() {
+        let result = validate_query_syntax("object_properties", JavaScriptQueries::object_properties());
+        assert!(result.is_ok(), "Object properties query syntax validation failed: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_export_variable_assignments_query_syntax_valid() {
+        let result = validate_query_syntax("export_variable_assignments", JavaScriptQueries::export_variable_assignments());
+        assert!(result.is_ok(), "Export variable assignments query syntax validation failed: {:?}", result.err());
     }
 }

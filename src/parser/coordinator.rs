@@ -74,13 +74,22 @@ impl ParserCoordinator {
     ) -> Result<Self> {
         use crate::parser::filtering::from_project_config;
 
-        let extraction_config = ExtractionConfig::default();
+        let extraction_config = ExtractionConfig {
+            comments: project_config.extraction.comments,
+            docstrings: project_config.extraction.doc_strings,
+            error_messages: project_config.extraction.error_messages,
+            format_strings: project_config.extraction.format_strings,
+            string_literals: project_config.extraction.string_literals.enabled,
+            variable_strings: project_config.extraction.string_literals.categories.variables,
+            property_strings: project_config.extraction.string_literals.categories.properties,
+            log_messages: true,
+        };
         let filter = Arc::new(from_project_config(
             &project_config.filter,
             &project_config.translate,
         )?);
 
-        Self::new(config, extraction_config, filter)
+        Self::with_extraction_config(config, extraction_config, filter, Some(project_config.extraction.clone()))
     }
 
     /// Creates a new parser coordinator from project and translator configuration.
@@ -95,14 +104,23 @@ impl ParserCoordinator {
     ) -> Result<Self> {
         use crate::parser::filtering::from_project_config_with_translator;
 
-        let extraction_config = ExtractionConfig::default();
+        let extraction_config = ExtractionConfig {
+            comments: project_config.extraction.comments,
+            docstrings: project_config.extraction.doc_strings,
+            error_messages: project_config.extraction.error_messages,
+            format_strings: project_config.extraction.format_strings,
+            string_literals: project_config.extraction.string_literals.enabled,
+            variable_strings: project_config.extraction.string_literals.categories.variables,
+            property_strings: project_config.extraction.string_literals.categories.properties,
+            log_messages: true,
+        };
         let filter = Arc::new(from_project_config_with_translator(
             &project_config.filter,
             &project_config.translate,
             translator_max_length,
         )?);
 
-        Self::new(config, extraction_config, filter)
+        Self::with_extraction_config(config, extraction_config, filter, Some(project_config.extraction.clone()))
     }
 
     /// Creates a new parser coordinator with unified configuration.

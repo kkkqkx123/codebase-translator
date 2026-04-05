@@ -41,23 +41,13 @@ pub struct FilterConfig {
     #[serde(default = "default_true")]
     pub detect_code_patterns: bool,
 
-    /// Force extract text containing specific language characters
+    /// List of languages to extract.
     ///
-    /// When enabled, all other filtering rules (patterns, length, placeholders, etc.)
-    /// are skipped, and only language characteristics are checked.
+    /// When non-empty, enables language-only filtering mode:
+    /// - Only extracts text containing characters from specified languages
+    /// - Skips keyword and pattern filtering
+    /// - Still applies format protection (URL/placeholder filtering)
     ///
-    /// This is useful for scenarios like:
-    /// - Extracting all Chinese comments in a codebase
-    /// - Batch processing multilingual mixed content
-    /// - When other filtering conditions don't matter
-    ///
-    /// Default: false (disabled)
-    #[serde(default)]
-    pub force_extract_by_language: bool,
-
-    /// List of languages to extract
-    ///
-    /// Only effective when `force_extract_by_language` is true.
     /// Supported language codes:
     /// - `ZH`, `ZH-CN`, `ZH-TW`: Chinese
     /// - `JA`: Japanese
@@ -68,7 +58,7 @@ pub struct FilterConfig {
     /// - `UK`: Ukrainian
     /// - `BG`: Bulgarian
     ///
-    /// Default: empty list (force extraction not enabled)
+    /// Default: empty list (use standard filter chain)
     #[serde(default)]
     pub extract_languages: Vec<String>,
 }
@@ -121,7 +111,6 @@ impl Default for FilterConfig {
             max_length: 10000,
             allow_placeholders: true,
             detect_code_patterns: true,
-            force_extract_by_language: false,
             extract_languages: Vec::new(),
         }
     }

@@ -68,7 +68,6 @@ impl ProjectConfig {
         }
         self.filter.allow_placeholders = other.filter.allow_placeholders;
         self.filter.detect_code_patterns = other.filter.detect_code_patterns;
-        self.filter.force_extract_by_language = other.filter.force_extract_by_language;
         if !other.filter.extract_languages.is_empty() {
             self.filter.extract_languages = other.filter.extract_languages;
         }
@@ -384,15 +383,12 @@ pub struct FilterConfig {
     /// Detect code patterns
     #[serde(default = "default_true")]
     pub detect_code_patterns: bool,
-    /// Force extract text containing specific language characters
+    /// List of languages to extract.
     ///
-    /// When enabled, all other filtering rules (patterns, length, placeholders, etc.)
-    /// are skipped, and only language characteristics are checked.
-    #[serde(default)]
-    pub force_extract_by_language: bool,
-    /// List of languages to extract
-    ///
-    /// Only effective when `force_extract_by_language` is true.
+    /// When non-empty, enables language-only filtering mode:
+    /// - Only extracts text containing characters from specified languages
+    /// - Skips keyword and pattern filtering
+    /// - Still applies format protection (URL/placeholder filtering)
     #[serde(default)]
     pub extract_languages: Vec<String>,
 }
@@ -419,7 +415,6 @@ impl Default for FilterConfig {
             max_length: 0,
             allow_placeholders: true,
             detect_code_patterns: true,
-            force_extract_by_language: false,
             extract_languages: Vec::new(),
         }
     }
