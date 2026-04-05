@@ -205,7 +205,7 @@ mod tests {
     #[test]
     fn test_apply_single_translation() {
         let content = "// 这是注释\n";
-        let region = TranslatedRegion::new(3, 7, "这是注释".to_string(), "This is comment".to_string());
+        let region = TranslatedRegion::new(3, 15, "这是注释".to_string(), "This is comment".to_string());
 
         let result = TranslationReplacer::apply_single(content, &region);
         assert_eq!(result, "// This is comment\n");
@@ -215,8 +215,8 @@ mod tests {
     fn test_apply_multiple_translations() {
         let content = "// 第一行\n// 第二行\n";
         let regions = vec![
-            TranslatedRegion::new(3, 6, "第一行".to_string(), "Line 1".to_string()),
-            TranslatedRegion::new(13, 16, "第二行".to_string(), "Line 2".to_string()),
+            TranslatedRegion::new(3, 12, "第一行".to_string(), "Line 1".to_string()),
+            TranslatedRegion::new(16, 25, "第二行".to_string(), "Line 2".to_string()),
         ];
 
         let result = TranslationReplacer::apply(content, &regions);

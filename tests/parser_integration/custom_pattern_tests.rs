@@ -48,6 +48,7 @@ fn test_custom_pattern_applied_to_tree_sitter_files() {
         ParserConfig::default(),
         extraction_config,
         create_test_filter(),
+        "en",
     )
     .unwrap();
 
@@ -96,6 +97,7 @@ fn test_custom_pattern_applied_to_regex_parser_files() {
         ParserConfig::default(),
         extraction_config,
         create_test_filter(),
+        "en",
     )
     .unwrap();
 
@@ -156,6 +158,7 @@ fn test_state_machine_applied_to_tree_sitter_files() {
         ParserConfig::default(),
         extraction_config,
         create_test_filter(),
+        "en",
     )
     .unwrap();
 
@@ -227,6 +230,7 @@ fn test_both_patterns_applied_to_same_file() {
         ParserConfig::default(),
         extraction_config,
         create_test_filter(),
+        "en",
     )
     .unwrap();
 
@@ -277,6 +281,7 @@ fn test_pattern_with_wildcard_extension() {
         ParserConfig::default(),
         extraction_config,
         create_test_filter(),
+        "en",
     )
     .unwrap();
 

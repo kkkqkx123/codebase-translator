@@ -390,6 +390,12 @@ pub struct FilterConfig {
     /// - Still applies format protection (URL/placeholder filtering)
     #[serde(default)]
     pub extract_languages: Vec<String>,
+    /// Custom placeholder patterns (overrides defaults if non-empty)
+    #[serde(default)]
+    pub placeholder_patterns: Vec<String>,
+    /// Custom code patterns (overrides defaults if non-empty)
+    #[serde(default)]
+    pub code_patterns: Vec<String>,
 }
 
 impl Default for FilterConfig {
@@ -416,6 +422,8 @@ impl Default for FilterConfig {
             allow_placeholders: true,
             detect_code_patterns: true,
             extract_languages: Vec::new(),
+            placeholder_patterns: Vec::new(),
+            code_patterns: Vec::new(),
         }
     }
 }

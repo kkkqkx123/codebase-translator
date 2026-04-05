@@ -148,6 +148,13 @@ impl TextScanner {
             if bytes[pos..].starts_with(prefix.as_bytes()) {
                 if prefix.starts_with("/*") || prefix.starts_with("/**") {
                     return self.scan_block_doc_comment(bytes, pos, prefix);
+                } else if *prefix == "\"\"\"" || *prefix == "'''" {
+                    return self.scan_multiline_string_with_type(
+                        bytes,
+                        pos,
+                        prefix,
+                        TextRegionType::DocComment,
+                    );
                 } else {
                     return self.scan_line_doc_comment(bytes, pos, prefix);
                 }
@@ -507,6 +514,17 @@ impl TextScanner {
 
     /// Scan a multi-line string
     fn scan_multiline_string(&self, bytes: &[u8], pos: usize, delim: &str) -> Option<TextRegion> {
+        self.scan_multiline_string_with_type(bytes, pos, delim, TextRegionType::MultiLineString)
+    }
+
+    /// Scan a multi-line string with specified region type
+    fn scan_multiline_string_with_type(
+        &self,
+        bytes: &[u8],
+        pos: usize,
+        delim: &str,
+        region_type: TextRegionType,
+    ) -> Option<TextRegion> {
         let delim_len = delim.len();
         let mut end = pos + delim_len;
 
@@ -518,7 +536,7 @@ impl TextScanner {
             if bytes[end..].starts_with(delim.as_bytes()) {
                 let content_end = end;
                 return Some(
-                    TextRegion::new(TextRegionType::MultiLineString, pos, end + delim_len)
+                    TextRegion::new(region_type, pos, end + delim_len)
                         .with_prefix(delim)
                         .with_suffix(delim)
                         .with_content_range(content_start, content_end),
@@ -661,7 +679,11 @@ mod tests {
 
     #[test]
     fn test_scan_template_string() {
-        let scanner = create_test_scanner("js");
+        let config = ScannerConfig::new(vec!["zh".to_string()])
+            .with_comments(true)
+            .with_doc_strings(true)
+            .with_templates(true);
+        let scanner = TextScanner::from_extension("js", config).expect("Failed to create scanner");
         let content = r#"const msg = `你好 ${name}，欢迎！`;"#;
         let regions = scanner.scan(content);
 
@@ -684,11 +706,12 @@ mod tests {
 
     #[test]
     fn test_scan_python_multiline() {
-        let scanner = create_test_scanner("py");
-        let content = r#""""
-这是多行字符串
-第二行
-""""#;
+        let config = ScannerConfig::new(vec!["zh".to_string()])
+            .with_comments(true)
+            .with_doc_strings(true)
+            .with_strings(true);
+        let scanner = TextScanner::from_extension("py", config).expect("Failed to create scanner");
+        let content = "\"\"\"\n这是多行字符串\n第二行\n\"\"\"";
         let regions = scanner.scan(content);
 
         assert_eq!(regions.len(), 1);
@@ -707,7 +730,11 @@ const msg = "Hello World";"#;
 
     #[test]
     fn test_nested_template_string() {
-        let scanner = create_test_scanner("js");
+        let config = ScannerConfig::new(vec!["zh".to_string()])
+            .with_comments(true)
+            .with_doc_strings(true)
+            .with_templates(true);
+        let scanner = TextScanner::from_extension("js", config).expect("Failed to create scanner");
         let content = r#"const msg = `外层 ${`内层 ${value}`} 结束`;"#;
         let regions = scanner.scan(content);
 

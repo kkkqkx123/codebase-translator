@@ -157,6 +157,8 @@ pub fn from_project_config(
         allow_placeholders: config.allow_placeholders,
         detect_code_patterns: config.detect_code_patterns,
         extract_languages: config.extract_languages.clone(),
+        placeholder_patterns: config.placeholder_patterns.clone(),
+        code_patterns: config.code_patterns.clone(),
     };
 
     CompositeFilter::with_language_settings(
@@ -188,6 +190,8 @@ pub fn from_project_config_with_translator(
         allow_placeholders: project_config.allow_placeholders,
         detect_code_patterns: project_config.detect_code_patterns,
         extract_languages: project_config.extract_languages.clone(),
+        placeholder_patterns: project_config.placeholder_patterns.clone(),
+        code_patterns: project_config.code_patterns.clone(),
     };
 
     CompositeFilter::with_language_settings(

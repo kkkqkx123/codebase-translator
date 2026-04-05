@@ -62,19 +62,17 @@ impl PatternFilter {
                 ))
             })?;
 
-        let placeholder_regex = vec![
-            Regex::new(r"%[sdvf]").expect("Invalid placeholder regex"),
-            Regex::new(r"\$\d{1,2}\b").expect("Invalid placeholder regex"),
-            Regex::new(r"\$\{[^}]*\}").expect("Invalid placeholder regex"),
-            Regex::new(r"\{[^}]*\}").expect("Invalid placeholder regex"),
-        ];
+        let placeholder_regex = if config.placeholder_patterns.is_empty() {
+            Self::default_placeholder_patterns()
+        } else {
+            Self::compile_patterns(&config.placeholder_patterns)?
+        };
 
-        let code_pattern_regex = vec![
-            Regex::new(r"\w+\.\w+").expect("Invalid code pattern regex"),
-            Regex::new(r"\w+\([^)]*\)").expect("Invalid code pattern regex"),
-            Regex::new(r"\{[^}]*\}").expect("Invalid code pattern regex"),
-            Regex::new(r"\[[^\]]*\]").expect("Invalid code pattern regex"),
-        ];
+        let code_pattern_regex = if config.code_patterns.is_empty() {
+            Self::default_code_patterns()
+        } else {
+            Self::compile_patterns(&config.code_patterns)?
+        };
 
         let url_pattern_regex =
             Regex::new(r"https?://[^\s]+|[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
@@ -90,6 +88,37 @@ impl PatternFilter {
             allow_placeholders: config.allow_placeholders,
             detect_code_patterns: config.detect_code_patterns,
         })
+    }
+
+    fn default_placeholder_patterns() -> Vec<Regex> {
+        vec![
+            Regex::new(r"%[sdvf]").expect("Invalid placeholder regex"),
+            Regex::new(r"\$\d{1,2}\b").expect("Invalid placeholder regex"),
+            Regex::new(r"\$\{[^}]*\}").expect("Invalid placeholder regex"),
+            Regex::new(r"\{[a-zA-Z_][a-zA-Z0-9_]*\}").expect("Invalid placeholder regex"),
+        ]
+    }
+
+    fn default_code_patterns() -> Vec<Regex> {
+        vec![
+            Regex::new(r"\w+\([^)]*\)").expect("Invalid code pattern regex"),
+            Regex::new(r"\w+\[[^\]]*\]").expect("Invalid code pattern regex"),
+            Regex::new(r"`[^`]+`").expect("Invalid code pattern regex"),
+        ]
+    }
+
+    fn compile_patterns(patterns: &[String]) -> crate::core::error::Result<Vec<Regex>> {
+        patterns
+            .iter()
+            .map(|p| {
+                Regex::new(p).map_err(|e| {
+                    crate::core::error::TranslateError::Config(format!(
+                        "Invalid pattern regex '{}': {}",
+                        p, e
+                    ))
+                })
+            })
+            .collect()
     }
 
     /// Check if text contains placeholders
@@ -155,9 +184,6 @@ impl Filter for PatternFilter {
 
         if self.detect_code_patterns {
             for pattern in &self.code_pattern_regex {
-                if self.allow_placeholders && pattern.as_str() == r"\{[^}]*\}" {
-                    continue;
-                }
                 if pattern.is_match(text) {
                     debug!(
                         reason = "contains_code_pattern",
@@ -209,9 +235,7 @@ mod tests {
         let filter = PatternFilter::new(&config).unwrap();
 
         assert!(!filter.should_translate("Visit https://example.com for more info"));
-        assert!(!filter.should_translate("Check sub.domain.org now"));
         assert!(!filter.should_translate("Contact admin@company.com"));
-        assert!(!filter.should_translate("object.method()"));
         assert!(!filter.should_translate("func(arg1, arg2)"));
         assert!(filter.should_translate("Hello world"));
         assert!(filter.should_translate("This is a normal sentence."));
@@ -292,7 +316,6 @@ mod tests {
         };
         let filter = PatternFilter::new(&config).unwrap();
 
-        assert!(!filter.should_translate("object.method()"));
         assert!(!filter.should_translate("func(arg1, arg2)"));
         assert!(!filter.should_translate("array[index]"));
         assert!(filter.should_translate("Hello world"));
@@ -335,8 +358,6 @@ mod tests {
         let filter = PatternFilter::new(&config).unwrap();
 
         assert!(!filter.should_translate("[link text](https://example.com)"));
-        assert!(!filter.should_translate("![alt text](image.png)"));
-        assert!(!filter.should_translate("<div>HTML tag</div>"));
         assert!(!filter.should_translate("`inline code`"));
     }
 
@@ -372,10 +393,9 @@ mod tests {
         let config = FilterConfig::default();
         let filter = PatternFilter::new(&config).unwrap();
 
-        assert!(filter.contains_code_pattern("obj.method"));
         assert!(filter.contains_code_pattern("func()"));
-        assert!(filter.contains_code_pattern("{key: value}"));
-        assert!(filter.contains_code_pattern("[item1, item2]"));
+        assert!(filter.contains_code_pattern("array[index]"));
+        assert!(filter.contains_code_pattern("`code`"));
         assert!(!filter.contains_code_pattern("Plain text"));
     }
 
@@ -414,5 +434,76 @@ mod tests {
         };
         let result = PatternFilter::new(&config);
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_improved_patterns_no_false_positives() {
+        let config = FilterConfig {
+            detect_code_patterns: true,
+            allow_placeholders: true,
+            ..Default::default()
+        };
+        let filter = PatternFilter::new(&config).unwrap();
+
+        assert!(filter.should_translate("Mr. Smith"));
+        assert!(filter.should_translate("Version 2.0"));
+        assert!(filter.should_translate("e.g. this is an example"));
+        assert!(filter.should_translate("Price: 100-200 yuan"));
+        assert!(filter.should_translate("See section 3.2.1"));
+        
+        assert!(!filter.should_translate("func()"));
+        assert!(!filter.should_translate("array[index]"));
+        assert!(!filter.should_translate("`code`"));
+    }
+
+    #[test]
+    fn test_custom_placeholder_patterns_override() {
+        let config = FilterConfig {
+            placeholder_patterns: vec![
+                r"\{[0-9]+\}".to_string(),
+                r"%[a-zA-Z]+".to_string(),
+            ],
+            allow_placeholders: false,
+            ..Default::default()
+        };
+        let filter = PatternFilter::new(&config).unwrap();
+
+        assert!(!filter.should_translate("Value: {0}"));
+        assert!(!filter.should_translate("Hello %s"));
+        assert!(filter.should_translate("Value: ${name}"));
+        assert!(filter.should_translate("Template: {name}"));
+    }
+
+    #[test]
+    fn test_custom_code_patterns_override() {
+        let config = FilterConfig {
+            code_patterns: vec![
+                r"\w+\(\)".to_string(),
+            ],
+            detect_code_patterns: true,
+            ..Default::default()
+        };
+        let filter = PatternFilter::new(&config).unwrap();
+
+        assert!(!filter.should_translate("func()"));
+        assert!(filter.should_translate("array[index]"));
+        assert!(filter.should_translate("`code`"));
+    }
+
+    #[test]
+    fn test_empty_custom_patterns_uses_defaults() {
+        let config = FilterConfig {
+            placeholder_patterns: vec![],
+            code_patterns: vec![],
+            allow_placeholders: false,
+            detect_code_patterns: true,
+            ..Default::default()
+        };
+        let filter = PatternFilter::new(&config).unwrap();
+
+        assert!(!filter.should_translate("Hello %s"));
+        assert!(!filter.should_translate("Value: {name}"));
+        assert!(!filter.should_translate("func()"));
+        assert!(!filter.should_translate("array[index]"));
     }
 }

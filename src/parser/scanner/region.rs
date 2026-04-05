@@ -253,10 +253,10 @@ mod tests {
 
     #[test]
     fn test_extract_content() {
-        let source = "// 这是注释\n";
-        let region = TextRegion::new(TextRegionType::LineComment, 0, 12)
+        let source = "// 这是注释";
+        let region = TextRegion::new(TextRegionType::LineComment, 0, 15)
             .with_prefix("// ")
-            .with_content_range(3, 11);
+            .with_content_range(3, 15);
 
         let content = region.extract_content(source).unwrap();
         assert_eq!(content, "这是注释");
