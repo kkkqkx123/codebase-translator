@@ -233,6 +233,104 @@ impl ScannerLanguageConfig {
         }
     }
 
+    pub fn shell() -> Self {
+        Self {
+            line_comment_prefixes: vec!["#"],
+            block_comment_delimiters: vec![("<#", "#>")],
+            doc_comment_prefixes: vec![],
+            string_quotes: vec!['"', '\''],
+            template_quote: None,
+            raw_string_prefixes: vec![],
+            multiline_delimiters: vec![],
+            name: "shell",
+            extensions: vec!["sh", "bash", "zsh", "fish"],
+        }
+    }
+
+    pub fn powershell() -> Self {
+        Self {
+            line_comment_prefixes: vec!["#"],
+            block_comment_delimiters: vec![("<#", "#>")],
+            doc_comment_prefixes: vec![],
+            string_quotes: vec!['"', '\''],
+            template_quote: None,
+            raw_string_prefixes: vec![],
+            multiline_delimiters: vec![],
+            name: "powershell",
+            extensions: vec!["ps1", "psm1", "psd1"],
+        }
+    }
+
+    pub fn batch() -> Self {
+        Self {
+            line_comment_prefixes: vec!["REM", "::"],
+            block_comment_delimiters: vec![],
+            doc_comment_prefixes: vec![],
+            string_quotes: vec![],
+            template_quote: None,
+            raw_string_prefixes: vec![],
+            multiline_delimiters: vec![],
+            name: "batch",
+            extensions: vec!["bat", "cmd"],
+        }
+    }
+
+    pub fn sql() -> Self {
+        Self {
+            line_comment_prefixes: vec!["--"],
+            block_comment_delimiters: vec![("/*", "*/")],
+            doc_comment_prefixes: vec![],
+            string_quotes: vec!['\''],
+            template_quote: None,
+            raw_string_prefixes: vec![],
+            multiline_delimiters: vec![],
+            name: "sql",
+            extensions: vec!["sql", "mysql", "pgsql"],
+        }
+    }
+
+    pub fn html() -> Self {
+        Self {
+            line_comment_prefixes: vec![],
+            block_comment_delimiters: vec![("<!--", "-->")],
+            doc_comment_prefixes: vec![],
+            string_quotes: vec!['"', '\''],
+            template_quote: None,
+            raw_string_prefixes: vec![],
+            multiline_delimiters: vec![],
+            name: "html",
+            extensions: vec!["html", "htm", "xml", "svg"],
+        }
+    }
+
+    pub fn markdown() -> Self {
+        Self {
+            line_comment_prefixes: vec![],
+            block_comment_delimiters: vec![("<!--", "-->")],
+            doc_comment_prefixes: vec![],
+            string_quotes: vec![],
+            template_quote: None,
+            raw_string_prefixes: vec![],
+            multiline_delimiters: vec![],
+            name: "markdown",
+            extensions: vec!["md", "markdown"],
+        }
+    }
+
+    pub fn config() -> Self {
+        Self {
+            line_comment_prefixes: vec!["#", ";"],
+            block_comment_delimiters: vec![],
+            doc_comment_prefixes: vec![],
+            string_quotes: vec!['"', '\''],
+            template_quote: None,
+            raw_string_prefixes: vec![],
+            multiline_delimiters: vec![],
+            name: "config",
+            extensions: vec!["yaml", "yml", "toml", "ini", "conf", "txt"],
+        }
+    }
+
     pub fn all_languages() -> Vec<Self> {
         vec![
             Self::javascript(),
@@ -251,6 +349,13 @@ impl ScannerLanguageConfig {
             Self::php(),
             Self::lua(),
             Self::scala(),
+            Self::shell(),
+            Self::powershell(),
+            Self::batch(),
+            Self::sql(),
+            Self::html(),
+            Self::markdown(),
+            Self::config(),
         ]
     }
 
@@ -313,11 +418,58 @@ mod tests {
     }
 
     #[test]
+    fn test_shell_config() {
+        let config = ScannerLanguageConfig::shell();
+        assert_eq!(config.name, "shell");
+        assert!(config.line_comment_prefixes.contains(&"#"));
+        assert!(config.supports("script.sh"));
+        assert!(config.supports("script.bash"));
+    }
+
+    #[test]
+    fn test_sql_config() {
+        let config = ScannerLanguageConfig::sql();
+        assert_eq!(config.name, "sql");
+        assert!(config.line_comment_prefixes.contains(&"--"));
+        assert!(config.supports("query.sql"));
+    }
+
+    #[test]
+    fn test_html_config() {
+        let config = ScannerLanguageConfig::html();
+        assert_eq!(config.name, "html");
+        assert!(config.block_comment_delimiters.contains(&("<!--", "-->")));
+        assert!(config.supports("page.html"));
+        assert!(config.supports("config.xml"));
+    }
+
+    #[test]
+    fn test_markdown_config() {
+        let config = ScannerLanguageConfig::markdown();
+        assert_eq!(config.name, "markdown");
+        assert!(config.supports("readme.md"));
+    }
+
+    #[test]
+    fn test_config_config() {
+        let config = ScannerLanguageConfig::config();
+        assert_eq!(config.name, "config");
+        assert!(config.line_comment_prefixes.contains(&"#"));
+        assert!(config.supports("config.yaml"));
+        assert!(config.supports("settings.toml"));
+    }
+
+    #[test]
     fn test_from_extension() {
         assert!(ScannerLanguageConfig::from_extension("js").is_some());
         assert!(ScannerLanguageConfig::from_extension("ts").is_some());
         assert!(ScannerLanguageConfig::from_extension("py").is_some());
         assert!(ScannerLanguageConfig::from_extension("rs").is_some());
+        assert!(ScannerLanguageConfig::from_extension("sh").is_some());
+        assert!(ScannerLanguageConfig::from_extension("sql").is_some());
+        assert!(ScannerLanguageConfig::from_extension("html").is_some());
+        assert!(ScannerLanguageConfig::from_extension("md").is_some());
+        assert!(ScannerLanguageConfig::from_extension("yaml").is_some());
         assert!(ScannerLanguageConfig::from_extension("unknown").is_none());
     }
 
@@ -330,5 +482,10 @@ mod tests {
         assert!(extensions.contains("rs"));
         assert!(extensions.contains("go"));
         assert!(extensions.contains("java"));
+        assert!(extensions.contains("sh"));
+        assert!(extensions.contains("sql"));
+        assert!(extensions.contains("html"));
+        assert!(extensions.contains("md"));
+        assert!(extensions.contains("yaml"));
     }
 }

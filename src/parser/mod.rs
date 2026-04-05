@@ -1,8 +1,7 @@
 //! Code parsing with character-based scanning
 //!
 //! This module provides parsers for extracting translatable content from source files.
-//! It uses character-based scanning for text extraction, with regex-based fallback
-//! parsers for simpler file types.
+//! It uses character-based scanning for text extraction.
 //!
 //! # Architecture
 //!
@@ -11,8 +10,7 @@
 //! - `core/`: Core extraction framework including traits, types, and implementations
 //! - `filtering/`: Content filtering system with layered architecture, including language detection
 //! - `coordinator/`: High-level coordination for parsing operations
-//! - `regex/`: Regex-based fallback parsers
-//! - `regex_parsers/`: Type-specific regex parsers for simple file types
+//! - `regex/`: Regex-based pattern matchers for custom extraction
 //! - `scanner/`: Character-based text scanner (primary extraction method)
 
 /// Parser configuration
@@ -54,11 +52,8 @@ pub mod filtering;
 // Parser coordinator
 pub mod coordinator;
 
-// Regex-based parsers
+// Regex-based pattern matchers
 pub mod regex;
-
-// Type-specific regex parsers
-pub mod regex_parsers;
 
 // Character-based text scanner
 pub mod scanner;
@@ -80,15 +75,10 @@ pub use filtering::checks::{
 pub use core::StringProcessor;
 
 // Re-export from regex
-pub use regex::{
-    RegexParser, RegexParserConfig, StateMachineBuilder, StateMachineMatch, StateMachineMatcher,
-};
-
-// Re-export from regex_parsers
-pub use regex_parsers::{FallbackParser, HtmlParser, ShellParser, SqlParser};
+pub use regex::{StateMachineBuilder, StateMachineMatch, StateMachineMatcher};
 
 // Re-export coordinator types
-pub use coordinator::{ParserCoordinator, ParserType};
+pub use coordinator::ParserCoordinator;
 
 // Re-export from scanner
 pub use scanner::{

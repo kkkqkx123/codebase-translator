@@ -10,34 +10,20 @@ use std::sync::Arc;
 use crate::config::project::ExtractionConfig;
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, PatternType, Position, TranslationUnit};
-use crate::parser::core::Parser;
 use crate::parser::filtering::traits::Filter;
 use crate::parser::regex::custom_pattern_matcher::CustomPatternMatcher;
 use crate::parser::regex::state_machine::StateMachineMatcher;
-use crate::parser::regex_parsers::FallbackParser;
 use crate::parser::scanner::{ScannerConfig, ScannerLanguageConfig, TextRegionType, TextScanner};
 use crate::parser::{ContentFilter, ParserConfig};
 
-/// Indicates which type of parser will handle a file.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ParserType {
-    /// The character-based scanner
-    Scanner,
-    /// The regex-based fallback parser
-    Regex,
-}
-
 /// Parser coordinator that manages parsing and text extraction.
 ///
-/// The coordinator uses character-based scanning for text extraction,
-/// with regex-based fallback parsers for unsupported file types.
+/// The coordinator uses character-based scanning for text extraction.
 ///
 /// After parsing, it applies additional extraction patterns:
 /// - Custom regex patterns (simple single-step matching)
 /// - State machine patterns (complex multi-step matching)
 pub struct ParserCoordinator {
-    /// Fallback parser for unsupported file types
-    fallback_parser: FallbackParser,
     /// Custom pattern matchers for simple regex-based extraction
     custom_pattern_matchers: Vec<CustomPatternMatcher>,
     /// Map from file extension to custom pattern matcher indices
@@ -139,8 +125,6 @@ impl ParserCoordinator {
         filter: Arc<ContentFilter>,
         target_lang: &str,
     ) -> Result<Self> {
-        let fallback_parser = FallbackParser::new(config.clone());
-
         let custom_patterns = if extraction_config.custom_patterns.is_empty() {
             Vec::new()
         } else {
@@ -214,7 +198,6 @@ impl ParserCoordinator {
             .with_max_length(config.max_content_length);
 
         Ok(Self {
-            fallback_parser,
             custom_pattern_matchers,
             extension_to_custom_patterns,
             state_machine_matchers,
@@ -405,17 +388,11 @@ impl ParserCoordinator {
         file: &File,
         content: &str,
     ) -> Result<(Vec<TranslationUnit>, String)> {
-        let filename = file.path.file_name().and_then(|n| n.to_str()).unwrap_or("");
         let ext = file.extension().unwrap_or("");
 
         if let Some(scanner) = TextScanner::from_extension(ext, self.scanner_config.clone()) {
             let regions = scanner.scan(content);
             let units = self.regions_to_units(&regions, content, &file.path.display().to_string());
-            return Ok((units, content.to_string()));
-        }
-
-        if self.fallback_parser.supports(filename) {
-            let units = self.fallback_parser.parse(file)?;
             return Ok((units, content.to_string()));
         }
 
@@ -533,25 +510,12 @@ impl ParserCoordinator {
 
     /// Checks if this coordinator can parse a given file.
     pub fn can_parse(&self, filename: &str) -> bool {
-        self.find_parser(filename).is_some()
-    }
-
-    /// Finds the appropriate parser for a file.
-    pub fn find_parser(&self, filename: &str) -> Option<ParserType> {
         let ext = std::path::Path::new(filename)
             .extension()
             .and_then(|e| e.to_str())
             .unwrap_or("");
 
-        if ScannerLanguageConfig::from_extension(ext).is_some() {
-            return Some(ParserType::Scanner);
-        }
-
-        if self.fallback_parser.supports(filename) {
-            return Some(ParserType::Regex);
-        }
-
-        None
+        ScannerLanguageConfig::from_extension(ext).is_some()
     }
 
     /// Returns all supported file extensions.
@@ -560,13 +524,6 @@ impl ParserCoordinator {
             .into_iter()
             .map(|s| s.to_string())
             .collect();
-
-        extensions.extend(
-            self.fallback_parser
-                .supported_extensions()
-                .iter()
-                .map(|s: &&str| s.to_string()),
-        );
 
         extensions.sort();
         extensions.dedup();
@@ -635,18 +592,11 @@ fn main() {
 
         assert!(coordinator.can_parse("test.rs"));
         assert!(coordinator.can_parse("readme.md"));
+        assert!(coordinator.can_parse("script.sh"));
+        assert!(coordinator.can_parse("query.sql"));
+        assert!(coordinator.can_parse("page.html"));
+        assert!(coordinator.can_parse("config.yaml"));
         assert!(!coordinator.can_parse("test.unknown_extension"));
-    }
-
-    #[test]
-    fn test_find_parser() {
-        let coordinator = ParserCoordinator::default();
-
-        let parser_type = coordinator.find_parser("test.rs");
-        assert!(parser_type.is_some());
-
-        let parser_type = coordinator.find_parser("test.md");
-        assert!(parser_type.is_some());
     }
 
     #[test]
@@ -655,6 +605,12 @@ fn main() {
         let extensions = coordinator.supported_extensions();
 
         assert!(!extensions.is_empty());
+        assert!(extensions.contains(&"rs".to_string()));
+        assert!(extensions.contains(&"sh".to_string()));
+        assert!(extensions.contains(&"sql".to_string()));
+        assert!(extensions.contains(&"html".to_string()));
+        assert!(extensions.contains(&"md".to_string()));
+        assert!(extensions.contains(&"yaml".to_string()));
     }
 
     #[test]
