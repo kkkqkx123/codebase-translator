@@ -259,7 +259,7 @@ impl RegexParser {
 
                             let mut unit = TranslationUnit::new(
                                 id,
-                                NodeType::FormatString,
+                                NodeType::StringLiteral,
                                 text,
                                 start_pos,
                                 end_pos,

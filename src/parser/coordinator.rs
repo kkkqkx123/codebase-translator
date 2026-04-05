@@ -10,14 +10,12 @@ use std::sync::Arc;
 use crate::config::project::ExtractionConfig;
 use crate::core::error::{Result, TranslateError};
 use crate::core::models::{File, PatternType, Position, TranslationUnit};
-use crate::parser::filtering::traits::Filter;
 use crate::parser::core::Parser;
+use crate::parser::filtering::traits::Filter;
 use crate::parser::regex::custom_pattern_matcher::CustomPatternMatcher;
 use crate::parser::regex::state_machine::StateMachineMatcher;
 use crate::parser::regex_parsers::FallbackParser;
-use crate::parser::scanner::{
-    ScannerConfig, ScannerLanguageConfig, TextRegionType, TextScanner,
-};
+use crate::parser::scanner::{ScannerConfig, ScannerLanguageConfig, TextRegionType, TextScanner};
 use crate::parser::{ContentFilter, ParserConfig};
 
 /// Indicates which type of parser will handle a file.
@@ -78,7 +76,12 @@ impl ParserCoordinator {
             &project_config.translate,
         )?);
 
-        Self::with_extraction_config(config, extraction_config, filter, &project_config.translate.target_lang)
+        Self::with_extraction_config(
+            config,
+            extraction_config,
+            filter,
+            &project_config.translate.target_lang,
+        )
     }
 
     /// Creates a new parser coordinator from project and translator configuration.
@@ -96,7 +99,12 @@ impl ParserCoordinator {
             translator_max_length,
         )?);
 
-        Self::with_extraction_config(config, extraction_config, filter, &project_config.translate.target_lang)
+        Self::with_extraction_config(
+            config,
+            extraction_config,
+            filter,
+            &project_config.translate.target_lang,
+        )
     }
 
     /// Creates a new parser coordinator with unified configuration.
@@ -392,7 +400,11 @@ impl ParserCoordinator {
     }
 
     /// Parse file with scanner.
-    fn parse_with_scanner(&self, file: &File, content: &str) -> Result<(Vec<TranslationUnit>, String)> {
+    fn parse_with_scanner(
+        &self,
+        file: &File,
+        content: &str,
+    ) -> Result<(Vec<TranslationUnit>, String)> {
         let filename = file.path.file_name().and_then(|n| n.to_str()).unwrap_or("");
         let ext = file.extension().unwrap_or("");
 
@@ -451,7 +463,8 @@ impl ParserCoordinator {
             let mut unit = TranslationUnit::new(id, node_type, text, start_pos, end_pos);
 
             if !region.placeholders.is_empty() {
-                let placeholder_text = region.placeholders
+                let placeholder_text = region
+                    .placeholders
                     .iter()
                     .map(|p| p.original.clone())
                     .collect::<Vec<_>>()
@@ -466,7 +479,10 @@ impl ParserCoordinator {
     }
 
     /// Convert region type to node type.
-    fn region_type_to_node_type(&self, region_type: TextRegionType) -> crate::core::models::NodeType {
+    fn region_type_to_node_type(
+        &self,
+        region_type: TextRegionType,
+    ) -> crate::core::models::NodeType {
         use crate::core::models::NodeType;
         match region_type {
             TextRegionType::LineComment => NodeType::Comment,

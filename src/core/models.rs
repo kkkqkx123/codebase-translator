@@ -153,16 +153,8 @@ pub enum NodeType {
     Comment,
     /// Documentation string
     DocString,
-    /// Error message string
-    ErrorMessage,
-    /// Format string
-    FormatString,
-    /// Log message
-    LogMessage,
     /// String literal
     StringLiteral,
-    /// Test description (it, describe, test, etc.)
-    TestDescription,
 }
 
 impl NodeType {
@@ -171,11 +163,7 @@ impl NodeType {
         match self {
             NodeType::DocString => 1,
             NodeType::Comment => 2,
-            NodeType::ErrorMessage => 3,
-            NodeType::LogMessage => 4,
-            NodeType::FormatString => 5,
-            NodeType::StringLiteral => 6,
-            NodeType::TestDescription => 7,
+            NodeType::StringLiteral => 3,
         }
     }
 }
@@ -185,89 +173,8 @@ impl std::fmt::Display for NodeType {
         match self {
             NodeType::Comment => write!(f, "comment"),
             NodeType::DocString => write!(f, "doc_string"),
-            NodeType::ErrorMessage => write!(f, "error_message"),
-            NodeType::FormatString => write!(f, "format_string"),
-            NodeType::LogMessage => write!(f, "log_message"),
             NodeType::StringLiteral => write!(f, "string_literal"),
-            NodeType::TestDescription => write!(f, "test_description"),
         }
-    }
-}
-
-/// Strategy node type for extraction decisions
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum StrategyNodeType {
-    /// Regular comment
-    Comment,
-    /// Documentation string
-    DocString,
-    /// Error message
-    ErrorMessage,
-    /// Format string
-    FormatString,
-    /// Log message
-    LogMessage,
-    /// String literal
-    StringLiteral,
-    /// Variable assignment string
-    VariableString,
-    /// Object property string
-    PropertyString,
-    /// Test description (it, describe, test, etc.)
-    TestDescription,
-    /// Markdown paragraph
-    MarkdownParagraph,
-    /// Markdown heading
-    MarkdownHeading,
-    /// Markdown list item
-    MarkdownListItem,
-    /// Markdown table cell
-    MarkdownTableCell,
-}
-
-impl StrategyNodeType {
-    /// Get string representation
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            Self::Comment => "comment",
-            Self::DocString => "docstring",
-            Self::ErrorMessage => "error_message",
-            Self::FormatString => "format_string",
-            Self::LogMessage => "log_message",
-            Self::StringLiteral => "string_literal",
-            Self::VariableString => "variable_string",
-            Self::PropertyString => "property_string",
-            Self::TestDescription => "test_description",
-            Self::MarkdownParagraph => "markdown_paragraph",
-            Self::MarkdownHeading => "markdown_heading",
-            Self::MarkdownListItem => "markdown_list_item",
-            Self::MarkdownTableCell => "markdown_table_cell",
-        }
-    }
-
-    /// Convert to NodeType for translation unit
-    pub fn to_node_type(&self) -> NodeType {
-        match self {
-            Self::Comment => NodeType::Comment,
-            Self::DocString => NodeType::DocString,
-            Self::ErrorMessage => NodeType::ErrorMessage,
-            Self::FormatString => NodeType::FormatString,
-            Self::LogMessage => NodeType::LogMessage,
-            Self::StringLiteral => NodeType::StringLiteral,
-            Self::VariableString => NodeType::StringLiteral,
-            Self::PropertyString => NodeType::StringLiteral,
-            Self::TestDescription => NodeType::TestDescription,
-            Self::MarkdownParagraph => NodeType::Comment,
-            Self::MarkdownHeading => NodeType::Comment,
-            Self::MarkdownListItem => NodeType::Comment,
-            Self::MarkdownTableCell => NodeType::Comment,
-        }
-    }
-}
-
-impl std::fmt::Display for StrategyNodeType {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.as_str())
     }
 }
 

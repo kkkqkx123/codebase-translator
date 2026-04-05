@@ -64,7 +64,7 @@ pub mod regex_parsers;
 pub mod scanner;
 
 // Re-export from core (traits and types)
-pub use core::{ExtractionConfig, FunctionCategory, LanguageFunctionPatterns, Parser, StrategyNodeType};
+pub use core::{ExtractionConfig, FunctionCategory, LanguageFunctionPatterns, Parser};
 
 // Re-export from filtering
 pub use filtering::{
@@ -92,9 +92,9 @@ pub use coordinator::{ParserCoordinator, ParserType};
 
 // Re-export from scanner
 pub use scanner::{
-    Change, ContentDiff, FormatProtector, PlaceholderProtector, PlaceholderSpan,
-    ScannerConfig, ScannerLanguageConfig, TextRegion, TextRegionType, TextScanner,
-    TranslatedRegion, TranslationReplacer,
+    Change, ContentDiff, FormatProtector, PlaceholderProtector, PlaceholderSpan, ScannerConfig,
+    ScannerLanguageConfig, TextRegion, TextRegionType, TextScanner, TranslatedRegion,
+    TranslationReplacer,
 };
 
 use crate::config::project::ProjectConfig;
@@ -110,14 +110,14 @@ impl ParserFactory {
         info!(
             extract_comments = project_config.extraction.comments,
             extract_docstrings = project_config.extraction.doc_strings,
-            extract_strings = project_config.extraction.format_strings,
+            extract_strings = project_config.extraction.string_literals,
             "Creating parser coordinator"
         );
 
         let parser_config = ParserConfig {
             extract_comments: project_config.extraction.comments,
             extract_docstrings: project_config.extraction.doc_strings,
-            extract_strings: project_config.extraction.format_strings,
+            extract_strings: project_config.extraction.string_literals,
             min_content_length: 2,
             max_content_length: 10000,
             trim_content: true,

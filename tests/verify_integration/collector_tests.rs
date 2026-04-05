@@ -108,7 +108,7 @@ fn test_collector_error_message() {
     let content = "throw new Error('Invalid input');";
     let units = vec![create_test_unit(
         "1",
-        NodeType::ErrorMessage,
+        NodeType::StringLiteral,
         "Invalid input",
         1,
         17,
@@ -118,10 +118,10 @@ fn test_collector_error_message() {
     let matches = MatchCollector::collect_from_units(file_path, units, content);
 
     assert_eq!(matches.len(), 1);
-    assert_eq!(matches[0].pattern_name, "error_message");
+    assert_eq!(matches[0].pattern_name, "string_literal");
     assert_eq!(matches[0].pattern_type, PatternType::Builtin);
     assert_eq!(matches[0].extracted_text, "Invalid input");
-    assert_eq!(matches[0].category, "error_handling");
+    assert_eq!(matches[0].category, "string");
 }
 
 #[test]
@@ -130,7 +130,7 @@ fn test_collector_log_message() {
     let content = "console.log('Processing data');";
     let units = vec![create_test_unit(
         "1",
-        NodeType::LogMessage,
+        NodeType::StringLiteral,
         "Processing data",
         1,
         13,
@@ -140,10 +140,10 @@ fn test_collector_log_message() {
     let matches = MatchCollector::collect_from_units(file_path, units, content);
 
     assert_eq!(matches.len(), 1);
-    assert_eq!(matches[0].pattern_name, "log_message");
+    assert_eq!(matches[0].pattern_name, "string_literal");
     assert_eq!(matches[0].pattern_type, PatternType::Builtin);
     assert_eq!(matches[0].extracted_text, "Processing data");
-    assert_eq!(matches[0].category, "output");
+    assert_eq!(matches[0].category, "string");
 }
 
 #[test]
@@ -152,7 +152,7 @@ fn test_collector_format_string() {
     let content = "f'Hello, {name}!'";
     let units = vec![create_test_unit(
         "1",
-        NodeType::FormatString,
+        NodeType::StringLiteral,
         "Hello, {name}!",
         1,
         3,
@@ -162,10 +162,10 @@ fn test_collector_format_string() {
     let matches = MatchCollector::collect_from_units(file_path, units, content);
 
     assert_eq!(matches.len(), 1);
-    assert_eq!(matches[0].pattern_name, "format_string");
+    assert_eq!(matches[0].pattern_name, "string_literal");
     assert_eq!(matches[0].pattern_type, PatternType::Builtin);
     assert_eq!(matches[0].extracted_text, "Hello, {name}!");
-    assert_eq!(matches[0].category, "output");
+    assert_eq!(matches[0].category, "string");
 }
 
 #[test]

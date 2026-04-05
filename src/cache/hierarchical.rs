@@ -90,9 +90,27 @@ impl HierarchicalCache {
         self.root_cache.project_fingerprint()
     }
 
-    /// Get cache statistics from root cache
+    /// Get cache statistics from all caches (root + loaded)
     pub fn stats(&self) -> Result<crate::core::models::CacheStats> {
-        self.root_cache.stats()
+        let mut total_count = 0;
+        let mut total_size = 0;
+
+        // Add root cache stats
+        let root_stats = self.root_cache.stats()?;
+        total_count += root_stats.entry_count;
+        total_size += root_stats.total_size;
+
+        // Add stats from all loaded caches
+        for cache in self.cache_map.values() {
+            let cache_stats = cache.stats()?;
+            total_count += cache_stats.entry_count;
+            total_size += cache_stats.total_size;
+        }
+
+        Ok(crate::core::models::CacheStats {
+            entry_count: total_count,
+            total_size,
+        })
     }
 
     /// Clear all cache entries from root cache

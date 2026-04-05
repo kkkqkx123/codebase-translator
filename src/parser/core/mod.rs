@@ -15,4 +15,3 @@ pub use types::{FunctionCategory, LanguageFunctionPatterns};
 
 // Re-export types from other modules for convenience
 pub use crate::config::project::ExtractionConfig;
-pub use crate::core::StrategyNodeType;

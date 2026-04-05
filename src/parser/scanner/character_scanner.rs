@@ -299,8 +299,7 @@ impl TextScanner {
                 let content_start = pos + start_len;
                 let content_end = current;
 
-                let content_start = if content_start < bytes.len() && bytes[content_start] == b' '
-                {
+                let content_start = if content_start < bytes.len() && bytes[content_start] == b' ' {
                     content_start + 1
                 } else {
                     content_start
@@ -336,8 +335,7 @@ impl TextScanner {
                 let content_start = pos + start_len;
                 let content_end = current;
 
-                let content_start = if content_start < bytes.len() && bytes[content_start] == b' '
-                {
+                let content_start = if content_start < bytes.len() && bytes[content_start] == b' ' {
                     content_start + 1
                 } else {
                     content_start
@@ -404,10 +402,9 @@ impl TextScanner {
 
                     let placeholder_end = end - pos - 1;
                     if placeholder_end > placeholder_start {
-                        let original = String::from_utf8_lossy(
-                            &bytes[pos + 1 + placeholder_start..end - 1],
-                        )
-                        .to_string();
+                        let original =
+                            String::from_utf8_lossy(&bytes[pos + 1 + placeholder_start..end - 1])
+                                .to_string();
 
                         placeholders.push(PlaceholderSpan::new(
                             placeholder_start,
@@ -694,8 +691,7 @@ mod tests {
 
     #[test]
     fn test_scan_quoted_string() {
-        let config = ScannerConfig::new(vec!["zh".to_string()])
-            .with_strings(true);
+        let config = ScannerConfig::new(vec!["zh".to_string()]).with_strings(true);
         let scanner = TextScanner::from_extension("js", config).expect("Failed to create scanner");
         let content = r#"const msg = "你好世界";"#;
         let regions = scanner.scan(content);

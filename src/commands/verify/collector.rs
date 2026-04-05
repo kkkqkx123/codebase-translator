@@ -84,11 +84,7 @@ impl MatchCollector {
             match unit.node_type {
                 NodeType::Comment => "comment".to_string(),
                 NodeType::DocString => "docstring".to_string(),
-                NodeType::ErrorMessage => "error_message".to_string(),
-                NodeType::FormatString => "format_string".to_string(),
-                NodeType::LogMessage => "log_message".to_string(),
                 NodeType::StringLiteral => "string_literal".to_string(),
-                NodeType::TestDescription => "test_description".to_string(),
             }
         }
     }
@@ -99,10 +95,7 @@ impl MatchCollector {
 
     fn extract_category(unit: &TranslationUnit) -> String {
         match unit.node_type {
-            NodeType::ErrorMessage => "error_handling".to_string(),
-            NodeType::LogMessage => "output".to_string(),
-            NodeType::FormatString => "output".to_string(),
-            NodeType::StringLiteral => "variables".to_string(),
+            NodeType::StringLiteral => "string".to_string(),
             _ => "other".to_string(),
         }
     }

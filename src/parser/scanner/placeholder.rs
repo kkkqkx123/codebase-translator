@@ -3,7 +3,7 @@
 //! Provides functionality to protect placeholders during translation
 //! and restore them afterwards.
 
-use crate::parser::scanner::region::{PlaceholderSpan, TextRegion};
+use crate::parser::scanner::region::TextRegion;
 
 /// Placeholder protector for template strings
 pub struct PlaceholderProtector {
@@ -116,8 +116,8 @@ impl FormatProtector {
         let mut result = text.to_string();
         let mut idx = 0;
 
-        let re = regex::Regex::new(r"%[+-]?\d*(?:\.\d+)?[diouxXeEfFgGaAcspn%]")
-            .expect("Invalid regex");
+        let re =
+            regex::Regex::new(r"%[+-]?\d*(?:\.\d+)?[diouxXeEfFgGaAcspn%]").expect("Invalid regex");
 
         for cap in re.captures_iter(text) {
             if let Some(m) = cap.get(0) {
@@ -207,18 +207,23 @@ impl FormatProtector {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::parser::scanner::region::PlaceholderSpan;
 
     #[test]
     fn test_protect_placeholders() {
         let protector = PlaceholderProtector::new();
-        let region = TextRegion::new(crate::parser::scanner::region::TextRegionType::TemplateString, 0, 35)
-            .with_prefix("`")
-            .with_suffix("`")
-            .with_content_range(1, 34)
-            .with_placeholders(vec![
-                PlaceholderSpan::new(7, 14, "${name}".to_string()),
-                PlaceholderSpan::new(26, 33, "${value}".to_string()),
-            ]);
+        let region = TextRegion::new(
+            crate::parser::scanner::region::TextRegionType::TemplateString,
+            0,
+            35,
+        )
+        .with_prefix("`")
+        .with_suffix("`")
+        .with_content_range(1, 34)
+        .with_placeholders(vec![
+            PlaceholderSpan::new(7, 14, "${name}".to_string()),
+            PlaceholderSpan::new(26, 33, "${value}".to_string()),
+        ]);
 
         let content = "`Hello ${name}, value is ${value}!`";
         let prepared = protector.prepare_for_translation(&region, content);
@@ -230,14 +235,18 @@ mod tests {
     #[test]
     fn test_restore_placeholders() {
         let protector = PlaceholderProtector::new();
-        let region = TextRegion::new(crate::parser::scanner::region::TextRegionType::TemplateString, 0, 35)
-            .with_prefix("`")
-            .with_suffix("`")
-            .with_content_range(1, 34)
-            .with_placeholders(vec![
-                PlaceholderSpan::new(7, 14, "${name}".to_string()),
-                PlaceholderSpan::new(26, 33, "${value}".to_string()),
-            ]);
+        let region = TextRegion::new(
+            crate::parser::scanner::region::TextRegionType::TemplateString,
+            0,
+            35,
+        )
+        .with_prefix("`")
+        .with_suffix("`")
+        .with_content_range(1, 34)
+        .with_placeholders(vec![
+            PlaceholderSpan::new(7, 14, "${name}".to_string()),
+            PlaceholderSpan::new(26, 33, "${value}".to_string()),
+        ]);
 
         let translated = "Hello __PH_0__, value is __PH_1__!";
         let restored = protector.restore_placeholders(translated, &region);

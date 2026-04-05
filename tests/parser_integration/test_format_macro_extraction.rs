@@ -91,28 +91,17 @@ fn main() {
     println!("Total units: {}", units.len());
 
     // Count units by type
-    let format_strings = units
+    let string_literals = units
         .iter()
         .filter(|u| {
             matches!(
                 u.node_type,
-                codebase_translate::core::models::NodeType::FormatString
+                codebase_translate::core::models::NodeType::StringLiteral
             )
         })
         .count();
 
-    let log_messages = units
-        .iter()
-        .filter(|u| {
-            matches!(
-                u.node_type,
-                codebase_translate::core::models::NodeType::LogMessage
-            )
-        })
-        .count();
-
-    println!("Format strings: {}", format_strings);
-    println!("Log messages: {}", log_messages);
+    println!("String literals: {}", string_literals);
 
     // Check if we extracted the specific Chinese strings
     let has_graph_space = units.iter().any(|u| u.content.contains("图空间"));
@@ -150,10 +139,10 @@ fn main() {
         "Should extract '处理文件' from format_args! macro"
     );
 
-    // We should have at least 5 format strings extracted
+    // We should have at least 5 string literals extracted
     assert!(
-        format_strings >= 5,
-        "Should extract at least 5 format strings, got {}",
-        format_strings
+        string_literals >= 5,
+        "Should extract at least 5 string literals, got {}",
+        string_literals
     );
 }

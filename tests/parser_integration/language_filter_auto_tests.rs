@@ -35,13 +35,7 @@ fn test_auto_to_en_filters_english_comments() {
     let strategy_config = ExtractionConfig {
         comments: true,
         doc_strings: true,
-        error_messages: false,
-        format_strings: false,
-        log_messages: false,
         string_literals: false,
-        variable_strings: false,
-        property_strings: false,
-        test_descriptions: false,
         ..Default::default()
     };
 
@@ -95,13 +89,7 @@ fn test_auto_to_en_filters_english_strings() {
     let strategy_config = ExtractionConfig {
         comments: false,
         doc_strings: false,
-        error_messages: true,
-        format_strings: true,
-        log_messages: true,
-        string_literals: false,
-        variable_strings: false,
-        property_strings: false,
-        test_descriptions: false,
+        string_literals: true,
         ..Default::default()
     };
 
@@ -154,13 +142,7 @@ fn test_auto_to_en_mixed_content() {
     let strategy_config = ExtractionConfig {
         comments: true,
         doc_strings: true,
-        error_messages: true,
-        format_strings: true,
-        log_messages: true,
-        string_literals: false,
-        variable_strings: false,
-        property_strings: false,
-        test_descriptions: false,
+        string_literals: true,
         ..Default::default()
     };
 
@@ -242,13 +224,7 @@ fn test_auto_to_zh_filters_chinese() {
     let strategy_config = ExtractionConfig {
         comments: true,
         doc_strings: true,
-        error_messages: false,
-        format_strings: false,
-        log_messages: false,
         string_literals: false,
-        variable_strings: false,
-        property_strings: false,
-        test_descriptions: false,
         ..Default::default()
     };
 
@@ -294,13 +270,7 @@ fn test_empty_source_langs_auto_behavior() {
     let strategy_config = ExtractionConfig {
         comments: true,
         doc_strings: true,
-        error_messages: false,
-        format_strings: false,
-        log_messages: false,
         string_literals: false,
-        variable_strings: false,
-        property_strings: false,
-        test_descriptions: false,
         ..Default::default()
     };
 

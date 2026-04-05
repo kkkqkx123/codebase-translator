@@ -102,11 +102,7 @@ impl TranslationReplacer {
     }
 
     /// Adjust offsets after a replacement
-    pub fn adjust_offsets(
-        regions: &mut [TranslatedRegion],
-        position: usize,
-        delta: isize,
-    ) {
+    pub fn adjust_offsets(regions: &mut [TranslatedRegion], position: usize, delta: isize) {
         for region in regions.iter_mut() {
             if region.content_start > position {
                 region.content_start = (region.content_start as isize + delta) as usize;
@@ -205,7 +201,8 @@ mod tests {
     #[test]
     fn test_apply_single_translation() {
         let content = "// 这是注释\n";
-        let region = TranslatedRegion::new(3, 15, "这是注释".to_string(), "This is comment".to_string());
+        let region =
+            TranslatedRegion::new(3, 15, "这是注释".to_string(), "This is comment".to_string());
 
         let result = TranslationReplacer::apply_single(content, &region);
         assert_eq!(result, "// This is comment\n");

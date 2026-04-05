@@ -450,7 +450,7 @@ mod tests {
         assert!(filter.should_translate("e.g. this is an example"));
         assert!(filter.should_translate("Price: 100-200 yuan"));
         assert!(filter.should_translate("See section 3.2.1"));
-        
+
         assert!(!filter.should_translate("func()"));
         assert!(!filter.should_translate("array[index]"));
         assert!(!filter.should_translate("`code`"));
@@ -459,10 +459,7 @@ mod tests {
     #[test]
     fn test_custom_placeholder_patterns_override() {
         let config = FilterConfig {
-            placeholder_patterns: vec![
-                r"\{[0-9]+\}".to_string(),
-                r"%[a-zA-Z]+".to_string(),
-            ],
+            placeholder_patterns: vec![r"\{[0-9]+\}".to_string(), r"%[a-zA-Z]+".to_string()],
             allow_placeholders: false,
             ..Default::default()
         };
@@ -477,9 +474,7 @@ mod tests {
     #[test]
     fn test_custom_code_patterns_override() {
         let config = FilterConfig {
-            code_patterns: vec![
-                r"\w+\(\)".to_string(),
-            ],
+            code_patterns: vec![r"\w+\(\)".to_string()],
             detect_code_patterns: true,
             ..Default::default()
         };

@@ -17,7 +17,7 @@ use sha2::{Digest, Sha256};
 /// - Translation: source_langs, target_lang
 /// - Include/Exclude: patterns
 /// - Filter: exclude_keywords, exclude_patterns, include_patterns, max_length, allow_placeholders, detect_code_patterns
-/// - Extraction: comments, doc_strings, error_messages, format_strings, string_literals, custom_patterns, state_machine_patterns
+/// - Extraction: comments, doc_strings, string_literals, custom_patterns, state_machine_patterns
 ///
 /// Settings that do NOT affect the hash:
 /// - Cache settings (cache.*)
@@ -97,34 +97,10 @@ pub fn calculate_config_hash(config: &ProjectConfig) -> String {
     } else {
         b"0"
     });
-    hasher.update(b"|extraction_error_messages:");
-    hasher.update(if config.extraction.error_messages {
-        b"1"
-    } else {
-        b"0"
-    });
-    hasher.update(b"|extraction_format_strings:");
-    hasher.update(if config.extraction.format_strings {
-        b"1"
-    } else {
-        b"0"
-    });
 
     // String literal extraction settings
     hasher.update(b"|string_literals:");
     hasher.update(if config.extraction.string_literals {
-        b"1"
-    } else {
-        b"0"
-    });
-    hasher.update(b"|variable_strings:");
-    hasher.update(if config.extraction.variable_strings {
-        b"1"
-    } else {
-        b"0"
-    });
-    hasher.update(b"|property_strings:");
-    hasher.update(if config.extraction.property_strings {
         b"1"
     } else {
         b"0"

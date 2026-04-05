@@ -95,8 +95,7 @@ impl ProjectConfig {
         self.encoding.convert_to_utf8 = other.encoding.convert_to_utf8;
         self.extraction.comments = other.extraction.comments;
         self.extraction.doc_strings = other.extraction.doc_strings;
-        self.extraction.error_messages = other.extraction.error_messages;
-        self.extraction.format_strings = other.extraction.format_strings;
+        self.extraction.string_literals = other.extraction.string_literals;
         if !other.extraction.custom_patterns.is_empty() {
             self.extraction.custom_patterns = other.extraction.custom_patterns;
         }
@@ -474,27 +473,9 @@ pub struct ExtractionConfig {
     /// Extract doc strings
     #[serde(default = "default_true")]
     pub doc_strings: bool,
-    /// Extract error messages
-    #[serde(default = "default_true")]
-    pub error_messages: bool,
-    /// Extract format strings
-    #[serde(default = "default_true")]
-    pub format_strings: bool,
-    /// Extract log messages
-    #[serde(default = "default_true")]
-    pub log_messages: bool,
-    /// Extract test descriptions
-    #[serde(default = "default_true")]
-    pub test_descriptions: bool,
     /// Extract string literals
     #[serde(default)]
     pub string_literals: bool,
-    /// Extract variable assignment strings
-    #[serde(default)]
-    pub variable_strings: bool,
-    /// Extract object property strings
-    #[serde(default)]
-    pub property_strings: bool,
     /// Custom regex patterns (simple regex-based extraction)
     #[serde(default)]
     pub custom_patterns: Vec<CustomRegexPattern>,
@@ -508,13 +489,7 @@ impl Default for ExtractionConfig {
         Self {
             comments: true,
             doc_strings: true,
-            error_messages: true,
-            format_strings: true,
-            log_messages: true,
-            test_descriptions: true,
             string_literals: false,
-            variable_strings: false,
-            property_strings: false,
             custom_patterns: Vec::new(),
             state_machine_patterns: Vec::new(),
         }
@@ -522,29 +497,6 @@ impl Default for ExtractionConfig {
 }
 
 impl ExtractionConfig {
-    pub fn should_extract(&self, node_type: crate::core::StrategyNodeType) -> bool {
-        use crate::core::StrategyNodeType;
-        match node_type {
-            StrategyNodeType::Comment => self.comments,
-            StrategyNodeType::DocString => self.doc_strings,
-            StrategyNodeType::ErrorMessage => self.error_messages,
-            StrategyNodeType::FormatString => self.format_strings,
-            StrategyNodeType::LogMessage => self.log_messages,
-            StrategyNodeType::StringLiteral => self.string_literals,
-            StrategyNodeType::VariableString => self.variable_strings,
-            StrategyNodeType::PropertyString => self.property_strings,
-            StrategyNodeType::TestDescription => self.test_descriptions,
-            StrategyNodeType::MarkdownParagraph
-            | StrategyNodeType::MarkdownHeading
-            | StrategyNodeType::MarkdownListItem
-            | StrategyNodeType::MarkdownTableCell => true,
-        }
-    }
-
-    pub fn get_node_type(&self, node_type: crate::core::StrategyNodeType) -> crate::core::NodeType {
-        node_type.to_node_type()
-    }
-
     pub fn docstrings(&self) -> bool {
         self.doc_strings
     }

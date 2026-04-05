@@ -257,7 +257,9 @@ impl ScannerLanguageConfig {
     pub fn from_extension(ext: &str) -> Option<Self> {
         let ext_lower = ext.to_lowercase();
         Self::all_languages().into_iter().find(|lang| {
-            lang.extensions.iter().any(|e| e.to_lowercase() == ext_lower)
+            lang.extensions
+                .iter()
+                .any(|e| e.to_lowercase() == ext_lower)
         })
     }
 
@@ -266,7 +268,9 @@ impl ScannerLanguageConfig {
             .extension()
             .and_then(|e| e.to_str())
             .unwrap_or("");
-        self.extensions.iter().any(|e| e.to_lowercase() == ext.to_lowercase())
+        self.extensions
+            .iter()
+            .any(|e| e.to_lowercase() == ext.to_lowercase())
     }
 
     pub fn all_extensions() -> HashSet<&'static str> {

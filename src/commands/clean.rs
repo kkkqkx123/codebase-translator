@@ -161,7 +161,7 @@ fn clean_backup_files(
     Ok(())
 }
 
-fn find_backup_files(dir: &PathBuf) -> Result<Vec<PathBuf>> {
+fn find_backup_files(dir: &Path) -> Result<Vec<PathBuf>> {
     let mut backup_files = Vec::new();
 
     if dir.is_dir() {
@@ -250,11 +250,19 @@ mod tests {
     }
 
     fn create_temp_backup_dir() -> PathBuf {
+        use std::sync::atomic::{AtomicU64, Ordering};
+        static COUNTER: AtomicU64 = AtomicU64::new(0);
+        
         let timestamp = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .expect("Time went backwards")
             .as_nanos();
-        let temp_dir = std::env::temp_dir().join(format!("translator_test_backups_{}", timestamp));
+        let counter = COUNTER.fetch_add(1, Ordering::SeqCst);
+        let pid = std::process::id();
+        let temp_dir = std::env::temp_dir().join(format!(
+            "translator_test_backups_{}_{}_{}",
+            pid, timestamp, counter
+        ));
         let _ = fs::remove_dir_all(&temp_dir);
         fs::create_dir_all(&temp_dir).expect("Failed to create temp backup dir");
         temp_dir

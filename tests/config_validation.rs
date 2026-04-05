@@ -125,8 +125,7 @@ struct ProjectConfigSummary {
     writer_dry_run: bool,
     extraction_comments: bool,
     extraction_doc_strings: bool,
-    extraction_error_messages: bool,
-    extraction_format_strings: bool,
+    extraction_string_literals: bool,
 }
 
 fn main() {
@@ -622,8 +621,7 @@ fn build_project_config_summary(config: &ProjectConfig) -> ProjectConfigSummary 
         writer_dry_run: config.writer.dry_run,
         extraction_comments: config.extraction.comments,
         extraction_doc_strings: config.extraction.doc_strings,
-        extraction_error_messages: config.extraction.error_messages,
-        extraction_format_strings: config.extraction.format_strings,
+        extraction_string_literals: config.extraction.string_literals,
     }
 }
 
@@ -1036,16 +1034,8 @@ fn write_validation_report(output_dir: &Path, result: &ConfigValidationResult) {
             }
         ));
         report.push_str(&format!(
-            "  错误消息: {}\n",
-            if details.extraction_error_messages {
-                "是"
-            } else {
-                "否"
-            }
-        ));
-        report.push_str(&format!(
-            "  格式化字符串: {}\n\n",
-            if details.extraction_format_strings {
+            "  字符串字面量: {}\n\n",
+            if details.extraction_string_literals {
                 "是"
             } else {
                 "否"
@@ -1339,12 +1329,8 @@ fn write_detailed_config(output_dir: &Path, result: &ConfigValidationResult) {
             details.extraction_doc_strings
         ));
         json_content.push_str(&format!(
-            "    \"extraction_error_messages\": {},\n",
-            details.extraction_error_messages
-        ));
-        json_content.push_str(&format!(
-            "    \"extraction_format_strings\": {}\n",
-            details.extraction_format_strings
+            "    \"extraction_string_literals\": {}\n",
+            details.extraction_string_literals
         ));
         json_content.push_str("  }\n");
     }
