@@ -107,7 +107,7 @@ impl ConfigLoader {
             .project_config_path
             .clone()
             .or_else(|| Self::find_project_config(std::env::current_dir().ok()?.as_path()))
-            .or_else(|| Self::find_project_config_in_exe_dir());
+            .or_else(Self::find_project_config_in_exe_dir);
 
         // If no config file found, use default configuration
         let Some(path) = path else {

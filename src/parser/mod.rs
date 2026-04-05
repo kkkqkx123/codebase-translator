@@ -1,20 +1,19 @@
-//! Code parsing with tree-sitter and regex fallback
+//! Code parsing with character-based scanning
 //!
 //! This module provides parsers for extracting translatable content from source files.
-//! It uses tree-sitter for accurate parsing of various programming languages,
-//! with regex-based fallback parsers for simpler file types.
+//! It uses character-based scanning for text extraction, with regex-based fallback
+//! parsers for simpler file types.
 //!
 //! # Architecture
 //!
 //! The parser module is organized into several submodules:
 //!
 //! - `core/`: Core extraction framework including traits, types, and implementations
-//! - `tree_sitter/`: Tree-sitter based parser implementation and query builder
 //! - `filtering/`: Content filtering system with layered architecture, including language detection
-//! - `languages/`: Language-specific parser implementations and queries
 //! - `coordinator/`: High-level coordination for parsing operations
 //! - `regex/`: Regex-based fallback parsers
 //! - `regex_parsers/`: Type-specific regex parsers for simple file types
+//! - `scanner/`: Character-based text scanner (primary extraction method)
 
 /// Parser configuration
 #[derive(Debug, Clone)]
@@ -49,17 +48,11 @@ impl Default for ParserConfig {
 // Core extraction framework (traits, types, and implementations)
 pub mod core;
 
-// Tree-sitter based parser
-pub mod tree_sitter;
-
 // Content filtering (includes language detection)
 pub mod filtering;
 
 // Parser coordinator
 pub mod coordinator;
-
-// Language-specific parsers
-pub mod languages;
 
 // Regex-based parsers
 pub mod regex;
@@ -67,10 +60,11 @@ pub mod regex;
 // Type-specific regex parsers
 pub mod regex_parsers;
 
+// Character-based text scanner
+pub mod scanner;
+
 // Re-export from core (traits and types)
-pub use core::{
-    ExtractionConfig, FunctionCategory, LanguageFunctionPatterns, Parser, StrategyNodeType,
-};
+pub use core::{ExtractionConfig, FunctionCategory, LanguageFunctionPatterns, Parser, StrategyNodeType};
 
 // Re-export from filtering
 pub use filtering::{
@@ -82,11 +76,8 @@ pub use filtering::checks::{
     LanguageDetector, LanguageInfo, QuickDetector, SampledDetector, Script,
 };
 
-// Re-export from tree_sitter
-pub use tree_sitter::{LanguageConfig, QueryBuilder, TreeSitterParser, TreeSitterParserFactory};
-
 // Re-export from core (utilities)
-pub use core::{ExtractionCandidate, ExtractionType, Extractor, QueryExecutor, StringProcessor};
+pub use core::StringProcessor;
 
 // Re-export from regex
 pub use regex::{
@@ -96,11 +87,15 @@ pub use regex::{
 // Re-export from regex_parsers
 pub use regex_parsers::{FallbackParser, HtmlParser, ShellParser, SqlParser};
 
-// Re-export from languages
-pub use languages::RustParser;
-
 // Re-export coordinator types
 pub use coordinator::{ParserCoordinator, ParserType};
+
+// Re-export from scanner
+pub use scanner::{
+    Change, ContentDiff, FormatProtector, PlaceholderProtector, PlaceholderSpan,
+    ScannerConfig, ScannerLanguageConfig, TextRegion, TextRegionType, TextScanner,
+    TranslatedRegion, TranslationReplacer,
+};
 
 use crate::config::project::ProjectConfig;
 use crate::core::error::Result;

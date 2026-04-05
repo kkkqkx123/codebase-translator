@@ -1,7 +1,7 @@
 //! Parser coordinator module
 //!
-//! Provides high-level coordination for parsing operations, managing multiple
-//! parsers and routing files to the appropriate parser based on file extension.
+//! Provides high-level coordination for parsing operations using character-based
+//! scanning for text extraction.
 
 use rayon::prelude::*;
 use std::collections::HashMap;
@@ -9,37 +9,36 @@ use std::sync::Arc;
 
 use crate::config::project::ExtractionConfig;
 use crate::core::error::{Result, TranslateError};
-use crate::core::models::{File, PatternType, TranslationUnit};
-use crate::parser::core::Parser as ParserTrait;
+use crate::core::models::{File, PatternType, Position, TranslationUnit};
 use crate::parser::filtering::traits::Filter;
+use crate::parser::core::Parser;
 use crate::parser::regex::custom_pattern_matcher::CustomPatternMatcher;
 use crate::parser::regex::state_machine::StateMachineMatcher;
 use crate::parser::regex_parsers::FallbackParser;
-use crate::parser::{
-    ContentFilter, ParserConfig, RustParser, TreeSitterParser, TreeSitterParserFactory,
+use crate::parser::scanner::{
+    ScannerConfig, ScannerLanguageConfig, TextRegionType, TextScanner,
 };
+use crate::parser::{ContentFilter, ParserConfig};
 
 /// Indicates which type of parser will handle a file.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ParserType {
-    /// A tree-sitter parser at the given index
-    TreeSitter(usize),
+    /// The character-based scanner
+    Scanner,
     /// The regex-based fallback parser
     Regex,
 }
 
-/// Parser coordinator that manages multiple parsers and routes files appropriately.
+/// Parser coordinator that manages parsing and text extraction.
 ///
-/// The coordinator maintains a collection of parsers and selects the appropriate
-/// one based on file extension. It tries language-specific parsers first (for accuracy),
-/// then tree-sitter parsers, then falls back to regex-based parsers for unsupported file types.
+/// The coordinator uses character-based scanning for text extraction,
+/// with regex-based fallback parsers for unsupported file types.
 ///
 /// After parsing, it applies additional extraction patterns:
 /// - Custom regex patterns (simple single-step matching)
 /// - State machine patterns (complex multi-step matching)
 pub struct ParserCoordinator {
-    rust_parser: Option<RustParser>,
-    tree_sitter_parsers: Vec<TreeSitterParser>,
+    /// Fallback parser for unsupported file types
     fallback_parser: FallbackParser,
     /// Custom pattern matchers for simple regex-based extraction
     custom_pattern_matchers: Vec<CustomPatternMatcher>,
@@ -51,6 +50,8 @@ pub struct ParserCoordinator {
     extension_to_matchers: HashMap<String, Vec<usize>>,
     /// Content filter for filtering extracted text
     filter: Arc<ContentFilter>,
+    /// Scanner configuration
+    scanner_config: ScannerConfig,
 }
 
 impl ParserCoordinator {
@@ -65,10 +66,6 @@ impl ParserCoordinator {
     }
 
     /// Creates a new parser coordinator from project configuration.
-    ///
-    /// This method creates a coordinator with filter configuration derived from
-    /// the project's filter settings, ensuring that max_length is properly configured
-    /// based on the project configuration rather than hardcoded values.
     pub fn from_project_config(
         config: ParserConfig,
         project_config: &crate::config::project::ProjectConfig,
@@ -81,14 +78,10 @@ impl ParserCoordinator {
             &project_config.translate,
         )?);
 
-        Self::with_extraction_config(config, extraction_config, filter)
+        Self::with_extraction_config(config, extraction_config, filter, &project_config.translate.target_lang)
     }
 
     /// Creates a new parser coordinator from project and translator configuration.
-    ///
-    /// This method creates a coordinator with filter configuration derived from
-    /// both project's filter settings and translator's max length limit.
-    /// The max_length will be the minimum of project config and translator limit.
     pub fn from_project_and_translator_config(
         config: ParserConfig,
         project_config: &crate::config::project::ProjectConfig,
@@ -103,13 +96,10 @@ impl ParserCoordinator {
             translator_max_length,
         )?);
 
-        Self::with_extraction_config(config, extraction_config, filter)
+        Self::with_extraction_config(config, extraction_config, filter, &project_config.translate.target_lang)
     }
 
     /// Creates a new parser coordinator with unified configuration.
-    ///
-    /// This method ensures consistency between ParserConfig and ExtractionConfig
-    /// by deriving the extraction configuration from the parser configuration.
     pub fn with_unified_config(config: ParserConfig) -> Result<Self> {
         use crate::parser::filtering::default_filter;
 
@@ -122,7 +112,7 @@ impl ParserCoordinator {
 
         let filter = Arc::new(default_filter()?);
 
-        Self::new(config, extraction_config, filter)
+        Self::with_extraction_config(config, extraction_config, filter, "en")
     }
 
     /// Creates a new parser coordinator with custom extraction config and filter.
@@ -131,50 +121,29 @@ impl ParserCoordinator {
         extraction_config: ExtractionConfig,
         filter: Arc<ContentFilter>,
     ) -> Result<Self> {
-        Self::with_extraction_config(config, extraction_config, filter)
+        Self::with_extraction_config(config, extraction_config, filter, "en")
     }
 
-    /// Creates a new parser coordinator with extraction config for state machine patterns.
+    /// Creates a new parser coordinator with extraction config.
     pub fn with_extraction_config(
         config: ParserConfig,
         extraction_config: ExtractionConfig,
         filter: Arc<ContentFilter>,
+        target_lang: &str,
     ) -> Result<Self> {
-        let mut tree_sitter_parsers: Vec<TreeSitterParser> = Vec::new();
-
-        // Create Rust parser for special extraction types (error_messages, format_strings, log_messages)
-        let rust_parser =
-            RustParser::new(config.clone(), extraction_config.clone(), filter.clone()).ok();
-
-        for parser_result in TreeSitterParserFactory::create_all_parsers(
-            config.clone(),
-            extraction_config.clone(),
-            filter.clone(),
-        ) {
-            match parser_result {
-                Ok(parser) => tree_sitter_parsers.push(parser),
-                Err(e) => {
-                    tracing::warn!("Failed to create parser: {}", e);
-                }
-            }
-        }
-
         let fallback_parser = FallbackParser::new(config.clone());
 
-        // Load custom patterns from extraction config
         let custom_patterns = if extraction_config.custom_patterns.is_empty() {
             Vec::new()
         } else {
             extraction_config.custom_patterns.clone()
         };
 
-        // Create custom pattern matchers
         let custom_pattern_matchers: Vec<_> = custom_patterns
             .iter()
             .filter_map(|pattern| CustomPatternMatcher::from_config(pattern).ok())
             .collect();
 
-        // Build extension to custom patterns mapping
         let mut extension_to_custom_patterns = HashMap::new();
         for (idx, matcher) in custom_pattern_matchers.iter().enumerate() {
             let extensions = if matcher.file_extensions().is_empty() {
@@ -191,14 +160,12 @@ impl ParserCoordinator {
             }
         }
 
-        // Load state machine patterns from extraction config
         let state_machine_patterns = if extraction_config.state_machine_patterns.is_empty() {
             Vec::new()
         } else {
             extraction_config.state_machine_patterns.clone()
         };
 
-        // Create state machine matchers
         let state_machine_matchers: Vec<_> = state_machine_patterns
             .iter()
             .filter_map(|pattern| {
@@ -213,7 +180,6 @@ impl ParserCoordinator {
             })
             .collect();
 
-        // Build extension to matchers mapping
         let mut extension_to_matchers = HashMap::new();
         for (idx, pattern) in state_machine_patterns.iter().enumerate() {
             let extensions = if pattern.file_extensions.is_empty() {
@@ -230,56 +196,36 @@ impl ParserCoordinator {
             }
         }
 
+        let target_languages = vec![target_lang.to_string()];
+
+        let scanner_config = ScannerConfig::new(target_languages)
+            .with_comments(extraction_config.comments)
+            .with_doc_strings(extraction_config.doc_strings)
+            .with_strings(extraction_config.string_literals)
+            .with_min_length(config.min_content_length)
+            .with_max_length(config.max_content_length);
+
         Ok(Self {
-            rust_parser,
-            tree_sitter_parsers,
             fallback_parser,
             custom_pattern_matchers,
             extension_to_custom_patterns,
             state_machine_matchers,
             extension_to_matchers,
             filter: filter.clone(),
-        })
-    }
-
-    /// Creates a coordinator with pre-built parsers.
-    pub fn with_parsers(
-        rust_parser: Option<RustParser>,
-        tree_sitter_parsers: Vec<TreeSitterParser>,
-        fallback_parser: FallbackParser,
-    ) -> Result<Self> {
-        use crate::parser::{ContentFilter, FilterConfig};
-
-        Ok(Self {
-            rust_parser,
-            tree_sitter_parsers,
-            fallback_parser,
-            custom_pattern_matchers: Vec::new(),
-            extension_to_custom_patterns: HashMap::new(),
-            state_machine_matchers: Vec::new(),
-            extension_to_matchers: HashMap::new(),
-            filter: Arc::new(
-                ContentFilter::new(FilterConfig::default())
-                    .expect("Failed to create default filter"),
-            ),
+            scanner_config,
         })
     }
 
     /// Parses a file using the appropriate parser and applies additional patterns.
-    ///
-    /// The extraction process:
-    /// 1. Parse file with appropriate parser (Tree-sitter or Regex)
-    /// 2. Apply custom regex patterns (simple single-step matching)
-    /// 3. Apply state machine patterns (complex multi-step matching)
-    /// 4. Deduplicate overlapping units
-    /// 5. Sort all units by position
     pub fn parse_file(&self, file: &File) -> Result<Vec<TranslationUnit>> {
-        // 1. Use appropriate parser to parse file and get decoded content
-        let (mut units, content) = self.parse_with_parser(file)?;
+        let content = file
+            .content_string()
+            .map_err(|e| TranslateError::Parse(format!("Failed to decode file content: {}", e)))?;
+
+        let (mut units, content) = self.parse_with_scanner(file, &content)?;
 
         let file_ext = file.extension().unwrap_or("").to_lowercase();
 
-        // 2. Apply custom regex patterns (simple single-step matching)
         let mut custom_units = Vec::new();
         if let Some(matcher_indices) = self
             .extension_to_custom_patterns
@@ -300,7 +246,6 @@ impl ParserCoordinator {
                         for m in matches {
                             let text = &m.extracted_text;
 
-                            // Apply content filter (includes length check)
                             if !self.filter.should_translate(text) {
                                 continue;
                             }
@@ -337,7 +282,6 @@ impl ParserCoordinator {
             }
         }
 
-        // 3. Apply state machine patterns (complex multi-step matching)
         let mut sm_units = Vec::new();
         if let Some(matcher_indices) = self
             .extension_to_matchers
@@ -358,7 +302,6 @@ impl ParserCoordinator {
                         for m in matches {
                             let text = &m.extracted_text;
 
-                            // Apply content filter (includes length check)
                             if !self.filter.should_translate(text) {
                                 continue;
                             }
@@ -395,23 +338,14 @@ impl ParserCoordinator {
             }
         }
 
-        // 4. Deduplicate overlapping units
         units = self.deduplicate_units(units, custom_units, sm_units);
 
-        // 5. Sort by position
         units.sort_by(|a, b| a.start_pos.offset.cmp(&b.start_pos.offset));
 
         Ok(units)
     }
 
     /// Deduplicate translation units to avoid overlapping or duplicate entries.
-    ///
-    /// This method combines units from three sources:
-    /// - Base units from the primary parser
-    /// - Custom regex pattern matches
-    /// - State machine pattern matches
-    ///
-    /// Units are considered duplicates if they have the same position range and content.
     fn deduplicate_units(
         &self,
         base: Vec<TranslationUnit>,
@@ -423,7 +357,6 @@ impl ParserCoordinator {
         let mut result = base;
         let mut seen: HashSet<(usize, usize, String)> = HashSet::new();
 
-        // Mark base units as seen
         for unit in &result {
             let key = (
                 unit.start_pos.offset,
@@ -433,7 +366,6 @@ impl ParserCoordinator {
             seen.insert(key);
         }
 
-        // Add custom pattern units if not duplicates
         for unit in custom {
             let key = (
                 unit.start_pos.offset,
@@ -445,7 +377,6 @@ impl ParserCoordinator {
             }
         }
 
-        // Add state machine units if not duplicates
         for unit in sm {
             let key = (
                 unit.start_pos.offset,
@@ -460,36 +391,20 @@ impl ParserCoordinator {
         result
     }
 
-    /// Parse file with appropriate parser only (without additional patterns).
-    /// Returns both translation units and decoded content to avoid redundant decoding.
-    fn parse_with_parser(&self, file: &File) -> Result<(Vec<TranslationUnit>, String)> {
+    /// Parse file with scanner.
+    fn parse_with_scanner(&self, file: &File, content: &str) -> Result<(Vec<TranslationUnit>, String)> {
         let filename = file.path.file_name().and_then(|n| n.to_str()).unwrap_or("");
+        let ext = file.extension().unwrap_or("");
 
-        // Decode content once and reuse it
-        let content = file
-            .content_string()
-            .map_err(|e| TranslateError::Parse(format!("Failed to decode file content: {}", e)))?;
-
-        // Try Rust parser first for special extraction types
-        if let Some(ref rust_parser) = self.rust_parser {
-            if rust_parser.supports(filename) {
-                let units = rust_parser.parse(file)?;
-                return Ok((units, content));
-            }
+        if let Some(scanner) = TextScanner::from_extension(ext, self.scanner_config.clone()) {
+            let regions = scanner.scan(content);
+            let units = self.regions_to_units(&regions, content, &file.path.display().to_string());
+            return Ok((units, content.to_string()));
         }
 
-        // Try tree-sitter parsers
-        for parser in &self.tree_sitter_parsers {
-            if parser.supports(filename) {
-                let units = parser.parse(file)?;
-                return Ok((units, content));
-            }
-        }
-
-        // Fallback to regex parser
         if self.fallback_parser.supports(filename) {
             let units = self.fallback_parser.parse(file)?;
-            return Ok((units, content));
+            return Ok((units, content.to_string()));
         }
 
         Err(TranslateError::Parse(format!(
@@ -498,16 +413,93 @@ impl ParserCoordinator {
         )))
     }
 
+    /// Convert text regions to translation units.
+    fn regions_to_units(
+        &self,
+        regions: &[crate::parser::scanner::TextRegion],
+        content: &str,
+        file_path: &str,
+    ) -> Vec<TranslationUnit> {
+        let mut units = Vec::new();
+
+        for (idx, region) in regions.iter().enumerate() {
+            let text = match region.extract_content(content) {
+                Some(t) => t,
+                None => continue,
+            };
+
+            if !self.filter.should_translate(text) {
+                continue;
+            }
+
+            let node_type = self.region_type_to_node_type(region.region_type);
+
+            let start_pos = Position::new(
+                self.byte_offset_to_line(content, region.content_start),
+                self.byte_offset_to_column(content, region.content_start),
+                region.content_start,
+            );
+
+            let end_pos = Position::new(
+                self.byte_offset_to_line(content, region.content_end),
+                self.byte_offset_to_column(content, region.content_end),
+                region.content_end,
+            );
+
+            let id = format!("{}_{}_{}", file_path, region.region_type, idx);
+
+            let mut unit = TranslationUnit::new(id, node_type, text, start_pos, end_pos);
+
+            if !region.placeholders.is_empty() {
+                let placeholder_text = region.placeholders
+                    .iter()
+                    .map(|p| p.original.clone())
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                unit.raw_match = Some(format!("placeholders: {}", placeholder_text));
+            }
+
+            units.push(unit);
+        }
+
+        units
+    }
+
+    /// Convert region type to node type.
+    fn region_type_to_node_type(&self, region_type: TextRegionType) -> crate::core::models::NodeType {
+        use crate::core::models::NodeType;
+        match region_type {
+            TextRegionType::LineComment => NodeType::Comment,
+            TextRegionType::BlockComment => NodeType::Comment,
+            TextRegionType::DocComment => NodeType::DocString,
+            TextRegionType::SingleQuotedString => NodeType::StringLiteral,
+            TextRegionType::DoubleQuotedString => NodeType::StringLiteral,
+            TextRegionType::TemplateString => NodeType::StringLiteral,
+            TextRegionType::RawString => NodeType::StringLiteral,
+            TextRegionType::MultiLineString => NodeType::StringLiteral,
+        }
+    }
+
+    /// Convert byte offset to line number (1-based).
+    fn byte_offset_to_line(&self, content: &str, offset: usize) -> usize {
+        content[..offset.min(content.len())]
+            .chars()
+            .filter(|&c| c == '\n')
+            .count()
+            + 1
+    }
+
+    /// Convert byte offset to column number (1-based).
+    fn byte_offset_to_column(&self, content: &str, offset: usize) -> usize {
+        let content_before = &content[..offset.min(content.len())];
+        if let Some(last_newline) = content_before.rfind('\n') {
+            offset - last_newline
+        } else {
+            offset + 1
+        }
+    }
+
     /// Parses multiple files in parallel using Rayon.
-    ///
-    /// This method is CPU-intensive and benefits from parallel processing.
-    /// Suitable for projects with many files.
-    ///
-    /// # Arguments
-    /// * `files` - Slice of files to parse
-    ///
-    /// # Returns
-    /// Vector of tuples containing (File, TranslationUnits)
     pub fn parse_files_parallel(
         &self,
         files: &[File],
@@ -530,10 +522,13 @@ impl ParserCoordinator {
 
     /// Finds the appropriate parser for a file.
     pub fn find_parser(&self, filename: &str) -> Option<ParserType> {
-        for (index, parser) in self.tree_sitter_parsers.iter().enumerate() {
-            if parser.supports(filename) {
-                return Some(ParserType::TreeSitter(index));
-            }
+        let ext = std::path::Path::new(filename)
+            .extension()
+            .and_then(|e| e.to_str())
+            .unwrap_or("");
+
+        if ScannerLanguageConfig::from_extension(ext).is_some() {
+            return Some(ParserType::Scanner);
         }
 
         if self.fallback_parser.supports(filename) {
@@ -545,17 +540,16 @@ impl ParserCoordinator {
 
     /// Returns all supported file extensions.
     pub fn supported_extensions(&self) -> Vec<String> {
-        let mut extensions = Vec::new();
-
-        for parser in &self.tree_sitter_parsers {
-            extensions.extend(parser.supported_extensions().iter().map(|s| s.to_string()));
-        }
+        let mut extensions: Vec<String> = ScannerLanguageConfig::all_extensions()
+            .into_iter()
+            .map(|s| s.to_string())
+            .collect();
 
         extensions.extend(
             self.fallback_parser
                 .supported_extensions()
                 .iter()
-                .map(|s| s.to_string()),
+                .map(|s: &&str| s.to_string()),
         );
 
         extensions.sort();
@@ -563,9 +557,9 @@ impl ParserCoordinator {
         extensions
     }
 
-    /// Returns the number of tree-sitter parsers.
-    pub fn tree_sitter_parser_count(&self) -> usize {
-        self.tree_sitter_parsers.len()
+    /// Returns the scanner configuration.
+    pub fn scanner_config(&self) -> &ScannerConfig {
+        &self.scanner_config
     }
 }
 
@@ -594,7 +588,7 @@ mod tests {
         let coordinator =
             ParserCoordinator::with_defaults(config).expect("Failed to create coordinator");
 
-        assert!(coordinator.tree_sitter_parser_count() > 0);
+        assert!(!coordinator.supported_extensions().is_empty());
     }
 
     #[test]
@@ -603,8 +597,6 @@ mod tests {
         let coordinator =
             ParserCoordinator::with_defaults(config).expect("Failed to create coordinator");
 
-        // Use Chinese content to avoid being filtered by language filter
-        // (default target language is English, so English content would be filtered)
         let content = r#"
 /// 这是一个文档注释
 fn main() {
@@ -646,7 +638,7 @@ fn main() {
         let coordinator = ParserCoordinator::default();
         let extensions = coordinator.supported_extensions();
 
-        assert!(extensions.is_empty() || !extensions.is_empty());
+        assert!(!extensions.is_empty());
     }
 
     #[test]
