@@ -1,14 +1,102 @@
-Extracted 1 translation units
+Extracted 9 translation units
 ==================================================
 
 --- Unit 1 ---
-ID: test_format_chinese.rs_macro_0
-Type: FormatString
-Position: Line 14, Column 76 (Offset: 445)
-End Position: Line 14, Column 88 (Offset: 457)
+ID: test_format_chinese.rs_double_quoted_string_1
+Type: StringLiteral
+Position: Line 4, Column 28 (Offset: 69)
+End Position: Line 4, Column 52 (Offset: 93)
 Content:
-2024-01-01
+图空间 '{}' 不存在
 Raw Match:
-"2024-01-01"
+"图空间 '{}' 不存在"
+Should Translate: true
+
+--- Unit 2 ---
+ID: test_format_chinese.rs_double_quoted_string_3
+Type: StringLiteral
+Position: Line 7, Column 26 (Offset: 158)
+End Position: Line 7, Column 53 (Offset: 185)
+Content:
+配置文件 '{}' 未找到
+Raw Match:
+"配置文件 '{}' 未找到"
+Should Translate: true
+
+--- Unit 3 ---
+ID: test_format_chinese.rs_double_quoted_string_6
+Type: StringLiteral
+Position: Line 10, Column 25 (Offset: 257)
+End Position: Line 10, Column 54 (Offset: 286)
+Content:
+成功连接到数据库 '{}'
+Raw Match:
+"成功连接到数据库 '{}'"
+Should Translate: true
+
+--- Unit 4 ---
+ID: test_format_chinese.rs_double_quoted_string_10
+Type: StringLiteral
+Position: Line 14, Column 27 (Offset: 396)
+End Position: Line 14, Column 64 (Offset: 433)
+Content:
+用户 '{}' 在 {} 时访问了资源
+Raw Match:
+"用户 '{}' 在 {} 时访问了资源"
+Should Translate: true
+
+--- Unit 5 ---
+ID: test_format_chinese.rs_double_quoted_string_15
+Type: StringLiteral
+Position: Line 18, Column 29 (Offset: 542)
+End Position: Line 18, Column 66 (Offset: 579)
+Content:
+处理文件 '{}' 大小为 {} 字节
+Raw Match:
+"处理文件 '{}' 大小为 {} 字节"
+Should Translate: true
+
+--- Unit 6 ---
+ID: test_format_chinese.rs_double_quoted_string_19
+Type: StringLiteral
+Position: Line 22, Column 13 (Offset: 665)
+End Position: Line 22, Column 29 (Offset: 681)
+Content:
+正在处理: {}
+Raw Match:
+"正在处理: {}"
+Should Translate: true
+
+--- Unit 7 ---
+ID: test_format_chinese.rs_double_quoted_string_20
+Type: StringLiteral
+Position: Line 23, Column 15 (Offset: 705)
+End Position: Line 23, Column 25 (Offset: 715)
+Content:
+完成: {}
+Raw Match:
+"完成: {}"
+Should Translate: true
+
+--- Unit 8 ---
+ID: test_format_chinese.rs_double_quoted_string_21
+Type: StringLiteral
+Position: Line 24, Column 14 (Offset: 738)
+End Position: Line 24, Column 24 (Offset: 748)
+Content:
+错误: {}
+Raw Match:
+"错误: {}"
+Should Translate: true
+
+--- Unit 9 ---
+ID: test_format_chinese.rs_double_quoted_string_22
+Type: StringLiteral
+Position: Line 25, Column 16 (Offset: 773)
+End Position: Line 25, Column 26 (Offset: 783)
+Content:
+警告: {}
+Raw Match:
+"警告: {}"
 Should Translate: true
 

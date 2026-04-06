@@ -25,9 +25,9 @@ pub struct QuickDetector {
 }
 
 impl QuickDetector {
-    /// Create a new quick detector with default sample size (32)
+    /// Create a new quick detector with default sample size (128)
     pub fn new() -> Self {
-        Self { sample_size: 32 }
+        Self { sample_size: 128 }
     }
 
     /// Create with custom sample size

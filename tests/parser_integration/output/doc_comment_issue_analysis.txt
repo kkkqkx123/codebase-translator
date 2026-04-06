@@ -1,120 +1,83 @@
-Extracted 8 translation units
+Extracted 9 translation units
 ==================================================
 
 --- Unit 1 ---
-ID: simple_merged_comment_0
+ID: simple_rust.rs_line_comment_0
 Type: Comment
-Position: Line 1, Column 1 (Offset: 0)
-End Position: Line 2, Column 40 (Offset: 101)
+Position: Line 1, Column 4 (Offset: 3)
+End Position: Line 1, Column 62 (Offset: 61)
 Content:
 这是一个简单的Rust文件，用于测试翻译功能
-包含中文注释和文档字符串
-Raw Match:
-// 这是一个简单的Rust文件，用于测试翻译功能
-// 包含中文注释和文档字符串
 Should Translate: true
 
 --- Unit 2 ---
-ID: simple_merged_doc_string_103
-Type: DocString
-Position: Line 4, Column 1 (Offset: 103)
-End Position: Line 17, Column 1 (Offset: 307)
+ID: simple_rust.rs_line_comment_1
+Type: Comment
+Position: Line 2, Column 4 (Offset: 65)
+End Position: Line 2, Column 40 (Offset: 101)
 Content:
-计算两个数的和
-# Arguments
-* `a` - 第一个数字
-* `b` - 第二个数字
-# Examples
-```
-let result = add(1, 2);
-assert_eq!(result, 3);
-```
-Raw Match:
-/// 计算两个数的和
-/// # Arguments
-/// * `a` - 第一个数字
-/// * `b` - 第二个数字
-/// # Examples
-/// ```
-/// let result = add(1, 2);
-/// assert_eq!(result, 3);
-/// ```
+包含中文注释和文档字符串
 Should Translate: true
 
 --- Unit 3 ---
-ID: simple_merged_doc_string_356
+ID: simple_rust.rs_doc_comment_2
 Type: DocString
-Position: Line 21, Column 1 (Offset: 356)
-End Position: Line 27, Column 1 (Offset: 449)
+Position: Line 4, Column 5 (Offset: 107)
+End Position: Line 4, Column 26 (Offset: 128)
 Content:
-计算两个数的差
-# Arguments
-* `a` - 被减数
-* `b` - 减数
-Raw Match:
-/// 计算两个数的差
-/// # Arguments
-/// * `a` - 被减数
-/// * `b` - 减数
+计算两个数的和
 Should Translate: true
 
 --- Unit 4 ---
-ID: simple_rust.rs_doc_string_13
+ID: simple_rust.rs_doc_comment_11
 Type: DocString
-Position: Line 31, Column 1 (Offset: 503)
-End Position: Line 32, Column 1 (Offset: 520)
+Position: Line 21, Column 5 (Offset: 360)
+End Position: Line 21, Column 26 (Offset: 381)
 Content:
-乘法运算
-Raw Match:
-/// 乘法运算
-
+计算两个数的差
 Should Translate: true
 
 --- Unit 5 ---
-ID: simple_rust.rs_comment_2
-Type: Comment
-Position: Line 36, Column 1 (Offset: 574)
-End Position: Line 36, Column 34 (Offset: 607)
+ID: simple_rust.rs_doc_comment_15
+Type: DocString
+Position: Line 31, Column 5 (Offset: 507)
+End Position: Line 31, Column 17 (Offset: 519)
 Content:
-这是一个简单的结构体
-Raw Match:
-// 这是一个简单的结构体
+乘法运算
 Should Translate: true
 
 --- Unit 6 ---
-ID: simple_rust.rs_comment_3
+ID: simple_rust.rs_line_comment_16
 Type: Comment
-Position: Line 38, Column 5 (Offset: 636)
-End Position: Line 38, Column 23 (Offset: 654)
+Position: Line 36, Column 4 (Offset: 577)
+End Position: Line 36, Column 34 (Offset: 607)
 Content:
-计算器名称
-Raw Match:
-// 计算器名称
+这是一个简单的结构体
 Should Translate: true
 
 --- Unit 7 ---
-ID: simple_merged_doc_string_698
-Type: DocString
-Position: Line 43, Column 5 (Offset: 698)
-End Position: Line 48, Column 1 (Offset: 803)
+ID: simple_rust.rs_line_comment_17
+Type: Comment
+Position: Line 38, Column 8 (Offset: 639)
+End Position: Line 38, Column 23 (Offset: 654)
 Content:
-创建新的计算器实例
-# Arguments
-* `name` - 计算器名称
-Raw Match:
-/// 创建新的计算器实例
-/// # Arguments
-/// * `name` - 计算器名称
+计算器名称
 Should Translate: true
 
 --- Unit 8 ---
-ID: simple_rust.rs_doc_string_17
+ID: simple_rust.rs_doc_comment_18
 Type: DocString
-Position: Line 54, Column 5 (Offset: 918)
-End Position: Line 55, Column 1 (Offset: 944)
+Position: Line 43, Column 9 (Offset: 702)
+End Position: Line 43, Column 36 (Offset: 729)
+Content:
+创建新的计算器实例
+Should Translate: true
+
+--- Unit 9 ---
+ID: simple_rust.rs_doc_comment_21
+Type: DocString
+Position: Line 54, Column 9 (Offset: 922)
+End Position: Line 54, Column 30 (Offset: 943)
 Content:
 获取计算器名称
-Raw Match:
-/// 获取计算器名称
-
 Should Translate: true

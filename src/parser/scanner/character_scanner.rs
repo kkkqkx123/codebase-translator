@@ -569,11 +569,56 @@ impl TextScanner {
     }
 
     /// Check if text contains target language characters
+    /// In AUTO mode (empty target_languages), extract all text
+    /// Otherwise, check if text contains any of the target language characters
     fn contains_target_language(&self, text: &str) -> bool {
+        // If no target languages specified, extract everything
+        // Language filtering will be done by the Filter layer
         if self.config.target_languages.is_empty() {
             return true;
         }
 
+        // For short text, check all characters
+        if text.chars().count() <= 256 {
+            return self.check_text_sample(text);
+        }
+
+        // For long text, use multi-point sampling:
+        // - Check beginning (first 128 chars)
+        // - Check middle (middle 128 chars)  
+        // - Check end (last 128 chars)
+        // This ensures we don't miss target languages that appear later in the text
+        let chars: Vec<char> = text.chars().collect();
+        let len = chars.len();
+        
+        // Sample beginning
+        let beginning: String = chars.iter().take(128).collect();
+        if self.check_text_sample(&beginning) {
+            return true;
+        }
+        
+        // Sample middle
+        if len > 256 {
+            let mid_start = (len - 256) / 2;
+            let middle: String = chars.iter().skip(mid_start).take(128).collect();
+            if self.check_text_sample(&middle) {
+                return true;
+            }
+        }
+        
+        // Sample end
+        if len > 128 {
+            let end: String = chars.iter().skip(len - 128).take(128).collect();
+            if self.check_text_sample(&end) {
+                return true;
+            }
+        }
+        
+        false
+    }
+    
+    /// Check a text sample for target languages
+    fn check_text_sample(&self, text: &str) -> bool {
         for lang in &self.config.target_languages {
             let lang_upper = lang.to_uppercase();
             match lang_upper.as_str() {

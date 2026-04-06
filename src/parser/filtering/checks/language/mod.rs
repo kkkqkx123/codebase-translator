@@ -54,6 +54,7 @@ impl LanguageFilter {
 
         match target.as_str() {
             "EN" | "EN-US" | "EN-GB" => {
+                // For English target, check if text is purely Latin without CJK
                 if !self.quick_detector.is_latin(text) {
                     return false;
                 }
@@ -62,9 +63,13 @@ impl LanguageFilter {
                 }
                 true
             }
-            "ZH" | "ZH-CN" | "ZH-TW" => self.quick_detector.has_cjk(text),
-            "JA" => self.quick_detector.has_japanese(text),
-            "KO" => self.quick_detector.has_korean(text),
+            "ZH" | "ZH-CN" | "ZH-TW" => {
+                // For Chinese target, check if text is purely Chinese (no Latin)
+                // Pure Chinese text is already in target language and should be filtered
+                self.quick_detector.has_chinese(text) && !self.quick_detector.is_latin(text)
+            }
+            "JA" => self.quick_detector.has_japanese(text) && !self.quick_detector.is_latin(text),
+            "KO" => self.quick_detector.has_korean(text) && !self.quick_detector.is_latin(text),
             _ => false,
         }
     }
@@ -173,33 +178,38 @@ fn is_greek(c: char) -> bool {
 
 impl Filter for LanguageFilter {
     fn should_translate(&self, text: &str) -> bool {
+        // Check if text has translatable content (not just symbols)
+        if !self.has_translatable_content(text) {
+            debug!(
+                reason = "no_translatable_content",
+                "Text filtered: no translatable content"
+            );
+            return false;
+        }
+
+        // Use source language configuration for filtering
         let is_target = self.is_target_language(text);
         let has_source = self.contains_source_language(text);
 
         if self.source_langs.is_empty() {
+            // AUTO mode: filter out target language, keep everything else
             if is_target {
                 debug!(
                     target_lang = %self.target_lang,
                     reason = "already_in_target_language",
-                    "Text filtered by language check (AUTO mode)"
-                );
-                return false;
-            }
-            if !self.has_translatable_content(text) {
-                debug!(
-                    reason = "no_translatable_content",
-                    "Text filtered by language check"
+                    "Text filtered: already in target language"
                 );
                 return false;
             }
             return true;
         }
 
+        // Explicit source language mode: only keep source languages
         if !has_source {
             debug!(
                 source_langs = ?self.source_langs,
                 reason = "no_source_language",
-                "Text filtered by language check"
+                "Text filtered: does not contain source language"
             );
             return false;
         }

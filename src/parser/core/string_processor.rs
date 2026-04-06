@@ -184,7 +184,23 @@ impl StringProcessor {
             return self.clean_block_comment(text);
         }
 
-        self.clean_line_comment(text)
+        // If text doesn't start with /** or /*, it means the comment markers
+        // have already been removed by the scanner. In this case, just clean
+        // the leading '*' from each line (common in Javadoc-style comments)
+        let lines: Vec<&str> = text.lines().collect();
+        let processed_lines: Vec<String> = lines
+            .iter()
+            .map(|line| {
+                let trimmed = line.trim_start();
+                if let Some(stripped) = trimmed.strip_prefix('*') {
+                    stripped.trim_start().to_string()
+                } else {
+                    trimmed.to_string()
+                }
+            })
+            .collect();
+
+        processed_lines.join("\n").trim_end().to_string()
     }
 
     /// Clean string literal by removing quotes and handling escape sequences

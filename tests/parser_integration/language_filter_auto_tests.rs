@@ -235,11 +235,11 @@ fn test_auto_to_zh_filters_chinese() {
         .expect("Failed to create coordinator");
 
     let content = r#"
-// 这是中文注释 - should be filtered
-/// 中文文档注释 - should be filtered
+// 这是中文注释
+/// 中文文档注释
 
-// This is an English comment - should be translated
-/// English doc comment - should be translated
+// This is an English comment
+/// English doc comment
 "#;
 
     let file = create_test_file(content, "test.rs");
@@ -248,7 +248,7 @@ fn test_auto_to_zh_filters_chinese() {
     let texts: Vec<_> = units.iter().map(|u| u.content.as_str()).collect();
 
     assert!(
-        !texts.iter().any(|t| t.contains("中文注释")),
+        !texts.iter().any(|t| t.contains("这是中文注释")),
         "Chinese comments should be filtered out in AUTO->ZH mode"
     );
     assert!(
@@ -256,7 +256,7 @@ fn test_auto_to_zh_filters_chinese() {
         "Chinese doc comments should be filtered out in AUTO->ZH mode"
     );
     assert!(
-        texts.iter().any(|t| t.contains("English comment")),
+        texts.iter().any(|t| t.contains("This is an English comment")),
         "English comments should be extracted for translation"
     );
     assert!(

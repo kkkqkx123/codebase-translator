@@ -188,7 +188,9 @@ impl ParserCoordinator {
             }
         }
 
-        let target_languages = vec![target_lang.to_string()];
+        // Scanner should extract all text without language filtering
+        // Language filtering will be done by the Filter layer based on source_langs
+        let target_languages: Vec<String> = Vec::new(); // Empty means extract all
 
         let scanner_config = ScannerConfig::new(target_languages)
             .with_comments(extraction_config.comments)
@@ -409,15 +411,30 @@ impl ParserCoordinator {
         content: &str,
         file_path: &str,
     ) -> Vec<TranslationUnit> {
+        use crate::parser::core::StringProcessor;
+        use crate::parser::core::CommentType;
+
         let mut units = Vec::new();
+        let string_processor = StringProcessor::new();
 
         for (idx, region) in regions.iter().enumerate() {
-            let text = match region.extract_content(content) {
+            let raw_text = match region.extract_content(content) {
                 Some(t) => t,
                 None => continue,
             };
 
-            if !self.filter.should_translate(text) {
+            // Clean comment markers for doc comments and block comments
+            let text = match region.region_type {
+                crate::parser::scanner::TextRegionType::DocComment => {
+                    string_processor.clean_doc_comment(raw_text)
+                }
+                crate::parser::scanner::TextRegionType::BlockComment => {
+                    string_processor.clean_comment(raw_text, CommentType::Block)
+                }
+                _ => raw_text.to_string(),
+            };
+
+            if !self.filter.should_translate(&text) {
                 continue;
             }
 

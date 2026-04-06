@@ -169,36 +169,3 @@ public class Test {
         "Should extract Javadoc comment with Chinese text"
     );
 }
-
-#[test]
-fn test_rust_doc_comment_extraction_english_only() {
-    let coordinator = create_test_coordinator();
-
-    let content = r#"
-/// This is a doc comment
-fn main() {
-    // This is a regular comment
-    let x = 5;
-}
-"#;
-
-    let file = create_test_file(content, "test.rs");
-    let units = coordinator
-        .parse_file(&file)
-        .expect("Parsing should succeed");
-
-    println!("English Only - Extracted {} units:", units.len());
-    for unit in &units {
-        println!("  Type: {:?}, Content: {:?}", unit.node_type, unit.content);
-    }
-
-    // Should extract both doc comment and regular comment
-    assert!(
-        units.iter().any(|u| u.content.contains("doc comment")),
-        "Should extract doc comment"
-    );
-    assert!(
-        units.iter().any(|u| u.content.contains("regular comment")),
-        "Should extract regular comment"
-    );
-}

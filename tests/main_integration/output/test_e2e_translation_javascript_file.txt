@@ -5,12 +5,12 @@ Translation completed successfully!
 
 Files processed: 1
 Total files: 1
-Total units: 3
-Translated units: 3
-Cached files: 0
-Skipped units: 0
-Errors: 0
-Duration: 3.60s
+Total units: 4
+Translated units: 4
+Cache hits: 0
+Skipped files: 0
+Errors: []
+Duration: 5.77s
 
 
 Directory Contents:
@@ -23,7 +23,7 @@ Directory Contents:
 Translated File Content:
 =========================
 // This is a simple JavaScript file to test the translation function
-// Includes Chinese comments
+// Includes notes in Chinese
 
 /**
  * 计算两个数的和
@@ -45,7 +45,7 @@ function subtract(a, b) {
     return a - b;
 }
 
-// Simple classes
+// simple class
 class Calculator {
     /**
      * 创建计算器实例

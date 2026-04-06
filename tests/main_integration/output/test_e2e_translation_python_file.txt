@@ -5,12 +5,12 @@ Translation completed successfully!
 
 Files processed: 1
 Total files: 1
-Total units: 6
-Translated units: 6
-Cached files: 0
-Skipped units: 0
-Errors: 0
-Duration: 8.04s
+Total units: 7
+Translated units: 7
+Cache hits: 0
+Skipped files: 0
+Errors: []
+Duration: 8.99s
 
 
 Directory Contents:
@@ -23,31 +23,31 @@ Directory Contents:
 Translated File Content:
 =========================
 # This is a simple Python file to test the translation function
-# Contains Chinese comments and document strings
+# Includes Chinese comments and document strings
 
 def add(a, b):
     """
-    Calculate the sum of two numbers
+    计算两个数的和
     
-        Args:
-            a: The first number
-            b: The second number
+    Args:
+        a: 第一个数字
+        b: 第二个数字
     
-        Returns:
-            The sum of the two numbers
+    Returns:
+        两个数的和
     """
     return a + b
 
 def subtract(a, b):
     """
-    Calculate the difference between two numbers
+    计算两个数的差
     
-        Args:
-            a: Minuend
-            b: Reduction
+    Args:
+        a: 被减数
+        b: 减数
     
-        Returns:
-            difference between two numbers
+    Returns:
+        两个数的差
     """
     return a - b
 
@@ -56,15 +56,15 @@ class Calculator:
     
     def __init__(self, name):
         """
-        Initialize the calculator
+        初始化计算器
         
-                Args:
-                    name: The name of the calculator
+        Args:
+            name: 计算器名称
         """
         self.name = name
     
     def get_name(self):
-        """Get calculator name"""
+        """Get Calculator Name"""
         return self.name
 
 if __name__ == "__main__":

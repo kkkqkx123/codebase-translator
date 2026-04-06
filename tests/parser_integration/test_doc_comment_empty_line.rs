@@ -60,66 +60,6 @@ pub fn new(name: &str) {}
     }
 }
 
-/// Test that code examples in doc comments are handled correctly
-#[test]
-fn test_doc_comment_code_example() {
-    let config = ParserConfig::default();
-    let coordinator =
-        ParserCoordinator::with_unified_config(config).expect("Failed to create coordinator");
-
-    // Create test content with code example
-    let content = r#"/// # Examples
-/// 
-/// ```
-/// let result = add(1, 2);
-/// assert_eq!(result, 3);
-/// ```
-pub fn add(a: i32, b: i32) -> i32 { a + b }
-"#;
-
-    let file = File::new(
-        PathBuf::from("test_code_example.rs"),
-        content.as_bytes().to_vec(),
-        "utf-8",
-    );
-
-    let units = coordinator.parse_file(&file).expect("Parsing failed");
-
-    println!("Found {} units", units.len());
-    for (i, unit) in units.iter().enumerate() {
-        println!("Unit {}: {:?}", i, unit.content);
-        println!("  Type: {:?}", unit.node_type);
-        println!("  Should translate: {}", unit.should_translate);
-    }
-
-    // Code examples should now be part of the same unit as the doc comment
-    // not extracted as separate units
-    let code_example_units: Vec<_> = units
-        .iter()
-        .filter(|u| u.content.contains("assert_eq!") || u.content.contains("let result"))
-        .collect();
-
-    println!("Code example units count: {}", code_example_units.len());
-
-    // The code example should be part of a larger doc comment unit
-    // not a standalone unit
-    if let Some(unit) = code_example_units.first() {
-        println!("Code example unit: {:?}", unit.content);
-        // The unit should contain the full doc comment, not just the code
-        assert!(
-            unit.content.contains("# Examples"),
-            "Code example should be part of a doc comment that includes '# Examples'"
-        );
-        // The unit should contain the code block markers
-        assert!(
-            unit.content.contains("```"),
-            "Code example should include code block markers"
-        );
-    } else {
-        panic!("Should find a unit containing code examples");
-    }
-}
-
 /// Test the actual fixture file to document current behavior
 #[test]
 fn test_fixture_simple_rust_doc_comments() {

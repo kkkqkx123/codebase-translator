@@ -3,20 +3,22 @@ E2E Translation Test - Multiple Files
 
 Translation completed successfully!
 
-Files processed: 4
-Total files: 4
+Files processed: 5
+Total files: 5
 Total units: 25
 Translated units: 25
-Cached files: 0
-Skipped units: 0
-Errors: 0
-Duration: 16.05s
+Cache hits: 0
+Skipped files: 0
+Errors: []
+Duration: 47.68s
 
 
 Directory Contents:
 ====================
   .translator [DIR]
   .translator.toml [FILE]
+  .translator_test.toml [FILE]
+  mod.rs [FILE]
   simple_javascript.js [FILE]
   simple_markdown.md [FILE]
   simple_python.py [FILE]
@@ -26,9 +28,22 @@ Directory Contents:
 Translated Files:
 ==================
 
---- C:\Users\33530\AppData\Local\Temp\.tmp2EkD7M\simple_javascript.js ---
+--- C:\Users\33530\AppData\Local\Temp\.tmp9OLVWY\mod.rs ---
+//! Common Infrastructure Module
+//!
+//! This module contains all the common infrastructure code, including:
+//! - Basic tools and ID generation
+//! - Memory Management
+//! - Thread Management
+
+pub mod id;
+
+// Re-export commonly used types and functions for easy use by other modules
+pub use id::*;
+
+--- C:\Users\33530\AppData\Local\Temp\.tmp9OLVWY\simple_javascript.js ---
 // This is a simple JavaScript file to test the translation function
-// Includes Chinese comments
+// Contains Chinese annotations
 
 /**
  * 计算两个数的和
@@ -50,7 +65,7 @@ function subtract(a, b) {
     return a - b;
 }
 
-// Simple classes
+// simple class
 class Calculator {
     /**
      * 创建计算器实例
@@ -78,18 +93,16 @@ function main() {
 
 main();
 
---- C:\Users\33530\AppData\Local\Temp\.tmp2EkD7M\simple_markdown.md ---
-# Testing the translation function
+--- C:\Users\33530\AppData\Local\Temp\.tmp9OLVWY\simple_markdown.md ---
+# 测试翻译功能
 
 这是一个简单的Markdown文件，用于测试翻译功能。
 
-#
-## Feature Introduction
+## 功能介绍
 
 本工具可以自动翻译代码注释和文档字符串。
 
-#
-###Supported languages
+### 支持的语言
 
 - Rust
 - Python
@@ -97,15 +110,13 @@ main();
 - Go
 - Java
 
-#
-### Usage
+### 使用方法
 
 1. 配置翻译服务
 2. 运行翻译命令
 3. 查看翻译结果
 
-#
-## Example
+## 示例
 
 ```rust
 fn main() {
@@ -113,63 +124,61 @@ fn main() {
 }
 ```
 
-#
-## caveat
+## 注意事项
 
 - 请确保API密钥配置正确
 - 翻译结果可能需要人工审核
 - 建议先在小规模代码上测试
 
-#
-## Relevant links
+## 相关链接
 
 - [项目主页](https://github.com/example/translator)
 - [文档](https://docs.example.com)
 
---- C:\Users\33530\AppData\Local\Temp\.tmp2EkD7M\simple_python.py ---
-# This is a simple Python file used to test translation capabilities
-# Contains Chinese comments and document strings
+--- C:\Users\33530\AppData\Local\Temp\.tmp9OLVWY\simple_python.py ---
+# This is a simple Python file to test the translation function
+# Includes Chinese comments and document strings
 
 def add(a, b):
     """
-    Compute the sum of two numbers
+    计算两个数的和
     
-        Args.
-            a: first number
-            b: second number
+    Args:
+        a: 第一个数字
+        b: 第二个数字
     
-        Returns.
-            The sum of the two numbers
+    Returns:
+        两个数的和
     """
     return a + b
 
 def subtract(a, b):
     """
-    Calculate the difference between two numbers
+    计算两个数的差
     
-        Args:
-            a: The number from which subtraction is to be performed
-            b: The number by which subtraction is to be performed
+    Args:
+        a: 被减数
+        b: 减数
     
-        Returns:
-        The difference between the two numbers
+    Returns:
+        两个数的差
     """
     return a - b
 
 class Calculator:
-    """Simple calculator class"""
+    """Simple Calculator Class"""
     
     def __init__(self, name):
         """
-        Initializing the Calculator
+        初始化计算器
         
-                Args.
-                    name: Calculator name
+        Args:
+            name: 计算器名称
         """
         self.name = name
     
     def get_name(self):
-        """Obtain the name of the calculator."""
+        """Get Calculator Name"""
         return self.name
 
 if __name__ == "__main__":
@@ -177,11 +186,11 @@ if __name__ == "__main__":
     result = add(10, 20)
     print(f"结果: {result}")
 
---- C:\Users\33530\AppData\Local\Temp\.tmp2EkD7M\simple_rust.rs ---
-// This is a simple Rust file used to test translation capabilities
-// Contains Chinese comments and document strings
+--- C:\Users\33530\AppData\Local\Temp\.tmp9OLVWY\simple_rust.rs ---
+// Here's a simple Rust file to test the translation functionality
+// Includes Chinese comments and document strings
 
-/// 计算两个数的和
+/// Compute the sum of two numbers
 /// 
 /// # Arguments
 /// 
@@ -198,7 +207,7 @@ pub fn add(a: i32, b: i32) -> i32 {
     a + b
 }
 
-/// 计算两个数的差
+/// Compute the difference between two numbers
 /// 
 /// # Arguments
 /// 
@@ -208,7 +217,7 @@ pub fn subtract(a: i32, b: i32) -> i32 {
     a - b
 }
 
-/// multiplication operation
+/// multiplication
 pub fn multiply(a: i32, b: i32) -> i32 {
     a * b
 }
@@ -220,7 +229,7 @@ pub struct Calculator {
 }
 
 impl Calculator {
-    /// 创建新的计算器实例
+    /// Creating a New Calculator Instance
     /// 
     /// # Arguments
     /// 

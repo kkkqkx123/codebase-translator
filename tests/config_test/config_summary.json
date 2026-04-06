@@ -30,7 +30,7 @@
       "api_url": "https://api.deeplx.org",
       "api_key_configured": true,
       "proxy_configured": true,
-      "rate_limit": 5,
+      "rate_limit": 10,
       "max_retries": 3
     },
     "llm": {
@@ -71,8 +71,8 @@
     },
     "logging": {
       "level": "info",
-      "format": "json",
-      "output": "file"
+      "format": "pretty",
+      "output": "stdout"
     }
   },
   "project_config": {
@@ -80,14 +80,13 @@
     "target_lang": "en",
     "provider": "deeplx",
     "include_patterns_count": 22,
-    "exclude_patterns_count": 20,
+    "exclude_patterns_count": 15,
     "cache_enabled": true,
-    "cache_directory": ".translator.toml-cache",
-    "writer_backup": false,
-    "writer_dry_run": false,
+    "cache_directory": ".translator",
+    "writer_backup": true,
+    "writer_preview_only": false,
     "extraction_comments": true,
     "extraction_doc_strings": true,
-    "extraction_error_messages": true,
-    "extraction_format_strings": true
+    "extraction_string_literals": true
   }
 }

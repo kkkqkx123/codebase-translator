@@ -3,4 +3,4 @@ Global Config Loaded:
 Enabled Providers: ["deeplx", "llm", "tencent"]
 DeepLX URL: https://api.deeplx.org
 Logging Level: info
-Logging Format: json
+Logging Format: pretty

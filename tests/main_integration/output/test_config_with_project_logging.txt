@@ -1,7 +1,7 @@
 Config with Project Logging Test
 ===============================
 
-Global config logging level: debug
-Global config logging output: file
+Global config logging level: info
+Global config logging output: stdout
 Global config logging format: pretty
-Project config logging: Some(LoggingConfig { level: "debug", output: "file", file: Some(".translator/translator.log"), format: "pretty" })
+Project config logging: None

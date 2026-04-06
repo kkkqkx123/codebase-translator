@@ -73,7 +73,7 @@ impl ScannerLanguageConfig {
 
     pub fn rust() -> Self {
         Self {
-            line_comment_prefixes: vec!["///", "//"],
+            line_comment_prefixes: vec!["//"],
             block_comment_delimiters: vec![("/**", "*/"), ("/*", "*/")],
             doc_comment_prefixes: vec!["///", "/**"],
             string_quotes: vec!['"'],

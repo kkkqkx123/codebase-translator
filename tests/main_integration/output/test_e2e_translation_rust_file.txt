@@ -5,12 +5,12 @@ Translation completed successfully!
 
 Files processed: 1
 Total files: 1
-Total units: 8
-Translated units: 8
-Cached files: 0
-Skipped units: 0
-Errors: 0
-Duration: 7.24s
+Total units: 9
+Translated units: 9
+Cache hits: 0
+Skipped files: 0
+Errors: []
+Duration: 11.73s
 
 
 Directory Contents:
@@ -22,10 +22,10 @@ Directory Contents:
 
 Translated File Content:
 =========================
-// This is a simple Rust file for testing translation functionality
-// Contains Chinese comments and document strings
+// Here's a simple Rust file to test the translation functionality
+// Includes Chinese comments and document strings
 
-/// 计算两个数的和
+/// Compute the sum of two numbers
 /// 
 /// # Arguments
 /// 
@@ -42,7 +42,7 @@ pub fn add(a: i32, b: i32) -> i32 {
     a + b
 }
 
-/// 计算两个数的差
+/// Compute the difference between two numbers
 /// 
 /// # Arguments
 /// 
@@ -57,14 +57,14 @@ pub fn multiply(a: i32, b: i32) -> i32 {
     a * b
 }
 
-// This is a simple structure.
+// This is a simple structure
 pub struct Calculator {
-    // Calculator name
+    // Calculator Name
     name: String,
 }
 
 impl Calculator {
-    /// 创建新的计算器实例
+    /// Creating a New Calculator Instance
     /// 
     /// # Arguments
     /// 
@@ -75,7 +75,7 @@ impl Calculator {
         }
     }
 
-    /// Obtain the name of the calculator.
+    /// Get Calculator Name
     pub fn get_name(&self) -> &str {
         &self.name
     }

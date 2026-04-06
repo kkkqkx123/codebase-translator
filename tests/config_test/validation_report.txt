@@ -60,7 +60,7 @@ Provider 可用性汇总
   API URL: https://api.deeplx.org
   API Key: 已配置
   Proxy: 已配置
-  速率限制: 5 请求/秒
+  速率限制: 10 请求/秒
   最大重试: 3 次
 
 [LLM 配置]
@@ -99,9 +99,9 @@ Provider 可用性汇总
 
 [日志配置]
   级别: info
-  格式: json
-  输出: file
-  日志文件: translator.log
+  格式: pretty
+  输出: stdout
+  日志文件: .translator/translator.log
 
 ----------------------------------------
 项目配置详情
@@ -111,21 +111,20 @@ Provider 可用性汇总
 翻译器: deeplx
 
 包含模式数量: 22
-排除模式数量: 20
+排除模式数量: 15
 
 [缓存配置]
   启用: 是
-  目录: .translator.toml-cache
+  目录: .translator
 
 [Writer 配置]
-  备份: 否
-  预览模式: 否
+  备份：是
+  预览模式：否
 
 [提取配置]
   注释: 是
   文档字符串: 是
-  错误消息: 是
-  格式化字符串: 是
+  字符串字面量: 是
 
 ========================================
 验证完成
