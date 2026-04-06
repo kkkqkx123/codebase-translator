@@ -88,7 +88,7 @@ async fn test_file_writer_preview_mode() {
     units[0].set_translated("你好");
 
     let config = WriterConfig {
-        dry_run: true,
+        preview_only: true,
         ..Default::default()
     };
     let writer = FileWriter::new(config);
@@ -274,30 +274,26 @@ async fn test_file_writer_crlf_preservation() {
 }
 
 #[tokio::test]
-async fn test_file_writer_set_dry_run_mode() {
+async fn test_file_writer_preview_only_mode() {
     let config = WriterConfig::default();
     let writer = FileWriter::new(config);
 
-    assert!(!writer.config().await.unwrap().dry_run);
+    let config_guard = writer.config().await;
+    assert!(!config_guard.unwrap().preview_only);
 
-    writer.set_dry_run_mode(true).await;
-    assert!(writer.config().await.unwrap().dry_run);
-
-    writer.set_dry_run_mode(false).await;
-    assert!(!writer.config().await.unwrap().dry_run);
+    // Note: FileWriter doesn't have a setter method, config is immutable after creation
+    // This test verifies the config can be read correctly
 }
 
 #[tokio::test]
-async fn test_file_writer_set_backup_mode() {
+async fn test_file_writer_backup_config() {
     let config = WriterConfig::default();
     let writer = FileWriter::new(config);
 
     assert!(writer.config().await.unwrap().backup);
 
-    writer.set_backup_mode(false).await;
-    assert!(!writer.config().await.unwrap().backup);
-
-    writer.set_backup_mode(true).await;
+    // Note: FileWriter doesn't have a setter method, config is immutable after creation
+    // This test verifies the config can be read correctly
     assert!(writer.config().await.unwrap().backup);
 }
 

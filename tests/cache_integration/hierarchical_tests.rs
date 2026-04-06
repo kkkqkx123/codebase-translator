@@ -388,7 +388,7 @@ fn test_hierarchical_cache_workflow_builder_integration() {
     let project_config = ProjectConfig {
         cache: config,
         writer: codebase_translate::config::project::WriterConfig {
-            dry_run: true,
+            preview_only: true,
             ..Default::default()
         },
         ..Default::default()

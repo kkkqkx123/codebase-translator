@@ -122,7 +122,7 @@ struct ProjectConfigSummary {
     cache_enabled: bool,
     cache_directory: String,
     writer_backup: bool,
-    writer_dry_run: bool,
+    writer_preview_only: bool,
     extraction_comments: bool,
     extraction_doc_strings: bool,
     extraction_string_literals: bool,
@@ -460,17 +460,17 @@ fn validate_configs() -> ConfigValidationResult {
         println!("包含模式数量: {}", config.get_include_patterns().len());
         println!("排除模式数量: {}", config.get_exclude_patterns().len());
         println!(
-            "缓存启用: {}",
+            "缓存启用：{}",
             if config.cache.enabled { "是" } else { "否" }
         );
-        println!("缓存目录: {}", config.cache.directory);
+        println!("缓存目录：{}", config.cache.directory);
         println!(
-            "Writer 备份: {}",
+            "Writer 备份：{}",
             if config.writer.backup { "是" } else { "否" }
         );
         println!(
-            "Writer 预览模式: {}",
-            if config.writer.dry_run { "是" } else { "否" }
+            "Writer 预览模式：{}",
+            if config.writer.preview_only { "是" } else { "否" }
         );
 
         result.project_config_details = Some(build_project_config_summary(config));
@@ -618,7 +618,7 @@ fn build_project_config_summary(config: &ProjectConfig) -> ProjectConfigSummary 
         cache_enabled: config.cache.enabled,
         cache_directory: config.cache.directory.clone(),
         writer_backup: config.writer.backup,
-        writer_dry_run: config.writer.dry_run,
+        writer_preview_only: config.writer.preview_only,
         extraction_comments: config.extraction.comments,
         extraction_doc_strings: config.extraction.doc_strings,
         extraction_string_literals: config.extraction.string_literals,
@@ -1008,12 +1008,12 @@ fn write_validation_report(output_dir: &Path, result: &ConfigValidationResult) {
 
         report.push_str("[Writer 配置]\n");
         report.push_str(&format!(
-            "  备份: {}\n",
+            "  备份：{}\n",
             if details.writer_backup { "是" } else { "否" }
         ));
         report.push_str(&format!(
-            "  预览模式: {}\n\n",
-            if details.writer_dry_run { "是" } else { "否" }
+            "  预览模式：{}\n\n",
+            if details.writer_preview_only { "是" } else { "否" }
         ));
 
         report.push_str("[提取配置]\n");
@@ -1317,8 +1317,8 @@ fn write_detailed_config(output_dir: &Path, result: &ConfigValidationResult) {
             details.writer_backup
         ));
         json_content.push_str(&format!(
-            "    \"writer_dry_run\": {},\n",
-            details.writer_dry_run
+            "    \"writer_preview_only\": {},\n",
+            details.writer_preview_only
         ));
         json_content.push_str(&format!(
             "    \"extraction_comments\": {},\n",

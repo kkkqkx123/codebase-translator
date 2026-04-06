@@ -17,7 +17,7 @@ mod workflow_integration {
         config.include.patterns = vec!["**/*.txt".to_string()];
         config.exclude.respect_gitignore = false;
         config.cache.enabled = false;
-        config.writer.dry_run = true;
+        config.writer.preview_only = true;
         config.writer.backup = false;
         config
     }

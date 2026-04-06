@@ -60,11 +60,6 @@ patterns = [
     "third_party/**",
     "*.min.js",
     "*.min.css",
-    "*_test.go",
-    "*.test.ts",
-    "*.test.tsx",
-    "*.spec.js",
-    "*.spec.ts",
     ".git/**",
     ".idea/**",
     ".vscode/**",
@@ -148,7 +143,7 @@ preserve_formatting = true    # 保留原始格式
 [extraction]
 comments = true               # 是否提取注释
 doc_strings = true            # 是否提取文档字符串
-string_literals = false       # 是否提取字符串字面量
+string_literals = true       # 是否提取字符串字面量
 
 # 自定义正则模式（简单）
 # 用于简单的单步正则匹配，提取特定模式的文本
@@ -296,7 +291,7 @@ group = 1
 
 # 编码检测配置
 [encoding]
-detect_encodings = ["UTF-8", "GBK", "Big5", "Shift_JIS"]  # 要检测的编码列表
+detect_encodings = ["UTF-8"]  # 要检测的编码列表
 min_confidence = 0.7          # 最小置信度阈值 (0-1)
 convert_to_utf8 = true        # 是否自动转换为 UTF-8 (翻译后不保留旧编码)
 

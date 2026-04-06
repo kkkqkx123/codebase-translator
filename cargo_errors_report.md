@@ -2,24 +2,26 @@
 
 ## Summary
 
-- **Total Errors**: 4
+- **Total Errors**: 2
 - **Total Warnings**: 0
-- **Total Issues**: 4
-- **Unique Error Patterns**: 1
+- **Total Issues**: 2
+- **Unique Error Patterns**: 2
 - **Unique Warning Patterns**: 0
-- **Files with Issues**: 1
+- **Files with Issues**: 2
 
 ## Error Statistics
 
-**Total Errors**: 4
+**Total Errors**: 2
 
 ### Error Type Breakdown
 
-- **error[E0433]**: 4 errors
+- **error[E0609]**: 1 errors
+- **error[E0614]**: 1 errors
 
 ### Files with Errors (Top 10)
 
-- `src\parser\scanner\placeholder.rs`: 4 errors
+- `tests\config_validation.rs`: 1 errors
+- `tests\writer_integration\file_writer_tests.rs`: 1 errors
 
 ## Warning Statistics
 
@@ -27,15 +29,21 @@
 
 ## Detailed Error Categorization
 
-### error[E0433]: failed to resolve: use of undeclared type `PlaceholderSpan`: use of undeclared type `PlaceholderSpan`
+### error[E0609]: no field `writer_dry_run` on type `&ProjectConfigSummary`: unknown field
 
-**Total Occurrences**: 4  
+**Total Occurrences**: 1  
 **Unique Files**: 1
 
-#### `src\parser\scanner\placeholder.rs`: 4 occurrences
+#### `tests\config_validation.rs`: 1 occurrences
 
-- Line 217: failed to resolve: use of undeclared type `PlaceholderSpan`: use of undeclared type `PlaceholderSpan`
-- Line 218: failed to resolve: use of undeclared type `PlaceholderSpan`: use of undeclared type `PlaceholderSpan`
-- Line 234: failed to resolve: use of undeclared type `PlaceholderSpan`: use of undeclared type `PlaceholderSpan`
-- ... 1 more occurrences in this file
+- Line 1321: no field `writer_dry_run` on type `&ProjectConfigSummary`: unknown field
+
+### error[E0614]: type `codebase_translate::writer::WriterConfig` cannot be dereferenced: can't be dereferenced
+
+**Total Occurrences**: 1  
+**Unique Files**: 1
+
+#### `tests\writer_integration\file_writer_tests.rs`: 1 occurrences
+
+- Line 283: type `codebase_translate::writer::WriterConfig` cannot be dereferenced: can't be dereferenced
 

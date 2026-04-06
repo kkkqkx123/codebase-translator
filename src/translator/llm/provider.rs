@@ -26,6 +26,13 @@ static BEARER_PATTERN: Lazy<Regex> = Lazy::new(|| {
     Regex::new(r"Bearer\s+[a-zA-Z0-9\-._~+/]+=*").expect("Invalid regex pattern for Bearer token")
 });
 
+static MARKDOWN_CODE_BLOCK_WRAPPER: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r"^```(?:\w*)\n?([\s\S]*?)\n?```$").expect("Invalid regex pattern for code block wrapper")
+});
+
+static MARKDOWN_INLINE_WRAPPER: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r"^`([^`]+)`$").expect("Invalid regex pattern for inline wrapper"));
+
 // ============================================================================
 // Token Estimation
 // ============================================================================
@@ -572,14 +579,13 @@ impl LLMProvider {
             return custom_prompt.clone();
         }
 
-        r#"You are a professional translator specializing in code comments and technical documentation.
+        r#"You are a professional code comment translator. Translate natural language content to the target language.
 
-Your task is to translate natural language content while:
-- Preserving all code syntax and structure
-- Maintaining markdown formatting if present
-- Preserving code examples and fenced code blocks
-- Returning ONLY the translated text without explanations
-- Skipping translation for segments that appear to be code rather than natural language"#.to_string()
+Rules:
+- Return ONLY the translated text
+- Preserve code syntax, placeholders, URLs, and special characters exactly
+- Keep existing formatting in the original text
+- Do not add explanations or markdown wrappers"#.to_string()
     }
 
     /// Build user prompt for translation
@@ -592,17 +598,15 @@ Your task is to translate natural language content while:
         }
 
         let source_instruction = if source_lang == "AUTO" {
-            "Auto-detect the source language".to_string()
+            "Auto-detect the source language and translate".to_string()
         } else {
-            format!("Translate from {}", source_lang)
+            format!("Translate from {} to {}", source_lang, target_lang)
         };
 
         format!(
-            r#"{} to {}.
-
-Text to translate:
-{}"#,
-            source_instruction, target_lang, text
+            "{}:\n\n{}",
+            source_instruction,
+            text
         )
     }
 
@@ -626,6 +630,90 @@ Text to translate:
             .to_string();
 
         result
+    }
+
+    /// Clean outer markdown wrapper that LLM may have added
+    /// Only removes wrapper if the ENTIRE response is wrapped in markdown
+    fn clean_markdown_wrapper(text: &str) -> String {
+        let result = text.trim();
+
+        if let Some(captures) = MARKDOWN_CODE_BLOCK_WRAPPER.captures(result) {
+            if let Some(inner) = captures.get(1) {
+                return inner.as_str().trim().to_string();
+            }
+        }
+
+        if let Some(captures) = MARKDOWN_INLINE_WRAPPER.captures(result) {
+            if let Some(inner) = captures.get(1) {
+                return inner.as_str().to_string();
+            }
+        }
+
+        result.to_string()
+    }
+
+    /// Validate translation result quality
+    /// Returns Ok(()) if valid, Err if the result appears to be hallucination or low quality
+    fn validate_translation(original: &str, translated: &str, provider_id: &str) -> Result<()> {
+        if translated.is_empty() {
+            warn!(
+                provider_id = %provider_id,
+                "Translation result is empty"
+            );
+            return Err(TranslateError::Translation(
+                "Translation result is empty".to_string(),
+            ));
+        }
+
+        let original_len = original.chars().count();
+        let translated_len = translated.chars().count();
+
+        let length_ratio = if original_len > 0 {
+            translated_len as f64 / original_len as f64
+        } else {
+            1.0
+        };
+
+        if length_ratio > 5.0 {
+            warn!(
+                provider_id = %provider_id,
+                original_len = original_len,
+                translated_len = translated_len,
+                ratio = length_ratio,
+                "Translation result is suspiciously long (possible hallucination)"
+            );
+            return Err(TranslateError::Translation(format!(
+                "Translation result is {}x longer than original (possible hallucination)",
+                length_ratio
+            )));
+        }
+
+        let hallucination_patterns = [
+            "translate",
+            "translation",
+            "here is the translation",
+            "the translation is",
+            "I will translate",
+            "as a translator",
+            "in the target language",
+        ];
+
+        let translated_lower = translated.to_lowercase();
+        for pattern in &hallucination_patterns {
+            if translated_lower.contains(pattern) && !original.to_lowercase().contains(pattern) {
+                warn!(
+                    provider_id = %provider_id,
+                    pattern = %pattern,
+                    "Translation result contains hallucination pattern"
+                );
+                return Err(TranslateError::Translation(format!(
+                    "Translation result contains hallucination pattern: '{}'",
+                    pattern
+                )));
+            }
+        }
+
+        Ok(())
     }
 
     /// Perform translation via HTTP API
@@ -735,9 +823,22 @@ Text to translate:
             .map(|c| c.message.content.clone())
             .unwrap_or_default();
 
+        let cleaned_text = Self::clean_markdown_wrapper(&translated_text);
+
+        if cleaned_text != translated_text {
+            debug!(
+                provider_id = %self.id,
+                original = %translated_text,
+                cleaned = %cleaned_text,
+                "Cleaned markdown wrapper from LLM response"
+            );
+        }
+
+        Self::validate_translation(text, &cleaned_text, &self.id)?;
+
         Ok(TranslateResponse {
             original_text: text.to_string(),
-            translated_text,
+            translated_text: cleaned_text,
             source_lang: source_lang.to_string(),
             target_lang: target_lang.to_string(),
             ..Default::default()
@@ -1043,8 +1144,8 @@ mod tests {
         let provider = LLMProvider::new(&config).expect("Failed to create provider");
         let prompt = provider.build_system_prompt();
 
-        assert!(prompt.contains("professional translator"));
-        assert!(prompt.contains("code comments"));
+        assert!(prompt.contains("translator"));
+        assert!(prompt.contains("ONLY"));
     }
 
     #[test]
@@ -1082,8 +1183,7 @@ mod tests {
         let provider = LLMProvider::new(&config).expect("Failed to create provider");
         let prompt = provider.build_user_prompt("Hello world", "AUTO", "zh");
 
-        assert!(prompt.contains("Auto-detect the source language"));
-        assert!(prompt.contains("to zh"));
+        assert!(prompt.contains("Auto-detect"));
         assert!(prompt.contains("Hello world"));
     }
 

@@ -439,6 +439,12 @@ impl ParserCoordinator {
 
             let mut unit = TranslationUnit::new(id, node_type, text, start_pos, end_pos);
 
+            if region.region_type.is_string() {
+                if let Some(full_content) = region.extract_full(content) {
+                    unit.raw_match = Some(full_content.to_string());
+                }
+            }
+
             if !region.placeholders.is_empty() {
                 let placeholder_text = region
                     .placeholders

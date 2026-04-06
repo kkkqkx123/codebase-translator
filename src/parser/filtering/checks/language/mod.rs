@@ -69,6 +69,18 @@ impl LanguageFilter {
         }
     }
 
+    /// Check if text contains any translatable characters (letters, CJK, etc.)
+    fn has_translatable_content(&self, text: &str) -> bool {
+        text.chars().any(|c| {
+            c.is_alphabetic()
+                || is_cjk_char(c)
+                || is_arabic(c)
+                || is_cyrillic(c)
+                || is_hebrew(c)
+                || is_greek(c)
+        })
+    }
+
     /// Check if text contains source language characters
     fn contains_source_language(&self, text: &str) -> bool {
         if self.source_langs.is_empty() {
@@ -81,6 +93,13 @@ impl LanguageFilter {
             .any(|lang| lang.to_uppercase() == "AUTO")
         {
             if self.is_target_language(text) {
+                return false;
+            }
+            if !self.has_translatable_content(text) {
+                debug!(
+                    reason = "no_translatable_content_in_auto_mode",
+                    "Text filtered by AUTO mode language check"
+                );
                 return false;
             }
             return true;
@@ -127,6 +146,31 @@ impl LanguageFilter {
     }
 }
 
+fn is_cjk_char(c: char) -> bool {
+    ('\u{4E00}'..='\u{9FFF}').contains(&c)
+        || ('\u{3400}'..='\u{4DBF}').contains(&c)
+        || ('\u{20000}'..='\u{2A6DF}').contains(&c)
+        || ('\u{3040}'..='\u{309F}').contains(&c)
+        || ('\u{30A0}'..='\u{30FF}').contains(&c)
+        || ('\u{AC00}'..='\u{D7AF}').contains(&c)
+}
+
+fn is_arabic(c: char) -> bool {
+    ('\u{0600}'..='\u{06FF}').contains(&c)
+}
+
+fn is_cyrillic(c: char) -> bool {
+    ('\u{0400}'..='\u{04FF}').contains(&c)
+}
+
+fn is_hebrew(c: char) -> bool {
+    ('\u{0590}'..='\u{05FF}').contains(&c)
+}
+
+fn is_greek(c: char) -> bool {
+    ('\u{0370}'..='\u{03FF}').contains(&c) || ('\u{1F00}'..='\u{1FFF}').contains(&c)
+}
+
 impl Filter for LanguageFilter {
     fn should_translate(&self, text: &str) -> bool {
         let is_target = self.is_target_language(text);
@@ -138,6 +182,13 @@ impl Filter for LanguageFilter {
                     target_lang = %self.target_lang,
                     reason = "already_in_target_language",
                     "Text filtered by language check (AUTO mode)"
+                );
+                return false;
+            }
+            if !self.has_translatable_content(text) {
+                debug!(
+                    reason = "no_translatable_content",
+                    "Text filtered by language check"
                 );
                 return false;
             }
@@ -227,6 +278,28 @@ mod tests {
 
         assert!(!filter.should_translate("你好世界"));
         assert!(filter.should_translate("Hello World"));
+    }
+
+    #[test]
+    fn test_auto_mode_skip_numbers_and_symbols() {
+        let filter = create_filter(vec!["AUTO"], "EN");
+
+        assert!(!filter.should_translate("10"));
+        assert!(!filter.should_translate("123"));
+        assert!(!filter.should_translate("123!@#"));
+        assert!(!filter.should_translate("$100"));
+        assert!(!filter.should_translate("(123)"));
+        assert!(!filter.should_translate("!@#$%"));
+    }
+
+    #[test]
+    fn test_no_restriction_skip_numbers_and_symbols() {
+        let filter = create_filter(vec![], "EN");
+
+        assert!(!filter.should_translate("10"));
+        assert!(!filter.should_translate("123"));
+        assert!(!filter.should_translate("123!@#"));
+        assert!(!filter.should_translate("$100"));
     }
 
     #[test]

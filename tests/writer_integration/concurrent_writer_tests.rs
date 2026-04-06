@@ -150,7 +150,7 @@ async fn test_concurrent_writer_preview_mode() {
     units[0].set_translated("修改后的");
 
     let config = WriterConfig {
-        dry_run: true,
+        preview_only: true,
         ..Default::default()
     };
     let writer = ConcurrentWriter::new(config, 1);

@@ -20,7 +20,7 @@ fn create_test_project_config() -> ProjectConfig {
     config.translate.source_langs = vec!["zh".to_string()];
     config.cache.enabled = true;
     config.cache.mode = CacheMode::Local;
-    config.writer.dry_run = true; // Don't actually write files
+    config.writer.preview_only = true; // Don't actually write files
     config.writer.backup = false;
     config.include.patterns = vec!["**/*.txt".to_string()];
     config.exclude.respect_gitignore = false;
