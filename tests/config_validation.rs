@@ -470,7 +470,11 @@ fn validate_configs() -> ConfigValidationResult {
         );
         println!(
             "Writer 预览模式：{}",
-            if config.writer.preview_only { "是" } else { "否" }
+            if config.writer.preview_only {
+                "是"
+            } else {
+                "否"
+            }
         );
 
         result.project_config_details = Some(build_project_config_summary(config));
@@ -1013,7 +1017,11 @@ fn write_validation_report(output_dir: &Path, result: &ConfigValidationResult) {
         ));
         report.push_str(&format!(
             "  预览模式：{}\n\n",
-            if details.writer_preview_only { "是" } else { "否" }
+            if details.writer_preview_only {
+                "是"
+            } else {
+                "否"
+            }
         ));
 
         report.push_str("[提取配置]\n");

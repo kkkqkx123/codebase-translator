@@ -256,7 +256,9 @@ fn test_auto_to_zh_filters_chinese() {
         "Chinese doc comments should be filtered out in AUTO->ZH mode"
     );
     assert!(
-        texts.iter().any(|t| t.contains("This is an English comment")),
+        texts
+            .iter()
+            .any(|t| t.contains("This is an English comment")),
         "English comments should be extracted for translation"
     );
     assert!(

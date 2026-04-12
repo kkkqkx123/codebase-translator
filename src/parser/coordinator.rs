@@ -62,12 +62,7 @@ impl ParserCoordinator {
             &project_config.translate,
         )?);
 
-        Self::with_extraction_config(
-            config,
-            extraction_config,
-            filter,
-            &project_config.translate.target_lang,
-        )
+        Self::with_extraction_config(config, extraction_config, filter)
     }
 
     /// Creates a new parser coordinator from project and translator configuration.
@@ -85,12 +80,7 @@ impl ParserCoordinator {
             translator_max_length,
         )?);
 
-        Self::with_extraction_config(
-            config,
-            extraction_config,
-            filter,
-            &project_config.translate.target_lang,
-        )
+        Self::with_extraction_config(config, extraction_config, filter)
     }
 
     /// Creates a new parser coordinator with unified configuration.
@@ -106,7 +96,7 @@ impl ParserCoordinator {
 
         let filter = Arc::new(default_filter()?);
 
-        Self::with_extraction_config(config, extraction_config, filter, "en")
+        Self::with_extraction_config(config, extraction_config, filter)
     }
 
     /// Creates a new parser coordinator with custom extraction config and filter.
@@ -115,7 +105,7 @@ impl ParserCoordinator {
         extraction_config: ExtractionConfig,
         filter: Arc<ContentFilter>,
     ) -> Result<Self> {
-        Self::with_extraction_config(config, extraction_config, filter, "en")
+        Self::with_extraction_config(config, extraction_config, filter)
     }
 
     /// Creates a new parser coordinator with extraction config.
@@ -123,7 +113,6 @@ impl ParserCoordinator {
         config: ParserConfig,
         extraction_config: ExtractionConfig,
         filter: Arc<ContentFilter>,
-        target_lang: &str,
     ) -> Result<Self> {
         let custom_patterns = if extraction_config.custom_patterns.is_empty() {
             Vec::new()
@@ -411,8 +400,8 @@ impl ParserCoordinator {
         content: &str,
         file_path: &str,
     ) -> Vec<TranslationUnit> {
-        use crate::parser::core::StringProcessor;
         use crate::parser::core::CommentType;
+        use crate::parser::core::StringProcessor;
 
         let mut units = Vec::new();
         let string_processor = StringProcessor::new();

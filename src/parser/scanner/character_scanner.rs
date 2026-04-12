@@ -585,18 +585,18 @@ impl TextScanner {
 
         // For long text, use multi-point sampling:
         // - Check beginning (first 128 chars)
-        // - Check middle (middle 128 chars)  
+        // - Check middle (middle 128 chars)
         // - Check end (last 128 chars)
         // This ensures we don't miss target languages that appear later in the text
         let chars: Vec<char> = text.chars().collect();
         let len = chars.len();
-        
+
         // Sample beginning
         let beginning: String = chars.iter().take(128).collect();
         if self.check_text_sample(&beginning) {
             return true;
         }
-        
+
         // Sample middle
         if len > 256 {
             let mid_start = (len - 256) / 2;
@@ -605,7 +605,7 @@ impl TextScanner {
                 return true;
             }
         }
-        
+
         // Sample end
         if len > 128 {
             let end: String = chars.iter().skip(len - 128).take(128).collect();
@@ -613,10 +613,10 @@ impl TextScanner {
                 return true;
             }
         }
-        
+
         false
     }
-    
+
     /// Check a text sample for target languages
     fn check_text_sample(&self, text: &str) -> bool {
         for lang in &self.config.target_languages {

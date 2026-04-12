@@ -32,7 +32,8 @@ impl ContentFilter {
 
     /// Check if text contains only digits (pure numeric)
     fn is_only_digits(text: &str) -> bool {
-        text.chars().all(|c| c.is_whitespace() || c.is_ascii_digit())
+        text.chars()
+            .all(|c| c.is_whitespace() || c.is_ascii_digit())
     }
 
     /// Check if text has any translatable content (letters or CJK characters)

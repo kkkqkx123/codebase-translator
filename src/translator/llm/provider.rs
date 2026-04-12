@@ -27,7 +27,8 @@ static BEARER_PATTERN: Lazy<Regex> = Lazy::new(|| {
 });
 
 static MARKDOWN_CODE_BLOCK_WRAPPER: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"^```(?:\w*)\n?([\s\S]*?)\n?```$").expect("Invalid regex pattern for code block wrapper")
+    Regex::new(r"^```(?:\w*)\n?([\s\S]*?)\n?```$")
+        .expect("Invalid regex pattern for code block wrapper")
 });
 
 static MARKDOWN_INLINE_WRAPPER: Lazy<Regex> =
@@ -603,11 +604,7 @@ Rules:
             format!("Translate from {} to {}", source_lang, target_lang)
         };
 
-        format!(
-            "{}:\n\n{}",
-            source_instruction,
-            text
-        )
+        format!("{}:\n\n{}", source_instruction, text)
     }
 
     /// Sanitize error message to remove sensitive info
