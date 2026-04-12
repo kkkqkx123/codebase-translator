@@ -295,8 +295,9 @@ impl<'a> FileProcessor<'a> {
             &self.project_config.translate.target_lang,
         )?;
 
-        // Use the actual number of batch API calls made
-        result.api_calls = batch_result.total_batches;
+        // API calls for cost calculation: use actual translated units count
+        // This reflects the true cost as LLM APIs charge per unit/token processed
+        result.api_calls = batch_result.total_batches; // Now contains actual unit count, not batch count
         if let Some(ref reporter) = self.reporter {
             reporter.report_api_call(batch_result.total_batches);
         }
@@ -304,7 +305,7 @@ impl<'a> FileProcessor<'a> {
         info!(
             file = %file_path.display(),
             translated_units = batch_result.results.len(),
-            api_batches = batch_result.total_batches,
+            api_calls = batch_result.total_batches,
             "Translation completed"
         );
 

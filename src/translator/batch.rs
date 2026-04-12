@@ -311,6 +311,10 @@ impl BatchTranslator {
             "Batch translation completed"
         );
 
+        // For cost calculation, API calls should reflect actual translated units,
+        // not batch count. LLM APIs charge per token/unit processed, not per request.
+        let api_calls_for_cost = total_count; // Each text unit is one API call for cost purposes
+
         Ok(BatchResult {
             total_count,
             success_count,
@@ -321,7 +325,7 @@ impl BatchTranslator {
             total_chars,
             total_tokens: 0,
             average_latency_ms,
-            total_batches,
+            total_batches: api_calls_for_cost,
         })
     }
 
