@@ -14,10 +14,8 @@ pub struct ScannerConfig {
     pub extract_comments: bool,
     /// Extract doc strings
     pub extract_doc_strings: bool,
-    /// Extract strings
+    /// Extract strings (includes regular strings and template strings)
     pub extract_strings: bool,
-    /// Extract template strings
-    pub extract_templates: bool,
     /// Target languages for detection
     pub target_languages: Vec<String>,
     /// Minimum content length
@@ -32,7 +30,6 @@ impl Default for ScannerConfig {
             extract_comments: true,
             extract_doc_strings: true,
             extract_strings: false,
-            extract_templates: false,
             target_languages: Vec::new(),
             min_length: 1,
             max_length: 10000,
@@ -63,11 +60,6 @@ impl ScannerConfig {
         self
     }
 
-    pub fn with_templates(mut self, extract: bool) -> Self {
-        self.extract_templates = extract;
-        self
-    }
-
     pub fn with_min_length(mut self, len: usize) -> Self {
         self.min_length = len;
         self
@@ -82,11 +74,12 @@ impl ScannerConfig {
         match region_type {
             TextRegionType::LineComment | TextRegionType::BlockComment => self.extract_comments,
             TextRegionType::DocComment => self.extract_doc_strings,
-            TextRegionType::SingleQuotedString | TextRegionType::DoubleQuotedString => {
-                self.extract_strings
-            }
-            TextRegionType::TemplateString => self.extract_templates,
-            TextRegionType::RawString | TextRegionType::MultiLineString => self.extract_strings,
+            // All string types (including template strings) are controlled by extract_strings
+            TextRegionType::SingleQuotedString
+            | TextRegionType::DoubleQuotedString
+            | TextRegionType::TemplateString
+            | TextRegionType::RawString
+            | TextRegionType::MultiLineString => self.extract_strings,
         }
     }
 }
@@ -724,7 +717,7 @@ mod tests {
         let config = ScannerConfig::new(vec!["zh".to_string()])
             .with_comments(true)
             .with_doc_strings(true)
-            .with_templates(true);
+            .with_strings(true); // Template strings are now part of strings
         let scanner = TextScanner::from_extension("js", config).expect("Failed to create scanner");
         let content = r#"const msg = `你好 ${name}，欢迎！`;"#;
         let regions = scanner.scan(content);
@@ -774,7 +767,7 @@ const msg = "Hello World";"#;
         let config = ScannerConfig::new(vec!["zh".to_string()])
             .with_comments(true)
             .with_doc_strings(true)
-            .with_templates(true);
+            .with_strings(true); // Template strings are now part of strings
         let scanner = TextScanner::from_extension("js", config).expect("Failed to create scanner");
         let content = r#"const msg = `外层 ${`内层 ${value}`} 结束`;"#;
         let regions = scanner.scan(content);
