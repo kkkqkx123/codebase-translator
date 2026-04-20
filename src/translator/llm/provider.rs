@@ -35,6 +35,77 @@ static MARKDOWN_INLINE_WRAPPER: Lazy<Regex> =
     Lazy::new(|| Regex::new(r"^`([^`]+)`$").expect("Invalid regex pattern for inline wrapper"));
 
 // ============================================================================
+// Placeholder Protection
+// ============================================================================
+
+impl LLMProvider {
+    /// Extract all ${...} placeholders from text
+    fn extract_placeholders(text: &str) -> Vec<String> {
+        let mut placeholders = Vec::new();
+        let chars: Vec<char> = text.chars().collect();
+        let mut i = 0;
+
+        while i < chars.len() {
+            if i + 1 < chars.len() && chars[i] == '$' && chars[i + 1] == '{' {
+                let start = i;
+                let mut depth = 1;
+                let mut j = i + 2;
+                while j < chars.len() && depth > 0 {
+                    if chars[j] == '{' {
+                        depth += 1;
+                    } else if chars[j] == '}' {
+                        depth -= 1;
+                    }
+                    if depth > 0 {
+                        j += 1;
+                    }
+                }
+                if depth == 0 {
+                    let byte_start = text.char_indices().nth(start).map(|(i, _)| i).unwrap_or(0);
+                    let byte_end = text.char_indices().nth(j + 1).map(|(i, _)| i).unwrap_or(text.len());
+                    placeholders.push(text[byte_start..byte_end].to_string());
+                    i = j + 1;
+                } else {
+                    i += 1;
+                }
+            } else {
+                i += 1;
+            }
+        }
+
+        placeholders
+    }
+
+    /// Replace placeholders with [[index]] markers and return the markers
+    /// Returns (processed_text, markers) where markers are the original placeholders
+    fn protect_placeholders(text: &str) -> (String, Vec<String>) {
+        let placeholders = Self::extract_placeholders(text);
+        let mut result = text.to_string();
+
+        // Replace placeholders in reverse order to preserve indices
+        for (idx, placeholder) in placeholders.iter().enumerate().rev() {
+            let marker = format!("[[{}]]", idx);
+            result = result.replace(placeholder.as_str(), &marker);
+        }
+
+        (result, placeholders)
+    }
+
+    /// Restore placeholders from [[index]] markers back to original content
+    fn restore_placeholders(text: &str, placeholders: &[String]) -> String {
+        let mut result = text.to_string();
+
+        // Replace markers in reverse order to preserve indices
+        for (idx, placeholder) in placeholders.iter().enumerate().rev() {
+            let marker = format!("[[{}]]", idx);
+            result = result.replace(&marker, placeholder.as_str());
+        }
+
+        result
+    }
+}
+
+// ============================================================================
 // Token Estimation
 // ============================================================================
 
@@ -588,27 +659,8 @@ impl LLMProvider {
 
 Rules:
 - Return ONLY the translated text
-- Preserve code syntax, URLs, and special characters exactly
 - Keep existing formatting in the original text
-- Do not add explanations or markdown wrappers
-- CRITICAL: Keep ALL variable placeholders completely unchanged:
-  - Template literals: ${variable}, ${value}, ${name}, etc.
-  - Format strings: {variable}, {name}, {0}, {1}, etc.
-  - Any text starting with $ followed by { and ending with }
-  - Any text starting with { and ending with }
-  - These placeholders must remain EXACTLY as they appear
-- Do NOT translate, modify, or add the word "placeholder"
-- Do NOT translate variable names or code elements
-
-Examples:
-Original: 错误：${error}，代码：${code}
-Translation: Error: ${error}, code: ${code}
-
-Original: 你好 {name}，欢迎来到 {place}
-Translation: Hello {name}, welcome to {place}
-
-Original: 这个函数计算总和
-Translation: This function calculates the sum"#.to_string()
+- Do not add markdown wrappers"#.to_string()
     }
 
     /// Build user prompt for translation
@@ -742,8 +794,11 @@ Translation: This function calculates the sum"#.to_string()
         source_lang: &str,
         target_lang: &str,
     ) -> Result<TranslateResponse> {
+        // Step 1: Protect placeholders by replacing ${...} with [[index]]
+        let (protected_text, placeholders) = Self::protect_placeholders(text);
+
         let system_prompt = self.build_system_prompt();
-        let user_prompt = self.build_user_prompt(text, source_lang, target_lang);
+        let user_prompt = self.build_user_prompt(&protected_text, source_lang, target_lang);
         let api_key = self.current_api_key();
 
         let req_body = ChatCompletionRequest {
@@ -853,11 +908,14 @@ Translation: This function calculates the sum"#.to_string()
             );
         }
 
-        Self::validate_translation(text, &cleaned_text, &self.id)?;
+        // Step 2: Restore placeholders from [[index]] back to ${...}
+        let final_text = Self::restore_placeholders(&cleaned_text, &placeholders);
+
+        Self::validate_translation(text, &final_text, &self.id)?;
 
         Ok(TranslateResponse {
             original_text: text.to_string(),
-            translated_text: cleaned_text,
+            translated_text: final_text,
             source_lang: source_lang.to_string(),
             target_lang: target_lang.to_string(),
             ..Default::default()

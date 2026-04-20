@@ -182,52 +182,15 @@ impl BatchTranslator {
         text.contains('{') && text.contains('}')
     }
 
-    /// Validate that placeholders from original text are preserved in translation
-    fn validate_placeholder_preservation(original: &str, translated: &str) -> bool {
-        // Extract all ${...} placeholders from original using char-based indexing
-        let mut original_placeholders = Vec::new();
-        let chars: Vec<char> = original.chars().collect();
-        let mut i = 0;
-        
-        while i < chars.len() {
-            if i + 1 < chars.len() && chars[i] == '$' && chars[i + 1] == '{' {
-                // Find matching }
-                let start = i;
-                let mut depth = 1;
-                let mut j = i + 2;
-                while j < chars.len() && depth > 0 {
-                    if chars[j] == '{' {
-                        depth += 1;
-                    } else if chars[j] == '}' {
-                        depth -= 1;
-                    }
-                    if depth > 0 {
-                        j += 1;
-                    }
-                }
-                if depth == 0 {
-                    // Convert char indices back to byte indices for slicing
-                    let byte_start = original.char_indices().nth(start).map(|(i, _)| i).unwrap_or(0);
-                    let byte_end = original.char_indices().nth(j).map(|(i, _)| i + 1).unwrap_or(original.len());
-                    original_placeholders.push(&original[byte_start..byte_end]);
-                }
-                i = j + 1;
-            } else {
-                i += 1;
-            }
-        }
-        
-        // Check if all original placeholders are present in translation
-        original_placeholders.iter().all(|ph| translated.contains(*ph))
-    }
-
     #[allow(dead_code)]
     fn select_translator(&self) -> Option<&TranslatorEntry> {
         self.select_translator_internal(false)
     }
 
-    /// Select a translator, optionally preferring LLM for placeholder content
-    fn select_translator_internal(&self, prefer_llm: bool) -> Option<&TranslatorEntry> {
+    /// Select a translator with priority: DeepLX > Tencent > LLM
+    /// DeepLX and Tencent handle placeholders well and are faster/cheaper
+    /// LLM is used as fallback with placeholder protection mechanism
+    fn select_translator_internal(&self, _has_placeholders: bool) -> Option<&TranslatorEntry> {
         let healthy_translators: Vec<&TranslatorEntry> =
             self.translators.iter().filter(|t| t.is_healthy()).collect();
 
@@ -238,17 +201,31 @@ impl BatchTranslator {
             return self.translators.get(index);
         }
 
-        // If prefer_llm is true, try to find an LLM translator
-        if prefer_llm {
-            if let Some(llm_translator) = healthy_translators
-                .iter()
-                .find(|t| t.name.to_lowercase().contains("llm"))
-            {
-                return Some(*llm_translator);
-            }
+        // Priority 1: Try DeepLX first (best for placeholders, fast, cheap)
+        if let Some(deeplx) = healthy_translators
+            .iter()
+            .find(|t| t.name.to_lowercase().contains("deeplx"))
+        {
+            return Some(*deeplx);
         }
 
-        // Simple round-robin selection
+        // Priority 2: Try Tencent Cloud (good for placeholders, fast)
+        if let Some(tencent) = healthy_translators
+            .iter()
+            .find(|t| t.name.to_lowercase().contains("tencent"))
+        {
+            return Some(*tencent);
+        }
+
+        // Priority 3: LLM as fallback (with placeholder protection)
+        if let Some(llm) = healthy_translators
+            .iter()
+            .find(|t| t.name.to_lowercase().contains("llm"))
+        {
+            return Some(*llm);
+        }
+
+        // Default: round-robin among healthy translators
         let index =
             self.current_index.fetch_add(1, Ordering::Relaxed) as usize % healthy_translators.len();
         healthy_translators.get(index).copied()
@@ -457,10 +434,8 @@ impl BatchTranslator {
         source_lang: &str,
         target_lang: &str,
     ) -> Result<Vec<TranslateResponse>> {
-        // Check if any text contains placeholder patterns
-        let has_placeholders = texts.iter().any(|t| Self::contains_placeholder_patterns(t));
-
         // Prefer LLM translator for placeholder content
+        let has_placeholders = texts.iter().any(|t| Self::contains_placeholder_patterns(t));
         let entry = self
             .select_translator_internal(has_placeholders)
             .ok_or_else(|| TranslateError::Translation("No translator available".to_string()))?;
@@ -468,7 +443,6 @@ impl BatchTranslator {
         debug!(
             batch_size = texts.len(),
             translator = %entry.name,
-            has_placeholders = has_placeholders,
             "Sending batch translation request"
         );
 
@@ -481,19 +455,6 @@ impl BatchTranslator {
             .await
         {
             Ok(translated_texts) => {
-                // Validate placeholder integrity if placeholders are present
-                if has_placeholders {
-                    for (original, translated) in texts.iter().zip(translated_texts.iter()) {
-                        if !Self::validate_placeholder_preservation(original, translated) {
-                            warn!(
-                                original = %original,
-                                translated = %translated,
-                                "Placeholder preservation validation failed"
-                            );
-                        }
-                    }
-                }
-
                 entry.mark_healthy();
 
                 // Record successful batch translation statistics
@@ -803,42 +764,5 @@ mod tests {
         // No placeholders
         assert!(!BatchTranslator::contains_placeholder_patterns("Hello world"));
         assert!(!BatchTranslator::contains_placeholder_patterns("This is a test"));
-    }
-
-    #[test]
-    fn test_validate_placeholder_preservation() {
-        // Valid preservation
-        assert!(BatchTranslator::validate_placeholder_preservation(
-            "Error: ${error}, code: ${code}",
-            "错误：${error}，代码：${code}"
-        ));
-        
-        assert!(BatchTranslator::validate_placeholder_preservation(
-            "Hello ${name}",
-            "你好 ${name}"
-        ));
-        
-        // Missing placeholder
-        assert!(!BatchTranslator::validate_placeholder_preservation(
-            "Error: ${error}",
-            "错误：${missing}"
-        ));
-        
-        // Extra placeholder (should still pass - we only check original placeholders)
-        assert!(BatchTranslator::validate_placeholder_preservation(
-            "Hello",
-            "你好 ${extra}"
-        ));
-        
-        // Chinese characters with placeholders (regression test for byte boundary issue)
-        assert!(BatchTranslator::validate_placeholder_preservation(
-            "解析载荷模板 ${template}",
-            "解析载荷模板 ${template}"
-        ));
-        
-        assert!(BatchTranslator::validate_placeholder_preservation(
-            "${param} 参数无效",
-            "${param} 参数无效"
-        ));
     }
 }
