@@ -306,13 +306,17 @@ impl LLMProvider {
         }
 
         // Determine model to use
+        // If model_list is not empty, it should have been expanded by ProviderRouter
+        // So we only use model field here (model_list is already cleared)
         let model = if !config.model.is_empty() {
             config.model.clone()
         } else if !config.model_list.is_empty() {
+            // Fallback for backward compatibility: use first model from list
+            // This should not happen in normal flow as ProviderRouter expands model_list
             config.model_list[0].clone()
         } else {
             return Err(TranslateError::Config(format!(
-                "model or model_list is required for provider {}",
+                "model is required for provider {}",
                 config.id
             )));
         };

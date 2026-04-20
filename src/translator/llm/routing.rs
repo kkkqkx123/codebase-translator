@@ -128,19 +128,58 @@ impl ProviderRouter {
                 continue;
             }
 
-            match LLMProvider::new(config) {
-                Ok(provider) => {
-                    let max_chars = provider.max_input_chars();
-                    let rate_limit = provider.rate_limit();
-                    debug!(
-                        "Added provider {} with capacity {} chars, rate_limit {}",
-                        config.id, max_chars, rate_limit
-                    );
-                    total_rate_limit += rate_limit;
-                    providers.push(ProviderEntry::new(Arc::new(provider)));
+            // If model_list is not empty, create a provider for each model
+            // Otherwise, create a single provider using the model field
+            if !config.model_list.is_empty() {
+                // Multi-model: create one provider per model
+                for (idx, model) in config.model_list.iter().enumerate() {
+                    if model.is_empty() || model.starts_with("${") {
+                        warn!("Provider {} has invalid model at index {}, skipping", config.id, idx);
+                        continue;
+                    }
+
+                    let mut model_config = config.clone();
+                    model_config.model = model.clone();
+                    // Clear model_list to avoid infinite recursion
+                    model_config.model_list = Vec::new();
+
+                    match LLMProvider::new(&model_config) {
+                        Ok(provider) => {
+                            let max_chars = provider.max_input_chars();
+                            let rate_limit = provider.rate_limit();
+                            debug!(
+                                "Added provider {} (model: {}) with capacity {} chars, rate_limit {}",
+                                config.id, model, max_chars, rate_limit
+                            );
+                            total_rate_limit += rate_limit;
+                            providers.push(ProviderEntry::new(Arc::new(provider)));
+                        }
+                        Err(e) => {
+                            warn!("Failed to create provider {} (model: {}): {}. Skipping.", config.id, model, e);
+                        }
+                    }
                 }
-                Err(e) => {
-                    warn!("Failed to create provider {}: {}. Skipping.", config.id, e);
+            } else {
+                // Single model: create one provider
+                if config.model.is_empty() {
+                    warn!("Provider {} has empty model and no model_list, skipping", config.id);
+                    continue;
+                }
+
+                match LLMProvider::new(config) {
+                    Ok(provider) => {
+                        let max_chars = provider.max_input_chars();
+                        let rate_limit = provider.rate_limit();
+                        debug!(
+                            "Added provider {} with capacity {} chars, rate_limit {}",
+                            config.id, max_chars, rate_limit
+                        );
+                        total_rate_limit += rate_limit;
+                        providers.push(ProviderEntry::new(Arc::new(provider)));
+                    }
+                    Err(e) => {
+                        warn!("Failed to create provider {}: {}. Skipping.", config.id, e);
+                    }
                 }
             }
         }

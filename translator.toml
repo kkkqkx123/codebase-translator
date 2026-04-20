@@ -37,18 +37,19 @@ recovery_interval = 60  # 恢复检查间隔（秒），仅检查不健康的供
 
 # 供应商配置
 # 每个供应商代表一个单一的模型/端点组合
-# 对于具有不同上下文长度的模型，应将它们配置为单独的供应商
+# 供应商 1: silicon
 [[llm.providers]]
 id = "silicon"
 name = "Siliconflow"
 # 模型列表（多模型轮询）
-# 注意：如果 model 为空但 model_list 有值，将使用 model_list 的第一个模型
+# 当 model_list 不为空时，会为每个模型创建一个独立的 provider 实例进行轮询
+# 此时 model 字段会被忽略
 model_list = [
     "tencent/Hunyuan-MT-7B",
     "THUDM/GLM-4-9B-0414",
     "Qwen/Qwen2.5-7B-Instruct"
 ]
-model = ""              # 单一模型名称（可选，为空时使用 model_list 第一个）
+model = ""              # 单一模型名称（仅在 model_list 为空时生效）
 max_tokens = 8192       # 每次请求的最大 token 数（决定容量）
 temperature = 0.3       # 温度参数 (0.0 - 2.0)
 base_url = "https://api.siliconflow.cn/v1"

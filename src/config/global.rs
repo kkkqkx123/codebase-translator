@@ -237,11 +237,6 @@ impl GlobalConfig {
         let mut valid_providers = Vec::new();
 
         for mut provider in self.llm.providers.drain(..) {
-            // If model is empty but model_list has values, use the first model
-            if provider.model.is_empty() && !provider.model_list.is_empty() {
-                provider.model = provider.model_list[0].clone();
-            }
-
             let mut valid_api_keys = Vec::new();
             for key in &provider.api_keys {
                 if Self::is_valid_api_key(key) {
@@ -253,8 +248,18 @@ impl GlobalConfig {
                 continue;
             }
 
-            // Check if model name is valid
-            if provider.model.is_empty() || provider.model.starts_with("${") {
+            // Check model configuration
+            // If model_list is not empty, ignore model field (multi-model rotation)
+            // If model_list is empty, use model field (single model)
+            let has_valid_model = if !provider.model_list.is_empty() {
+                // Multi-model: check if at least one model in list is valid
+                provider.model_list.iter().any(|m| !m.is_empty() && !m.starts_with("${"))
+            } else {
+                // Single model: check if model is valid
+                !provider.model.is_empty() && !provider.model.starts_with("${")
+            };
+
+            if !has_valid_model {
                 continue;
             }
 
@@ -1084,7 +1089,7 @@ mod tests {
             name: "Siliconflow".to_string(),
             base_url: "https://api.siliconflow.cn/v1".to_string(),
             api_keys: vec!["test-api-key".to_string()],
-            model: "".to_string(), // Empty model, should use first from model_list
+            model: "some-model".to_string(), // This will be ignored when model_list is not empty
             model_list: vec![
                 "tencent/Hunyuan-MT-7B".to_string(),
                 "THUDM/GLM-4-9B-0414".to_string(),
@@ -1101,12 +1106,19 @@ mod tests {
             custom_user_prompt: None,
         }];
 
-        // Validate should filter and set model from model_list
+        // Validate should pass with model_list, model field is ignored
         let result = config.validate();
         assert!(result.is_ok(), "Validation failed: {:?}", result.err());
         assert_eq!(config.llm.providers.len(), 1);
-        assert_eq!(config.llm.providers[0].model, "tencent/Hunyuan-MT-7B");
+        // model field should remain unchanged (not set from model_list)
+        assert_eq!(config.llm.providers[0].model, "some-model");
         assert_eq!(config.llm.providers[0].model_list.len(), 3);
+        // model_list should be preserved for ProviderRouter to expand
+        assert_eq!(config.llm.providers[0].model_list, vec![
+            "tencent/Hunyuan-MT-7B".to_string(),
+            "THUDM/GLM-4-9B-0414".to_string(),
+            "Qwen/Qwen2.5-7B-Instruct".to_string(),
+        ]);
     }
 
     #[test]
