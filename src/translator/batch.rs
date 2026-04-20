@@ -184,20 +184,21 @@ impl BatchTranslator {
 
     /// Validate that placeholders from original text are preserved in translation
     fn validate_placeholder_preservation(original: &str, translated: &str) -> bool {
-        // Extract all ${...} placeholders from original
+        // Extract all ${...} placeholders from original using char-based indexing
         let mut original_placeholders = Vec::new();
+        let chars: Vec<char> = original.chars().collect();
         let mut i = 0;
         
-        while i < original.len() {
-            if original[i..].starts_with("${") {
+        while i < chars.len() {
+            if i + 1 < chars.len() && chars[i] == '$' && chars[i + 1] == '{' {
                 // Find matching }
                 let start = i;
                 let mut depth = 1;
                 let mut j = i + 2;
-                while j < original.len() && depth > 0 {
-                    if original[j..].starts_with('{') {
+                while j < chars.len() && depth > 0 {
+                    if chars[j] == '{' {
                         depth += 1;
-                    } else if original[j..].starts_with('}') {
+                    } else if chars[j] == '}' {
                         depth -= 1;
                     }
                     if depth > 0 {
@@ -205,7 +206,10 @@ impl BatchTranslator {
                     }
                 }
                 if depth == 0 {
-                    original_placeholders.push(&original[start..=j]);
+                    // Convert char indices back to byte indices for slicing
+                    let byte_start = original.char_indices().nth(start).map(|(i, _)| i).unwrap_or(0);
+                    let byte_end = original.char_indices().nth(j).map(|(i, _)| i + 1).unwrap_or(original.len());
+                    original_placeholders.push(&original[byte_start..byte_end]);
                 }
                 i = j + 1;
             } else {
@@ -824,6 +828,17 @@ mod tests {
         assert!(BatchTranslator::validate_placeholder_preservation(
             "Hello",
             "你好 ${extra}"
+        ));
+        
+        // Chinese characters with placeholders (regression test for byte boundary issue)
+        assert!(BatchTranslator::validate_placeholder_preservation(
+            "解析载荷模板 ${template}",
+            "解析载荷模板 ${template}"
+        ));
+        
+        assert!(BatchTranslator::validate_placeholder_preservation(
+            "${param} 参数无效",
+            "${param} 参数无效"
         ));
     }
 }
