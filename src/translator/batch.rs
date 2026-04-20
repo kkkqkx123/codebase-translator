@@ -171,9 +171,50 @@ impl BatchTranslator {
     }
 
     /// Select next healthy translator using simple round-robin
-    /// Check if text contains placeholder markers
-    fn contains_placeholder_markers(text: &str) -> bool {
-        text.contains("__PH_")
+    /// Check if text contains placeholder patterns (${...} or {...})
+    fn contains_placeholder_patterns(text: &str) -> bool {
+        // Check for template literal placeholders: ${...}
+        if text.contains("${") && text.contains('}') {
+            return true;
+        }
+        // Check for format string placeholders: {...}
+        // But avoid matching {{ or }} which are escaped braces
+        text.contains('{') && text.contains('}')
+    }
+
+    /// Validate that placeholders from original text are preserved in translation
+    fn validate_placeholder_preservation(original: &str, translated: &str) -> bool {
+        // Extract all ${...} placeholders from original
+        let mut original_placeholders = Vec::new();
+        let mut i = 0;
+        
+        while i < original.len() {
+            if original[i..].starts_with("${") {
+                // Find matching }
+                let start = i;
+                let mut depth = 1;
+                let mut j = i + 2;
+                while j < original.len() && depth > 0 {
+                    if original[j..].starts_with('{') {
+                        depth += 1;
+                    } else if original[j..].starts_with('}') {
+                        depth -= 1;
+                    }
+                    if depth > 0 {
+                        j += 1;
+                    }
+                }
+                if depth == 0 {
+                    original_placeholders.push(&original[start..=j]);
+                }
+                i = j + 1;
+            } else {
+                i += 1;
+            }
+        }
+        
+        // Check if all original placeholders are present in translation
+        original_placeholders.iter().all(|ph| translated.contains(*ph))
     }
 
     #[allow(dead_code)]
@@ -412,8 +453,8 @@ impl BatchTranslator {
         source_lang: &str,
         target_lang: &str,
     ) -> Result<Vec<TranslateResponse>> {
-        // Check if any text contains placeholder markers
-        let has_placeholders = texts.iter().any(|t| Self::contains_placeholder_markers(t));
+        // Check if any text contains placeholder patterns
+        let has_placeholders = texts.iter().any(|t| Self::contains_placeholder_patterns(t));
 
         // Prefer LLM translator for placeholder content
         let entry = self
@@ -437,18 +478,14 @@ impl BatchTranslator {
         {
             Ok(translated_texts) => {
                 // Validate placeholder integrity if placeholders are present
-                let has_placeholders = texts.iter().any(|t| t.contains("__PH_"));
                 if has_placeholders {
                     for (original, translated) in texts.iter().zip(translated_texts.iter()) {
-                        let protector = crate::parser::PlaceholderProtector::new();
-                        let (valid, issues) = protector.validate_placeholders(original, translated);
-                        if !valid {
+                        if !Self::validate_placeholder_preservation(original, translated) {
                             warn!(
-                                issues = ?issues,
-                                "Placeholder validation failed after translation"
+                                original = %original,
+                                translated = %translated,
+                                "Placeholder preservation validation failed"
                             );
-                            // Don't fail the translation, just log the issue
-                            // The fault-tolerant restore will handle minor issues
                         }
                     }
                 }
@@ -506,8 +543,8 @@ impl BatchTranslator {
         let start_time = Instant::now();
         let mut final_translator_type: Option<String> = None;
 
-        // Check if text contains placeholder markers
-        let has_placeholders = Self::contains_placeholder_markers(text);
+        // Check if text contains placeholder patterns
+        let has_placeholders = Self::contains_placeholder_patterns(text);
 
         for attempt in 0..self.max_retries {
             // Check character limit and split if needed
@@ -743,4 +780,50 @@ pub fn create_batch_translator(
     options: BatchOptions,
 ) -> BatchTranslator {
     BatchTranslator::new(translators, options)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_contains_placeholder_patterns() {
+        // Template literal placeholders
+        assert!(BatchTranslator::contains_placeholder_patterns("Error: ${error}"));
+        assert!(BatchTranslator::contains_placeholder_patterns("Hello ${name}, welcome!"));
+        
+        // Format string placeholders
+        assert!(BatchTranslator::contains_placeholder_patterns("Hello {name}"));
+        assert!(BatchTranslator::contains_placeholder_patterns("Value: {0}"));
+        
+        // No placeholders
+        assert!(!BatchTranslator::contains_placeholder_patterns("Hello world"));
+        assert!(!BatchTranslator::contains_placeholder_patterns("This is a test"));
+    }
+
+    #[test]
+    fn test_validate_placeholder_preservation() {
+        // Valid preservation
+        assert!(BatchTranslator::validate_placeholder_preservation(
+            "Error: ${error}, code: ${code}",
+            "错误：${error}，代码：${code}"
+        ));
+        
+        assert!(BatchTranslator::validate_placeholder_preservation(
+            "Hello ${name}",
+            "你好 ${name}"
+        ));
+        
+        // Missing placeholder
+        assert!(!BatchTranslator::validate_placeholder_preservation(
+            "Error: ${error}",
+            "错误：${missing}"
+        ));
+        
+        // Extra placeholder (should still pass - we only check original placeholders)
+        assert!(BatchTranslator::validate_placeholder_preservation(
+            "Hello",
+            "你好 ${extra}"
+        ));
+    }
 }

@@ -373,15 +373,17 @@ directory = ".translator"
             .load_project()
             .expect("Failed to load project config");
 
-        // Restore original directory before temp_dir is dropped
-        std::env::set_current_dir(&original_dir).expect("Failed to restore current dir");
-
         assert_eq!(config.translate.target_lang, "en");
         assert!(!config.writer.preview_only);
         assert!(config.writer.backup);
 
-        // Explicitly drop temp_dir after restoring directory
+        // Restore original directory - temp_dir must stay alive until this succeeds
+        let restore_result = std::env::set_current_dir(&original_dir);
+        
+        // Ensure temp_dir is not dropped before we restore the directory
         drop(temp_dir);
+        
+        restore_result.expect("Failed to restore current dir");
     }
 
     #[test]

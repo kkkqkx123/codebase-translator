@@ -584,18 +584,27 @@ impl LLMProvider {
 
 Rules:
 - Return ONLY the translated text
-- Preserve code syntax, placeholders, URLs, and special characters exactly
+- Preserve code syntax, URLs, and special characters exactly
 - Keep existing formatting in the original text
 - Do not add explanations or markdown wrappers
-- CRITICAL: Keep placeholder markers like `__PH_0__`, `__PH_1__` completely unchanged
-  - These markers represent code variables (e.g., ${value}, {name})
-  - Maintain their exact position and format in translation
-  - Ensure correct punctuation and spacing around placeholders
-  - NEVER translate, modify, or remove any part of placeholder markers
+- CRITICAL: Keep ALL variable placeholders completely unchanged:
+  - Template literals: ${variable}, ${value}, ${name}, etc.
+  - Format strings: {variable}, {name}, {0}, {1}, etc.
+  - Any text starting with $ followed by { and ending with }
+  - Any text starting with { and ending with }
+  - These placeholders must remain EXACTLY as they appear
+- Do NOT translate, modify, or add the word "placeholder"
+- Do NOT translate variable names or code elements
 
-Example:
-Original: Error: __PH_0__, code: __PH_1__
-Translation: 错误：__PH_0__，代码：__PH_1__"#.to_string()
+Examples:
+Original: 错误：${error}，代码：${code}
+Translation: Error: ${error}, code: ${code}
+
+Original: 你好 {name}，欢迎来到 {place}
+Translation: Hello {name}, welcome to {place}
+
+Original: 这个函数计算总和
+Translation: This function calculates the sum"#.to_string()
     }
 
     /// Build user prompt for translation
