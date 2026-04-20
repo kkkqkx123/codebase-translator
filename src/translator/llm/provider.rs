@@ -586,7 +586,16 @@ Rules:
 - Return ONLY the translated text
 - Preserve code syntax, placeholders, URLs, and special characters exactly
 - Keep existing formatting in the original text
-- Do not add explanations or markdown wrappers"#.to_string()
+- Do not add explanations or markdown wrappers
+- CRITICAL: Keep placeholder markers like `__PH_0__`, `__PH_1__` completely unchanged
+  - These markers represent code variables (e.g., ${value}, {name})
+  - Maintain their exact position and format in translation
+  - Ensure correct punctuation and spacing around placeholders
+  - NEVER translate, modify, or remove any part of placeholder markers
+
+Example:
+Original: Error: __PH_0__, code: __PH_1__
+Translation: 错误：__PH_0__，代码：__PH_1__"#.to_string()
     }
 
     /// Build user prompt for translation

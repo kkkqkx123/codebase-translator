@@ -373,8 +373,10 @@ impl TextScanner {
                     break;
                 }
                 b'$' if end + 1 < bytes.len() && bytes[end + 1] == b'{' => {
-                    let placeholder_start = end - pos - 1;
-                    end += 2;
+                    // Record the start position of the complete placeholder (including ${)
+                    // Content starts at pos + 1 (after `), so we need to adjust for content-relative position
+                    let placeholder_full_start = end; // Position of $
+                    end += 2; // Skip ${
 
                     let mut brace_depth = 1;
                     while end < bytes.len() && brace_depth > 0 {
@@ -393,11 +395,15 @@ impl TextScanner {
                         end += 1;
                     }
 
-                    let placeholder_end = end - pos - 1;
+                    // Calculate content-relative positions
+                    // Content starts at pos + 1, so subtract (pos + 1) to get content-relative offset
+                    let placeholder_start = placeholder_full_start - (pos + 1);
+                    let placeholder_end = end - (pos + 1); // end points after }, so this is exclusive end
+
                     if placeholder_end > placeholder_start {
-                        let original =
-                            String::from_utf8_lossy(&bytes[pos + 1 + placeholder_start..end - 1])
-                                .to_string();
+                        // Extract the COMPLETE placeholder including ${ and }
+                        let original = String::from_utf8_lossy(&bytes[placeholder_full_start..end])
+                            .to_string();
 
                         placeholders.push(PlaceholderSpan::new(
                             placeholder_start,
@@ -725,6 +731,66 @@ mod tests {
         assert_eq!(regions.len(), 1);
         assert_eq!(regions[0].region_type, TextRegionType::TemplateString);
         assert!(!regions[0].placeholders.is_empty());
+    }
+
+    #[test]
+    fn test_scan_template_string_placeholder_positions() {
+        let config = ScannerConfig::new(vec![]).with_strings(true);
+        let scanner = TextScanner::from_extension("js", config).expect("Failed to create scanner");
+
+        // Test case 1: `${value}`
+        let content1 = r#"`String ${value} here`"#;
+        let regions1 = scanner.scan(content1);
+
+        eprintln!("\n=== Test 1: {} ===", content1);
+        eprintln!("Content length: {}", content1.len());
+        assert_eq!(regions1.len(), 1);
+        let region1 = &regions1[0];
+        eprintln!(
+            "Region: {}-{}, Content: {}-{}",
+            region1.full_start, region1.full_end, region1.content_start, region1.content_end
+        );
+        eprintln!(
+            "Extracted content: '{}'",
+            region1.extract_content(content1).unwrap()
+        );
+        for (idx, ph) in region1.placeholders.iter().enumerate() {
+            eprintln!(
+                "Placeholder {}: '{}' at {}-{} (len={})",
+                idx,
+                ph.original,
+                ph.start,
+                ph.end,
+                ph.len()
+            );
+        }
+
+        // Test case 2: `${first} ${last}`
+        let content2 = r#"`${first} ${last}`"#;
+        let regions2 = scanner.scan(content2);
+
+        eprintln!("\n=== Test 2: {} ===", content2);
+        eprintln!("Content length: {}", content2.len());
+        assert_eq!(regions2.len(), 1);
+        let region2 = &regions2[0];
+        eprintln!(
+            "Region: {}-{}, Content: {}-{}",
+            region2.full_start, region2.full_end, region2.content_start, region2.content_end
+        );
+        eprintln!(
+            "Extracted content: '{}'",
+            region2.extract_content(content2).unwrap()
+        );
+        for (idx, ph) in region2.placeholders.iter().enumerate() {
+            eprintln!(
+                "Placeholder {}: '{}' at {}-{} (len={})",
+                idx,
+                ph.original,
+                ph.start,
+                ph.end,
+                ph.len()
+            );
+        }
     }
 
     #[test]

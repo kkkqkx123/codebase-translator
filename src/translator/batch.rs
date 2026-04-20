@@ -171,7 +171,18 @@ impl BatchTranslator {
     }
 
     /// Select next healthy translator using simple round-robin
+    /// Check if text contains placeholder markers
+    fn contains_placeholder_markers(text: &str) -> bool {
+        text.contains("__PH_")
+    }
+
+    #[allow(dead_code)]
     fn select_translator(&self) -> Option<&TranslatorEntry> {
+        self.select_translator_internal(false)
+    }
+
+    /// Select a translator, optionally preferring LLM for placeholder content
+    fn select_translator_internal(&self, prefer_llm: bool) -> Option<&TranslatorEntry> {
         let healthy_translators: Vec<&TranslatorEntry> =
             self.translators.iter().filter(|t| t.is_healthy()).collect();
 
@@ -180,6 +191,16 @@ impl BatchTranslator {
             let total = self.translators.len();
             let index = self.current_index.fetch_add(1, Ordering::Relaxed) as usize % total;
             return self.translators.get(index);
+        }
+
+        // If prefer_llm is true, try to find an LLM translator
+        if prefer_llm {
+            if let Some(llm_translator) = healthy_translators
+                .iter()
+                .find(|t| t.name.to_lowercase().contains("llm"))
+            {
+                return Some(*llm_translator);
+            }
         }
 
         // Simple round-robin selection
@@ -391,13 +412,18 @@ impl BatchTranslator {
         source_lang: &str,
         target_lang: &str,
     ) -> Result<Vec<TranslateResponse>> {
+        // Check if any text contains placeholder markers
+        let has_placeholders = texts.iter().any(|t| Self::contains_placeholder_markers(t));
+
+        // Prefer LLM translator for placeholder content
         let entry = self
-            .select_translator()
+            .select_translator_internal(has_placeholders)
             .ok_or_else(|| TranslateError::Translation("No translator available".to_string()))?;
 
         debug!(
             batch_size = texts.len(),
             translator = %entry.name,
+            has_placeholders = has_placeholders,
             "Sending batch translation request"
         );
 
@@ -410,6 +436,23 @@ impl BatchTranslator {
             .await
         {
             Ok(translated_texts) => {
+                // Validate placeholder integrity if placeholders are present
+                let has_placeholders = texts.iter().any(|t| t.contains("__PH_"));
+                if has_placeholders {
+                    for (original, translated) in texts.iter().zip(translated_texts.iter()) {
+                        let protector = crate::parser::PlaceholderProtector::new();
+                        let (valid, issues) = protector.validate_placeholders(original, translated);
+                        if !valid {
+                            warn!(
+                                issues = ?issues,
+                                "Placeholder validation failed after translation"
+                            );
+                            // Don't fail the translation, just log the issue
+                            // The fault-tolerant restore will handle minor issues
+                        }
+                    }
+                }
+
                 entry.mark_healthy();
 
                 // Record successful batch translation statistics
@@ -463,6 +506,9 @@ impl BatchTranslator {
         let start_time = Instant::now();
         let mut final_translator_type: Option<String> = None;
 
+        // Check if text contains placeholder markers
+        let has_placeholders = Self::contains_placeholder_markers(text);
+
         for attempt in 0..self.max_retries {
             // Check character limit and split if needed
             if self.limit_policy.max_char_count > 0 && text.len() > self.limit_policy.max_char_count
@@ -471,8 +517,9 @@ impl BatchTranslator {
             }
 
             // Select a translator that hasn't been attempted yet
+            // Prefer LLM for placeholder content
             let entry = loop {
-                let candidate = self.select_translator();
+                let candidate = self.select_translator_internal(has_placeholders);
                 match candidate {
                     Some(e) if !attempted_translators.contains(&e.name) => break e,
                     Some(_) => {
