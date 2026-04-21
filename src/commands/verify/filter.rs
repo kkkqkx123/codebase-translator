@@ -15,22 +15,30 @@ impl FilterOptions {
     }
 
     pub fn with_pattern_name(mut self, pattern: String) -> Self {
-        self.pattern_name = Some(pattern);
+        if !pattern.is_empty() {
+            self.pattern_name = Some(pattern);
+        }
         self
     }
 
     pub fn with_extension(mut self, ext: String) -> Self {
-        self.extension = Some(ext);
+        if !ext.is_empty() {
+            self.extension = Some(ext);
+        }
         self
     }
 
     pub fn with_category(mut self, category: String) -> Self {
-        self.category = Some(category);
+        if !category.is_empty() {
+            self.category = Some(category);
+        }
         self
     }
 
     pub fn with_search_text(mut self, text: String) -> Self {
-        self.search_text = Some(text);
+        if !text.is_empty() {
+            self.search_text = Some(text);
+        }
         self
     }
 }

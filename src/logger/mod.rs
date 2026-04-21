@@ -138,16 +138,21 @@ fn init_file_logger(
     let file_path_str = get_log_file_path(config, project_dir);
     let file_path = Path::new(&file_path_str);
 
+    // Create log directory if it doesn't exist
     if let Some(parent) = file_path.parent() {
-        std::fs::create_dir_all(parent)?;
+        if !parent.exists() {
+            std::fs::create_dir_all(parent)?;
+        }
     }
 
-    let file_appender = tracing_appender::rolling::daily(
-        file_path.parent().unwrap_or(Path::new(".")),
-        file_path.file_name().unwrap_or_default(),
-    );
+    // Use a simple file appender instead of rolling to avoid Windows file locking issues
+    let log_file = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&file_path_str)
+        .map_err(|e| TranslateError::Io(format!("Failed to open log file: {}", e)))?;
 
-    let (non_blocking, guard) = tracing_appender::non_blocking(file_appender);
+    let (non_blocking, guard) = tracing_appender::non_blocking(log_file);
 
     // Only set LOG_GUARD if not already set
     let _ = LOG_GUARD.set(Box::new(guard));

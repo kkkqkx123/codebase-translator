@@ -1,0 +1,3 @@
+2026-04-21T05:42:21.064453Z  INFO codebase_translate::commands::validate: Validating configuration
+2026-04-21T05:42:21.064573Z  INFO codebase_translate::commands::validate: Using DeepLX provider at: https://api.deeplx.org
+2026-04-21T05:42:21.064580Z  INFO codebase_translate::commands::validate: Configuration is valid

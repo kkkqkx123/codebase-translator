@@ -207,6 +207,28 @@ pub fn test_filter() -> crate::core::error::Result<CompositeFilter> {
     CompositeFilter::with_language_settings(&config, vec!["EN".to_string()], "ZH".to_string())
 }
 
+/// Create a verify filter that allows all content to be extracted
+/// Used by the verify command to show all potential matches without filtering
+pub fn verify_filter() -> crate::core::error::Result<CompositeFilter> {
+    // Use empty source_langs and target_lang to bypass language filtering
+    // This allows all content to pass through for verification purposes
+    let config = FilterConfig {
+        min_length: 1,  // Only filter out empty strings
+        exclude_keywords: vec![],
+        exclude_patterns: vec![],
+        include_patterns: vec![],
+        max_length: 100000,
+        allow_placeholders: true,
+        detect_code_patterns: false,
+        extract_languages: vec![],  // Empty means no language-only filtering
+        placeholder_patterns: vec![],
+        code_patterns: vec![],
+    };
+    // Use empty source_langs to bypass all language filtering
+    // This ensures verify command shows all potential extraction matches
+    CompositeFilter::with_language_settings(&config, vec![], "XX".to_string())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

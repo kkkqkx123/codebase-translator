@@ -44,6 +44,7 @@ pub use crate::config::project::FilterConfig;
 pub use composite::CompositeFilter as ContentFilter;
 pub use composite::{
     default_filter, from_project_config, from_project_config_with_translator, test_filter,
+    verify_filter,
 };
 pub use traits::Filter;
 

@@ -99,6 +99,19 @@ impl ParserCoordinator {
         Self::with_extraction_config(config, extraction_config, filter)
     }
 
+    /// Creates a new parser coordinator for verification purposes.
+    /// This coordinator uses a permissive filter that allows all content to pass through,
+    /// enabling the verify command to show all potential extraction matches.
+    pub fn for_verification(project_config: &crate::config::project::ProjectConfig) -> Result<Self> {
+        use crate::parser::filtering::verify_filter;
+
+        let config = ParserConfig::default();
+        let extraction_config = project_config.extraction.clone();
+        let filter = Arc::new(verify_filter()?);
+
+        Self::with_extraction_config(config, extraction_config, filter)
+    }
+
     /// Creates a new parser coordinator with custom extraction config and filter.
     pub fn new(
         config: ParserConfig,

@@ -7,7 +7,7 @@ use crate::{
     core::models::File,
     encoding::Detector,
     encoding::Encoder,
-    parser::{ParserConfig, ParserCoordinator},
+    parser::ParserCoordinator,
     scanner::r#trait::{ScanOptions, Scanner},
     scanner::FSScanner,
 };
@@ -45,6 +45,10 @@ pub struct VerifyArgs {
 
     #[arg(short = 'S', long, default_value = "true")]
     pub show_stats: bool,
+
+    /// Suppress log output
+    #[arg(short, long, default_value = "false")]
+    pub quiet: bool,
 }
 
 impl Command for VerifyArgs {
@@ -82,9 +86,8 @@ impl Command for VerifyArgs {
 
         info!(files_found = total_files, "Scanned files");
 
-        debug!("Creating parser");
-        let parser_config = ParserConfig::default();
-        let parser = ParserCoordinator::from_project_config(parser_config, project_config)?;
+        debug!("Creating parser for verification");
+        let parser = ParserCoordinator::for_verification(project_config)?;
 
         let mut all_matches = Vec::new();
 
@@ -164,7 +167,16 @@ impl Command for VerifyArgs {
     }
 
     fn get_project_path(&self) -> Option<&str> {
-        Some(&self.path)
+        // If path is a file, return its parent directory for logger initialization
+        // This ensures the log directory is created in the correct location
+        let path = std::path::Path::new(&self.path);
+        if path.is_file() {
+            path.parent()
+                .map(|p| p.to_str())
+                .unwrap_or(Some("."))
+        } else {
+            Some(&self.path)
+        }
     }
 }
 

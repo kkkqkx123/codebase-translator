@@ -838,7 +838,7 @@ fn default_log_level() -> String {
 }
 
 fn default_log_output() -> String {
-    "stdout".to_string()
+    "file".to_string()
 }
 
 fn default_log_format() -> String {

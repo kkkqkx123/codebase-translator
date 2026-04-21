@@ -111,6 +111,9 @@ fn run() -> Result<()> {
         }
         Some(Commands::Verify(args)) => {
             let project_path = args.get_project_path();
+            if args.quiet {
+                global_config.logging.level = "error".to_string();
+            }
             logger::init(&global_config.logging, project_path.map(Path::new))?;
             args.execute(&global_config, &project_config)?
         }

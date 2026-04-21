@@ -115,5 +115,5 @@ split_max_chars = 1000      # 分割块的最大字符数
 [logging]
 level = "info"               # 日志级别：trace, debug, info, warn, error
 format = "pretty"            # 日志格式：pretty, json, compact
-output = "stdout"            # 输出目标：stdout, stderr, file
-file = ".translator/translator.log"  # 日志文件路径（当 output 为 file 时）
+output = "file"              # 输出目标：stdout, stderr, file
+file = "logs/translator.log"  # 日志文件路径（当 output 为 file 时）
