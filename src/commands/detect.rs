@@ -94,7 +94,7 @@ impl Command for DetectArgs {
                 info!("Report saved to: {}", path);
             }
             None => {
-                println!("{}", report_text);
+                quiet_print!("{}", report_text);
             }
         }
 

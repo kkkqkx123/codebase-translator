@@ -2,6 +2,7 @@ use clap::Parser;
 use tracing::{debug, info};
 
 use crate::{
+    commands::Command,
     config::{global::GlobalConfig, project::ProjectConfig},
     core::error::{Result, TranslateError},
     core::models::File,
@@ -15,7 +16,6 @@ use crate::{
 use super::{
     FilterOptions, MatchCollector, MatchFilter, OutputFormat, OutputFormatter, StatisticsGenerator,
 };
-use crate::commands::Command;
 
 #[derive(Parser, Debug)]
 pub struct VerifyArgs {
@@ -159,7 +159,7 @@ impl Command for VerifyArgs {
             );
         } else {
             debug!("Outputting results to console");
-            println!("{}", output);
+            quiet_print!("{}", output);
         }
 
         info!("Verification completed successfully");

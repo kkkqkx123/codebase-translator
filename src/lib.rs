@@ -3,6 +3,41 @@
 //! This crate provides functionality to automatically translate comments,
 //! documentation strings, and error messages within codebases.
 
+use std::sync::atomic::{AtomicBool, Ordering};
+
+/// Global quiet mode flag - when true, suppress non-essential terminal output
+static QUIET_MODE: AtomicBool = AtomicBool::new(false);
+
+/// Set the global quiet mode
+pub fn set_quiet_mode(quiet: bool) {
+    QUIET_MODE.store(quiet, Ordering::SeqCst);
+}
+
+/// Check if quiet mode is enabled
+pub fn is_quiet_mode() -> bool {
+    QUIET_MODE.load(Ordering::SeqCst)
+}
+
+/// Print to stdout only if not in quiet mode
+#[macro_export]
+macro_rules! quiet_print {
+    ($($arg:tt)*) => {
+        if !$crate::is_quiet_mode() {
+            println!($($arg)*);
+        }
+    };
+}
+
+/// Print to stderr only if not in quiet mode
+#[macro_export]
+macro_rules! quiet_eprint {
+    ($($arg:tt)*) => {
+        if !$crate::is_quiet_mode() {
+            eprintln!($($arg)*);
+        }
+    };
+}
+
 pub mod cache;
 pub mod commands;
 pub mod config;

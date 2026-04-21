@@ -6,7 +6,7 @@ use codebase_translate::{
     commands::{cache, clean, detect, init, status, translate, validate, verify, Command},
     config::loader::ConfigLoader,
     core::error::Result,
-    logger,
+    logger, set_quiet_mode,
     workflow::TranslationWorkflow,
 };
 
@@ -31,6 +31,10 @@ struct Cli {
     /// Dry run mode
     #[arg(long)]
     dry_run: bool,
+
+    /// Suppress all non-error output to terminal
+    #[arg(short, long, global = true)]
+    quiet: bool,
 
     /// Subcommand
     #[command(subcommand)]
@@ -86,6 +90,12 @@ fn run() -> Result<()> {
 
     let (mut global_config, project_config) = loader.load()?;
 
+    // Apply quiet mode: suppress non-error output
+    if cli.quiet {
+        global_config.logging.level = "error".to_string();
+        set_quiet_mode(true);
+    }
+
     // Only override log level if explicitly provided by user via command line
     if let Some(log_level) = &cli.log_level {
         global_config.logging.level = log_level.clone();
@@ -111,9 +121,6 @@ fn run() -> Result<()> {
         }
         Some(Commands::Verify(args)) => {
             let project_path = args.get_project_path();
-            if args.quiet {
-                global_config.logging.level = "error".to_string();
-            }
             logger::init(&global_config.logging, project_path.map(Path::new))?;
             args.execute(&global_config, &project_config)?
         }
