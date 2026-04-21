@@ -451,15 +451,10 @@ impl ParserCoordinator {
                 }
             }
 
-            if !region.placeholders.is_empty() {
-                let placeholder_text = region
-                    .placeholders
-                    .iter()
-                    .map(|p| p.original.clone())
-                    .collect::<Vec<_>>()
-                    .join(", ");
-                unit.raw_match = Some(format!("placeholders: {}", placeholder_text));
-            }
+            // Note: We don't modify raw_match for placeholders here.
+            // Placeholder protection is handled by the translator (LLM provider),
+            // not by modifying raw_match which would break the writer's replacement logic.
+            // The raw_match should always contain the actual original text from the source file.
 
             units.push(unit);
         }

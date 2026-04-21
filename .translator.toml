@@ -118,7 +118,7 @@ min_length = 0     # 最小文本长度，0 表示不限制
 max_length = 0     # 最大文本长度，0 表示不限制
 
 # 占位符处理
-allow_placeholders = false  # 是否允许包含占位符的文本（如 %s, ${var}）
+allow_placeholders = true  # 是否允许包含占位符的文本（如 %s, ${var}）
 
 # 代码模式检测
 detect_code_patterns = true  # 是否检测并过滤代码模式（如 obj.method(), function()）

@@ -434,7 +434,8 @@ impl BatchTranslator {
         source_lang: &str,
         target_lang: &str,
     ) -> Result<Vec<TranslateResponse>> {
-        // Prefer LLM translator for placeholder content
+        // Select translator with priority: DeepLX > Tencent > LLM
+        // DeepLX and Tencent handle placeholders well naturally
         let has_placeholders = texts.iter().any(|t| Self::contains_placeholder_patterns(t));
         let entry = self
             .select_translator_internal(has_placeholders)
@@ -519,7 +520,7 @@ impl BatchTranslator {
             }
 
             // Select a translator that hasn't been attempted yet
-            // Prefer LLM for placeholder content
+            // Priority: DeepLX > Tencent > LLM (DeepLX/Tencent handle placeholders well)
             let entry = loop {
                 let candidate = self.select_translator_internal(has_placeholders);
                 match candidate {
