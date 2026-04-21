@@ -458,10 +458,10 @@ impl ParserCoordinator {
 
             let mut unit = TranslationUnit::new(id, node_type, text, start_pos, end_pos);
 
-            if region.region_type.is_string() {
-                if let Some(full_content) = region.extract_full(content) {
-                    unit.raw_match = Some(full_content.to_string());
-                }
+            // Set raw_match for all region types to enable proper replacement
+            // raw_match contains the complete original text including markers/prefixes
+            if let Some(full_content) = region.extract_full(content) {
+                unit.raw_match = Some(full_content.to_string());
             }
 
             // Note: We don't modify raw_match for placeholders here.
@@ -643,5 +643,47 @@ fn main() {
         assert!(result.is_err());
         let err_msg = format!("{}", result.unwrap_err());
         assert!(err_msg.contains("No parser found"));
+    }
+
+    #[test]
+    fn test_raw_match_set_for_comments() {
+        // Test that raw_match is properly set for comments and doc comments
+        // This is critical for the writer to correctly replace translations
+        let config = ParserConfig::default();
+        let coordinator =
+            ParserCoordinator::with_defaults(config).expect("Failed to create coordinator");
+
+        let content = r#"/**
+ * 配置加载器
+ * 支持多种配置文件格式
+ */
+
+// 这是一个普通注释
+const x = 1;
+"#;
+
+        let file = create_test_file(content, "test.ts");
+        let units = coordinator
+            .parse_file(&file)
+            .expect("Parsing should succeed");
+
+        // Should have at least 2 units (doc comment and line comment)
+        assert!(
+            units.len() >= 2,
+            "Expected at least 2 translation units, got {}",
+            units.len()
+        );
+
+        // Check that all units have raw_match set
+        for unit in &units {
+            assert!(
+                unit.raw_match.is_some(),
+                "raw_match should be set for all units, but unit '{}' has None",
+                unit.id
+            );
+            // Note: raw_match contains the complete original text with markers
+            // content contains the cleaned text (markers removed)
+            // The writer's replace_in_raw_match function handles this mapping
+        }
     }
 }

@@ -34,6 +34,13 @@ pub fn replace_in_raw_match(raw_match: &str, extracted: &str, translated: &str) 
     let raw_lines: Vec<&str> = raw_match.lines().collect();
     let extracted_lines: Vec<&str> = extracted.lines().collect();
 
+    // Handle block comments where raw_match has more lines (markers) than extracted content
+    // e.g., raw_match: [/**,  * Line 1,  * Line 2,  */]
+    //       extracted: [Line 1, Line 2]
+    if raw_lines.len() > extracted_lines.len() {
+        return replace_block_comment(&raw_lines, &extracted_lines, translated);
+    }
+
     if raw_lines.len() == extracted_lines.len() {
         replace_line_by_line(&raw_lines, &extracted_lines, translated)
     } else {
@@ -45,6 +52,57 @@ pub fn replace_in_raw_match(raw_match: &str, extracted: &str, translated: &str) 
         );
         raw_match.to_string()
     }
+}
+
+/// Replace text in block comments where raw_match has marker lines (/**, */, etc.)
+///
+/// This handles cases like:
+///   raw_match: [/**,  * Line 1,  * Line 2,  */]
+///   extracted: [Line 1, Line 2]
+fn replace_block_comment(raw_lines: &[&str], extracted_lines: &[&str], translated: &str) -> String {
+    let translated_lines: Vec<&str> = translated.lines().collect();
+    let mut result = String::new();
+    let mut extracted_idx = 0;
+
+    for (i, raw_line) in raw_lines.iter().enumerate() {
+
+        // Check if this line contains extracted content (not just markers)
+        if extracted_idx < extracted_lines.len() {
+            let extracted_line = extracted_lines[extracted_idx];
+
+            // Try to find extracted_line in raw_line
+            if let Some(pos) = raw_line.find(extracted_line) {
+                let before = &raw_line[..pos];
+                let after = &raw_line[pos + extracted_line.len()..];
+
+                // For multi-line translations with same line count, preserve formatting
+                if translated_lines.len() == extracted_lines.len() {
+                    result.push_str(&format!("{}{}{}", before, translated_lines[extracted_idx], after));
+                } else {
+                    // If line count differs, use the whole translated text on first match
+                    if extracted_idx == 0 {
+                        result.push_str(&format!("{}{}{}", before, translated, after));
+                    }
+                    // Skip remaining extracted lines since we already placed all content
+                }
+
+                extracted_idx += 1;
+            } else {
+                // This line is a marker line (like /**, */, or * prefix without content)
+                // Keep it as-is
+                result.push_str(raw_line);
+            }
+        } else {
+            // No more extracted content, keep remaining lines as-is (e.g., closing */)
+            result.push_str(raw_line);
+        }
+
+        if i < raw_lines.len() - 1 {
+            result.push('\n');
+        }
+    }
+
+    result
 }
 
 /// Replace text line by line for multi-line content
@@ -138,6 +196,32 @@ mod tests {
             result,
             "// This is a simple JavaScript file to test the translation function"
         );
+    }
+
+    #[test]
+    fn test_replace_in_raw_match_block_comment() {
+        // Test block comment replacement where raw_match has more lines than extracted
+        // raw_match:    [/**,  * 配置加载器,  * 支持多种配置文件格式,  */]
+        // extracted:    [配置加载器, 支持多种配置文件格式]
+        // translated:   [Configuration Loader, Supports multiple configuration file formats]
+        let raw = "/**\n * 配置加载器\n * 支持多种配置文件格式\n */";
+        let extracted = "配置加载器\n支持多种配置文件格式";
+        let translated = "Configuration Loader\nSupports multiple configuration file formats";
+
+        let result = replace_in_raw_match(raw, extracted, translated);
+
+        // Verify exact format - should preserve structure with markers
+        let expected = "/**\n * Configuration Loader\n * Supports multiple configuration file formats\n */";
+        assert_eq!(result, expected, "Block comment replacement should preserve markers and replace only content");
+
+        // Should preserve markers and replace content
+        assert!(result.contains("/**"), "Opening marker should be preserved");
+        assert!(result.contains("*/"), "Closing marker should be preserved");
+        assert!(result.contains("Configuration Loader"), "First line should be translated");
+        assert!(result.contains("Supports multiple configuration file formats"), "Second line should be translated");
+        // Should not contain original Chinese text
+        assert!(!result.contains("配置加载器"), "Original Chinese should be replaced");
+        assert!(!result.contains("支持多种配置文件格式"), "Original Chinese should be replaced");
     }
 
     #[test]
