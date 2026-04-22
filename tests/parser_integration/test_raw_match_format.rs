@@ -15,7 +15,7 @@ fn test_raw_match_format() {
     };
 
     let coordinator =
-        ParserCoordinator::with_config(config).expect("Failed to create coordinator");
+        ParserCoordinator::with_parser_config(config).expect("Failed to create coordinator");
 
     let content = fs::read_to_string("tests/main_integration/fixtures/simple_rust.rs")
         .expect("Failed to read fixture file");
@@ -41,7 +41,7 @@ fn test_raw_match_format() {
         if let Some(raw) = &unit.raw_match {
             println!("  Raw match: {:?}", raw);
             // Check if raw_match ends with newline
-            println!("  Raw match ends with '\\n': {}", raw.ends_with('\n'));
+            println!("  Raw match ends with '\\n': {}", raw.ends_with::<&str>("\n"));
             // Show byte representation
             println!("  Raw match bytes: {:?}", raw.as_bytes());
         }

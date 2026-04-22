@@ -100,8 +100,8 @@ Provider 可用性汇总
 [日志配置]
   级别: info
   格式: pretty
-  输出: stdout
-  日志文件: .translator/translator.log
+  输出: file
+  日志文件: logs/translator.log
 
 ----------------------------------------
 项目配置详情

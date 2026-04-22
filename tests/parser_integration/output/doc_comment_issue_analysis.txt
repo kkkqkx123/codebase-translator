@@ -8,6 +8,8 @@ Position: Line 1, Column 4 (Offset: 3)
 End Position: Line 1, Column 62 (Offset: 61)
 Content:
 这是一个简单的Rust文件，用于测试翻译功能
+Raw Match:
+// 这是一个简单的Rust文件，用于测试翻译功能
 Should Translate: true
 
 --- Unit 2 ---
@@ -17,6 +19,8 @@ Position: Line 2, Column 4 (Offset: 65)
 End Position: Line 2, Column 40 (Offset: 101)
 Content:
 包含中文注释和文档字符串
+Raw Match:
+// 包含中文注释和文档字符串
 Should Translate: true
 
 --- Unit 3 ---
@@ -26,6 +30,8 @@ Position: Line 4, Column 5 (Offset: 107)
 End Position: Line 4, Column 26 (Offset: 128)
 Content:
 计算两个数的和
+Raw Match:
+/// 计算两个数的和
 Should Translate: true
 
 --- Unit 4 ---
@@ -35,6 +41,8 @@ Position: Line 21, Column 5 (Offset: 360)
 End Position: Line 21, Column 26 (Offset: 381)
 Content:
 计算两个数的差
+Raw Match:
+/// 计算两个数的差
 Should Translate: true
 
 --- Unit 5 ---
@@ -44,6 +52,8 @@ Position: Line 31, Column 5 (Offset: 507)
 End Position: Line 31, Column 17 (Offset: 519)
 Content:
 乘法运算
+Raw Match:
+/// 乘法运算
 Should Translate: true
 
 --- Unit 6 ---
@@ -53,6 +63,8 @@ Position: Line 36, Column 4 (Offset: 577)
 End Position: Line 36, Column 34 (Offset: 607)
 Content:
 这是一个简单的结构体
+Raw Match:
+// 这是一个简单的结构体
 Should Translate: true
 
 --- Unit 7 ---
@@ -62,6 +74,8 @@ Position: Line 38, Column 8 (Offset: 639)
 End Position: Line 38, Column 23 (Offset: 654)
 Content:
 计算器名称
+Raw Match:
+// 计算器名称
 Should Translate: true
 
 --- Unit 8 ---
@@ -71,6 +85,8 @@ Position: Line 43, Column 9 (Offset: 702)
 End Position: Line 43, Column 36 (Offset: 729)
 Content:
 创建新的计算器实例
+Raw Match:
+/// 创建新的计算器实例
 Should Translate: true
 
 --- Unit 9 ---
@@ -80,4 +96,6 @@ Position: Line 54, Column 9 (Offset: 922)
 End Position: Line 54, Column 30 (Offset: 943)
 Content:
 获取计算器名称
+Raw Match:
+/// 获取计算器名称
 Should Translate: true

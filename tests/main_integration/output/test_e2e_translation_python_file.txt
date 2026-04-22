@@ -10,7 +10,7 @@ Translated units: 7
 Cache hits: 0
 Skipped files: 0
 Errors: []
-Duration: 8.99s
+Duration: 19.67s
 
 
 Directory Contents:
@@ -27,27 +27,27 @@ Translated File Content:
 
 def add(a, b):
     """
-    计算两个数的和
+    Compute the sum of two numbers
     
-    Args:
-        a: 第一个数字
-        b: 第二个数字
+    Args.
+    a: first number
+    b: second number
     
-    Returns:
-        两个数的和
+    Returns.
+    The sum of the two numbers
     """
     return a + b
 
 def subtract(a, b):
     """
-    计算两个数的差
+    Compute the difference between two numbers
     
-    Args:
-        a: 被减数
-        b: 减数
+    Args.
+    a: subtracted number
+    b: subtracted number
     
-    Returns:
-        两个数的差
+    Returns.
+    Difference between two numbers
     """
     return a - b
 
@@ -56,10 +56,10 @@ class Calculator:
     
     def __init__(self, name):
         """
-        初始化计算器
+        Initializing the Calculator
         
-        Args:
-            name: 计算器名称
+        Args.
+        name: Calculator name
         """
         self.name = name
     

@@ -5,12 +5,12 @@ Translation completed successfully!
 
 Files processed: 1
 Total files: 1
-Total units: 4
-Translated units: 4
+Total units: 8
+Translated units: 8
 Cache hits: 0
 Skipped files: 0
 Errors: []
-Duration: 5.77s
+Duration: 24.20s
 
 
 Directory Contents:
@@ -26,20 +26,20 @@ Translated File Content:
 // Includes notes in Chinese
 
 /**
- * 计算两个数的和
- * @param {number} a - 第一个数字
- * @param {number} b - 第二个数字
- * @returns {number} 两个数的和
+ * Calculate the sum of two numbers
+ * @param {number} a - first number
+ * @param {number} b - second number
+ * @returns {number} sum of two numbers
  */
 function add(a, b) {
     return a + b;
 }
 
 /**
- * 计算两个数的差
- * @param {number} a - 被减数
- * @param {number} b - 减数
- * @returns {number} 两个数的差
+ * Calculate the difference between two numbers
+ * @param {number} a - the subtracted number
+ * @param {number} b - the subtracted number
+ * @returns {number} the difference between two numbers
  */
 function subtract(a, b) {
     return a - b;
@@ -48,16 +48,16 @@ function subtract(a, b) {
 // simple class
 class Calculator {
     /**
-     * 创建计算器实例
-     * @param {string} name - 计算器名称
+     * Creating a Calculator Instance
+     * @param {string} name - name of the calculator
      */
     constructor(name) {
         this.name = name;
     }
     
     /**
-     * 获取计算器名称
-     * @returns {string} 计算器名称
+     * Get Calculator Name
+     * @returns {string} calculator name
      */
     getName() {
         return this.name;

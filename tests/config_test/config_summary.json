@@ -72,7 +72,7 @@
     "logging": {
       "level": "info",
       "format": "pretty",
-      "output": "stdout"
+      "output": "file"
     }
   },
   "project_config": {

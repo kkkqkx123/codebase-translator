@@ -5,12 +5,12 @@ Translation completed successfully!
 
 Files processed: 5
 Total files: 5
-Total units: 25
-Translated units: 25
+Total units: 29
+Translated units: 29
 Cache hits: 0
 Skipped files: 0
 Errors: []
-Duration: 47.68s
+Duration: 64.72s
 
 
 Directory Contents:
@@ -28,7 +28,7 @@ Directory Contents:
 Translated Files:
 ==================
 
---- C:\Users\33530\AppData\Local\Temp\.tmp9OLVWY\mod.rs ---
+--- C:\Users\33530\AppData\Local\Temp\.tmpIzwzC3\mod.rs ---
 //! Common Infrastructure Module
 //!
 //! This module contains all the common infrastructure code, including:
@@ -41,25 +41,25 @@ pub mod id;
 // Re-export commonly used types and functions for easy use by other modules
 pub use id::*;
 
---- C:\Users\33530\AppData\Local\Temp\.tmp9OLVWY\simple_javascript.js ---
+--- C:\Users\33530\AppData\Local\Temp\.tmpIzwzC3\simple_javascript.js ---
 // This is a simple JavaScript file to test the translation function
-// Contains Chinese annotations
+// Includes notes in Chinese
 
 /**
- * 计算两个数的和
- * @param {number} a - 第一个数字
- * @param {number} b - 第二个数字
- * @returns {number} 两个数的和
+ * Calculate the sum of two numbers
+ * @param {number} a - first number
+ * @param {number} b - second number
+ * @returns {number} sum of two numbers
  */
 function add(a, b) {
     return a + b;
 }
 
 /**
- * 计算两个数的差
- * @param {number} a - 被减数
- * @param {number} b - 减数
- * @returns {number} 两个数的差
+ * Calculate the difference between two numbers
+ * @param {number} a - the subtracted number
+ * @param {number} b - the subtracted number
+ * @returns {number} the difference between two numbers
  */
 function subtract(a, b) {
     return a - b;
@@ -68,16 +68,16 @@ function subtract(a, b) {
 // simple class
 class Calculator {
     /**
-     * 创建计算器实例
-     * @param {string} name - 计算器名称
+     * Creating a Calculator Instance
+     * @param {string} name - name of the calculator
      */
     constructor(name) {
         this.name = name;
     }
     
     /**
-     * 获取计算器名称
-     * @returns {string} 计算器名称
+     * Get Calculator Name
+     * @returns {string} calculator name
      */
     getName() {
         return this.name;
@@ -93,7 +93,7 @@ function main() {
 
 main();
 
---- C:\Users\33530\AppData\Local\Temp\.tmp9OLVWY\simple_markdown.md ---
+--- C:\Users\33530\AppData\Local\Temp\.tmpIzwzC3\simple_markdown.md ---
 # 测试翻译功能
 
 这是一个简单的Markdown文件，用于测试翻译功能。
@@ -135,33 +135,33 @@ fn main() {
 - [项目主页](https://github.com/example/translator)
 - [文档](https://docs.example.com)
 
---- C:\Users\33530\AppData\Local\Temp\.tmp9OLVWY\simple_python.py ---
+--- C:\Users\33530\AppData\Local\Temp\.tmpIzwzC3\simple_python.py ---
 # This is a simple Python file to test the translation function
 # Includes Chinese comments and document strings
 
 def add(a, b):
     """
-    计算两个数的和
+    Compute the sum of two numbers
     
-    Args:
-        a: 第一个数字
-        b: 第二个数字
+    Args.
+    a: first number
+    b: second number
     
-    Returns:
-        两个数的和
+    Returns.
+    The sum of the two numbers
     """
     return a + b
 
 def subtract(a, b):
     """
-    计算两个数的差
+    Compute the difference between two numbers
     
-    Args:
-        a: 被减数
-        b: 减数
+    Args.
+    a: subtracted number
+    b: subtracted number
     
-    Returns:
-        两个数的差
+    Returns.
+    Difference between two numbers
     """
     return a - b
 
@@ -170,10 +170,10 @@ class Calculator:
     
     def __init__(self, name):
         """
-        初始化计算器
+        Initializing the Calculator
         
-        Args:
-            name: 计算器名称
+        Args.
+        name: Calculator name
         """
         self.name = name
     
@@ -186,7 +186,7 @@ if __name__ == "__main__":
     result = add(10, 20)
     print(f"结果: {result}")
 
---- C:\Users\33530\AppData\Local\Temp\.tmp9OLVWY\simple_rust.rs ---
+--- C:\Users\33530\AppData\Local\Temp\.tmpIzwzC3\simple_rust.rs ---
 // Here's a simple Rust file to test the translation functionality
 // Includes Chinese comments and document strings
 

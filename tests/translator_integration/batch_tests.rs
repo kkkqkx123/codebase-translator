@@ -5,9 +5,10 @@
 
 use std::sync::Arc;
 
+use codebase_translate::config::global::{GlobalConfig, LLMProviderConfig};
 use codebase_translate::translator::{
-    create_batch_translator, BatchOptions, BatchResult, BatchTranslator, DeepLXConfig, LimitPolicy,
-    ProviderType, TranslatorConfig, TranslatorImpl,
+    create_batch_translator, create_llm_multi_provider_translator, BatchOptions, BatchResult,
+    BatchTranslator, DeepLXConfig, LimitPolicy, ProviderType, TranslatorConfig, TranslatorImpl,
 };
 
 /// Test BatchTranslator creation with default options
@@ -223,32 +224,39 @@ fn test_batch_translator_with_different_types() {
     let batch = BatchTranslator::new(vec![deeplx_translator], options);
     assert_eq!(batch.name(), "deeplx");
 
-    // LLM
-    let llm_config = codebase_translate::translator::LLMConfig {
-        base_url: "http://localhost".to_string(),
-        api_key: "test".to_string(),
-        model: "test".to_string(),
-        max_tokens: 100,
-        temperature: 0.5,
-        top_p: None,
-        proxy_url: None,
-        timeout: 10,
-        max_retries: 3,
-        extra_headers: None,
-        extra_params: None,
+    // LLM - using multi-provider API
+    use codebase_translate::config::global::LLMGlobalConfig;
+    let global_config = GlobalConfig {
+        llm: LLMGlobalConfig {
+            providers: vec![LLMProviderConfig {
+                id: "test-provider".to_string(),
+                name: "Test Provider".to_string(),
+                base_url: "http://localhost".to_string(),
+                api_keys: vec!["test".to_string()],
+                model: "test".to_string(),
+                model_list: vec![],
+                max_tokens: 100,
+                temperature: 0.5,
+                proxy_url: None,
+                timeout: 10,
+                rate_limit: 10,
+                extra_headers: std::collections::HashMap::new(),
+                extra_params: std::collections::HashMap::new(),
+                custom_system_prompt: None,
+                custom_user_prompt: None,
+            }],
+            ..Default::default()
+        },
+        ..Default::default()
     };
     let llm_translator = Arc::new(
-        TranslatorImpl::from_config(&TranslatorConfig {
-            provider: ProviderType::LLM,
-            llm: Some(llm_config),
-            ..Default::default()
-        })
-        .expect("Should create translator"),
+        create_llm_multi_provider_translator(&global_config)
+            .expect("Should create LLM translator"),
     );
 
     let options = BatchOptions::default();
     let batch = BatchTranslator::new(vec![llm_translator], options);
-    assert_eq!(batch.name(), "llm");
+    assert!(batch.name().contains("llm"));
 }
 
 /// Test BatchResult clone

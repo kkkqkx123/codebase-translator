@@ -96,7 +96,7 @@ pub struct ParserFactory;
 
 impl ParserFactory {
     /// Create parser coordinator
-    /// Uses with_config to allow all content to pass through the parser level filter.
+    /// Uses with_parser_config to allow all content to pass through the parser level filter.
     /// Language filtering is handled at the translation unit level based on source_langs.
     pub fn create(project_config: &ProjectConfig) -> Result<ParserCoordinator> {
         info!(
@@ -115,9 +115,9 @@ impl ParserFactory {
             trim_content: true,
         };
 
-        // Use with_config to allow all content to pass through the parser filter
+        // Use with_parser_config to allow all content to pass through the parser filter
         // Language filtering will be applied at the translation unit level
-        let parser = ParserCoordinator::with_config(parser_config)?;
+        let parser = ParserCoordinator::with_parser_config(parser_config)?;
         debug!("Parser coordinator created successfully");
         Ok(parser)
     }

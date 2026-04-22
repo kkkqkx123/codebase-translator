@@ -7,6 +7,10 @@ Init result: Ok(())
 file logger initialization passed!
 
 Log file path: E:\project\codebase-translator\tests\main_integration\output\test_logger.log
-Log file exists: false
+Log file exists: true
 
-Warning: Log file does not exist yet (will be created on first log).
+Log file was successfully created!
+
+Log file size: 0 bytes
+
+Note: Actual log content will be written during test execution.

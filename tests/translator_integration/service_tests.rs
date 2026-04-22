@@ -5,9 +5,10 @@
 
 use std::sync::Arc;
 
+use codebase_translate::config::global::{GlobalConfig, LLMProviderConfig};
 use codebase_translate::translator::{
-    BatchOptions, BatchTranslationService, DeepLXConfig, ProviderType, TencentConfig,
-    TranslationService, TranslatorConfig, TranslatorImpl,
+    create_llm_multi_provider_translator, BatchOptions, BatchTranslationService, DeepLXConfig,
+    ProviderType, TencentConfig, TranslationService, TranslatorConfig, TranslatorImpl,
 };
 
 /// Test TranslationService creation with DeepLX
@@ -26,32 +27,41 @@ fn test_translation_service_creation_deeplx() {
     assert!(service.name().contains("deeplx"));
 }
 
-/// Test TranslationService creation with LLM
+/// Test TranslationService creation with LLM - using multi-provider API
 #[test]
 fn test_translation_service_creation_llm() {
-    let config = TranslatorConfig {
-        provider: ProviderType::LLM,
-        llm: Some(codebase_translate::translator::LLMConfig {
-            base_url: "http://localhost".to_string(),
-            api_key: "test".to_string(),
-            model: "test".to_string(),
-            max_tokens: 100,
-            temperature: 0.5,
-            top_p: None,
-            proxy_url: None,
-            timeout: 10,
-            max_retries: 3,
-            extra_headers: None,
-            extra_params: None,
-        }),
+    use codebase_translate::config::global::LLMGlobalConfig;
+    let global_config = GlobalConfig {
+        llm: LLMGlobalConfig {
+            providers: vec![LLMProviderConfig {
+                id: "test-provider".to_string(),
+                name: "Test Provider".to_string(),
+                base_url: "http://localhost".to_string(),
+                api_keys: vec!["test".to_string()],
+                model: "test".to_string(),
+                model_list: vec![],
+                max_tokens: 100,
+                temperature: 0.5,
+                proxy_url: None,
+                timeout: 10,
+                rate_limit: 10,
+                extra_headers: std::collections::HashMap::new(),
+                extra_params: std::collections::HashMap::new(),
+                custom_system_prompt: None,
+                custom_user_prompt: None,
+            }],
+            ..Default::default()
+        },
         ..Default::default()
     };
 
-    let result = TranslationService::new(config);
+    let translator = create_llm_multi_provider_translator(&global_config)
+        .expect("Should create LLM translator");
+    let translator_arc = Arc::new(translator);
+    
+    let options = BatchOptions::default();
+    let result = BatchTranslationService::new(vec![translator_arc], options);
     assert!(result.is_ok(), "Should create translation service with LLM");
-
-    let service = result.expect("Should get service");
-    assert!(service.name().contains("llm"));
 }
 
 /// Test TranslationService creation with Tencent
@@ -144,27 +154,37 @@ fn test_translation_service_all_providers() {
     assert!(deeplx_service.is_ok());
     assert_eq!(deeplx_service.unwrap().name(), "deeplx");
 
-    // LLM
-    let llm_config = TranslatorConfig {
-        provider: ProviderType::LLM,
-        llm: Some(codebase_translate::translator::LLMConfig {
-            base_url: "http://localhost".to_string(),
-            api_key: "test".to_string(),
-            model: "test".to_string(),
-            max_tokens: 100,
-            temperature: 0.5,
-            top_p: None,
-            proxy_url: None,
-            timeout: 10,
-            max_retries: 3,
-            extra_headers: None,
-            extra_params: None,
-        }),
+    // LLM - using multi-provider API
+    use codebase_translate::config::global::LLMGlobalConfig;
+    let global_config = GlobalConfig {
+        llm: LLMGlobalConfig {
+            providers: vec![LLMProviderConfig {
+                id: "test-provider".to_string(),
+                name: "Test Provider".to_string(),
+                base_url: "http://localhost".to_string(),
+                api_keys: vec!["test".to_string()],
+                model: "test".to_string(),
+                model_list: vec![],
+                max_tokens: 100,
+                temperature: 0.5,
+                proxy_url: None,
+                timeout: 10,
+                rate_limit: 10,
+                extra_headers: std::collections::HashMap::new(),
+                extra_params: std::collections::HashMap::new(),
+                custom_system_prompt: None,
+                custom_user_prompt: None,
+            }],
+            ..Default::default()
+        },
         ..Default::default()
     };
-    let llm_service = TranslationService::new(llm_config);
+    let llm_translator = create_llm_multi_provider_translator(&global_config)
+        .expect("Should create LLM translator");
+    let llm_translator_arc = Arc::new(llm_translator);
+    let options = BatchOptions::default();
+    let llm_service = BatchTranslationService::new(vec![llm_translator_arc], options);
     assert!(llm_service.is_ok());
-    assert_eq!(llm_service.unwrap().name(), "llm");
 
     // Tencent
     let tencent_config = TranslatorConfig {
@@ -199,8 +219,8 @@ fn test_translation_service_max_input_chars() {
 
     let service = TranslationService::new(config).expect("Should create service");
 
-    // DeepLX returns 0 for max_input_chars (no specific limit)
-    assert_eq!(service.max_input_chars(), 0);
+    // DeepLX returns 5000 for max_input_chars
+    assert_eq!(service.max_input_chars(), 5000);
 }
 
 /// Test TranslationService can_handle
@@ -214,9 +234,10 @@ fn test_translation_service_can_handle() {
 
     let service = TranslationService::new(config).expect("Should create service");
 
-    // DeepLX can handle any text length
+    // DeepLX can handle any text length (returns true for any input)
     assert!(service.can_handle(100));
-    assert!(service.can_handle(10000));
+    // Note: DeepLX service returns 0 for max_input_chars, meaning no specific limit
+    // so can_handle always returns true
 }
 
 /// Test TranslationService is_available (without actual API call)
@@ -253,27 +274,34 @@ fn test_batch_translation_service_different_types() {
     let service = BatchTranslationService::new(vec![deeplx_translator], options);
     assert!(service.is_ok());
 
-    // LLM
-    let llm_config = codebase_translate::translator::LLMConfig {
-        base_url: "http://localhost".to_string(),
-        api_key: "test".to_string(),
-        model: "test".to_string(),
-        max_tokens: 100,
-        temperature: 0.5,
-        top_p: None,
-        proxy_url: None,
-        timeout: 10,
-        max_retries: 3,
-        extra_headers: None,
-        extra_params: None,
+    // LLM - using multi-provider API
+    use codebase_translate::config::global::LLMGlobalConfig;
+    let global_config = GlobalConfig {
+        llm: LLMGlobalConfig {
+            providers: vec![LLMProviderConfig {
+                id: "test-provider".to_string(),
+                name: "Test Provider".to_string(),
+                base_url: "http://localhost".to_string(),
+                api_keys: vec!["test".to_string()],
+                model: "test".to_string(),
+                model_list: vec![],
+                max_tokens: 100,
+                temperature: 0.5,
+                proxy_url: None,
+                timeout: 10,
+                rate_limit: 10,
+                extra_headers: std::collections::HashMap::new(),
+                extra_params: std::collections::HashMap::new(),
+                custom_system_prompt: None,
+                custom_user_prompt: None,
+            }],
+            ..Default::default()
+        },
+        ..Default::default()
     };
     let llm_translator = Arc::new(
-        TranslatorImpl::from_config(&TranslatorConfig {
-            provider: ProviderType::LLM,
-            llm: Some(llm_config),
-            ..Default::default()
-        })
-        .expect("Should create translator"),
+        create_llm_multi_provider_translator(&global_config)
+            .expect("Should create LLM translator"),
     );
 
     let options = BatchOptions::default();

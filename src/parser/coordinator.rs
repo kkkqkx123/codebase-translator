@@ -83,8 +83,8 @@ impl ParserCoordinator {
         Self::with_extraction_config(config, extraction_config, filter)
     }
 
-    /// Creates a new parser coordinator with unified configuration.
-    pub fn with_unified_config(config: ParserConfig) -> Result<Self> {
+    /// Creates a new parser coordinator with parser configuration.
+    pub fn with_parser_config(config: ParserConfig) -> Result<Self> {
         use crate::parser::filtering::default_filter;
 
         let extraction_config = ExtractionConfig {

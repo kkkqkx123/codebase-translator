@@ -77,9 +77,9 @@ Total files: 1
 Total matches: 35
 
 Patterns used:
-  - docstring: 8
   - comment: 11
   - string_literal: 16
+  - docstring: 8
 
 By category:
   - other: 19

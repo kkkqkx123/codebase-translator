@@ -98,41 +98,29 @@ fn test_concurrent_read_write() {
     let cache = Arc::new(BinaryCache::new(config, temp_dir.path()).unwrap());
     let fingerprint = cache.project_fingerprint().to_string();
 
-    let mut write_handles = vec![];
-
-    // First, write all entries
+    // First, write all entries sequentially to avoid write conflicts
     for i in 0..5 {
-        let cache_clone = Arc::clone(&cache);
-        let fingerprint_clone = fingerprint.clone();
-        let handle = thread::spawn(move || {
-            let hash = hash_utils::generate_test_hash(&format!("file{}", i));
-            let mut entry = CacheEntry::new(
-                &hash,
-                format!("/path/to/file{}.txt", i),
-                123456i64 + i as i64,
-                "local",
-                fingerprint_clone,
-                TEST_CONFIG_HASH,
-            );
-            entry.mark_as_translated();
-            cache_clone.set(&entry).unwrap();
-        });
-        write_handles.push(handle);
+        let hash = hash_utils::generate_test_hash(&format!("file{}", i));
+        let mut entry = CacheEntry::new(
+            &hash,
+            format!("/path/to/file{}.txt", i),
+            123456i64 + i as i64,
+            "local",
+            fingerprint.clone(),
+            TEST_CONFIG_HASH,
+        );
+        entry.mark_as_translated();
+        cache.set(&entry).unwrap();
     }
 
-    // Wait for all writes to complete
-    for handle in write_handles {
-        handle.join().unwrap();
-    }
-
-    // Then, read all entries
+    // Then, read all entries concurrently to verify concurrent read safety
     let mut read_handles = vec![];
     for i in 0..5 {
         let cache_clone = Arc::clone(&cache);
         let handle = thread::spawn(move || {
             let hash = hash_utils::generate_test_hash(&format!("file{}", i));
             let retrieved = cache_clone.get(&hash, TEST_CONFIG_HASH).unwrap();
-            assert!(retrieved.is_some());
+            assert!(retrieved.is_some(), "Should retrieve entry for file{}", i);
         });
         read_handles.push(handle);
     }

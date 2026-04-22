@@ -15,7 +15,7 @@ fn test_format_macro_chinese_extraction() {
     };
 
     let coordinator =
-        ParserCoordinator::with_config(config).expect("Failed to create coordinator");
+        ParserCoordinator::with_parser_config(config).expect("Failed to create coordinator");
 
     // Test Rust code with format! macro containing Chinese
     let content = r#"

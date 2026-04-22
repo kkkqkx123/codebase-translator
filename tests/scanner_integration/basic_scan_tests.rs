@@ -130,7 +130,7 @@ fn test_scan_nonexistent_directory() {
 }
 
 #[test]
-fn test_scan_file_instead_of_directory() {
+fn test_scan_single_file() {
     let scanner = FSScanner::new();
 
     let file_path = PathBuf::from(FIXTURES_DIR).join("simple_rust.rs");
@@ -148,8 +148,16 @@ fn test_scan_file_instead_of_directory() {
 
     let result = scanner.scan(opts);
     assert!(
-        result.is_err(),
-        "Scan should fail when path is a file, not directory"
+        result.is_ok(),
+        "Scan should succeed when path is a single file"
+    );
+
+    let entries = result.expect("Should get scan results");
+    assert_eq!(entries.len(), 1, "Should find exactly one file");
+    assert_eq!(
+        entries[0].relative_path.to_string_lossy(),
+        "simple_rust.rs",
+        "Should find the correct file"
     );
 }
 

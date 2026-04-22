@@ -153,11 +153,12 @@ fn test_logger_validate_config_file_without_path() {
     output.push_str(&format!("Config: {:?}\n", config));
     output.push_str(&format!("Validation result: {:?}\n", result));
 
+    // File output without explicit path should use default path, validation should pass
     assert!(
-        result.is_err(),
-        "file config without path should be invalid"
+        result.is_ok(),
+        "file config without path should be valid (uses default path)"
     );
-    output.push_str("\nfile config without path validation passed (correctly rejected)!\n");
+    output.push_str("\nfile config without path validation passed (uses default path)!\n");
     write_test_output("test_logger_validate_config_file_without_path.txt", &output);
 }
 

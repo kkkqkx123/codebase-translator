@@ -2,6 +2,6 @@ Logger Config Validation Test - file without path
 ===================================================
 
 Config: LoggingConfig { level: "info", output: "file", file: None, format: "pretty" }
-Validation result: Err(Config("File output requires a file path"))
+Validation result: Ok(())
 
-file config without path validation passed (correctly rejected)!
+file config without path validation passed (uses default path)!
