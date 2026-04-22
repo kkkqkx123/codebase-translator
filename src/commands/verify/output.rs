@@ -210,10 +210,12 @@ impl OutputFormatter {
     }
 
     fn truncate_text(text: &str, max_len: usize) -> String {
-        if text.len() <= max_len {
+        let char_count = text.chars().count();
+        if char_count <= max_len {
             text.to_string()
         } else {
-            format!("{}...", &text[..max_len.saturating_sub(3)])
+            let truncated: String = text.chars().take(max_len.saturating_sub(3)).collect();
+            format!("{}...", truncated)
         }
     }
 }

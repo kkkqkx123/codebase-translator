@@ -15,7 +15,7 @@ fn test_parse_chinese_rust_file() {
     };
 
     let coordinator =
-        ParserCoordinator::with_unified_config(config).expect("Failed to create coordinator");
+        ParserCoordinator::with_config(config).expect("Failed to create coordinator");
 
     // Load the Chinese Rust file from main_integration fixtures
     let content = fs::read_to_string("tests/main_integration/fixtures/simple_rust.rs")

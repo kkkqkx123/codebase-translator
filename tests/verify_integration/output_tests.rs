@@ -567,3 +567,52 @@ fn test_output_formatter_unicode() {
     assert!(output.contains("你好世界"));
     assert!(output.contains("🌍"));
 }
+
+#[test]
+fn test_output_formatter_chinese_truncation() {
+    // Test that Chinese text (multi-byte UTF-8 characters) is properly truncated
+    // without causing "byte index is not a char boundary" panic
+    let chinese_text = "这是一个很长的中文文本，用于测试截断功能是否能正确处理多字节字符";
+    let matches = vec![create_test_match(
+        "test.rs",
+        "comment",
+        PatternType::Builtin,
+        "other",
+        chinese_text,
+        1,
+        4,
+    )];
+    let summary = create_test_summary(1, 1);
+
+    // Test table format with truncation (max_len is 60 for non-detailed mode)
+    let output = OutputFormatter::format(&matches, &summary, OutputFormat::Table, false, false)
+        .expect("Failed to format output");
+
+    // Should contain the beginning of the Chinese text
+    assert!(output.contains("这是一个"));
+    // Should not panic - this is the main test
+}
+
+#[test]
+fn test_output_formatter_chinese_truncation_detailed() {
+    // Test Chinese text truncation in detailed mode (max_len is 40)
+    let chinese_text = "TomlParserManager - 管理 TOML 解析器的生命周期，提供预加载模式";
+    let matches = vec![create_test_match(
+        "test.rs",
+        "comment",
+        PatternType::Builtin,
+        "other",
+        chinese_text,
+        1,
+        4,
+    )];
+    let summary = create_test_summary(1, 1);
+
+    // Test table format with truncation in detailed mode
+    let output = OutputFormatter::format(&matches, &summary, OutputFormat::Table, true, false)
+        .expect("Failed to format output");
+
+    // Should contain the beginning of the text
+    assert!(output.contains("TomlParserManager"));
+    // Should not panic - this is the main test
+}

@@ -32,11 +32,13 @@
 **文件**: `src/writer/file.rs`
 
 **优化原因**:
+
 - 文件写入是 I/O 密集型操作
 - 写入多个文件时，可以并发执行
 - 当前 `ConcurrentWriter` 已经使用 `spawn_blocking`，但底层的 `FileWriter` 仍然是同步的
 
 **优化方案**:
+
 ```rust
 use tokio::fs;
 use tokio::io::AsyncWriteExt;
@@ -65,7 +67,7 @@ impl AsyncFileWriter {
         let modified_content = normalize_line_ending(&modified_content, line_ending);
 
         self.write_file_atomically_async(file, &content, &modified_content).await?;
-        
+
         Ok(())
     }
 
@@ -103,11 +105,13 @@ impl AsyncFileWriter {
 **文件**: `src/cache/binary.rs`
 
 **优化原因**:
+
 - 缓存读写是频繁的 I/O 操作
 - 可以异步加载和保存缓存
 - 当前使用 `RwLock` + 同步文件操作，会阻塞线程
 
 **优化方案**:
+
 ```rust
 use tokio::fs;
 use tokio::sync::RwLock;
@@ -235,11 +239,13 @@ impl BinaryCache {
 **文件**: `src/main.rs`
 
 **优化原因**:
+
 - 整个流程是 I/O 密集型的（扫描、读取、解析、翻译、写入）
 - 使用异步可以充分利用等待时间
 - 当前 `TranslationService` 已经有独立的 Tokio runtime，但主流程是同步的
 
 **优化方案**:
+
 ```rust
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -355,7 +361,7 @@ async fn translate_directory_async(path: &str, config: &ProjectConfig) -> Result
 
     let files = scanner.scan(scan_options)?;
 
-    let coordinator = ParserCoordinator::with_unified_config(
+    let coordinator = ParserCoordinator::with_config(
         codebase_translate::parser::tree_sitter::ParserConfig::default()
     )?;
 
@@ -393,11 +399,13 @@ async fn translate_directory_async(path: &str, config: &ProjectConfig) -> Result
 **文件**: `src/parser/coordinator/coordinator.rs`
 
 **优化原因**:
+
 - Tree-sitter 解析是 CPU 密集型操作
 - 多个文件的解析是独立的，可以并行
 - 不涉及 I/O，纯 CPU 计算
 
 **优化方案**:
+
 ```rust
 use rayon::prelude::*;
 
@@ -420,6 +428,7 @@ impl ParserCoordinator {
 ```
 
 **预期收益**:
+
 - 小型项目 (<100文件): 5-10% 提升
 - 中型项目 (100-1000文件): 30-50% 提升
 - 大型项目 (1000+文件): 2-4x 提升
@@ -433,11 +442,13 @@ impl ParserCoordinator {
 **文件**: `src/encoding/detector.rs`
 
 **优化原因**:
+
 - 编码检测是 CPU 密集型操作（启发式算法）
 - 多个文件的编码检测是独立的
 - 不涉及 I/O（假设文件内容已在内存中）
 
 **优化方案**:
+
 ```rust
 use rayon::prelude::*;
 
@@ -459,6 +470,7 @@ pub fn detect_encodings_parallel(
 ```
 
 **预期收益**:
+
 - 小型项目: 5-10% 提升
 - 中型项目: 20-30% 提升
 - 大型项目: 3-5x 提升
@@ -474,6 +486,7 @@ pub fn detect_encodings_parallel(
 **文件**: `src/scanner/walker.rs`
 
 **不优化原因**:
+
 - `walkdir` 已经高度优化，使用系统调用高效遍历
 - 并行扫描会带来额外的复杂度和竞争
 - 文件系统 I/O 本身有瓶颈，并行化收益有限
@@ -486,6 +499,7 @@ pub fn detect_encodings_parallel(
 **文件**: `src/config/loader.rs`
 
 **不优化原因**:
+
 - 配置文件通常很小，加载很快
 - 只在启动时加载一次
 - 并行化收益微乎其微
@@ -497,6 +511,7 @@ pub fn detect_encodings_parallel(
 **当前状态**: 使用 `tracing`
 
 **不优化原因**:
+
 - `tracing` 已经有异步支持（`tracing-appender`）
 - 日志记录不是性能瓶颈
 - 过度优化会增加复杂度
@@ -509,6 +524,7 @@ pub fn detect_encodings_parallel(
 **文件**: `src/parser/core/string_processor.rs`
 
 **不优化原因**:
+
 - 字符串处理通常很快
 - 并行化开销可能超过收益
 - 不是性能瓶颈
@@ -520,6 +536,7 @@ pub fn detect_encodings_parallel(
 **当前状态**: 同步执行
 
 **不优化原因**:
+
 - 查询执行通常很快
 - 单个文件的查询不适合并行化
 - 应该在文件级别并行化（已在上面提到）
@@ -561,13 +578,13 @@ pub fn detect_encodings_parallel(
 
 ## 性能影响预估
 
-| 优化项 | 小型项目 (<100文件) | 中型项目 (100-1000文件) | 大型项目 (1000+文件) |
-|--------|---------------------|------------------------|----------------------|
-| 主工作流异步化 | 10-20% 提升 | 20-30% 提升 | 30-50% 提升 |
-| 文件解析并行化 | 5-10% 提升 | 30-50% 提升 | 2-4x 提升 |
-| 编码检测并行化 | 5-10% 提升 | 20-30% 提升 | 3-5x 提升 |
-| 文件写入异步化 | 5-10% 提升 | 10-20% 提升 | 15-25% 提升 |
-| 缓存操作异步化 | 5-10% 提升 | 10-20% 提升 | 15-25% 提升 |
+| 优化项         | 小型项目 (<100文件) | 中型项目 (100-1000文件) | 大型项目 (1000+文件) |
+| -------------- | ------------------- | ----------------------- | -------------------- |
+| 主工作流异步化 | 10-20% 提升         | 20-30% 提升             | 30-50% 提升          |
+| 文件解析并行化 | 5-10% 提升          | 30-50% 提升             | 2-4x 提升            |
+| 编码检测并行化 | 5-10% 提升          | 20-30% 提升             | 3-5x 提升            |
+| 文件写入异步化 | 5-10% 提升          | 10-20% 提升             | 15-25% 提升          |
+| 缓存操作异步化 | 5-10% 提升          | 10-20% 提升             | 15-25% 提升          |
 
 ## 注意事项
 
@@ -580,26 +597,29 @@ pub fn detect_encodings_parallel(
 ## 实施计划
 
 ### 阶段 1: 高优先级优化（立即）
+
 - [ ] 文件解析并行化（Rayon）
 - [ ] 主工作流异步化（Tokio）
 
 ### 阶段 2: 中优先级优化（短期）
+
 - [ ] 编码检测并行化（Rayon）
 - [ ] 文件写入异步化（Tokio）
 
 ### 阶段 3: 低优先级优化（长期）
+
 - [ ] 缓存操作异步化（Tokio）
 - [ ] 根据实际使用情况进一步优化
 
 ## 总结
 
-| 模块 | 使用工具 | 原因 | 优先级 | 预期收益 |
-|------|---------|------|--------|----------|
-| 文件解析 | Rayon | CPU 密集，独立任务 | 🔴 高 | 2-4x |
-| 主工作流 | Tokio | I/O 密集，整体流程 | 🔴 高 | 30-50% |
-| 编码检测 | Rayon | CPU 密集，独立任务 | 🟡 中 | 3-5x |
-| 文件写入 | Tokio | I/O 密集，并发写入 | 🟡 中 | 15-25% |
-| 缓存操作 | Tokio | I/O 密集，频繁访问 | 🟢 低 | 10-20% |
-| 文件扫描 | - | walkdir 已优化 | ❌ 不优化 | - |
-| 配置加载 | - | 一次性操作 | ❌ 不优化 | - |
-| 日志记录 | - | tracing 已支持 | ❌ 不优化 | - |
+| 模块     | 使用工具 | 原因               | 优先级    | 预期收益 |
+| -------- | -------- | ------------------ | --------- | -------- |
+| 文件解析 | Rayon    | CPU 密集，独立任务 | 🔴 高     | 2-4x     |
+| 主工作流 | Tokio    | I/O 密集，整体流程 | 🔴 高     | 30-50%   |
+| 编码检测 | Rayon    | CPU 密集，独立任务 | 🟡 中     | 3-5x     |
+| 文件写入 | Tokio    | I/O 密集，并发写入 | 🟡 中     | 15-25%   |
+| 缓存操作 | Tokio    | I/O 密集，频繁访问 | 🟢 低     | 10-20%   |
+| 文件扫描 | -        | walkdir 已优化     | ❌ 不优化 | -        |
+| 配置加载 | -        | 一次性操作         | ❌ 不优化 | -        |
+| 日志记录 | -        | tracing 已支持     | ❌ 不优化 | -        |

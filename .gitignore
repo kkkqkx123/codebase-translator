@@ -6,3 +6,4 @@ go.sum
 tests/hurl
 target
 Cargo.lock
+.translator

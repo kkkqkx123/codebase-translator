@@ -1,3 +1,701 @@
 2026-04-21T05:42:21.064453Z  INFO codebase_translate::commands::validate: Validating configuration
 2026-04-21T05:42:21.064573Z  INFO codebase_translate::commands::validate: Using DeepLX provider at: https://api.deeplx.org
 2026-04-21T05:42:21.064580Z  INFO codebase_translate::commands::validate: Configuration is valid
+2026-04-22T08:31:38.368054Z  INFO codebase_translate::commands::verify::args: Starting verification of extraction rules path=.
+2026-04-22T08:31:38.368320Z  INFO codebase_translate::scanner::walker: Checking path type path=\\?\E:\project\codebase-translator is_file=false is_dir=true
+2026-04-22T08:31:38.368507Z  INFO codebase_translate::scanner::walker: Starting directory scan: \\?\E:\project\codebase-translator
+2026-04-22T08:31:38.460920Z  INFO codebase_translate::commands::verify::args: Scanned files files_found=229
+2026-04-22T08:31:38.462788Z  INFO codebase_translate::parser::regex::custom_pattern_matcher: Custom pattern matcher created successfully name=todo_pattern
+2026-04-22T08:31:38.462920Z  INFO codebase_translate::parser::regex::custom_pattern_matcher: Custom pattern matcher created successfully name=custom_error_message
+2026-04-22T08:31:38.463070Z  INFO codebase_translate::parser::regex::custom_pattern_matcher: Custom pattern matcher created successfully name=custom_log_message
+2026-04-22T08:31:38.463198Z  INFO codebase_translate::parser::regex::custom_pattern_matcher: Custom pattern matcher created successfully name=config_message
+2026-04-22T08:31:38.463375Z  INFO codebase_translate::parser::regex::custom_pattern_matcher: Custom pattern matcher created successfully name=note_pattern
+2026-04-22T08:31:38.771436Z  INFO codebase_translate::commands::verify::args: Extracted matches total_matches=12189
+2026-04-22T08:31:38.771591Z  INFO codebase_translate::commands::verify::args: Filtered matches filtered_matches=12189
+2026-04-22T08:31:41.794850Z  INFO codebase_translate::commands::verify::args: Verification completed successfully
+2026-04-22T09:11:07.765264Z  INFO codebase_translate::commands::translate: Starting application name="codebase-translate" version="0.1.0"
+2026-04-22T09:11:07.765317Z  INFO codebase_translate::commands::translate: Translating directory path=.
+2026-04-22T09:11:07.765319Z  INFO codebase_translate::commands::translate: Translation configuration target_lang=en provider=deeplx
+2026-04-22T09:11:07.765365Z  INFO codebase_translate::workflow::executor: Starting translation workflow root_path=. include_patterns=22 exclude_patterns=15 respect_gitignore=true follow_symlinks=false
+2026-04-22T09:11:07.765372Z  INFO codebase_translate::workflow::executor: Step 1: Scanning directory path=.
+2026-04-22T09:11:07.765541Z  INFO codebase_translate::scanner::walker: Checking path type path=\\?\E:\project\codebase-translator is_file=false is_dir=true
+2026-04-22T09:11:07.765718Z  INFO codebase_translate::scanner::walker: Starting directory scan: \\?\E:\project\codebase-translator
+2026-04-22T09:11:07.813122Z  INFO codebase_translate::workflow::executor: File scan completed files_count=229
+2026-04-22T09:11:07.813173Z  INFO codebase_translate::cache: Creating hierarchical cache instance cache_type=local cache_dir=.
+2026-04-22T09:11:07.813318Z  INFO codebase_translate::cache::binary: Creating binary cache cache_file=.\.translator\cache.bin mode=Local enabled=true
+2026-04-22T09:11:08.411760Z  INFO codebase_translate::cache::hierarchical: Loaded hierarchical cache cache_dir=.\tests\placeholder-test\.translator
+2026-04-22T09:11:08.415018Z  INFO codebase_translate::cache::hierarchical: Loaded hierarchical cache cache_dir=.\tests\temp\.translator
+2026-04-22T09:11:08.416711Z  INFO codebase_translate::translator: Creating translation service with all enabled providers enabled_providers=["deeplx", "llm", "tencent"]
+2026-04-22T09:11:08.416734Z  INFO codebase_translate::translator::r#trait: Creating translator from configuration provider=DeepLX
+2026-04-22T09:11:08.416920Z  INFO codebase_translate::translator::deeplx: DeepLX translator created api_url=https://api.deeplx.org
+2026-04-22T09:11:08.416925Z  INFO codebase_translate::translator::r#trait: Translator created successfully provider=DeepLX
+2026-04-22T09:11:08.416929Z  INFO codebase_translate::translator: Translator created successfully provider=deeplx
+2026-04-22T09:11:08.416942Z  INFO codebase_translate::translator: Creating MultiProviderTranslator with valid LLM providers valid_provider_count=1 total_provider_count=1
+2026-04-22T09:11:08.416971Z  INFO codebase_translate::translator::llm::provider: Created LLM provider provider_id=silicon base_url=https://api.siliconflow.cn/v1 model=tencent/Hunyuan-MT-7B max_tokens=8192 max_input_chars=5874 failure_threshold=3
+2026-04-22T09:11:08.416987Z  INFO codebase_translate::translator::llm::provider: Created LLM provider provider_id=silicon base_url=https://api.siliconflow.cn/v1 model=THUDM/GLM-4-9B-0414 max_tokens=8192 max_input_chars=5874 failure_threshold=3
+2026-04-22T09:11:08.417001Z  INFO codebase_translate::translator::llm::provider: Created LLM provider provider_id=silicon base_url=https://api.siliconflow.cn/v1 model=Qwen/Qwen2.5-7B-Instruct max_tokens=8192 max_input_chars=5874 failure_threshold=3
+2026-04-22T09:11:08.417019Z  INFO codebase_translate::translator::llm::routing: Created ProviderRouter with 3 providers, capacity_threshold: 5874, total_rate_limit: 120, strategy: SmoothRateBasedRoundRobin
+2026-04-22T09:11:08.417024Z  INFO codebase_translate::translator::llm::multi_translator: Created MultiProviderTranslator with 3 providers, max_retries: 3, capacity_threshold: 5874 chars
+2026-04-22T09:11:08.417026Z  INFO codebase_translate::translator: LLM MultiProviderTranslator created successfully provider=llm
+2026-04-22T09:11:08.417028Z  INFO codebase_translate::translator::r#trait: Creating translator from configuration provider=Tencent
+2026-04-22T09:11:08.417040Z  INFO codebase_translate::translator::tencent: Tencent translator created with region: ap-guangzhou
+2026-04-22T09:11:08.417042Z  INFO codebase_translate::translator::r#trait: Translator created successfully provider=Tencent
+2026-04-22T09:11:08.417042Z  INFO codebase_translate::translator: Translator created successfully provider=tencent
+2026-04-22T09:11:08.617079Z  INFO codebase_translate::translator::batch: Batch translator created with multiple providers translator_count=3 rate_limiter_enabled=true semaphore_permits=5
+2026-04-22T09:11:08.617508Z  INFO codebase_translate::translator::service: Translation service created with batch translator
+2026-04-22T09:11:08.617515Z  INFO codebase_translate::translator: Translation service created successfully with multiple providers translator_count=3
+2026-04-22T09:11:08.617523Z  INFO codebase_translate::parser: Creating parser coordinator extract_comments=true extract_docstrings=true extract_strings=true
+2026-04-22T09:11:08.620216Z  INFO codebase_translate::parser::regex::custom_pattern_matcher: Custom pattern matcher created successfully name=todo_pattern
+2026-04-22T09:11:08.620380Z  INFO codebase_translate::parser::regex::custom_pattern_matcher: Custom pattern matcher created successfully name=custom_error_message
+2026-04-22T09:11:08.620541Z  INFO codebase_translate::parser::regex::custom_pattern_matcher: Custom pattern matcher created successfully name=custom_log_message
+2026-04-22T09:11:08.620662Z  INFO codebase_translate::parser::regex::custom_pattern_matcher: Custom pattern matcher created successfully name=config_message
+2026-04-22T09:11:08.620794Z  INFO codebase_translate::parser::regex::custom_pattern_matcher: Custom pattern matcher created successfully name=note_pattern
+2026-04-22T09:11:08.620810Z  INFO codebase_translate::writer: Creating file writer preview_only=false backup=true
+2026-04-22T09:11:08.622955Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\scripts\detect_cjk.py total_units=44 translatable_units=44
+2026-04-22T09:11:08.622975Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\scripts\detect_cjk.py units_to_translate=44 empty_filtered=0
+2026-04-22T09:11:08.622992Z  INFO codebase_translate::translator::batch: Starting batch translation total_texts=44 batch_size=50 total_batches=1
+2026-04-22T09:12:03.581170Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=44 success_count=44 failed_count=0 total_batches=1 processing_time_ms=54958 average_latency_ms=54958.0 total_chars=3274
+2026-04-22T09:12:03.581245Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\scripts\detect_cjk.py translated_units=44 api_calls=44
+2026-04-22T09:12:03.582637Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\scripts\detect_cjk.py
+2026-04-22T09:12:03.583170Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\scripts\detect_cjk.py translation_units=44
+2026-04-22T09:12:03.584431Z  INFO codebase_translate::writer::file: Creating backup file=\\?\E:\project\codebase-translator\scripts\detect_cjk.py backup=.\.translator\backups\detect_cjk_20260422_091203.bak.py
+2026-04-22T09:12:03.587207Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\scripts\detect_cjk.py
+2026-04-22T09:12:03.587243Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\scripts\detect_cjk.py
+2026-04-22T09:12:03.587771Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\scripts\detect_cjk.py total_units=44 translated_units=44
+2026-04-22T09:12:03.589067Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\cache\binary.rs total_units=0 translatable_units=0
+2026-04-22T09:12:03.589076Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\cache\binary.rs
+2026-04-22T09:12:03.589668Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\cache\binary.rs
+2026-04-22T09:12:03.589978Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\cache\hierarchical.rs total_units=0 translatable_units=0
+2026-04-22T09:12:03.589984Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\cache\hierarchical.rs
+2026-04-22T09:12:03.591047Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\cache\hierarchical.rs
+2026-04-22T09:12:03.591208Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\cache\mod.rs total_units=0 translatable_units=0
+2026-04-22T09:12:03.591214Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\cache\mod.rs
+2026-04-22T09:12:03.592033Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\cache\mod.rs
+2026-04-22T09:12:03.592274Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\cache\util.rs total_units=0 translatable_units=0
+2026-04-22T09:12:03.592280Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\cache\util.rs
+2026-04-22T09:12:03.592791Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\cache\util.rs
+2026-04-22T09:12:03.592944Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\commands\cache.rs total_units=0 translatable_units=0
+2026-04-22T09:12:03.592950Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\commands\cache.rs
+2026-04-22T09:12:03.593522Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\commands\cache.rs
+2026-04-22T09:12:03.594005Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\commands\clean.rs total_units=0 translatable_units=0
+2026-04-22T09:12:03.594012Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\commands\clean.rs
+2026-04-22T09:12:03.594579Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\commands\clean.rs
+2026-04-22T09:12:03.595165Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\commands\detect.rs total_units=0 translatable_units=0
+2026-04-22T09:12:03.595172Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\commands\detect.rs
+2026-04-22T09:12:03.595739Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\commands\detect.rs
+2026-04-22T09:12:03.595970Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\commands\init.rs total_units=0 translatable_units=0
+2026-04-22T09:12:03.595975Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\commands\init.rs
+2026-04-22T09:12:03.596500Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\commands\init.rs
+2026-04-22T09:12:03.596600Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\commands\mod.rs total_units=0 translatable_units=0
+2026-04-22T09:12:03.596604Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\commands\mod.rs
+2026-04-22T09:12:03.597118Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\commands\mod.rs
+2026-04-22T09:12:03.597404Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\commands\status.rs total_units=0 translatable_units=0
+2026-04-22T09:12:03.597410Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\commands\status.rs
+2026-04-22T09:12:03.598062Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\commands\status.rs
+2026-04-22T09:12:03.598297Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\commands\translate.rs total_units=0 translatable_units=0
+2026-04-22T09:12:03.598303Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\commands\translate.rs
+2026-04-22T09:12:03.598948Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\commands\translate.rs
+2026-04-22T09:12:03.599164Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\commands\validate.rs total_units=0 translatable_units=0
+2026-04-22T09:12:03.599171Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\commands\validate.rs
+2026-04-22T09:12:03.599944Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\commands\validate.rs
+2026-04-22T09:12:03.600335Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\commands\verify\args.rs total_units=0 translatable_units=0
+2026-04-22T09:12:03.600344Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\commands\verify\args.rs
+2026-04-22T09:12:03.601123Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\commands\verify\args.rs
+2026-04-22T09:12:03.601313Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\commands\verify\collector.rs total_units=0 translatable_units=0
+2026-04-22T09:12:03.601320Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\commands\verify\collector.rs
+2026-04-22T09:12:03.602088Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\commands\verify\collector.rs
+2026-04-22T09:12:03.602239Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\commands\verify\filter.rs total_units=0 translatable_units=0
+2026-04-22T09:12:03.602245Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\commands\verify\filter.rs
+2026-04-22T09:12:03.602981Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\commands\verify\filter.rs
+2026-04-22T09:12:03.603093Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\commands\verify\mod.rs total_units=0 translatable_units=0
+2026-04-22T09:12:03.603098Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\commands\verify\mod.rs
+2026-04-22T09:12:03.603762Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\commands\verify\mod.rs
+2026-04-22T09:12:03.604050Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\commands\verify\output.rs total_units=0 translatable_units=0
+2026-04-22T09:12:03.604058Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\commands\verify\output.rs
+2026-04-22T09:12:03.604772Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\commands\verify\output.rs
+2026-04-22T09:12:03.604955Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\commands\verify\stats.rs total_units=0 translatable_units=0
+2026-04-22T09:12:03.604961Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\commands\verify\stats.rs
+2026-04-22T09:12:03.605589Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\commands\verify\stats.rs
+2026-04-22T09:12:03.606021Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\config\env.rs total_units=0 translatable_units=0
+2026-04-22T09:12:03.606028Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\config\env.rs
+2026-04-22T09:12:03.606597Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\config\env.rs
+2026-04-22T09:12:03.608067Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\config\global.rs total_units=0 translatable_units=0
+2026-04-22T09:12:03.608075Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\config\global.rs
+2026-04-22T09:12:03.608806Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\config\global.rs
+2026-04-22T09:12:03.609502Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\config\hash.rs total_units=0 translatable_units=0
+2026-04-22T09:12:03.609512Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\config\hash.rs
+2026-04-22T09:12:03.610271Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\config\hash.rs
+2026-04-22T09:12:03.611059Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\config\loader.rs total_units=0 translatable_units=0
+2026-04-22T09:12:03.611066Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\config\loader.rs
+2026-04-22T09:12:03.611644Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\config\loader.rs
+2026-04-22T09:12:03.611768Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\config\mod.rs total_units=0 translatable_units=0
+2026-04-22T09:12:03.611773Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\config\mod.rs
+2026-04-22T09:12:03.612375Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\config\mod.rs
+2026-04-22T09:12:03.613193Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\config\project.rs total_units=0 translatable_units=0
+2026-04-22T09:12:03.613200Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\config\project.rs
+2026-04-22T09:12:03.613833Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\config\project.rs
+2026-04-22T09:12:03.614313Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\core\error.rs total_units=0 translatable_units=0
+2026-04-22T09:12:03.614322Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\core\error.rs
+2026-04-22T09:12:03.614943Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\core\error.rs
+2026-04-22T09:12:03.615148Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\core\mod.rs total_units=0 translatable_units=0
+2026-04-22T09:12:03.615153Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\core\mod.rs
+2026-04-22T09:12:03.615755Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\core\mod.rs
+2026-04-22T09:12:03.616331Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\core\models.rs total_units=0 translatable_units=0
+2026-04-22T09:12:03.616338Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\core\models.rs
+2026-04-22T09:12:03.616917Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\core\models.rs
+2026-04-22T09:12:03.617379Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\encoding\detector.rs total_units=2 translatable_units=2
+2026-04-22T09:12:03.617386Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\src\encoding\detector.rs units_to_translate=2 empty_filtered=0
+2026-04-22T09:12:03.617391Z  INFO codebase_translate::translator::batch: Starting batch translation total_texts=2 batch_size=50 total_batches=1
+2026-04-22T09:12:05.978549Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=2 success_count=2 failed_count=0 total_batches=1 processing_time_ms=2361 average_latency_ms=2361.0 total_chars=24
+2026-04-22T09:12:05.978576Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\src\encoding\detector.rs translated_units=2 api_calls=2
+2026-04-22T09:12:05.980549Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\src\encoding\detector.rs
+2026-04-22T09:12:05.981112Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\src\encoding\detector.rs translation_units=2
+2026-04-22T09:12:05.982020Z  INFO codebase_translate::writer::file: Creating backup file=\\?\E:\project\codebase-translator\src\encoding\detector.rs backup=.\.translator\backups\detector_20260422_091205.bak.rs
+2026-04-22T09:12:06.012127Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\src\encoding\detector.rs
+2026-04-22T09:12:06.012159Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\src\encoding\detector.rs
+2026-04-22T09:12:06.012885Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\src\encoding\detector.rs total_units=2 translated_units=2
+2026-04-22T09:12:06.013624Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\encoding\encoder.rs total_units=18 translatable_units=18
+2026-04-22T09:12:06.013635Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\src\encoding\encoder.rs units_to_translate=18 empty_filtered=0
+2026-04-22T09:12:06.013642Z  INFO codebase_translate::translator::batch: Starting batch translation total_texts=18 batch_size=50 total_batches=1
+2026-04-22T09:12:26.790638Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=18 success_count=18 failed_count=0 total_batches=1 processing_time_ms=20776 average_latency_ms=20776.0 total_chars=168
+2026-04-22T09:12:26.790658Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\src\encoding\encoder.rs translated_units=18 api_calls=18
+2026-04-22T09:12:26.791587Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\src\encoding\encoder.rs
+2026-04-22T09:12:26.791999Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\src\encoding\encoder.rs translation_units=18
+2026-04-22T09:12:26.793173Z  INFO codebase_translate::writer::file: Creating backup file=\\?\E:\project\codebase-translator\src\encoding\encoder.rs backup=.\.translator\backups\encoder_20260422_091226.bak.rs
+2026-04-22T09:12:26.823362Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\src\encoding\encoder.rs
+2026-04-22T09:12:26.823396Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\src\encoding\encoder.rs
+2026-04-22T09:12:26.824155Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\src\encoding\encoder.rs total_units=18 translated_units=18
+2026-04-22T09:12:26.824595Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\encoding\error.rs total_units=0 translatable_units=0
+2026-04-22T09:12:26.824604Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\encoding\error.rs
+2026-04-22T09:12:26.825411Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\encoding\error.rs
+2026-04-22T09:12:26.825602Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\encoding\mod.rs total_units=0 translatable_units=0
+2026-04-22T09:12:26.825609Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\encoding\mod.rs
+2026-04-22T09:12:26.826233Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\encoding\mod.rs
+2026-04-22T09:12:26.826536Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\encoding\types.rs total_units=0 translatable_units=0
+2026-04-22T09:12:26.826544Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\encoding\types.rs
+2026-04-22T09:12:26.827131Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\encoding\types.rs
+2026-04-22T09:12:26.827310Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\lib.rs total_units=0 translatable_units=0
+2026-04-22T09:12:26.827318Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\lib.rs
+2026-04-22T09:12:26.827924Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\lib.rs
+2026-04-22T09:12:26.828247Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\logger\config.rs total_units=0 translatable_units=0
+2026-04-22T09:12:26.828254Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\logger\config.rs
+2026-04-22T09:12:26.829050Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\logger\config.rs
+2026-04-22T09:12:26.829468Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\logger\mod.rs total_units=0 translatable_units=0
+2026-04-22T09:12:26.829476Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\logger\mod.rs
+2026-04-22T09:12:26.830104Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\logger\mod.rs
+2026-04-22T09:12:26.830367Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\main.rs total_units=0 translatable_units=0
+2026-04-22T09:12:26.830372Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\main.rs
+2026-04-22T09:12:26.830949Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\main.rs
+2026-04-22T09:12:26.831663Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\parser\coordinator.rs total_units=1 translatable_units=1
+2026-04-22T09:12:26.831670Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\src\parser\coordinator.rs units_to_translate=1 empty_filtered=0
+2026-04-22T09:12:26.831673Z  INFO codebase_translate::translator::batch: Starting batch translation total_texts=1 batch_size=50 total_batches=1
+2026-04-22T09:12:27.951898Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=1 success_count=1 failed_count=0 total_batches=1 processing_time_ms=1120 average_latency_ms=1120.0 total_chars=103
+2026-04-22T09:12:27.951918Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\src\parser\coordinator.rs translated_units=1 api_calls=1
+2026-04-22T09:12:27.953032Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\src\parser\coordinator.rs
+2026-04-22T09:12:27.953404Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\src\parser\coordinator.rs translation_units=1
+2026-04-22T09:12:27.954157Z  INFO codebase_translate::writer::file: Creating backup file=\\?\E:\project\codebase-translator\src\parser\coordinator.rs backup=.\.translator\backups\coordinator_20260422_091227.bak.rs
+2026-04-22T09:12:27.955045Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\src\parser\coordinator.rs
+2026-04-22T09:12:27.955053Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\src\parser\coordinator.rs
+2026-04-22T09:12:27.955596Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\src\parser\coordinator.rs total_units=1 translated_units=1
+2026-04-22T09:12:27.955804Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\parser\core\mod.rs total_units=0 translatable_units=0
+2026-04-22T09:12:27.955813Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\parser\core\mod.rs
+2026-04-22T09:12:27.956665Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\parser\core\mod.rs
+2026-04-22T09:12:27.956855Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\parser\core\parser_trait.rs total_units=0 translatable_units=0
+2026-04-22T09:12:27.956863Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\parser\core\parser_trait.rs
+2026-04-22T09:12:27.957553Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\parser\core\parser_trait.rs
+2026-04-22T09:12:27.957783Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\parser\core\position_tracker.rs total_units=0 translatable_units=0
+2026-04-22T09:12:27.957788Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\parser\core\position_tracker.rs
+2026-04-22T09:12:27.958405Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\parser\core\position_tracker.rs
+2026-04-22T09:12:27.959350Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\parser\core\string_processor.rs total_units=12 translatable_units=12
+2026-04-22T09:12:27.959363Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\src\parser\core\string_processor.rs units_to_translate=12 empty_filtered=0
+2026-04-22T09:12:27.959370Z  INFO codebase_translate::translator::batch: Starting batch translation total_texts=12 batch_size=50 total_batches=1
+2026-04-22T09:12:41.885208Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=12 success_count=12 failed_count=0 total_batches=1 processing_time_ms=13925 average_latency_ms=13925.0 total_chars=356
+2026-04-22T09:12:41.885229Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\src\parser\core\string_processor.rs translated_units=12 api_calls=12
+2026-04-22T09:12:41.886151Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\src\parser\core\string_processor.rs
+2026-04-22T09:12:41.886564Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\src\parser\core\string_processor.rs translation_units=12
+2026-04-22T09:12:41.887604Z  INFO codebase_translate::writer::file: Creating backup file=\\?\E:\project\codebase-translator\src\parser\core\string_processor.rs backup=.\.translator\backups\string_processor_20260422_091241.bak.rs
+2026-04-22T09:12:41.889406Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\src\parser\core\string_processor.rs
+2026-04-22T09:12:41.889421Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\src\parser\core\string_processor.rs
+2026-04-22T09:12:41.890043Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\src\parser\core\string_processor.rs total_units=12 translated_units=12
+2026-04-22T09:12:41.890449Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\parser\core\types\function_patterns.rs total_units=0 translatable_units=0
+2026-04-22T09:12:41.890460Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\parser\core\types\function_patterns.rs
+2026-04-22T09:12:41.891239Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\parser\core\types\function_patterns.rs
+2026-04-22T09:12:41.891380Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\parser\core\types\mod.rs total_units=0 translatable_units=0
+2026-04-22T09:12:41.891388Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\parser\core\types\mod.rs
+2026-04-22T09:12:41.891984Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\parser\core\types\mod.rs
+2026-04-22T09:12:41.892759Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\content.rs total_units=9 translatable_units=9
+2026-04-22T09:12:41.892770Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\content.rs units_to_translate=9 empty_filtered=0
+2026-04-22T09:12:41.892774Z  INFO codebase_translate::translator::batch: Starting batch translation total_texts=9 batch_size=50 total_batches=1
+2026-04-22T09:12:52.893493Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=9 success_count=9 failed_count=0 total_batches=1 processing_time_ms=11000 average_latency_ms=11000.0 total_chars=100
+2026-04-22T09:12:52.893518Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\content.rs translated_units=9 api_calls=9
+2026-04-22T09:12:52.894577Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\content.rs
+2026-04-22T09:12:52.895058Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\content.rs translation_units=9
+2026-04-22T09:12:52.896247Z  INFO codebase_translate::writer::file: Creating backup file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\content.rs backup=.\.translator\backups\content_20260422_091252.bak.rs
+2026-04-22T09:12:52.898521Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\content.rs
+2026-04-22T09:12:52.898542Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\content.rs
+2026-04-22T09:12:52.899076Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\content.rs total_units=9 translated_units=9
+2026-04-22T09:12:52.900211Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\detector.rs total_units=8 translatable_units=8
+2026-04-22T09:12:52.900223Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\detector.rs units_to_translate=8 empty_filtered=0
+2026-04-22T09:12:52.900228Z  INFO codebase_translate::translator::batch: Starting batch translation total_texts=8 batch_size=50 total_batches=1
+2026-04-22T09:13:01.937868Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=8 success_count=8 failed_count=0 total_batches=1 processing_time_ms=9037 average_latency_ms=9037.0 total_chars=104
+2026-04-22T09:13:01.937885Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\detector.rs translated_units=8 api_calls=8
+2026-04-22T09:13:01.939015Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\detector.rs
+2026-04-22T09:13:01.939504Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\detector.rs translation_units=8
+2026-04-22T09:13:01.940581Z  INFO codebase_translate::writer::file: Creating backup file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\detector.rs backup=.\.translator\backups\detector_20260422_091301.bak.rs
+2026-04-22T09:13:01.970548Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\detector.rs
+2026-04-22T09:13:01.970583Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\detector.rs
+2026-04-22T09:13:01.971299Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\detector.rs total_units=8 translated_units=8
+2026-04-22T09:13:01.972519Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\language_only.rs total_units=32 translatable_units=32
+2026-04-22T09:13:01.972530Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\language_only.rs units_to_translate=32 empty_filtered=0
+2026-04-22T09:13:01.972534Z  INFO codebase_translate::translator::batch: Starting batch translation total_texts=32 batch_size=50 total_batches=1
+2026-04-22T09:13:41.221629Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=32 success_count=32 failed_count=0 total_batches=1 processing_time_ms=39249 average_latency_ms=39249.0 total_chars=502
+2026-04-22T09:13:41.221651Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\language_only.rs translated_units=32 api_calls=32
+2026-04-22T09:13:41.222719Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\language_only.rs
+2026-04-22T09:13:41.223108Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\language_only.rs translation_units=32
+2026-04-22T09:13:41.223999Z  INFO codebase_translate::writer::file: Creating backup file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\language_only.rs backup=.\.translator\backups\language_only_20260422_091341.bak.rs
+2026-04-22T09:13:41.253750Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\language_only.rs
+2026-04-22T09:13:41.253785Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\language_only.rs
+2026-04-22T09:13:41.254508Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\language_only.rs total_units=32 translated_units=32
+2026-04-22T09:13:41.255226Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\mod.rs total_units=11 translatable_units=11
+2026-04-22T09:13:41.255236Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\mod.rs units_to_translate=11 empty_filtered=0
+2026-04-22T09:13:41.255243Z  INFO codebase_translate::translator::batch: Starting batch translation total_texts=11 batch_size=50 total_batches=1
+2026-04-22T09:13:54.330413Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=11 success_count=11 failed_count=0 total_batches=1 processing_time_ms=13075 average_latency_ms=13075.0 total_chars=152
+2026-04-22T09:13:54.330454Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\mod.rs translated_units=11 api_calls=11
+2026-04-22T09:13:54.331774Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\mod.rs
+2026-04-22T09:13:54.332187Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\mod.rs translation_units=11
+2026-04-22T09:13:54.332994Z  INFO codebase_translate::writer::file: Creating backup file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\mod.rs backup=.\.translator\backups\mod_20260422_091354.bak.rs
+2026-04-22T09:13:54.333983Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\mod.rs
+2026-04-22T09:13:54.333993Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\mod.rs
+2026-04-22T09:13:54.334478Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\mod.rs total_units=11 translated_units=11
+2026-04-22T09:13:54.334862Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\script.rs total_units=0 translatable_units=0
+2026-04-22T09:13:54.334872Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\script.rs
+2026-04-22T09:13:54.364774Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\script.rs
+2026-04-22T09:13:54.365818Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\strategy.rs total_units=11 translatable_units=11
+2026-04-22T09:13:54.365837Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\strategy.rs units_to_translate=11 empty_filtered=0
+2026-04-22T09:13:54.365845Z  INFO codebase_translate::translator::batch: Starting batch translation total_texts=11 batch_size=50 total_batches=1
+2026-04-22T09:14:07.848631Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=11 success_count=11 failed_count=0 total_batches=1 processing_time_ms=13482 average_latency_ms=13482.0 total_chars=145
+2026-04-22T09:14:07.848658Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\strategy.rs translated_units=11 api_calls=11
+2026-04-22T09:14:07.850136Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\strategy.rs
+2026-04-22T09:14:07.850885Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\strategy.rs translation_units=11
+2026-04-22T09:14:07.851906Z  INFO codebase_translate::writer::file: Creating backup file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\strategy.rs backup=.\.translator\backups\strategy_20260422_091407.bak.rs
+2026-04-22T09:14:07.853406Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\strategy.rs
+2026-04-22T09:14:07.853420Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\strategy.rs
+2026-04-22T09:14:07.853910Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\language\strategy.rs total_units=11 translated_units=11
+2026-04-22T09:14:07.854184Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\length.rs total_units=0 translatable_units=0
+2026-04-22T09:14:07.854191Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\length.rs
+2026-04-22T09:14:07.854846Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\length.rs
+2026-04-22T09:14:07.854984Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\mod.rs total_units=0 translatable_units=0
+2026-04-22T09:14:07.854990Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\mod.rs
+2026-04-22T09:14:07.855552Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\mod.rs
+2026-04-22T09:14:07.856111Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\pattern.rs total_units=0 translatable_units=0
+2026-04-22T09:14:07.856117Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\pattern.rs
+2026-04-22T09:14:07.856701Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\parser\filtering\checks\pattern.rs
+2026-04-22T09:14:07.857290Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\parser\filtering\composite.rs total_units=7 translatable_units=7
+2026-04-22T09:14:07.857300Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\src\parser\filtering\composite.rs units_to_translate=7 empty_filtered=0
+2026-04-22T09:14:07.857304Z  INFO codebase_translate::translator::batch: Starting batch translation total_texts=7 batch_size=50 total_batches=1
+2026-04-22T09:14:16.349708Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=7 success_count=7 failed_count=0 total_batches=1 processing_time_ms=8492 average_latency_ms=8492.0 total_chars=106
+2026-04-22T09:14:16.349739Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\src\parser\filtering\composite.rs translated_units=7 api_calls=7
+2026-04-22T09:14:16.351235Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\src\parser\filtering\composite.rs
+2026-04-22T09:14:16.351714Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\src\parser\filtering\composite.rs translation_units=7
+2026-04-22T09:14:16.352738Z  INFO codebase_translate::writer::file: Creating backup file=\\?\E:\project\codebase-translator\src\parser\filtering\composite.rs backup=.\.translator\backups\composite_20260422_091416.bak.rs
+2026-04-22T09:14:16.382749Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\src\parser\filtering\composite.rs
+2026-04-22T09:14:16.382787Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\src\parser\filtering\composite.rs
+2026-04-22T09:14:16.383543Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\src\parser\filtering\composite.rs total_units=7 translated_units=7
+2026-04-22T09:14:16.383876Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\parser\filtering\mod.rs total_units=0 translatable_units=0
+2026-04-22T09:14:16.383885Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\parser\filtering\mod.rs
+2026-04-22T09:14:16.385144Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\parser\filtering\mod.rs
+2026-04-22T09:14:16.385382Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\parser\filtering\traits.rs total_units=0 translatable_units=0
+2026-04-22T09:14:16.385497Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\parser\filtering\traits.rs
+2026-04-22T09:14:16.386469Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\parser\filtering\traits.rs
+2026-04-22T09:14:16.386703Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\parser\mod.rs total_units=0 translatable_units=0
+2026-04-22T09:14:16.386710Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\parser\mod.rs
+2026-04-22T09:14:16.387330Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\parser\mod.rs
+2026-04-22T09:14:16.387704Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\parser\regex\custom_pattern_matcher.rs total_units=0 translatable_units=0
+2026-04-22T09:14:16.387720Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\parser\regex\custom_pattern_matcher.rs
+2026-04-22T09:14:16.388299Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\parser\regex\custom_pattern_matcher.rs
+2026-04-22T09:14:16.388434Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\parser\regex\mod.rs total_units=0 translatable_units=0
+2026-04-22T09:14:16.388440Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\parser\regex\mod.rs
+2026-04-22T09:14:16.389213Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\parser\regex\mod.rs
+2026-04-22T09:14:16.389824Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\parser\regex\state_machine.rs total_units=0 translatable_units=0
+2026-04-22T09:14:16.389831Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\parser\regex\state_machine.rs
+2026-04-22T09:14:16.390840Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\parser\regex\state_machine.rs
+2026-04-22T09:14:16.392015Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\parser\scanner\character_scanner.rs total_units=7 translatable_units=7
+2026-04-22T09:14:16.392027Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\src\parser\scanner\character_scanner.rs units_to_translate=7 empty_filtered=0
+2026-04-22T09:14:16.392032Z  INFO codebase_translate::translator::batch: Starting batch translation total_texts=7 batch_size=50 total_batches=1
+2026-04-22T09:14:24.852143Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=7 success_count=7 failed_count=0 total_batches=1 processing_time_ms=8460 average_latency_ms=8460.0 total_chars=165
+2026-04-22T09:14:24.852176Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\src\parser\scanner\character_scanner.rs translated_units=7 api_calls=7
+2026-04-22T09:14:24.853787Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\src\parser\scanner\character_scanner.rs
+2026-04-22T09:14:24.854386Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\src\parser\scanner\character_scanner.rs translation_units=7
+2026-04-22T09:14:24.855223Z  INFO codebase_translate::writer::file: Creating backup file=\\?\E:\project\codebase-translator\src\parser\scanner\character_scanner.rs backup=.\.translator\backups\character_scanner_20260422_091424.bak.rs
+2026-04-22T09:14:24.856382Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\src\parser\scanner\character_scanner.rs
+2026-04-22T09:14:24.856397Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\src\parser\scanner\character_scanner.rs
+2026-04-22T09:14:24.856884Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\src\parser\scanner\character_scanner.rs total_units=7 translated_units=7
+2026-04-22T09:14:24.857681Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\parser\scanner\language.rs total_units=0 translatable_units=0
+2026-04-22T09:14:24.857694Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\parser\scanner\language.rs
+2026-04-22T09:14:24.858399Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\parser\scanner\language.rs
+2026-04-22T09:14:24.858609Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\parser\scanner\mod.rs total_units=0 translatable_units=0
+2026-04-22T09:14:24.858616Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\parser\scanner\mod.rs
+2026-04-22T09:14:24.859282Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\parser\scanner\mod.rs
+2026-04-22T09:14:24.860272Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\parser\scanner\placeholder.rs total_units=15 translatable_units=15
+2026-04-22T09:14:24.860282Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\src\parser\scanner\placeholder.rs units_to_translate=15 empty_filtered=0
+2026-04-22T09:14:24.860287Z  INFO codebase_translate::translator::batch: Starting batch translation total_texts=15 batch_size=50 total_batches=1
+2026-04-22T09:14:42.084477Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=15 success_count=15 failed_count=0 total_batches=1 processing_time_ms=17224 average_latency_ms=17224.0 total_chars=378
+2026-04-22T09:14:42.084501Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\src\parser\scanner\placeholder.rs translated_units=15 api_calls=15
+2026-04-22T09:14:42.085630Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\src\parser\scanner\placeholder.rs
+2026-04-22T09:14:42.086149Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\src\parser\scanner\placeholder.rs translation_units=15
+2026-04-22T09:14:42.087068Z  INFO codebase_translate::writer::file: Creating backup file=\\?\E:\project\codebase-translator\src\parser\scanner\placeholder.rs backup=.\.translator\backups\placeholder_20260422_091442.bak.rs
+2026-04-22T09:14:42.088118Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\src\parser\scanner\placeholder.rs
+2026-04-22T09:14:42.088131Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\src\parser\scanner\placeholder.rs
+2026-04-22T09:14:42.088595Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\src\parser\scanner\placeholder.rs total_units=15 translated_units=15
+2026-04-22T09:14:42.089176Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\parser\scanner\region.rs total_units=3 translatable_units=3
+2026-04-22T09:14:42.089188Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\src\parser\scanner\region.rs units_to_translate=3 empty_filtered=0
+2026-04-22T09:14:42.089193Z  INFO codebase_translate::translator::batch: Starting batch translation total_texts=3 batch_size=50 total_batches=1
+2026-04-22T09:14:45.567873Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=3 success_count=3 failed_count=0 total_batches=1 processing_time_ms=3478 average_latency_ms=3478.0 total_chars=42
+2026-04-22T09:14:45.567910Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\src\parser\scanner\region.rs translated_units=3 api_calls=3
+2026-04-22T09:14:45.569201Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\src\parser\scanner\region.rs
+2026-04-22T09:14:45.569606Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\src\parser\scanner\region.rs translation_units=3
+2026-04-22T09:14:45.570550Z  INFO codebase_translate::writer::file: Creating backup file=\\?\E:\project\codebase-translator\src\parser\scanner\region.rs backup=.\.translator\backups\region_20260422_091445.bak.rs
+2026-04-22T09:14:45.572217Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\src\parser\scanner\region.rs
+2026-04-22T09:14:45.572225Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\src\parser\scanner\region.rs
+2026-04-22T09:14:45.572708Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\src\parser\scanner\region.rs total_units=3 translated_units=3
+2026-04-22T09:14:45.573138Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\parser\scanner\replacer.rs total_units=5 translatable_units=5
+2026-04-22T09:14:45.573146Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\src\parser\scanner\replacer.rs units_to_translate=5 empty_filtered=0
+2026-04-22T09:14:45.573151Z  INFO codebase_translate::translator::batch: Starting batch translation total_texts=5 batch_size=50 total_batches=1
+2026-04-22T09:14:51.279085Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=5 success_count=5 failed_count=0 total_batches=1 processing_time_ms=5705 average_latency_ms=5705.0 total_chars=75
+2026-04-22T09:14:51.279118Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\src\parser\scanner\replacer.rs translated_units=5 api_calls=5
+2026-04-22T09:14:51.280352Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\src\parser\scanner\replacer.rs
+2026-04-22T09:14:51.280846Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\src\parser\scanner\replacer.rs translation_units=5
+2026-04-22T09:14:51.281766Z  INFO codebase_translate::writer::file: Creating backup file=\\?\E:\project\codebase-translator\src\parser\scanner\replacer.rs backup=.\.translator\backups\replacer_20260422_091451.bak.rs
+2026-04-22T09:14:51.311928Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\src\parser\scanner\replacer.rs
+2026-04-22T09:14:51.311964Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\src\parser\scanner\replacer.rs
+2026-04-22T09:14:51.312761Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\src\parser\scanner\replacer.rs total_units=5 translated_units=5
+2026-04-22T09:14:51.313362Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\reporter\default.rs total_units=0 translatable_units=0
+2026-04-22T09:14:51.313373Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\reporter\default.rs
+2026-04-22T09:14:51.314513Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\reporter\default.rs
+2026-04-22T09:14:51.314896Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\reporter\generator.rs total_units=0 translatable_units=0
+2026-04-22T09:14:51.314906Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\reporter\generator.rs
+2026-04-22T09:14:51.315562Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\reporter\generator.rs
+2026-04-22T09:14:51.315755Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\reporter\logger.rs total_units=0 translatable_units=0
+2026-04-22T09:14:51.315762Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\reporter\logger.rs
+2026-04-22T09:14:51.316343Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\reporter\logger.rs
+2026-04-22T09:14:51.316451Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\reporter\mod.rs total_units=0 translatable_units=0
+2026-04-22T09:14:51.316456Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\reporter\mod.rs
+2026-04-22T09:14:51.317033Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\reporter\mod.rs
+2026-04-22T09:14:51.317214Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\reporter\progress.rs total_units=0 translatable_units=0
+2026-04-22T09:14:51.317221Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\reporter\progress.rs
+2026-04-22T09:14:51.317826Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\reporter\progress.rs
+2026-04-22T09:14:51.317925Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\reporter\stats\error.rs total_units=0 translatable_units=0
+2026-04-22T09:14:51.317930Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\reporter\stats\error.rs
+2026-04-22T09:14:51.318765Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\reporter\stats\error.rs
+2026-04-22T09:14:51.318906Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\reporter\stats\mod.rs total_units=0 translatable_units=0
+2026-04-22T09:14:51.318915Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\reporter\stats\mod.rs
+2026-04-22T09:14:51.320153Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\reporter\stats\mod.rs
+2026-04-22T09:14:51.320416Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\reporter\stats\provider.rs total_units=0 translatable_units=0
+2026-04-22T09:14:51.320424Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\reporter\stats\provider.rs
+2026-04-22T09:14:51.321222Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\reporter\stats\provider.rs
+2026-04-22T09:14:51.321464Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\reporter\stats\shared.rs total_units=0 translatable_units=0
+2026-04-22T09:14:51.321472Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\reporter\stats\shared.rs
+2026-04-22T09:14:51.322072Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\reporter\stats\shared.rs
+2026-04-22T09:14:51.322498Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\reporter\stats\translation.rs total_units=0 translatable_units=0
+2026-04-22T09:14:51.322503Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\reporter\stats\translation.rs
+2026-04-22T09:14:51.323070Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\reporter\stats\translation.rs
+2026-04-22T09:14:51.323237Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\reporter\trait.rs total_units=0 translatable_units=0
+2026-04-22T09:14:51.323243Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\reporter\trait.rs
+2026-04-22T09:14:51.323811Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\reporter\trait.rs
+2026-04-22T09:14:51.324193Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\scanner\gitignore.rs total_units=0 translatable_units=0
+2026-04-22T09:14:51.324198Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\scanner\gitignore.rs
+2026-04-22T09:14:51.324851Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\scanner\gitignore.rs
+2026-04-22T09:14:51.324955Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\scanner\mod.rs total_units=0 translatable_units=0
+2026-04-22T09:14:51.324961Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\scanner\mod.rs
+2026-04-22T09:14:51.326053Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\scanner\mod.rs
+2026-04-22T09:14:51.326302Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\scanner\trait.rs total_units=0 translatable_units=0
+2026-04-22T09:14:51.326313Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\scanner\trait.rs
+2026-04-22T09:14:51.326987Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\scanner\trait.rs
+2026-04-22T09:14:51.327444Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\scanner\walker.rs total_units=0 translatable_units=0
+2026-04-22T09:14:51.327452Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\scanner\walker.rs
+2026-04-22T09:14:51.328068Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\scanner\walker.rs
+2026-04-22T09:14:51.328845Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\translator\batch.rs total_units=0 translatable_units=0
+2026-04-22T09:14:51.328853Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\translator\batch.rs
+2026-04-22T09:14:51.329496Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\translator\batch.rs
+2026-04-22T09:14:51.329784Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\translator\common.rs total_units=0 translatable_units=0
+2026-04-22T09:14:51.329789Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\translator\common.rs
+2026-04-22T09:14:51.330326Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\translator\common.rs
+2026-04-22T09:14:51.330662Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\translator\deeplx.rs total_units=0 translatable_units=0
+2026-04-22T09:14:51.330668Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\translator\deeplx.rs
+2026-04-22T09:14:51.331330Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\translator\deeplx.rs
+2026-04-22T09:14:51.331500Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\translator\factory.rs total_units=0 translatable_units=0
+2026-04-22T09:14:51.331507Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\translator\factory.rs
+2026-04-22T09:14:51.332319Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\translator\factory.rs
+2026-04-22T09:14:51.332454Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\translator\llm\mod.rs total_units=0 translatable_units=0
+2026-04-22T09:14:51.332461Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\translator\llm\mod.rs
+2026-04-22T09:14:51.333129Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\translator\llm\mod.rs
+2026-04-22T09:14:51.333580Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\translator\llm\multi_translator.rs total_units=0 translatable_units=0
+2026-04-22T09:14:51.333588Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\translator\llm\multi_translator.rs
+2026-04-22T09:14:51.334230Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\translator\llm\multi_translator.rs
+2026-04-22T09:14:51.336123Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\translator\llm\provider.rs total_units=4 translatable_units=4
+2026-04-22T09:14:51.336134Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\src\translator\llm\provider.rs units_to_translate=4 empty_filtered=0
+2026-04-22T09:14:51.336140Z  INFO codebase_translate::translator::batch: Starting batch translation total_texts=4 batch_size=50 total_batches=1
+2026-04-22T09:14:55.828863Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=4 success_count=4 failed_count=0 total_batches=1 processing_time_ms=4492 average_latency_ms=4492.0 total_chars=140
+2026-04-22T09:14:55.828895Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\src\translator\llm\provider.rs translated_units=4 api_calls=4
+2026-04-22T09:14:55.830883Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\src\translator\llm\provider.rs
+2026-04-22T09:14:55.831362Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\src\translator\llm\provider.rs translation_units=4
+2026-04-22T09:14:55.832704Z  INFO codebase_translate::writer::file: Creating backup file=\\?\E:\project\codebase-translator\src\translator\llm\provider.rs backup=.\.translator\backups\provider_20260422_091455.bak.rs
+2026-04-22T09:14:55.833709Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\src\translator\llm\provider.rs
+2026-04-22T09:14:55.833767Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\src\translator\llm\provider.rs
+2026-04-22T09:14:55.834424Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\src\translator\llm\provider.rs total_units=4 translated_units=4
+2026-04-22T09:14:55.835085Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\translator\llm\routing.rs total_units=0 translatable_units=0
+2026-04-22T09:14:55.835092Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\translator\llm\routing.rs
+2026-04-22T09:14:55.835852Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\translator\llm\routing.rs
+2026-04-22T09:14:55.836176Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\translator\mod.rs total_units=0 translatable_units=0
+2026-04-22T09:14:55.836182Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\translator\mod.rs
+2026-04-22T09:14:55.836868Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\translator\mod.rs
+2026-04-22T09:14:55.837284Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\translator\service.rs total_units=0 translatable_units=0
+2026-04-22T09:14:55.837290Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\translator\service.rs
+2026-04-22T09:14:55.837917Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\translator\service.rs
+2026-04-22T09:14:55.838371Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\translator\tencent.rs total_units=0 translatable_units=0
+2026-04-22T09:14:55.838378Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\translator\tencent.rs
+2026-04-22T09:14:55.838956Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\translator\tencent.rs
+2026-04-22T09:14:55.839305Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\translator\trait.rs total_units=0 translatable_units=0
+2026-04-22T09:14:55.839310Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\translator\trait.rs
+2026-04-22T09:14:55.839980Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\translator\trait.rs
+2026-04-22T09:14:55.840148Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\utils\hash.rs total_units=0 translatable_units=0
+2026-04-22T09:14:55.840154Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\utils\hash.rs
+2026-04-22T09:14:55.840826Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\utils\hash.rs
+2026-04-22T09:14:55.840966Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\utils\mod.rs total_units=0 translatable_units=0
+2026-04-22T09:14:55.840974Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\utils\mod.rs
+2026-04-22T09:14:55.842050Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\utils\mod.rs
+2026-04-22T09:14:55.842320Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\workflow\builder.rs total_units=0 translatable_units=0
+2026-04-22T09:14:55.842328Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\workflow\builder.rs
+2026-04-22T09:14:55.843015Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\workflow\builder.rs
+2026-04-22T09:14:55.843490Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\workflow\executor.rs total_units=0 translatable_units=0
+2026-04-22T09:14:55.843498Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\workflow\executor.rs
+2026-04-22T09:14:55.844173Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\workflow\executor.rs
+2026-04-22T09:14:55.844810Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\workflow\file_processor.rs total_units=0 translatable_units=0
+2026-04-22T09:14:55.844818Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\workflow\file_processor.rs
+2026-04-22T09:14:55.845443Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\workflow\file_processor.rs
+2026-04-22T09:14:55.845555Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\workflow\mod.rs total_units=0 translatable_units=0
+2026-04-22T09:14:55.845560Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\workflow\mod.rs
+2026-04-22T09:14:55.846262Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\workflow\mod.rs
+2026-04-22T09:14:55.846765Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\writer\applier\line.rs total_units=8 translatable_units=8
+2026-04-22T09:14:55.846783Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\src\writer\applier\line.rs units_to_translate=8 empty_filtered=0
+2026-04-22T09:14:55.846788Z  INFO codebase_translate::translator::batch: Starting batch translation total_texts=8 batch_size=50 total_batches=1
+2026-04-22T09:15:05.058001Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=8 success_count=8 failed_count=0 total_batches=1 processing_time_ms=9211 average_latency_ms=9211.0 total_chars=265
+2026-04-22T09:15:05.058022Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\src\writer\applier\line.rs translated_units=8 api_calls=8
+2026-04-22T09:15:05.059712Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\src\writer\applier\line.rs
+2026-04-22T09:15:05.060365Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\src\writer\applier\line.rs translation_units=8
+2026-04-22T09:15:05.061082Z  INFO codebase_translate::writer::file: Creating backup file=\\?\E:\project\codebase-translator\src\writer\applier\line.rs backup=.\.translator\backups\line_20260422_091505.bak.rs
+2026-04-22T09:15:05.062906Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\src\writer\applier\line.rs
+2026-04-22T09:15:05.062914Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\src\writer\applier\line.rs
+2026-04-22T09:15:05.063396Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\src\writer\applier\line.rs total_units=8 translated_units=8
+2026-04-22T09:15:05.063529Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\writer\applier\mod.rs total_units=0 translatable_units=0
+2026-04-22T09:15:05.063535Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\writer\applier\mod.rs
+2026-04-22T09:15:05.064209Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\writer\applier\mod.rs
+2026-04-22T09:15:05.066390Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\writer\applier\multiline.rs total_units=28 translatable_units=28
+2026-04-22T09:15:05.066414Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\src\writer\applier\multiline.rs units_to_translate=28 empty_filtered=0
+2026-04-22T09:15:05.066421Z  INFO codebase_translate::translator::batch: Starting batch translation total_texts=28 batch_size=50 total_batches=1
+2026-04-22T09:15:39.196307Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=28 success_count=28 failed_count=0 total_batches=1 processing_time_ms=34129 average_latency_ms=34129.0 total_chars=562
+2026-04-22T09:15:39.196332Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\src\writer\applier\multiline.rs translated_units=28 api_calls=28
+2026-04-22T09:15:39.197353Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\src\writer\applier\multiline.rs
+2026-04-22T09:15:39.197732Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\src\writer\applier\multiline.rs translation_units=28
+2026-04-22T09:15:39.198975Z  INFO codebase_translate::writer::file: Creating backup file=\\?\E:\project\codebase-translator\src\writer\applier\multiline.rs backup=.\.translator\backups\multiline_20260422_091539.bak.rs
+2026-04-22T09:15:39.228752Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\src\writer\applier\multiline.rs
+2026-04-22T09:15:39.228780Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\src\writer\applier\multiline.rs
+2026-04-22T09:15:39.229364Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\src\writer\applier\multiline.rs total_units=28 translated_units=28
+2026-04-22T09:15:39.230045Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\writer\concurrent.rs total_units=0 translatable_units=0
+2026-04-22T09:15:39.230053Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\writer\concurrent.rs
+2026-04-22T09:15:39.230988Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\writer\concurrent.rs
+2026-04-22T09:15:39.231486Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\writer\core.rs total_units=9 translatable_units=9
+2026-04-22T09:15:39.231495Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\src\writer\core.rs units_to_translate=9 empty_filtered=0
+2026-04-22T09:15:39.231500Z  INFO codebase_translate::translator::batch: Starting batch translation total_texts=9 batch_size=50 total_batches=1
+2026-04-22T09:15:50.054803Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=9 success_count=9 failed_count=0 total_batches=1 processing_time_ms=10823 average_latency_ms=10823.0 total_chars=113
+2026-04-22T09:15:50.054823Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\src\writer\core.rs translated_units=9 api_calls=9
+2026-04-22T09:15:50.055755Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\src\writer\core.rs
+2026-04-22T09:15:50.056114Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\src\writer\core.rs translation_units=9
+2026-04-22T09:15:50.057531Z  INFO codebase_translate::writer::file: Creating backup file=\\?\E:\project\codebase-translator\src\writer\core.rs backup=.\.translator\backups\core_20260422_091550.bak.rs
+2026-04-22T09:15:50.058806Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\src\writer\core.rs
+2026-04-22T09:15:50.058820Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\src\writer\core.rs
+2026-04-22T09:15:50.059332Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\src\writer\core.rs total_units=9 translated_units=9
+2026-04-22T09:15:50.060073Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\writer\file.rs total_units=2 translatable_units=2
+2026-04-22T09:15:50.060082Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\src\writer\file.rs units_to_translate=2 empty_filtered=0
+2026-04-22T09:15:50.060087Z  INFO codebase_translate::translator::batch: Starting batch translation total_texts=2 batch_size=50 total_batches=1
+2026-04-22T09:15:52.331296Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=2 success_count=2 failed_count=0 total_batches=1 processing_time_ms=2271 average_latency_ms=2271.0 total_chars=12
+2026-04-22T09:15:52.331322Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\src\writer\file.rs translated_units=2 api_calls=2
+2026-04-22T09:15:52.332408Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\src\writer\file.rs
+2026-04-22T09:15:52.332849Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\src\writer\file.rs translation_units=2
+2026-04-22T09:15:52.333885Z  INFO codebase_translate::writer::file: Creating backup file=\\?\E:\project\codebase-translator\src\writer\file.rs backup=.\.translator\backups\file_20260422_091552.bak.rs
+2026-04-22T09:15:52.334915Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\src\writer\file.rs
+2026-04-22T09:15:52.334924Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\src\writer\file.rs
+2026-04-22T09:15:52.335527Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\src\writer\file.rs total_units=2 translated_units=2
+2026-04-22T09:15:52.335715Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\writer\format\mod.rs total_units=0 translatable_units=0
+2026-04-22T09:15:52.335726Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\writer\format\mod.rs
+2026-04-22T09:15:52.336665Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\writer\format\mod.rs
+2026-04-22T09:15:52.336983Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\writer\format\prefix.rs total_units=0 translatable_units=0
+2026-04-22T09:15:52.336992Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\writer\format\prefix.rs
+2026-04-22T09:15:52.337667Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\writer\format\prefix.rs
+2026-04-22T09:15:52.338246Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\writer\format\replacement.rs total_units=15 translatable_units=15
+2026-04-22T09:15:52.338255Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\src\writer\format\replacement.rs units_to_translate=15 empty_filtered=0
+2026-04-22T09:15:52.338261Z  INFO codebase_translate::translator::batch: Starting batch translation total_texts=15 batch_size=50 total_batches=1
+2026-04-22T09:16:10.085820Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=15 success_count=15 failed_count=0 total_batches=1 processing_time_ms=17747 average_latency_ms=17747.0 total_chars=548
+2026-04-22T09:16:10.085845Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\src\writer\format\replacement.rs translated_units=15 api_calls=15
+2026-04-22T09:16:10.086940Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\src\writer\format\replacement.rs
+2026-04-22T09:16:10.087386Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\src\writer\format\replacement.rs translation_units=15
+2026-04-22T09:16:10.088575Z  INFO codebase_translate::writer::file: Creating backup file=\\?\E:\project\codebase-translator\src\writer\format\replacement.rs backup=.\.translator\backups\replacement_20260422_091610.bak.rs
+2026-04-22T09:16:10.089718Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\src\writer\format\replacement.rs
+2026-04-22T09:16:10.089730Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\src\writer\format\replacement.rs
+2026-04-22T09:16:10.090168Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\src\writer\format\replacement.rs total_units=15 translated_units=15
+2026-04-22T09:16:10.090469Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\writer\mod.rs total_units=0 translatable_units=0
+2026-04-22T09:16:10.090476Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\writer\mod.rs
+2026-04-22T09:16:10.091147Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\writer\mod.rs
+2026-04-22T09:16:10.091299Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\src\writer\trait.rs total_units=0 translatable_units=0
+2026-04-22T09:16:10.091305Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\src\writer\trait.rs
+2026-04-22T09:16:10.091899Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\src\writer\trait.rs
+2026-04-22T09:16:10.092585Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\tests\cache_integration\basic_tests.rs total_units=0 translatable_units=0
+2026-04-22T09:16:10.092594Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\tests\cache_integration\basic_tests.rs
+2026-04-22T09:16:10.093267Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\tests\cache_integration\basic_tests.rs
+2026-04-22T09:16:10.094339Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\tests\cache_integration\cache_hit_tests.rs total_units=0 translatable_units=0
+2026-04-22T09:16:10.094355Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\tests\cache_integration\cache_hit_tests.rs
+2026-04-22T09:16:10.095237Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\tests\cache_integration\cache_hit_tests.rs
+2026-04-22T09:16:10.095566Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\tests\cache_integration\cache_mode_tests.rs total_units=0 translatable_units=0
+2026-04-22T09:16:10.095573Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\tests\cache_integration\cache_mode_tests.rs
+2026-04-22T09:16:10.096215Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\tests\cache_integration\cache_mode_tests.rs
+2026-04-22T09:16:10.096718Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\tests\cache_integration\concurrent_tests.rs total_units=0 translatable_units=0
+2026-04-22T09:16:10.096728Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\tests\cache_integration\concurrent_tests.rs
+2026-04-22T09:16:10.097414Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\tests\cache_integration\concurrent_tests.rs
+2026-04-22T09:16:10.098117Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\tests\cache_integration\file_processor_cache_tests.rs total_units=3 translatable_units=3
+2026-04-22T09:16:10.098127Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\tests\cache_integration\file_processor_cache_tests.rs units_to_translate=3 empty_filtered=0
+2026-04-22T09:16:10.098132Z  INFO codebase_translate::translator::batch: Starting batch translation total_texts=3 batch_size=50 total_batches=1
+2026-04-22T09:16:13.519714Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=3 success_count=3 failed_count=0 total_batches=1 processing_time_ms=3421 average_latency_ms=3421.0 total_chars=107
+2026-04-22T09:16:13.519734Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\tests\cache_integration\file_processor_cache_tests.rs translated_units=3 api_calls=3
+2026-04-22T09:16:13.520715Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\tests\cache_integration\file_processor_cache_tests.rs
+2026-04-22T09:16:13.521078Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\tests\cache_integration\file_processor_cache_tests.rs translation_units=3
+2026-04-22T09:16:13.521990Z  INFO codebase_translate::writer::file: Creating backup file=\\?\E:\project\codebase-translator\tests\cache_integration\file_processor_cache_tests.rs backup=.\.translator\backups\file_processor_cache_tests_20260422_091613.bak.rs
+2026-04-22T09:16:13.551796Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\tests\cache_integration\file_processor_cache_tests.rs
+2026-04-22T09:16:13.551820Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\tests\cache_integration\file_processor_cache_tests.rs
+2026-04-22T09:16:13.552303Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\tests\cache_integration\file_processor_cache_tests.rs total_units=3 translated_units=3
+2026-04-22T09:16:13.552807Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\tests\cache_integration\fingerprint_tests.rs total_units=0 translatable_units=0
+2026-04-22T09:16:13.552815Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\tests\cache_integration\fingerprint_tests.rs
+2026-04-22T09:16:13.553519Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\tests\cache_integration\fingerprint_tests.rs
+2026-04-22T09:16:13.554094Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\tests\cache_integration\hierarchical_tests.rs total_units=1 translatable_units=1
+2026-04-22T09:16:13.554102Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\tests\cache_integration\hierarchical_tests.rs units_to_translate=1 empty_filtered=0
+2026-04-22T09:16:13.554106Z  INFO codebase_translate::translator::batch: Starting batch translation total_texts=1 batch_size=50 total_batches=1
+2026-04-22T09:16:14.687594Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=1 success_count=1 failed_count=0 total_batches=1 processing_time_ms=1133 average_latency_ms=1133.0 total_chars=40
+2026-04-22T09:16:14.687622Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\tests\cache_integration\hierarchical_tests.rs translated_units=1 api_calls=1
+2026-04-22T09:16:14.688925Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\tests\cache_integration\hierarchical_tests.rs
+2026-04-22T09:16:14.689296Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\tests\cache_integration\hierarchical_tests.rs translation_units=1
+2026-04-22T09:16:14.690292Z  INFO codebase_translate::writer::file: Creating backup file=\\?\E:\project\codebase-translator\tests\cache_integration\hierarchical_tests.rs backup=.\.translator\backups\hierarchical_tests_20260422_091614.bak.rs
+2026-04-22T09:16:14.691299Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\tests\cache_integration\hierarchical_tests.rs
+2026-04-22T09:16:14.691312Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\tests\cache_integration\hierarchical_tests.rs
+2026-04-22T09:16:14.691797Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\tests\cache_integration\hierarchical_tests.rs total_units=1 translated_units=1
+2026-04-22T09:16:14.692015Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\tests\cache_integration\mod.rs total_units=0 translatable_units=0
+2026-04-22T09:16:14.692022Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\tests\cache_integration\mod.rs
+2026-04-22T09:16:14.692818Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\tests\cache_integration\mod.rs
+2026-04-22T09:16:14.692935Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\tests\cache_integration\test_utils.rs total_units=0 translatable_units=0
+2026-04-22T09:16:14.692939Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\tests\cache_integration\test_utils.rs
+2026-04-22T09:16:14.693485Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\tests\cache_integration\test_utils.rs
+2026-04-22T09:16:14.693601Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\tests\cache_integration_tests.rs total_units=0 translatable_units=0
+2026-04-22T09:16:14.693608Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\tests\cache_integration_tests.rs
+2026-04-22T09:16:14.694346Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\tests\cache_integration_tests.rs
+2026-04-22T09:16:14.702532Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\tests\config_validation.rs total_units=246 translatable_units=246
+2026-04-22T09:16:14.702568Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\tests\config_validation.rs units_to_translate=246 empty_filtered=0
+2026-04-22T09:16:14.702582Z  INFO codebase_translate::translator::batch: Starting batch translation total_texts=246 batch_size=50 total_batches=5
+2026-04-22T09:21:16.560866Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=246 success_count=246 failed_count=0 total_batches=5 processing_time_ms=301858 average_latency_ms=60371.0 total_chars=4612
+2026-04-22T09:21:16.560925Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\tests\config_validation.rs translated_units=246 api_calls=246
+2026-04-22T09:21:16.562260Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\tests\config_validation.rs
+2026-04-22T09:21:16.562676Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\tests\config_validation.rs translation_units=246
+2026-04-22T09:21:16.564125Z  INFO codebase_translate::writer::file: Creating backup file=\\?\E:\project\codebase-translator\tests\config_validation.rs backup=.\.translator\backups\config_validation_20260422_092116.bak.rs
+2026-04-22T09:21:16.566766Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\tests\config_validation.rs
+2026-04-22T09:21:16.566849Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\tests\config_validation.rs
+2026-04-22T09:21:16.567383Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\tests\config_validation.rs total_units=246 translated_units=246
+2026-04-22T09:21:16.567846Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\tests\e2e_tests.rs total_units=0 translatable_units=0
+2026-04-22T09:21:16.567855Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\tests\e2e_tests.rs
+2026-04-22T09:21:16.569085Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\tests\e2e_tests.rs
+2026-04-22T09:21:16.569605Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\tests\logger_integration.rs total_units=0 translatable_units=0
+2026-04-22T09:21:16.569623Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\tests\logger_integration.rs
+2026-04-22T09:21:16.570802Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\tests\logger_integration.rs
+2026-04-22T09:21:16.571214Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\tests\log_path_integration.rs total_units=0 translatable_units=0
+2026-04-22T09:21:16.571230Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\tests\log_path_integration.rs
+2026-04-22T09:21:16.572599Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\tests\log_path_integration.rs
+2026-04-22T09:21:16.573110Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\tests\main_e2e.rs total_units=0 translatable_units=0
+2026-04-22T09:21:16.573126Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\tests\main_e2e.rs
+2026-04-22T09:21:16.574234Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\tests\main_e2e.rs
+2026-04-22T09:21:16.575459Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\tests\main_integration\e2e_tests.rs total_units=0 translatable_units=0
+2026-04-22T09:21:16.575480Z  INFO codebase_translate::workflow::file_processor: Saving cache entry file=\\?\E:\project\codebase-translator\tests\main_integration\e2e_tests.rs
+2026-04-22T09:21:16.576440Z  INFO codebase_translate::workflow::file_processor: Cache entry saved successfully file=\\?\E:\project\codebase-translator\tests\main_integration\e2e_tests.rs
+2026-04-22T09:21:16.576711Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\tests\main_integration\fixtures\mod.rs total_units=5 translatable_units=5
+2026-04-22T09:21:16.576722Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\tests\main_integration\fixtures\mod.rs units_to_translate=5 empty_filtered=0
+2026-04-22T09:21:16.576728Z  INFO codebase_translate::translator::batch: Starting batch translation total_texts=5 batch_size=50 total_batches=1
+2026-04-22T09:21:22.483817Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=5 success_count=5 failed_count=0 total_batches=1 processing_time_ms=5907 average_latency_ms=5907.0 total_chars=153
+2026-04-22T09:21:22.483853Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\tests\main_integration\fixtures\mod.rs translated_units=5 api_calls=5
+2026-04-22T09:21:22.485505Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\tests\main_integration\fixtures\mod.rs
+2026-04-22T09:21:22.485804Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\tests\main_integration\fixtures\mod.rs translation_units=5
+2026-04-22T09:21:22.486451Z  INFO codebase_translate::writer::file: Creating backup file=\\?\E:\project\codebase-translator\tests\main_integration\fixtures\mod.rs backup=.\.translator\backups\mod_20260422_092122.bak.rs
+2026-04-22T09:21:22.487278Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\tests\main_integration\fixtures\mod.rs
+2026-04-22T09:21:22.487287Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\tests\main_integration\fixtures\mod.rs
+2026-04-22T09:21:22.487652Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\tests\main_integration\fixtures\mod.rs total_units=5 translated_units=5
+2026-04-22T09:21:22.488813Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\tests\main_integration\fixtures\simple_javascript.js total_units=10 translatable_units=10
+2026-04-22T09:21:22.488821Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\tests\main_integration\fixtures\simple_javascript.js units_to_translate=10 empty_filtered=0
+2026-04-22T09:21:22.488825Z  INFO codebase_translate::translator::batch: Starting batch translation total_texts=10 batch_size=50 total_batches=1
+2026-04-22T10:01:24.136036Z  INFO codebase_translate::commands::translate: Starting application name="codebase-translate" version="0.1.0"
+2026-04-22T10:01:24.142033Z  INFO codebase_translate::commands::translate: Translating directory path=.
+2026-04-22T10:01:24.142041Z  INFO codebase_translate::commands::translate: Translation configuration target_lang=en provider=deeplx
+2026-04-22T10:01:24.142753Z  INFO codebase_translate::workflow::executor: Starting translation workflow root_path=. include_patterns=22 exclude_patterns=15 respect_gitignore=true follow_symlinks=false
+2026-04-22T10:01:24.143357Z  INFO codebase_translate::workflow::executor: Step 1: Scanning directory path=.
+2026-04-22T10:01:24.143809Z  INFO codebase_translate::scanner::walker: Checking path type path=\\?\E:\project\codebase-translator is_file=false is_dir=true
+2026-04-22T10:01:24.146775Z  INFO codebase_translate::scanner::walker: Starting directory scan: \\?\E:\project\codebase-translator
+2026-04-22T10:01:24.202225Z  INFO codebase_translate::workflow::executor: File scan completed files_count=254
+2026-04-22T10:01:24.203781Z  INFO codebase_translate::cache: Creating hierarchical cache instance cache_type=local cache_dir=.
+2026-04-22T10:01:24.206695Z  INFO codebase_translate::cache::binary: Creating binary cache cache_file=.\.translator\cache.bin mode=Local enabled=true
+2026-04-22T10:01:24.208311Z  INFO codebase_translate::cache::hierarchical: Loaded hierarchical cache cache_dir=.\.translator
+2026-04-22T10:01:24.730474Z  INFO codebase_translate::cache::hierarchical: Loaded hierarchical cache cache_dir=.\tests\placeholder-test\.translator
+2026-04-22T10:01:24.732407Z  INFO codebase_translate::cache::hierarchical: Loaded hierarchical cache cache_dir=.\tests\temp\.translator
+2026-04-22T10:01:24.734491Z  INFO codebase_translate::translator: Creating translation service with all enabled providers enabled_providers=["deeplx", "llm", "tencent"]
+2026-04-22T10:01:24.734740Z  INFO codebase_translate::translator::r#trait: Creating translator from configuration provider=DeepLX
+2026-04-22T10:01:24.747642Z  INFO codebase_translate::translator::deeplx: DeepLX translator created api_url=https://api.deeplx.org
+2026-04-22T10:01:24.747656Z  INFO codebase_translate::translator::r#trait: Translator created successfully provider=DeepLX
+2026-04-22T10:01:24.747660Z  INFO codebase_translate::translator: Translator created successfully provider=deeplx
+2026-04-22T10:01:24.747900Z  INFO codebase_translate::translator: Creating MultiProviderTranslator with valid LLM providers valid_provider_count=1 total_provider_count=1
+2026-04-22T10:01:24.747961Z  INFO codebase_translate::translator::llm::provider: Created LLM provider provider_id=silicon base_url=https://api.siliconflow.cn/v1 model=tencent/Hunyuan-MT-7B max_tokens=8192 max_input_chars=5874 failure_threshold=3
+2026-04-22T10:01:24.747980Z  INFO codebase_translate::translator::llm::provider: Created LLM provider provider_id=silicon base_url=https://api.siliconflow.cn/v1 model=THUDM/GLM-4-9B-0414 max_tokens=8192 max_input_chars=5874 failure_threshold=3
+2026-04-22T10:01:24.747995Z  INFO codebase_translate::translator::llm::provider: Created LLM provider provider_id=silicon base_url=https://api.siliconflow.cn/v1 model=Qwen/Qwen2.5-7B-Instruct max_tokens=8192 max_input_chars=5874 failure_threshold=3
+2026-04-22T10:01:24.748197Z  INFO codebase_translate::translator::llm::routing: Created ProviderRouter with 3 providers, capacity_threshold: 5874, total_rate_limit: 120, strategy: SmoothRateBasedRoundRobin
+2026-04-22T10:01:24.748203Z  INFO codebase_translate::translator::llm::multi_translator: Created MultiProviderTranslator with 3 providers, max_retries: 3, capacity_threshold: 5874 chars
+2026-04-22T10:01:24.748205Z  INFO codebase_translate::translator: LLM MultiProviderTranslator created successfully provider=llm
+2026-04-22T10:01:24.748207Z  INFO codebase_translate::translator::r#trait: Creating translator from configuration provider=Tencent
+2026-04-22T10:01:24.748226Z  INFO codebase_translate::translator::tencent: Tencent translator created with region: ap-guangzhou
+2026-04-22T10:01:24.748229Z  INFO codebase_translate::translator::r#trait: Translator created successfully provider=Tencent
+2026-04-22T10:01:24.748229Z  INFO codebase_translate::translator: Translator created successfully provider=tencent
+2026-04-22T10:01:24.948261Z  INFO codebase_translate::translator::batch: Batch translator created with multiple providers translator_count=3 rate_limiter_enabled=true semaphore_permits=5
+2026-04-22T10:01:24.952855Z  INFO codebase_translate::translator::service: Translation service created with batch translator
+2026-04-22T10:01:24.952874Z  INFO codebase_translate::translator: Translation service created successfully with multiple providers translator_count=3
+2026-04-22T10:01:24.952882Z  INFO codebase_translate::parser: Creating parser coordinator extract_comments=true extract_docstrings=true extract_strings=true
+2026-04-22T10:01:24.961515Z  INFO codebase_translate::parser::regex::custom_pattern_matcher: Custom pattern matcher created successfully name=todo_pattern
+2026-04-22T10:01:24.961658Z  INFO codebase_translate::parser::regex::custom_pattern_matcher: Custom pattern matcher created successfully name=custom_error_message
+2026-04-22T10:01:24.961802Z  INFO codebase_translate::parser::regex::custom_pattern_matcher: Custom pattern matcher created successfully name=custom_log_message
+2026-04-22T10:01:24.961950Z  INFO codebase_translate::parser::regex::custom_pattern_matcher: Custom pattern matcher created successfully name=config_message
+2026-04-22T10:01:24.962133Z  INFO codebase_translate::parser::regex::custom_pattern_matcher: Custom pattern matcher created successfully name=note_pattern
+2026-04-22T10:01:24.962150Z  INFO codebase_translate::writer: Creating file writer preview_only=false backup=true
+2026-04-22T10:01:24.974602Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\.translator\backups\character_scanner_20260422_091424.bak.rs total_units=7 translatable_units=7
+2026-04-22T10:01:24.974625Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\.translator\backups\character_scanner_20260422_091424.bak.rs units_to_translate=7 empty_filtered=0
+2026-04-22T10:01:24.974640Z  INFO codebase_translate::translator::batch: Starting batch translation total_texts=7 batch_size=50 total_batches=1
+2026-04-22T10:01:36.994653Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=7 success_count=7 failed_count=0 total_batches=1 processing_time_ms=12020 average_latency_ms=12020.0 total_chars=165
+2026-04-22T10:01:36.994704Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\.translator\backups\character_scanner_20260422_091424.bak.rs translated_units=7 api_calls=7
+2026-04-22T10:01:37.006152Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\.translator\backups\character_scanner_20260422_091424.bak.rs
+2026-04-22T10:01:37.006656Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\.translator\backups\character_scanner_20260422_091424.bak.rs translation_units=7
+2026-04-22T10:01:37.008365Z  INFO codebase_translate::writer::file: Creating backup file=\\?\E:\project\codebase-translator\.translator\backups\character_scanner_20260422_091424.bak.rs backup=.\.translator\backups\character_scanner_20260422_091424.bak_20260422_100137.bak.rs
+2026-04-22T10:01:37.009494Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\.translator\backups\character_scanner_20260422_091424.bak.rs
+2026-04-22T10:01:37.009507Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\.translator\backups\character_scanner_20260422_091424.bak.rs
+2026-04-22T10:01:37.009959Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\.translator\backups\character_scanner_20260422_091424.bak.rs total_units=7 translated_units=7
+2026-04-22T10:01:37.010941Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\.translator\backups\composite_20260422_091416.bak.rs total_units=7 translatable_units=7
+2026-04-22T10:01:37.010949Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\.translator\backups\composite_20260422_091416.bak.rs units_to_translate=7 empty_filtered=0
+2026-04-22T10:01:37.010953Z  INFO codebase_translate::translator::batch: Starting batch translation total_texts=7 batch_size=50 total_batches=1
+2026-04-22T10:02:04.616256Z  INFO codebase_translate::translator::batch: Batch translation completed total_count=7 success_count=7 failed_count=0 total_batches=1 processing_time_ms=27605 average_latency_ms=27605.0 total_chars=106
+2026-04-22T10:02:04.616285Z  INFO codebase_translate::workflow::file_processor: Translation completed file=\\?\E:\project\codebase-translator\.translator\backups\composite_20260422_091416.bak.rs translated_units=7 api_calls=7
+2026-04-22T10:02:04.617746Z  INFO codebase_translate::workflow::file_processor: Writing file file=\\?\E:\project\codebase-translator\.translator\backups\composite_20260422_091416.bak.rs
+2026-04-22T10:02:04.618152Z  INFO codebase_translate::writer::file: Starting async file write file=\\?\E:\project\codebase-translator\.translator\backups\composite_20260422_091416.bak.rs translation_units=7
+2026-04-22T10:02:04.618913Z  INFO codebase_translate::writer::file: Creating backup file=\\?\E:\project\codebase-translator\.translator\backups\composite_20260422_091416.bak.rs backup=.\.translator\backups\composite_20260422_091416.bak_20260422_100204.bak.rs
+2026-04-22T10:02:04.619806Z  INFO codebase_translate::writer::file: Async file write completed successfully file=\\?\E:\project\codebase-translator\.translator\backups\composite_20260422_091416.bak.rs
+2026-04-22T10:02:04.619814Z  INFO codebase_translate::workflow::file_processor: File written successfully file=\\?\E:\project\codebase-translator\.translator\backups\composite_20260422_091416.bak.rs
+2026-04-22T10:02:04.620310Z  INFO codebase_translate::workflow::file_processor: File processing completed file=\\?\E:\project\codebase-translator\.translator\backups\composite_20260422_091416.bak.rs total_units=7 translated_units=7
+2026-04-22T10:02:04.628873Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\.translator\backups\config_validation_20260422_092116.bak.rs total_units=246 translatable_units=246
+2026-04-22T10:02:04.628905Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\.translator\backups\config_validation_20260422_092116.bak.rs units_to_translate=246 empty_filtered=0
+2026-04-22T10:02:04.628918Z  INFO codebase_translate::translator::batch: Starting batch translation total_texts=246 batch_size=50 total_batches=5

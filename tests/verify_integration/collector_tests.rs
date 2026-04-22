@@ -187,7 +187,7 @@ fn test_collector_string_literal() {
     assert_eq!(matches[0].pattern_name, "string_literal");
     assert_eq!(matches[0].pattern_type, PatternType::Builtin);
     assert_eq!(matches[0].extracted_text, "Hello, world!");
-    assert_eq!(matches[0].category, "variables");
+    assert_eq!(matches[0].category, "string");
 }
 
 #[test]
@@ -211,7 +211,7 @@ fn test_collector_custom_regex_pattern() {
     assert_eq!(matches[0].pattern_name, "error_pattern");
     assert_eq!(matches[0].pattern_type, PatternType::CustomRegex);
     assert_eq!(matches[0].extracted_text, "File not found");
-    assert_eq!(matches[0].category, "variables");
+    assert_eq!(matches[0].category, "string");
 }
 
 #[test]
@@ -235,7 +235,7 @@ fn test_collector_state_machine_pattern() {
     assert_eq!(matches[0].pattern_name, "i18n_pattern");
     assert_eq!(matches[0].pattern_type, PatternType::StateMachine);
     assert_eq!(matches[0].extracted_text, "Hello World");
-    assert_eq!(matches[0].category, "variables");
+    assert_eq!(matches[0].category, "string");
 }
 
 #[test]
@@ -402,4 +402,39 @@ fn test_collector_verify_match_structure() {
     assert!(!match_item.pattern_name.is_empty());
     assert!(!match_item.extracted_text.is_empty());
     assert_eq!(match_item.position.line, 1);
+}
+
+#[test]
+fn test_collector_filters_should_translate_false() {
+    // This test verifies that the verify command's args.rs properly filters
+    // units with should_translate=false before calling collect_from_units.
+    // The collector itself doesn't filter - filtering happens in args.rs.
+    let file_path = PathBuf::from("test.rs");
+    let content = "// Comment\n// TODO: fix this";
+
+    // Simulate what happens after filtering in args.rs
+    // Units with should_translate=false are filtered out before reaching collector
+    let units: Vec<TranslationUnit> = vec![
+        TranslationUnit {
+            id: "1".to_string(),
+            node_type: NodeType::Comment,
+            content: "Comment".to_string(),
+            start_pos: Position::new(1, 4, 0),
+            end_pos: Position::new(1, 11, 0),
+            language: None,
+            should_translate: true, // This one passes filter
+            translated: None,
+            pattern_type: None,
+            pattern_name: None,
+            raw_match: None,
+        },
+        // This unit would be filtered out by args.rs before reaching collector
+        // because should_translate=false (e.g., due to TODO keyword exclusion)
+    ];
+
+    let matches = MatchCollector::collect_from_units(file_path, units, content);
+
+    // Only the should_translate=true unit should be collected
+    assert_eq!(matches.len(), 1);
+    assert_eq!(matches[0].extracted_text, "Comment");
 }

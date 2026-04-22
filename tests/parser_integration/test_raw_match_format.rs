@@ -15,7 +15,7 @@ fn test_raw_match_format() {
     };
 
     let coordinator =
-        ParserCoordinator::with_unified_config(config).expect("Failed to create coordinator");
+        ParserCoordinator::with_config(config).expect("Failed to create coordinator");
 
     let content = fs::read_to_string("tests/main_integration/fixtures/simple_rust.rs")
         .expect("Failed to read fixture file");

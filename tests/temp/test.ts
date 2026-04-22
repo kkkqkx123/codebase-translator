@@ -1,150 +1,99 @@
 /**
- * 配置加载器
- * 支持多种配置文件格式
+ * TomlParserManager - Manages the lifecycle of the TOML parser.
+ * 
+ * Provides functionality:
+ * - Preload mode (preloaded when the SDK is initialized)
+ * - Singleton mode for thread safety
+ * - Test-friendly reset capability
+ * - Clear error handling
+ * 
+ * Example of usage:
+ * const parser = TomlParserManager.getInstance()
+ * const config = parser.parse(tomlContent)
+ * // ... After using ...
+ * TomlParserManager.dispose()
+ * 
+ * Attention:
+ * - getInstance() is a synchronous method and must be called after the SDK is initialized.
+ * - SDK initialization will automatically call initialize() for preloading.
  */
 
-import { cosmiconfig } from "cosmiconfig";
-import { z } from "zod";
-import { getOutput } from "../utils/output.js";
-
-const output = getOutput();
+import { ConfigurationError } from "@graph-agent/types";
 
 /**
- * 配置模式定义
+ * TomlParserManager - Manages the lifecycle of the TOML parser
  */
-const ConfigSchema = z.object({
-  apiUrl: z.string().url().optional(),
-  apiKey: z.string().optional(),
-  defaultTimeout: z.number().positive().optional(),
-  verbose: z.boolean().optional(),
-  debug: z.boolean().optional(),
-  logLevel: z.enum(["error", "warn", "info", "debug"]).optional(),
-  outputFormat: z.enum(["json", "table", "plain"]).optional(),
-  maxConcurrentThreads: z.number().positive().optional(),
-  presets: z
-    .object({
-      contextCompression: z
-        .object({
-          enabled: z.boolean().optional(),
-          prompt: z.string().optional(),
-          timeout: z.number().optional(),
-          maxTriggers: z.number().optional(),
-        })
-        .optional(),
-    })
-    .optional(),
-});
-
-/**
- * 配置类型
- */
-export type CLIConfig = z.infer<typeof ConfigSchema>;
-
-/**
- * 默认配置
- */
-const DEFAULT_CONFIG: Partial<CLIConfig> = {
-  defaultTimeout: 30000,
-  verbose: false,
-  debug: false,
-  logLevel: "warn",
-  outputFormat: "table",
-  maxConcurrentThreads: 5,
-};
-
-/**
- * 配置加载器类
- */
-export class ConfigLoader {
-  private explorer: ReturnType<typeof cosmiconfig>;
-  private cachedConfig: CLIConfig | null = null;
-
-  constructor() {
-    this.explorer = cosmiconfig("modular-agent", {
-      searchPlaces: [
-        "package.json",
-        ".modular-agentrc",
-        ".modular-agentrc.json",
-        ".modular-agentrc.ts",
-        ".modular-agentrc.js",
-        "modular-agent.config.js",
-        "modular-agent.config.ts",
-      ],
-    });
-  }
+export class TomlParserManager {
+  private static instance: unknown = null;
+  private static initializationPromise: Promise<unknown> | null = null;
 
   /**
-   * 加载配置
+   * Get a singleton instance of the TOML parser (synchronous)
+   * Must be called after SDK initialization (pre-loaded)
+   * @returns An instance of the TOML parser
+   * @throws {ConfigurationError} Throws when the TOML parser is not initialized
    */
-  async load(): Promise<CLIConfig> {
-    if (this.cachedConfig) {
-      return this.cachedConfig;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static getInstance(): any {
+    if (!TomlParserManager.instance) {
+      throw new ConfigurationError(
+        "The TOML parser is not initialized. Please make sure that the SDK is properly initialized.",
+        undefined,
+        { suggestion: "The TOML parser is automatically preloaded when the SDK is initialized." },
+      );
     }
+    return TomlParserManager.instance;
+  }
 
-    try {
-      const result = await this.explorer.search();
-
-      if (result?.config) {
-        // Verify the configuration.
-        const validatedConfig = ConfigSchema.parse(result.config);
-        this.cachedConfig = { ...DEFAULT_CONFIG, ...validatedConfig };
-        return this.cachedConfig;
-      }
-    } catch (error) {
-      output.warnLog("Configuration loading failed; using default configuration:", {
-        error: String(error),
-      });
+  /**
+   * Asynchronously initialize the parser (called during SDK bootstrap)
+   * @returns Promise that resolves when the parser is initialized
+   * @throws {ConfigurationError} Throws when the TOML parsing library is not found
+   */
+  static async initialize(): Promise<void> {
+    if (!TomlParserManager.instance && !TomlParserManager.initializationPromise) {
+      TomlParserManager.initializationPromise = (async () => {
+        try {
+          TomlParserManager.instance = await import("@iarna/toml");
+        } catch {
+          throw new ConfigurationError(
+            "TOML parsing library not found. Make sure you have @iarna/toml installed: pnpm install",
+            undefined,
+            { suggestion: "pnpm install @iarna/toml" },
+          );
+        }
+      })();
     }
-
-    // Return the default configuration.
-    this.cachedConfig = ConfigSchema.parse(DEFAULT_CONFIG);
-    return this.cachedConfig;
+    await TomlParserManager.initializationPromise;
   }
 
   /**
-   * 清除缓存的配置
+   * Check if the parser instance exists.
+   * @returns Returns true if the parser has been initialized.
    */
-  clearCache(): void {
-    this.cachedConfig = null;
+  static hasInstance(): boolean {
+    return TomlParserManager.instance !== null;
   }
 
   /**
-   * 获取特定配置项
+   * Releasing the parser instance
+   * After the call, getInstance() will create the new instance
    */
-  async get<K extends keyof CLIConfig>(key: K): Promise<CLIConfig[K]> {
-    const config = await this.load();
-    return config[key];
+  static dispose(): void {
+    TomlParserManager.instance = null;
+    TomlParserManager.initializationPromise = null;
   }
 
   /**
-   * 设置配置项（仅在内存中）
+   * Parse TOML content (synchronous)
+   * A convenient method to obtain a parser and perform parsing in one go
+   * @param content - The TOML content as a string
+   * @returns The parsed object
+   * @throws {ConfigurationError} Throws when the TOML parser is not initialized
    */
-  set<K extends keyof CLIConfig>(key: K, value: CLIConfig[K]): void {
-    if (!this.cachedConfig) {
-      this.cachedConfig = { ...DEFAULT_CONFIG };
-    }
-    this.cachedConfig[key] = value;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static parse(content: string): any {
+    const parser = TomlParserManager.getInstance();
+    return parser.parse(content);
   }
-}
-
-/**
- * 全局配置加载器实例
- */
-let globalConfigLoader: ConfigLoader | null = null;
-
-/**
- * 获取全局配置加载器实例
- */
-export function getConfigLoader(): ConfigLoader {
-  if (!globalConfigLoader) {
-    globalConfigLoader = new ConfigLoader();
-  }
-  return globalConfigLoader;
-}
-
-/**
- * 加载配置的便捷函数
- */
-export async function loadConfig(): Promise<CLIConfig> {
-  return getConfigLoader().load();
 }

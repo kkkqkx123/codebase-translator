@@ -8,6 +8,7 @@ use std::path::PathBuf;
 use codebase_translate::commands::verify::{
     MatchCollector, OutputFormat, OutputFormatter, StatisticsGenerator,
 };
+use codebase_translate::config::project::ProjectConfig;
 use codebase_translate::core::models::{File, PatternType};
 use codebase_translate::parser::coordinator::ParserCoordinator;
 use codebase_translate::parser::ParserConfig;
@@ -30,12 +31,31 @@ fn create_test_file(content: &str, path: &str) -> File {
 }
 
 fn create_test_coordinator() -> ParserCoordinator {
-    let config = ParserConfig {
-        extract_strings: true,
+    // Use a project config that allows English content to be extracted
+    // This matches the behavior users would expect in a typical verify scenario
+    let project_config = ProjectConfig {
+        translate: codebase_translate::config::project::TranslateConfig {
+            source_langs: vec!["EN".to_string()],
+            target_lang: "ZH".to_string(),
+            ..Default::default()
+        },
+        filter: codebase_translate::config::project::FilterConfig {
+            // Allow all content to pass through for verification
+            min_length: 1,
+            max_length: 100000,
+            ..Default::default()
+        },
+        extraction: codebase_translate::config::project::ExtractionConfig {
+            comments: true,
+            doc_strings: true,
+            string_literals: true,
+            ..Default::default()
+        },
         ..Default::default()
     };
 
-    ParserCoordinator::with_unified_config(config).expect("Failed to create coordinator")
+    ParserCoordinator::from_project_config(ParserConfig::default(), &project_config)
+        .expect("Failed to create coordinator")
 }
 
 fn write_output(filename: &str, content: &str) {

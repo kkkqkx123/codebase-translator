@@ -16,6 +16,7 @@ use crate::{
 use super::{
     FilterOptions, MatchCollector, MatchFilter, OutputFormat, OutputFormatter, StatisticsGenerator,
 };
+use crate::parser::ParserConfig;
 
 #[derive(Parser, Debug)]
 pub struct VerifyArgs {
@@ -87,7 +88,12 @@ impl Command for VerifyArgs {
         info!(files_found = total_files, "Scanned files");
 
         debug!("Creating parser for verification");
-        let parser = ParserCoordinator::for_verification(project_config)?;
+        // Use the same filter logic as actual translation to ensure verify
+        // accurately reflects what will be translated
+        let parser = ParserCoordinator::from_project_config(
+            ParserConfig::default(),
+            project_config,
+        )?;
 
         let mut all_matches = Vec::new();
 
@@ -108,7 +114,9 @@ impl Command for VerifyArgs {
             })?;
 
             let units = parser.parse_file(&file)?;
-            let matches = MatchCollector::collect_from_units(entry.path.clone(), units, &content);
+            // Filter out units that should_translate=false to match actual translation behavior
+            let units_to_verify: Vec<_> = units.into_iter().filter(|u| u.should_translate).collect();
+            let matches = MatchCollector::collect_from_units(entry.path.clone(), units_to_verify, &content);
             debug!(
                 file = %entry.path.display(),
                 matches = matches.len(),

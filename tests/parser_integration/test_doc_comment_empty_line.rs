@@ -12,7 +12,7 @@ use std::path::PathBuf;
 fn test_doc_comment_empty_line_preserved() {
     let config = ParserConfig::default();
     let coordinator =
-        ParserCoordinator::with_unified_config(config).expect("Failed to create coordinator");
+        ParserCoordinator::with_config(config).expect("Failed to create coordinator");
 
     // Create test content with empty doc comment line
     let content = r#"/// 创建新的计算器实例
@@ -65,7 +65,7 @@ pub fn new(name: &str) {}
 fn test_fixture_simple_rust_doc_comments() {
     let config = ParserConfig::default();
     let coordinator =
-        ParserCoordinator::with_unified_config(config).expect("Failed to create coordinator");
+        ParserCoordinator::with_config(config).expect("Failed to create coordinator");
 
     let content = fs::read_to_string("tests/main_integration/fixtures/simple_rust.rs")
         .expect("Failed to read fixture file");

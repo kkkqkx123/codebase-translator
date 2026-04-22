@@ -1,0 +1,13 @@
+2026-04-22T08:48:49.149576Z  INFO codebase_translate::commands::verify::args: Starting verification of extraction rules path=tests\verify_integration\fixtures\simple_rust.rs
+2026-04-22T08:48:49.151248Z  INFO codebase_translate::scanner::walker: Checking path type path=\\?\E:\project\codebase-translator\tests\verify_integration\fixtures\simple_rust.rs is_file=true is_dir=false
+2026-04-22T08:48:49.151667Z  INFO codebase_translate::scanner::walker: Path is a file, using single file scanner path=\\?\E:\project\codebase-translator\tests\verify_integration\fixtures\simple_rust.rs
+2026-04-22T08:48:49.152376Z  INFO codebase_translate::scanner::walker: Scanned single file path=\\?\E:\project\codebase-translator\tests\verify_integration\fixtures\simple_rust.rs size=713
+2026-04-22T08:48:49.152696Z  INFO codebase_translate::commands::verify::args: Scanned files files_found=1
+2026-04-22T08:48:49.156335Z  INFO codebase_translate::parser::regex::custom_pattern_matcher: Custom pattern matcher created successfully name=todo_pattern
+2026-04-22T08:48:49.156477Z  INFO codebase_translate::parser::regex::custom_pattern_matcher: Custom pattern matcher created successfully name=custom_error_message
+2026-04-22T08:48:49.156669Z  INFO codebase_translate::parser::regex::custom_pattern_matcher: Custom pattern matcher created successfully name=custom_log_message
+2026-04-22T08:48:49.156815Z  INFO codebase_translate::parser::regex::custom_pattern_matcher: Custom pattern matcher created successfully name=config_message
+2026-04-22T08:48:49.157019Z  INFO codebase_translate::parser::regex::custom_pattern_matcher: Custom pattern matcher created successfully name=note_pattern
+2026-04-22T08:48:49.159437Z  INFO codebase_translate::commands::verify::args: Extracted matches total_matches=16
+2026-04-22T08:48:49.159447Z  INFO codebase_translate::commands::verify::args: Filtered matches filtered_matches=16
+2026-04-22T08:48:49.161777Z  INFO codebase_translate::commands::verify::args: Verification completed successfully
