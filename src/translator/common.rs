@@ -65,7 +65,8 @@ pub struct BatchResult {
     pub total_tokens: u64,
     /// Average latency in milliseconds
     pub average_latency_ms: f64,
-    /// Total number of batch API calls made
+    /// Total number of actual API calls made (batch requests, not translation units)
+    /// This should equal the sum of all translator_stats[].total_calls
     pub total_batches: usize,
 }
 

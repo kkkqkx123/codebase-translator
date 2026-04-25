@@ -79,6 +79,7 @@ pub struct BatchTranslator {
     limit_policy: LimitPolicy,
     shared_stats: Option<Arc<SharedStats>>,
     batch_size: usize,
+    api_call_count: AtomicU64,
 }
 
 impl BatchTranslator {
@@ -136,6 +137,7 @@ impl BatchTranslator {
             limit_policy,
             shared_stats,
             batch_size: options.batch_size.max(1),
+            api_call_count: AtomicU64::new(0),
         }
     }
 
@@ -250,14 +252,16 @@ impl BatchTranslator {
         let mut total_chars = 0;
         let mut total_latency_ms = 0u64;
 
+        self.api_call_count.store(0, Ordering::Relaxed);
+
         // Process texts in batches
         let chunks: Vec<&[String]> = texts.chunks(self.batch_size).collect();
-        let total_batches = chunks.len();
+        let expected_batches = chunks.len();
 
         info!(
             total_texts = total_count,
             batch_size = self.batch_size,
-            total_batches = total_batches,
+            expected_batches = expected_batches,
             "Starting batch translation"
         );
 
@@ -302,7 +306,7 @@ impl BatchTranslator {
                     }
                     debug!(
                         batch_idx = batch_idx + 1,
-                        total_batches = total_batches,
+                        expected_batches = expected_batches,
                         batch_size = batch.len(),
                         "Batch completed successfully"
                     );
@@ -310,7 +314,7 @@ impl BatchTranslator {
                 Err(e) => {
                     error!(
                         batch_idx = batch_idx + 1,
-                        total_batches = total_batches,
+                        expected_batches = expected_batches,
                         error = %e,
                         "Batch translation failed"
                     );
@@ -337,8 +341,9 @@ impl BatchTranslator {
         success_count = success_count.saturating_sub(failed_count);
 
         let processing_time = start_time.elapsed().as_millis() as u64;
-        let average_latency_ms = if total_batches > 0 {
-            total_latency_ms as f64 / total_batches as f64
+        let actual_api_calls = self.api_call_count.load(Ordering::Relaxed) as usize;
+        let average_latency_ms = if actual_api_calls > 0 {
+            total_latency_ms as f64 / actual_api_calls as f64
         } else {
             0.0
         };
@@ -347,17 +352,16 @@ impl BatchTranslator {
             total_count = total_count,
             success_count = success_count,
             failed_count = failed_count,
-            total_batches = total_batches,
+            actual_api_calls = actual_api_calls,
+            expected_batches = expected_batches,
             processing_time_ms = processing_time,
             average_latency_ms = average_latency_ms,
             total_chars = total_chars,
             "Batch translation completed"
         );
 
-        // For cost calculation, API calls should reflect actual translated units,
-        // not batch count. LLM APIs charge per token/unit processed, not per request.
-        let api_calls_for_cost = total_count; // Each text unit is one API call for cost purposes
-
+        // API calls count: actual API calls made (tracked dynamically)
+        // This should match the sum of translator_stats[].total_calls
         Ok(BatchResult {
             total_count,
             success_count,
@@ -368,7 +372,7 @@ impl BatchTranslator {
             total_chars,
             total_tokens: 0,
             average_latency_ms,
-            total_batches: api_calls_for_cost,
+            total_batches: actual_api_calls,
         })
     }
 
@@ -449,6 +453,8 @@ impl BatchTranslator {
 
         let start_time = Instant::now();
         let batch_chars: usize = texts.iter().map(|t| t.len()).sum();
+
+        self.api_call_count.fetch_add(1, Ordering::Relaxed);
 
         match entry
             .translator
@@ -549,6 +555,8 @@ impl BatchTranslator {
                 translator = %entry.name,
                 "Attempting translation"
             );
+
+            self.api_call_count.fetch_add(1, Ordering::Relaxed);
 
             match entry
                 .translator
