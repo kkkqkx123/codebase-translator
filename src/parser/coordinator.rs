@@ -102,7 +102,9 @@ impl ParserCoordinator {
     /// Creates a new parser coordinator for verification purposes.
     /// This coordinator uses a permissive filter that allows all content to pass through,
     /// enabling the verify command to show all potential extraction matches.
-    pub fn for_verification(project_config: &crate::config::project::ProjectConfig) -> Result<Self> {
+    pub fn for_verification(
+        project_config: &crate::config::project::ProjectConfig,
+    ) -> Result<Self> {
         use crate::parser::filtering::verify_filter;
 
         let config = ParserConfig::default();

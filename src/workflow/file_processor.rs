@@ -4,7 +4,7 @@
 //! translation, caching, and writing.
 
 use crate::{
-    cache::{CacheEntry, HierarchicalCache},
+    cache::{CacheEntry, DirectoryCache},
     config::{calculate_config_hash, project::ProjectConfig},
     core::error::Result,
     core::models::File,
@@ -78,7 +78,7 @@ impl From<FileProcessResult> for TranslationStats {
 
 /// Processor for individual files
 pub struct FileProcessor<'a> {
-    cache: &'a HierarchicalCache,
+    cache: &'a DirectoryCache,
     translator: &'a TranslationService,
     parser: &'a ParserCoordinator,
     writer: &'a FileWriter,
@@ -91,7 +91,7 @@ pub struct FileProcessor<'a> {
 impl<'a> FileProcessor<'a> {
     #[allow(clippy::too_many_arguments)]
     pub fn new(
-        cache: &'a HierarchicalCache,
+        cache: &'a DirectoryCache,
         translator: &'a TranslationService,
         parser: &'a ParserCoordinator,
         writer: &'a FileWriter,
@@ -128,7 +128,7 @@ impl<'a> FileProcessor<'a> {
         // Calculate config hash for cache validation
         let config_hash = calculate_config_hash(self.project_config);
 
-        let cached_entry = self.cache.get(file_path, &file_hash, &config_hash)?;
+        let cached_entry = self.cache.get(&file_hash, &config_hash)?;
 
         if let Some(entry) = cached_entry {
             if entry.is_valid(modified_time) && entry.is_translated {

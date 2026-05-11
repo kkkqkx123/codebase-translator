@@ -55,10 +55,10 @@ fn test_translation_service_creation_llm() {
         ..Default::default()
     };
 
-    let translator = create_llm_multi_provider_translator(&global_config)
-        .expect("Should create LLM translator");
+    let translator =
+        create_llm_multi_provider_translator(&global_config).expect("Should create LLM translator");
     let translator_arc = Arc::new(translator);
-    
+
     let options = BatchOptions::default();
     let result = BatchTranslationService::new(vec![translator_arc], options);
     assert!(result.is_ok(), "Should create translation service with LLM");
@@ -179,8 +179,8 @@ fn test_translation_service_all_providers() {
         },
         ..Default::default()
     };
-    let llm_translator = create_llm_multi_provider_translator(&global_config)
-        .expect("Should create LLM translator");
+    let llm_translator =
+        create_llm_multi_provider_translator(&global_config).expect("Should create LLM translator");
     let llm_translator_arc = Arc::new(llm_translator);
     let options = BatchOptions::default();
     let llm_service = BatchTranslationService::new(vec![llm_translator_arc], options);
@@ -300,8 +300,7 @@ fn test_batch_translation_service_different_types() {
         ..Default::default()
     };
     let llm_translator = Arc::new(
-        create_llm_multi_provider_translator(&global_config)
-            .expect("Should create LLM translator"),
+        create_llm_multi_provider_translator(&global_config).expect("Should create LLM translator"),
     );
 
     let options = BatchOptions::default();

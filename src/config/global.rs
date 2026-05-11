@@ -253,7 +253,10 @@ impl GlobalConfig {
             // If model_list is empty, use model field (single model)
             let has_valid_model = if !provider.model_list.is_empty() {
                 // Multi-model: check if at least one model in list is valid
-                provider.model_list.iter().any(|m| !m.is_empty() && !m.starts_with("${"))
+                provider
+                    .model_list
+                    .iter()
+                    .any(|m| !m.is_empty() && !m.starts_with("${"))
             } else {
                 // Single model: check if model is valid
                 !provider.model.is_empty() && !provider.model.starts_with("${")
@@ -1114,11 +1117,14 @@ mod tests {
         assert_eq!(config.llm.providers[0].model, "some-model");
         assert_eq!(config.llm.providers[0].model_list.len(), 3);
         // model_list should be preserved for ProviderRouter to expand
-        assert_eq!(config.llm.providers[0].model_list, vec![
-            "tencent/Hunyuan-MT-7B".to_string(),
-            "THUDM/GLM-4-9B-0414".to_string(),
-            "Qwen/Qwen2.5-7B-Instruct".to_string(),
-        ]);
+        assert_eq!(
+            config.llm.providers[0].model_list,
+            vec![
+                "tencent/Hunyuan-MT-7B".to_string(),
+                "THUDM/GLM-4-9B-0414".to_string(),
+                "Qwen/Qwen2.5-7B-Instruct".to_string(),
+            ]
+        );
     }
 
     #[test]

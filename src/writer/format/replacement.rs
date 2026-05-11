@@ -65,7 +65,6 @@ fn replace_block_comment(raw_lines: &[&str], extracted_lines: &[&str], translate
     let mut extracted_idx = 0;
 
     for (i, raw_line) in raw_lines.iter().enumerate() {
-
         // Check if this line contains extracted content (not just markers)
         if extracted_idx < extracted_lines.len() {
             let extracted_line = extracted_lines[extracted_idx];
@@ -77,7 +76,10 @@ fn replace_block_comment(raw_lines: &[&str], extracted_lines: &[&str], translate
 
                 // For multi-line translations with same line count, preserve formatting
                 if translated_lines.len() == extracted_lines.len() {
-                    result.push_str(&format!("{}{}{}", before, translated_lines[extracted_idx], after));
+                    result.push_str(&format!(
+                        "{}{}{}",
+                        before, translated_lines[extracted_idx], after
+                    ));
                 } else {
                     // If line count differs, use the whole translated text on first match
                     if extracted_idx == 0 {
@@ -211,17 +213,33 @@ mod tests {
         let result = replace_in_raw_match(raw, extracted, translated);
 
         // Verify exact format - should preserve structure with markers
-        let expected = "/**\n * Configuration Loader\n * Supports multiple configuration file formats\n */";
-        assert_eq!(result, expected, "Block comment replacement should preserve markers and replace only content");
+        let expected =
+            "/**\n * Configuration Loader\n * Supports multiple configuration file formats\n */";
+        assert_eq!(
+            result, expected,
+            "Block comment replacement should preserve markers and replace only content"
+        );
 
         // Should preserve markers and replace content
         assert!(result.contains("/**"), "Opening marker should be preserved");
         assert!(result.contains("*/"), "Closing marker should be preserved");
-        assert!(result.contains("Configuration Loader"), "First line should be translated");
-        assert!(result.contains("Supports multiple configuration file formats"), "Second line should be translated");
+        assert!(
+            result.contains("Configuration Loader"),
+            "First line should be translated"
+        );
+        assert!(
+            result.contains("Supports multiple configuration file formats"),
+            "Second line should be translated"
+        );
         // Should not contain original Chinese text
-        assert!(!result.contains("配置加载器"), "Original Chinese should be replaced");
-        assert!(!result.contains("支持多种配置文件格式"), "Original Chinese should be replaced");
+        assert!(
+            !result.contains("配置加载器"),
+            "Original Chinese should be replaced"
+        );
+        assert!(
+            !result.contains("支持多种配置文件格式"),
+            "Original Chinese should be replaced"
+        );
     }
 
     #[test]

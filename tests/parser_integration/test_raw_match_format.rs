@@ -41,7 +41,10 @@ fn test_raw_match_format() {
         if let Some(raw) = &unit.raw_match {
             println!("  Raw match: {:?}", raw);
             // Check if raw_match ends with newline
-            println!("  Raw match ends with '\\n': {}", raw.ends_with::<&str>("\n"));
+            println!(
+                "  Raw match ends with '\\n': {}",
+                raw.ends_with::<&str>("\n")
+            );
             // Show byte representation
             println!("  Raw match bytes: {:?}", raw.as_bytes());
         }

@@ -57,7 +57,7 @@ pub use core::error::{Result, TranslateError};
 pub use core::models::{File, FileEntry, LanguageInfo, NodeType, Position, TranslationUnit};
 
 // Re-export types from cache module
-pub use cache::{CacheEntry, CacheStats, HierarchicalCache};
+pub use cache::{CacheEntry, CacheStats, DirectoryCache};
 pub use encoding::{Detector, Encoder, EncodingResult, EncodingType};
 pub use parser::Parser;
 pub use reporter::Reporter;

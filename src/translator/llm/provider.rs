@@ -62,7 +62,11 @@ impl LLMProvider {
                 }
                 if depth == 0 {
                     let byte_start = text.char_indices().nth(start).map(|(i, _)| i).unwrap_or(0);
-                    let byte_end = text.char_indices().nth(j + 1).map(|(i, _)| i).unwrap_or(text.len());
+                    let byte_end = text
+                        .char_indices()
+                        .nth(j + 1)
+                        .map(|(i, _)| i)
+                        .unwrap_or(text.len());
                     placeholders.push(text[byte_start..byte_end].to_string());
                     i = j + 1;
                 } else {

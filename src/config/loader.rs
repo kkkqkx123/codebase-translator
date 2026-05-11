@@ -379,10 +379,10 @@ directory = ".translator"
 
         // Restore original directory - temp_dir must stay alive until this succeeds
         let restore_result = std::env::set_current_dir(&original_dir);
-        
+
         // Ensure temp_dir is not dropped before we restore the directory
         drop(temp_dir);
-        
+
         restore_result.expect("Failed to restore current dir");
     }
 

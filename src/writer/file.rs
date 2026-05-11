@@ -191,7 +191,9 @@ impl FileWriter {
                 if let Some(translated) = &unit.translated {
                     quiet_print!(
                         "\n[{}] Line {}-{}:",
-                        unit.node_type, unit.start_pos.line, unit.end_pos.line
+                        unit.node_type,
+                        unit.start_pos.line,
+                        unit.end_pos.line
                     );
                     quiet_print!("  - {}", unit.content.replace('\n', "\n    "));
                     quiet_print!("  + {}", translated.replace('\n', "\n    "));

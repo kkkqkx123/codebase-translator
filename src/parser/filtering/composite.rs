@@ -213,14 +213,14 @@ pub fn verify_filter() -> crate::core::error::Result<CompositeFilter> {
     // Use empty source_langs and target_lang to bypass language filtering
     // This allows all content to pass through for verification purposes
     let config = FilterConfig {
-        min_length: 1,  // Only filter out empty strings
+        min_length: 1, // Only filter out empty strings
         exclude_keywords: vec![],
         exclude_patterns: vec![],
         include_patterns: vec![],
         max_length: 100000,
         allow_placeholders: true,
         detect_code_patterns: false,
-        extract_languages: vec![],  // Empty means no language-only filtering
+        extract_languages: vec![], // Empty means no language-only filtering
         placeholder_patterns: vec![],
         code_patterns: vec![],
     };

@@ -250,8 +250,7 @@ fn test_batch_translator_with_different_types() {
         ..Default::default()
     };
     let llm_translator = Arc::new(
-        create_llm_multi_provider_translator(&global_config)
-            .expect("Should create LLM translator"),
+        create_llm_multi_provider_translator(&global_config).expect("Should create LLM translator"),
     );
 
     let options = BatchOptions::default();

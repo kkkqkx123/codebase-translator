@@ -763,15 +763,25 @@ mod tests {
     #[test]
     fn test_contains_placeholder_patterns() {
         // Template literal placeholders
-        assert!(BatchTranslator::contains_placeholder_patterns("Error: ${error}"));
-        assert!(BatchTranslator::contains_placeholder_patterns("Hello ${name}, welcome!"));
-        
+        assert!(BatchTranslator::contains_placeholder_patterns(
+            "Error: ${error}"
+        ));
+        assert!(BatchTranslator::contains_placeholder_patterns(
+            "Hello ${name}, welcome!"
+        ));
+
         // Format string placeholders
-        assert!(BatchTranslator::contains_placeholder_patterns("Hello {name}"));
+        assert!(BatchTranslator::contains_placeholder_patterns(
+            "Hello {name}"
+        ));
         assert!(BatchTranslator::contains_placeholder_patterns("Value: {0}"));
-        
+
         // No placeholders
-        assert!(!BatchTranslator::contains_placeholder_patterns("Hello world"));
-        assert!(!BatchTranslator::contains_placeholder_patterns("This is a test"));
+        assert!(!BatchTranslator::contains_placeholder_patterns(
+            "Hello world"
+        ));
+        assert!(!BatchTranslator::contains_placeholder_patterns(
+            "This is a test"
+        ));
     }
 }

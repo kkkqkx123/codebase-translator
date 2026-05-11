@@ -53,8 +53,8 @@ fn test_factory_creates_deeplx_with_custom_config() {
 /// Test factory creates LLM translator correctly using multi-provider API
 #[test]
 fn test_factory_creates_llm_translator() {
-    use std::collections::HashMap;
     use codebase_translate::config::global::LLMGlobalConfig;
+    use std::collections::HashMap;
 
     let global_config = GlobalConfig {
         llm: LLMGlobalConfig {
@@ -250,7 +250,10 @@ fn test_translator_impl_from_config_llm() {
     // TranslatorImpl::from_config now returns error for LLM, directing to use create_llm_multi_provider_translator
     let result = TranslatorImpl::from_config(&config);
     assert!(result.is_err());
-    assert!(result.unwrap_err().to_string().contains("create_llm_multi_provider_translator"));
+    assert!(result
+        .unwrap_err()
+        .to_string()
+        .contains("create_llm_multi_provider_translator"));
 }
 
 /// Test TranslatorImpl from_config for Tencent

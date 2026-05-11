@@ -88,10 +88,8 @@ impl Command for VerifyArgs {
         debug!("Creating parser for verification");
         // Use the same filter logic as actual translation to ensure verify
         // accurately reflects what will be translated
-        let parser = ParserCoordinator::from_project_config(
-            ParserConfig::default(),
-            project_config,
-        )?;
+        let parser =
+            ParserCoordinator::from_project_config(ParserConfig::default(), project_config)?;
 
         let mut all_matches = Vec::new();
 
@@ -113,8 +111,10 @@ impl Command for VerifyArgs {
 
             let units = parser.parse_file(&file)?;
             // Filter out units that should_translate=false to match actual translation behavior
-            let units_to_verify: Vec<_> = units.into_iter().filter(|u| u.should_translate).collect();
-            let matches = MatchCollector::collect_from_units(entry.path.clone(), units_to_verify, &content);
+            let units_to_verify: Vec<_> =
+                units.into_iter().filter(|u| u.should_translate).collect();
+            let matches =
+                MatchCollector::collect_from_units(entry.path.clone(), units_to_verify, &content);
             debug!(
                 file = %entry.path.display(),
                 matches = matches.len(),
@@ -177,9 +177,7 @@ impl Command for VerifyArgs {
         // This ensures the log directory is created in the correct location
         let path = std::path::Path::new(&self.path);
         if path.is_file() {
-            path.parent()
-                .map(|p| p.to_str())
-                .unwrap_or(Some("."))
+            path.parent().map(|p| p.to_str()).unwrap_or(Some("."))
         } else {
             Some(&self.path)
         }

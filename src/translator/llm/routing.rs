@@ -134,7 +134,10 @@ impl ProviderRouter {
                 // Multi-model: create one provider per model
                 for (idx, model) in config.model_list.iter().enumerate() {
                     if model.is_empty() || model.starts_with("${") {
-                        warn!("Provider {} has invalid model at index {}, skipping", config.id, idx);
+                        warn!(
+                            "Provider {} has invalid model at index {}, skipping",
+                            config.id, idx
+                        );
                         continue;
                     }
 
@@ -155,14 +158,20 @@ impl ProviderRouter {
                             providers.push(ProviderEntry::new(Arc::new(provider)));
                         }
                         Err(e) => {
-                            warn!("Failed to create provider {} (model: {}): {}. Skipping.", config.id, model, e);
+                            warn!(
+                                "Failed to create provider {} (model: {}): {}. Skipping.",
+                                config.id, model, e
+                            );
                         }
                     }
                 }
             } else {
                 // Single model: create one provider
                 if config.model.is_empty() {
-                    warn!("Provider {} has empty model and no model_list, skipping", config.id);
+                    warn!(
+                        "Provider {} has empty model and no model_list, skipping",
+                        config.id
+                    );
                     continue;
                 }
 

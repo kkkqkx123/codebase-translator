@@ -5,7 +5,7 @@ pub mod hierarchical;
 pub mod util;
 
 pub use crate::core::models::{CacheConfig, CacheEntry, CacheEntryInfo, CacheMode, CacheStats};
-pub use hierarchical::HierarchicalCache;
+pub use hierarchical::DirectoryCache;
 
 use tracing::info;
 
@@ -28,19 +28,18 @@ impl CacheFactory {
         Ok(cache)
     }
 
-    /// Create hierarchical cache instance
-    pub fn create_hierarchical(
+    /// Create directory cache instance
+    pub fn create_directory(
         cache_config: &CacheConfig,
         project_path: &str,
-    ) -> Result<HierarchicalCache, crate::core::error::TranslateError> {
+    ) -> Result<DirectoryCache, crate::core::error::TranslateError> {
         info!(
             cache_type = %cache_config.mode,
             cache_dir = %project_path,
-            "Creating hierarchical cache instance"
+            "Creating directory cache instance"
         );
-        let cache =
-            HierarchicalCache::new(cache_config.clone(), std::path::Path::new(project_path))?;
-        tracing::debug!("Hierarchical cache instance created successfully");
+        let cache = DirectoryCache::new(cache_config.clone(), std::path::Path::new(project_path))?;
+        tracing::debug!("Directory cache instance created successfully");
         Ok(cache)
     }
 }

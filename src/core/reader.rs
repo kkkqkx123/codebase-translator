@@ -17,5 +17,9 @@ pub fn read_text_file(path: &Path) -> Result<File> {
     let encoder = Encoder::default();
     let utf8_content = encoder.to_utf8(&content_bytes, &encoding)?;
 
-    Ok(File::new(path.to_path_buf(), utf8_content.into_bytes(), encoding))
+    Ok(File::new(
+        path.to_path_buf(),
+        utf8_content.into_bytes(),
+        encoding,
+    ))
 }
