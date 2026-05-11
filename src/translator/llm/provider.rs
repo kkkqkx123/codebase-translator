@@ -39,45 +39,107 @@ static MARKDOWN_INLINE_WRAPPER: Lazy<Regex> =
 // ============================================================================
 
 impl LLMProvider {
-    /// Extract all ${...} placeholders from text
+    /// Extract all placeholders from text
+    /// Supports both ${...} and {{...}} formats
     fn extract_placeholders(text: &str) -> Vec<String> {
         let mut placeholders = Vec::new();
         let chars: Vec<char> = text.chars().collect();
         let mut i = 0;
 
         while i < chars.len() {
+            // Try to match ${...} format
             if i + 1 < chars.len() && chars[i] == '$' && chars[i + 1] == '{' {
-                let start = i;
-                let mut depth = 1;
-                let mut j = i + 2;
-                while j < chars.len() && depth > 0 {
-                    if chars[j] == '{' {
-                        depth += 1;
-                    } else if chars[j] == '}' {
-                        depth -= 1;
-                    }
-                    if depth > 0 {
-                        j += 1;
-                    }
-                }
-                if depth == 0 {
-                    let byte_start = text.char_indices().nth(start).map(|(i, _)| i).unwrap_or(0);
-                    let byte_end = text
-                        .char_indices()
-                        .nth(j + 1)
-                        .map(|(i, _)| i)
-                        .unwrap_or(text.len());
-                    placeholders.push(text[byte_start..byte_end].to_string());
-                    i = j + 1;
-                } else {
+                if let Some(placeholder) = Self::extract_brace_placeholder(&chars, i, text, '$') {
+                    placeholders.push(placeholder);
                     i += 1;
+                    continue;
                 }
-            } else {
-                i += 1;
             }
+
+            // Try to match {{...}} format (double curly braces)
+            if i + 3 < chars.len() && chars[i] == '{' && chars[i + 1] == '{' && chars[i + 2] != '{'
+            {
+                if let Some(placeholder) = Self::extract_double_brace_placeholder(&chars, i, text) {
+                    placeholders.push(placeholder);
+                    i += 1;
+                    continue;
+                }
+            }
+
+            i += 1;
         }
 
         placeholders
+    }
+
+    /// Extract ${...} style placeholder
+    fn extract_brace_placeholder(
+        chars: &[char],
+        start: usize,
+        text: &str,
+        prefix_char: char,
+    ) -> Option<String> {
+        let mut depth = 1;
+        let mut j = start + 2;
+
+        while j < chars.len() && depth > 0 {
+            if chars[j] == '{' {
+                depth += 1;
+            } else if chars[j] == '}' {
+                depth -= 1;
+            }
+            if depth > 0 {
+                j += 1;
+            }
+        }
+
+        if depth == 0 {
+            let byte_start = text.char_indices().nth(start).map(|(i, _)| i).unwrap_or(0);
+            // For ${...}, include the closing brace; for {...}, exclude the prefix
+            let end_pos = if prefix_char == '$' { j + 1 } else { j };
+            let byte_end = text
+                .char_indices()
+                .nth(end_pos)
+                .map(|(i, _)| i)
+                .unwrap_or(text.len());
+
+            Some(text[byte_start..byte_end].to_string())
+        } else {
+            None
+        }
+    }
+
+    /// Extract {{...}} style placeholder (template engine format)
+    /// Handles {{variable}}, {{#if variable}}, {{/if}}, {{#each array}}, etc.
+    fn extract_double_brace_placeholder(
+        chars: &[char],
+        start: usize,
+        text: &str,
+    ) -> Option<String> {
+        // Find the closing }}
+        let mut j = start + 2;
+        while j < chars.len() - 1 {
+            if chars[j] == '}' && chars[j + 1] == '}' {
+                // Make sure this is not {{{...}}} (triple braces)
+                if j + 2 < chars.len() && chars[j + 2] == '}' {
+                    // Skip triple braces
+                    j += 1;
+                    continue;
+                }
+
+                let byte_start = text.char_indices().nth(start).map(|(i, _)| i).unwrap_or(0);
+                let byte_end = text
+                    .char_indices()
+                    .nth(j + 2)
+                    .map(|(i, _)| i)
+                    .unwrap_or(text.len());
+
+                return Some(text[byte_start..byte_end].to_string());
+            }
+            j += 1;
+        }
+
+        None
     }
 
     /// Replace placeholders with [[index]] markers and return the markers
@@ -1308,5 +1370,101 @@ mod tests {
         let prompt = provider.build_user_prompt("Hello", "AUTO", "zh");
 
         assert_eq!(prompt, "Translate from AUTO to zh: Hello");
+    }
+
+    #[test]
+    fn test_extract_dollar_brace_placeholders() {
+        let text = "错误：${error}，代码：${code}";
+        let placeholders = LLMProvider::extract_placeholders(text);
+
+        assert_eq!(placeholders.len(), 2);
+        assert_eq!(placeholders[0], "${error}");
+        assert_eq!(placeholders[1], "${code}");
+    }
+
+    #[test]
+    fn test_extract_double_brace_placeholders() {
+        let text = "支持 {{variable}} 占位符替换，以及 {{#if condition}} 条件渲染";
+        let placeholders = LLMProvider::extract_placeholders(text);
+
+        assert_eq!(placeholders.len(), 2);
+        assert_eq!(placeholders[0], "{{variable}}");
+        assert_eq!(placeholders[1], "{{#if condition}}");
+    }
+
+    #[test]
+    fn test_extract_mixed_placeholders() {
+        let text = "支持 ${dollar_var} 和 {{double_brace_var}} 以及 {{#each items}} 循环";
+        let placeholders = LLMProvider::extract_placeholders(text);
+
+        assert_eq!(placeholders.len(), 3);
+        assert_eq!(placeholders[0], "${dollar_var}");
+        assert_eq!(placeholders[1], "{{double_brace_var}}");
+        assert_eq!(placeholders[2], "{{#each items}}");
+    }
+
+    #[test]
+    fn test_protect_and_restore_dollar_brace() {
+        let text = "错误：${error}，代码：${code}";
+        let (protected, placeholders) = LLMProvider::protect_placeholders(text);
+
+        assert_eq!(protected, "错误：[[0]]，代码：[[1]]");
+        assert_eq!(placeholders.len(), 2);
+        assert_eq!(placeholders[0], "${error}");
+        assert_eq!(placeholders[1], "${code}");
+
+        let restored = LLMProvider::restore_placeholders(&protected, &placeholders);
+        assert_eq!(restored, text);
+    }
+
+    #[test]
+    fn test_protect_and_restore_double_brace() {
+        let text = "支持 {{variable}} 占位符，以及 {{#if condition}} 条件";
+        let (protected, placeholders) = LLMProvider::protect_placeholders(text);
+
+        assert_eq!(protected, "支持 [[0]] 占位符，以及 [[1]] 条件");
+        assert_eq!(placeholders.len(), 2);
+        assert_eq!(placeholders[0], "{{variable}}");
+        assert_eq!(placeholders[1], "{{#if condition}}");
+
+        let restored = LLMProvider::restore_placeholders(&protected, &placeholders);
+        assert_eq!(restored, text);
+    }
+
+    #[test]
+    fn test_protect_and_restore_mixed() {
+        let text = "模板 ${var1} 和 {{var2}} 以及 {{#each arr}}";
+        let (protected, placeholders) = LLMProvider::protect_placeholders(text);
+
+        assert_eq!(protected, "模板 [[0]] 和 [[1]] 以及 [[2]]");
+        assert_eq!(placeholders.len(), 3);
+        assert_eq!(placeholders[0], "${var1}");
+        assert_eq!(placeholders[1], "{{var2}}");
+        assert_eq!(placeholders[2], "{{#each arr}}");
+
+        let restored = LLMProvider::restore_placeholders(&protected, &placeholders);
+        assert_eq!(restored, text);
+    }
+
+    #[test]
+    fn test_nested_brace_placeholders() {
+        let text = "访问 ${obj.nested.key} 和 {{user.profile.name}}";
+        let placeholders = LLMProvider::extract_placeholders(text);
+
+        assert_eq!(placeholders.len(), 2);
+        assert_eq!(placeholders[0], "${obj.nested.key}");
+        assert_eq!(placeholders[1], "{{user.profile.name}}");
+    }
+
+    #[test]
+    fn test_template_engine_directives() {
+        let text = "条件渲染 {{#if variable}}...{{/if}} 和循环 {{#each array}}...{{/each}}";
+        let placeholders = LLMProvider::extract_placeholders(text);
+
+        assert_eq!(placeholders.len(), 4);
+        assert_eq!(placeholders[0], "{{#if variable}}");
+        assert_eq!(placeholders[1], "{{/if}}");
+        assert_eq!(placeholders[2], "{{#each array}}");
+        assert_eq!(placeholders[3], "{{/each}}");
     }
 }
