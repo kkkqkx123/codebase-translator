@@ -417,6 +417,7 @@ impl ParserCoordinator {
     ) -> Vec<TranslationUnit> {
         use crate::parser::core::CommentType;
         use crate::parser::core::StringProcessor;
+        use crate::parser::scanner::TextRegionType;
 
         let mut units = Vec::new();
         let string_processor = StringProcessor::new();
@@ -429,16 +430,27 @@ impl ParserCoordinator {
 
             // Clean comment markers for doc comments and block comments
             let text = match region.region_type {
-                crate::parser::scanner::TextRegionType::DocComment => {
-                    string_processor.clean_doc_comment(raw_text)
-                }
-                crate::parser::scanner::TextRegionType::BlockComment => {
+                TextRegionType::DocComment => string_processor.clean_doc_comment(raw_text),
+                TextRegionType::BlockComment => {
                     string_processor.clean_comment(raw_text, CommentType::Block)
                 }
                 _ => raw_text.to_string(),
             };
 
-            if !self.filter.should_translate(&text) {
+            // Skip code pattern detection for comments (line comments, block comments, doc comments)
+            // Comments often contain code examples that should be translated, not filtered
+            let is_comment = matches!(
+                region.region_type,
+                TextRegionType::LineComment
+                    | TextRegionType::BlockComment
+                    | TextRegionType::DocComment
+            );
+            let check_code_patterns = !is_comment;
+
+            if !self
+                .filter
+                .should_translate_with_options(&text, check_code_patterns)
+            {
                 continue;
             }
 
@@ -687,5 +699,48 @@ const x = 1;
             // content contains the cleaned text (markers removed)
             // The writer's replace_in_raw_match function handles this mapping
         }
+    }
+
+    #[test]
+    fn test_ts_doc_comments_with_code_examples_not_filtered() {
+        use crate::config::project::ProjectConfig;
+
+        let project_config = ProjectConfig::default();
+        let parser =
+            ParserCoordinator::from_project_config(ParserConfig::default(), &project_config)
+                .expect("Failed to create parser coordinator");
+
+        let file_path = "tests/temp/template-renderer.ts";
+        let content = std::fs::read_to_string(file_path).expect("Failed to read file");
+        let file = create_test_file(&content, file_path);
+
+        let units = parser.parse_file(&file).expect("Failed to parse file");
+
+        // Should extract units from the TypeScript file
+        assert!(
+            !units.is_empty(),
+            "Should extract translation units from TypeScript file"
+        );
+
+        // Check that units with code examples in comments are not filtered
+        let units_with_brackets: Vec<_> = units
+            .iter()
+            .filter(|u| u.content.contains('[') || u.content.contains('('))
+            .collect();
+
+        assert!(
+            !units_with_brackets.is_empty(),
+            "Should have units containing code examples like items[0] or func()"
+        );
+
+        // Verify specific Chinese doc comment with code example is extracted
+        let has_array_example = units
+            .iter()
+            .any(|u| u.content.contains("数组索引") && u.content.contains("items[0]"));
+
+        assert!(
+            has_array_example,
+            "Should extract Chinese doc comment containing code example 'items[0]'"
+        );
     }
 }

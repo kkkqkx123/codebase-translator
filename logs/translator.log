@@ -699,3 +699,8 @@
 2026-04-22T10:02:04.628873Z  INFO codebase_translate::workflow::file_processor: File parsed file=\\?\E:\project\codebase-translator\.translator\backups\config_validation_20260422_092116.bak.rs total_units=246 translatable_units=246
 2026-04-22T10:02:04.628905Z  INFO codebase_translate::workflow::file_processor: Translating units file=\\?\E:\project\codebase-translator\.translator\backups\config_validation_20260422_092116.bak.rs units_to_translate=246 empty_filtered=0
 2026-04-22T10:02:04.628918Z  INFO codebase_translate::translator::batch: Starting batch translation total_texts=246 batch_size=50 total_batches=5
+2026-05-11T03:24:51.238860Z  INFO codebase_translate::commands::detect: Starting language script detection path=e:\project\codebase-translator\tests\temp\template-renderer.ts language=None verbose=false
+2026-05-11T03:24:51.239228Z  INFO codebase_translate::scanner::walker: Checking path type path=\\?\E:\project\codebase-translator\tests\temp\template-renderer.ts is_file=true is_dir=false
+2026-05-11T03:24:51.239268Z  INFO codebase_translate::scanner::walker: Path is a file, using single file scanner path=\\?\E:\project\codebase-translator\tests\temp\template-renderer.ts
+2026-05-11T03:24:51.239330Z  INFO codebase_translate::scanner::walker: Scanned single file path=\\?\E:\project\codebase-translator\tests\temp\template-renderer.ts size=14650
+2026-05-11T03:24:51.240748Z  INFO codebase_translate::commands::detect: Language script detection completed files_scanned=1 lines_scanned=483 matching_lines=25

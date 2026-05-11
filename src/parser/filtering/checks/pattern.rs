@@ -134,6 +134,21 @@ impl PatternFilter {
 
 impl Filter for PatternFilter {
     fn should_translate(&self, text: &str) -> bool {
+        self.should_translate_with_options(text, true)
+    }
+
+    fn name(&self) -> &str {
+        "PatternFilter"
+    }
+}
+
+impl PatternFilter {
+    /// Check if text should be translated with options
+    ///
+    /// # Arguments
+    /// * `text` - The text to check
+    /// * `check_code_patterns` - Whether to check for code patterns (false for comments)
+    pub fn should_translate_with_options(&self, text: &str, check_code_patterns: bool) -> bool {
         if self.url_pattern_regex.is_match(text) {
             debug!(reason = "contains_url", "Text filtered by pattern check");
             return false;
@@ -182,7 +197,7 @@ impl Filter for PatternFilter {
             }
         }
 
-        if self.detect_code_patterns {
+        if self.detect_code_patterns && check_code_patterns {
             for pattern in &self.code_pattern_regex {
                 if pattern.is_match(text) {
                     debug!(
@@ -195,10 +210,6 @@ impl Filter for PatternFilter {
         }
 
         true
-    }
-
-    fn name(&self) -> &str {
-        "PatternFilter"
     }
 }
 
@@ -500,5 +511,20 @@ mod tests {
         assert!(!filter.should_translate("Value: {name}"));
         assert!(!filter.should_translate("func()"));
         assert!(!filter.should_translate("array[index]"));
+    }
+
+    #[test]
+    fn test_should_translate_with_options_code_patterns_disabled() {
+        let config = FilterConfig {
+            detect_code_patterns: true,
+            allow_placeholders: true,
+            ..Default::default()
+        };
+        let filter = PatternFilter::new(&config).unwrap();
+
+        assert!(filter.should_translate_with_options("支持数组索引访问（如 items[0].name）", false));
+        assert!(filter.should_translate_with_options("调用 func(arg1, arg2) 函数", false));
+        assert!(!filter.should_translate_with_options("支持数组索引访问（如 items[0].name）", true));
+        assert!(!filter.should_translate_with_options("调用 func(arg1, arg2) 函数", true));
     }
 }

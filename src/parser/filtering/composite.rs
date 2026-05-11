@@ -87,6 +87,39 @@ impl CompositeFilter {
     pub fn contains_code_pattern(&self, text: &str) -> bool {
         self.pattern.contains_code_pattern(text)
     }
+
+    /// Check if text should be translated with options
+    ///
+    /// # Arguments
+    /// * `text` - The text to check
+    /// * `check_code_patterns` - Whether to check for code patterns (false for comments)
+    pub fn should_translate_with_options(&self, text: &str, check_code_patterns: bool) -> bool {
+        if let Some(ref lang_filter) = self.language_only {
+            return lang_filter.should_translate(text);
+        }
+
+        if !self.length.should_translate(text) {
+            return false;
+        }
+
+        if !self.language.should_translate(text) {
+            return false;
+        }
+
+        if !self
+            .pattern
+            .should_translate_with_options(text, check_code_patterns)
+        {
+            return false;
+        }
+
+        if !self.content.should_translate(text) {
+            return false;
+        }
+
+        debug!(text = %text, "Text passed all filter checks");
+        true
+    }
 }
 
 impl Filter for CompositeFilter {
