@@ -5,9 +5,7 @@ use crate::{
     commands::Command,
     config::{global::GlobalConfig, project::ProjectConfig},
     core::error::{Result, TranslateError},
-    core::models::File,
-    encoding::Detector,
-    encoding::Encoder,
+    core::reader::read_text_file,
     parser::ParserCoordinator,
     scanner::r#trait::{ScanOptions, Scanner},
     scanner::FSScanner,
@@ -104,7 +102,7 @@ impl Command for VerifyArgs {
                 progress = format!("{}/{}", index + 1, total_files),
                 "Processing file"
             );
-            let file = Self::load_file(&entry.path)?;
+            let file = read_text_file(&entry.path)?;
             let content = file.content_string().map_err(|e| {
                 TranslateError::Parse(format!(
                     "Failed to decode file {}: {}",
@@ -185,34 +183,5 @@ impl Command for VerifyArgs {
         } else {
             Some(&self.path)
         }
-    }
-}
-
-impl VerifyArgs {
-    fn load_file(path: &std::path::Path) -> Result<File> {
-        let content_bytes = std::fs::read(path).map_err(|e| {
-            TranslateError::Io(format!("Failed to read file {}: {}", path.display(), e))
-        })?;
-
-        let detector = Detector::default();
-        let encoding_result = detector.detect_bytes(&content_bytes).map_err(|e| {
-            TranslateError::Parse(format!(
-                "Failed to detect encoding for file {}: {}",
-                path.display(),
-                e
-            ))
-        })?;
-        let encoding = encoding_result.encoding;
-
-        let encoder = Encoder::default();
-        let content = encoder.to_utf8(&content_bytes, &encoding).map_err(|e| {
-            TranslateError::Parse(format!("Failed to decode file {}: {}", path.display(), e))
-        })?;
-
-        Ok(File::new(
-            path.to_path_buf(),
-            content.into_bytes(),
-            encoding,
-        ))
     }
 }

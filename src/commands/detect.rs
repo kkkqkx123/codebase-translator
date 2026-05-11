@@ -6,6 +6,7 @@ use crate::{
     config::{global::GlobalConfig, project::ProjectConfig},
     core::error::{Result, TranslateError},
     core::models::FileEntry,
+    core::reader::read_text_file,
     scanner::{FSScanner, ScanOptions, Scanner},
 };
 
@@ -131,11 +132,18 @@ impl DetectArgs {
 
     fn detect_file(
         &self,
-        file: &FileEntry,
+        entry: &FileEntry,
         target_script: &str,
         report: &mut LanguageDetectionReport,
     ) -> Result<()> {
-        let content = std::fs::read_to_string(&file.path)?;
+        let file = read_text_file(&entry.path)?;
+        let content = file.content_string().map_err(|e| {
+            TranslateError::Parse(format!(
+                "Invalid UTF-8 in file {} after encoding conversion: {}",
+                file.path.display(),
+                e
+            ))
+        })?;
         let lines: Vec<&str> = content.lines().collect();
 
         let mut matching_lines: Vec<(usize, String)> = Vec::new();
@@ -153,7 +161,7 @@ impl DetectArgs {
         if !segments.is_empty() {
             let segment_count = segments.len();
             report.file_results.push(FileDetectionResult {
-                file_path: file.relative_path.display().to_string(),
+                file_path: entry.relative_path.display().to_string(),
                 script_family: target_script.to_string(),
                 segments,
                 total_matching_lines: matching_lines.len(),
