@@ -11,11 +11,11 @@ impl EventLogger {
     }
 
     pub fn log_total_files(&self, count: usize) {
-        debug!(count = count, "Total files to process");
+        info!(count = count, "Total files to process");
     }
 
     pub fn log_file_processed(&self, path: &Path, units: usize) {
-        debug!(
+        info!(
             file = %path.display(),
             units = units,
             "File processed"
@@ -23,7 +23,17 @@ impl EventLogger {
     }
 
     pub fn log_progress(&self, current: usize, total: usize) {
-        debug!(current = current, total = total, "Progress update");
+        let percentage = if total > 0 {
+            (current as f64 / total as f64) * 100.0
+        } else {
+            0.0
+        };
+        info!(
+            current = current,
+            total = total,
+            percentage = format!("{:.1}%", percentage),
+            "Processing progress"
+        );
     }
 
     pub fn log_error(&self, path: &Path, error: &TranslateError) {

@@ -1,1 +1,0 @@
-cargo run -- --config tests/main_integration/fixtures/.translator_test.toml translate tests/main_integration/fixtures/mod.rs

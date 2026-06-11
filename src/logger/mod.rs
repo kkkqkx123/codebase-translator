@@ -55,21 +55,21 @@ fn init_stdout_logger(filter: EnvFilter, format: &str) -> Result<()> {
                 .json()
                 .with_target(false)
                 .with_level(true)
-                .with_span_events(FmtSpan::CLOSE),
+                .with_span_events(FmtSpan::NONE),
         ),
         "compact" => Box::new(
             tracing_subscriber::fmt::layer()
                 .compact()
                 .with_target(false)
                 .with_level(true)
-                .with_span_events(FmtSpan::CLOSE),
+                .with_span_events(FmtSpan::NONE),
         ),
         _ => Box::new(
             tracing_subscriber::fmt::layer()
                 .pretty()
                 .with_target(false)
                 .with_level(true)
-                .with_span_events(FmtSpan::CLOSE),
+                .with_span_events(FmtSpan::NONE),
         ),
     };
 
@@ -95,7 +95,7 @@ fn init_stderr_logger(filter: EnvFilter, format: &str) -> Result<()> {
                 .with_writer(std::io::stderr)
                 .with_target(false)
                 .with_level(true)
-                .with_span_events(FmtSpan::CLOSE),
+                .with_span_events(FmtSpan::NONE),
         ),
         "compact" => Box::new(
             tracing_subscriber::fmt::layer()
@@ -103,7 +103,7 @@ fn init_stderr_logger(filter: EnvFilter, format: &str) -> Result<()> {
                 .with_writer(std::io::stderr)
                 .with_target(false)
                 .with_level(true)
-                .with_span_events(FmtSpan::CLOSE),
+                .with_span_events(FmtSpan::NONE),
         ),
         _ => Box::new(
             tracing_subscriber::fmt::layer()
@@ -111,7 +111,7 @@ fn init_stderr_logger(filter: EnvFilter, format: &str) -> Result<()> {
                 .with_writer(std::io::stderr)
                 .with_target(false)
                 .with_level(true)
-                .with_span_events(FmtSpan::CLOSE),
+                .with_span_events(FmtSpan::NONE),
         ),
     };
 
@@ -157,6 +157,13 @@ fn init_file_logger(
     // Only set LOG_GUARD if not already set
     let _ = LOG_GUARD.set(Box::new(guard));
 
+    // Determine span events based on configuration
+    let span_events = if config.span_events {
+        FmtSpan::CLOSE
+    } else {
+        FmtSpan::NONE
+    };
+
     let fmt_layer: Box<dyn tracing_subscriber::Layer<_> + Send + Sync> = match format {
         "json" => Box::new(
             tracing_subscriber::fmt::layer()
@@ -164,7 +171,7 @@ fn init_file_logger(
                 .with_writer(non_blocking)
                 .with_target(true)
                 .with_level(true)
-                .with_span_events(FmtSpan::CLOSE)
+                .with_span_events(span_events)
                 .with_ansi(false),
         ),
         "compact" => Box::new(
@@ -173,7 +180,7 @@ fn init_file_logger(
                 .with_writer(non_blocking)
                 .with_target(true)
                 .with_level(true)
-                .with_span_events(FmtSpan::CLOSE)
+                .with_span_events(span_events)
                 .with_ansi(false),
         ),
         _ => Box::new(
@@ -181,7 +188,7 @@ fn init_file_logger(
                 .with_writer(non_blocking)
                 .with_target(true)
                 .with_level(true)
-                .with_span_events(FmtSpan::CLOSE)
+                .with_span_events(span_events)
                 .with_ansi(false),
         ),
     };

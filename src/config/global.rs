@@ -823,6 +823,9 @@ pub struct LoggingConfig {
     /// Log format: pretty, json, compact
     #[serde(default = "default_log_format")]
     pub format: String,
+    /// Enable span events for debugging (default: false)
+    #[serde(default)]
+    pub span_events: bool,
 }
 
 impl Default for LoggingConfig {
@@ -832,6 +835,7 @@ impl Default for LoggingConfig {
             output: default_log_output(),
             file: None,
             format: default_log_format(),
+            span_events: false,
         }
     }
 }
